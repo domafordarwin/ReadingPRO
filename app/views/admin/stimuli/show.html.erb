@@ -1,0 +1,20 @@
+<header class="admin-header">
+  <div>
+    <h1 class="admin-title">지문 상세</h1>
+    <p class="admin-subtitle"><%= @stimulus.code || "코드 없음" %></p>
+  </div>
+  <div class="admin-actions">
+    <%= link_to "수정", edit_admin_stimulus_path(@stimulus), class: "admin-button" %>
+    <%= link_to "문항", admin_items_path(stimulus_id: @stimulus.id), class: "admin-button secondary" %>
+    <%= link_to "목록", admin_stimuli_path, class: "admin-button" %>
+  </div>
+</header>
+
+<section class="admin-card">
+  <dl>
+    <dt>제목</dt>
+    <dd><%= @stimulus.title %></dd>
+    <dt>내용</dt>
+    <dd><%= simple_format(@stimulus.body) %></dd>
+  </dl>
+</section>

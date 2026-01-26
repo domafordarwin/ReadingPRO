@@ -1,0 +1,35 @@
+<%= form_with model: [:admin, @form], local: true do |form| %>
+  <% if @form.errors.any? %>
+    <div class="admin-card">
+      <% @form.errors.full_messages.each do |message| %>
+        <div><%= message %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="admin-card">
+    <div class="admin-form">
+      <div>
+        <%= form.label :title, "시험지 제목" %>
+        <%= form.text_field :title, class: "admin-input" %>
+      </div>
+      <div>
+        <%= form.label :status, "상태" %>
+        <%= form.select :status, Form.statuses.keys, {}, class: "admin-select small" %>
+      </div>
+      <div>
+        <%= form.label :grade_band, "학년" %>
+        <%= form.text_field :grade_band, class: "admin-input small" %>
+      </div>
+      <div>
+        <%= form.label :time_limit_minutes, "시간(분)" %>
+        <%= form.number_field :time_limit_minutes, class: "admin-input small" %>
+      </div>
+    </div>
+
+    <div class="admin-actions">
+      <%= form.submit "저장", class: "admin-button primary" %>
+      <%= link_to "목록", admin_forms_path, class: "admin-button" %>
+    </div>
+  </div>
+<% end %>

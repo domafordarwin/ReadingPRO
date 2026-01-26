@@ -1,0 +1,66 @@
+<header class="admin-header">
+  <div>
+    <h1 class="admin-title">설정</h1>
+    <p class="admin-subtitle">시스템 설정을 확인하세요</p>
+  </div>
+</header>
+
+<section class="admin-card">
+  <h2>데이터베이스</h2>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>항목</th>
+        <th>값</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>연결 상태</td>
+        <td>
+          <span class="admin-badge <%= @db_ok ? "success" : "danger" %>">
+            <%= @db_ok ? "연결됨" : "오류" %>
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <td>DB 버전</td>
+        <td><%= @db_version %></td>
+      </tr>
+      <tr>
+        <td>총 문항 수</td>
+        <td><%= @items_count %></td>
+      </tr>
+      <tr>
+        <td>총 응시 수</td>
+        <td><%= @attempts_count %></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="admin-card">
+  <h2>배포 정보</h2>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>항목</th>
+        <th>값</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rails 버전</td>
+        <td><%= @rails_version %></td>
+      </tr>
+      <tr>
+        <td>Ruby 버전</td>
+        <td><%= @ruby_version %></td>
+      </tr>
+      <tr>
+        <td>환경</td>
+        <td><%= Rails.env %></td>
+      </tr>
+    </tbody>
+  </table>
+</section>

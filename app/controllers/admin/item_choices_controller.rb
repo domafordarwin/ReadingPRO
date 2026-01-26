@@ -1,5 +1,5 @@
 module Admin
-  class ItemChoicesController < ApplicationController
+  class ItemChoicesController < BaseController
     before_action :set_item
     before_action :set_choice, only: %i[update]
 

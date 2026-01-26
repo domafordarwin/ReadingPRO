@@ -1,5 +1,12 @@
-<h1>Edit Item</h1>
-
-<p><%= link_to "Back to Item", admin_item_path(@item) %></p>
+<header class="admin-header">
+  <div>
+    <h1 class="admin-title">문항 수정</h1>
+    <p class="admin-subtitle"><%= @item.code %></p>
+  </div>
+  <div class="admin-actions">
+    <%= link_to "상세", admin_item_path(@item), class: "admin-button" %>
+    <%= link_to "목록", admin_items_path, class: "admin-button" %>
+  </div>
+</header>
 
 <%= render "form" %>

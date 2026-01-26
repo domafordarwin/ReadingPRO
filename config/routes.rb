@@ -10,9 +10,17 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   namespace :admin do
+    root to: "dashboard#index"
+    get "dashboard", to: "dashboard#index"
     resources :items do
       resources :item_choices, path: "choices", only: %i[index create update]
     end
+    resources :stimuli
+    resources :forms
+    resources :attempts, only: %i[index]
+    resources :scoring, only: %i[index]
+    resources :imports, only: %i[index]
+    resources :settings, only: %i[index]
   end
 
   # Defines the root path route ("/")

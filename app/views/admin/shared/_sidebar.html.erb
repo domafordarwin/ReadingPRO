@@ -1,0 +1,15 @@
+<div class="admin-brand">
+  <div class="admin-brand-title">ReadingPRO</div>
+  <div class="admin-brand-subtitle">Admin</div>
+</div>
+
+<nav class="admin-nav">
+  <%= link_to "대시보드", admin_dashboard_path, class: nav_link_class(admin_dashboard_path) %>
+  <%= link_to "문항은행", admin_items_path, class: nav_link_class(admin_items_path) %>
+  <%= link_to "지문 관리", admin_stimuli_path, class: nav_link_class(admin_stimuli_path) %>
+  <%= link_to "채점 정의", admin_scoring_index_path, class: nav_link_class(admin_scoring_index_path) %>
+  <%= link_to "시험지", admin_forms_path, class: nav_link_class(admin_forms_path) %>
+  <%= link_to "응시 관리", admin_attempts_path, class: nav_link_class(admin_attempts_path) %>
+  <%= link_to "데이터 Import", admin_imports_path, class: nav_link_class(admin_imports_path) %>
+  <%= link_to "설정", admin_settings_index_path, class: nav_link_class(admin_settings_index_path) %>
+</nav>

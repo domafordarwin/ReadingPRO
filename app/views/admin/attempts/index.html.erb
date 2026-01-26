@@ -1,0 +1,94 @@
+<header class="admin-header">
+  <div>
+    <h1 class="admin-title">응시 관리</h1>
+    <p class="admin-subtitle">응시 현황과 채점 결과를 확인하세요</p>
+  </div>
+</header>
+
+<section class="admin-card">
+  <%= form_with url: admin_attempts_path, method: :get, local: true, class: "admin-form" do |form| %>
+    <div>
+      <%= form.label :form_id, "시험지" %>
+      <%= form.select :form_id, options_from_collection_for_select(@forms, :id, :title, @form_id), { include_blank: "전체" }, class: "admin-select small" %>
+    </div>
+    <div>
+      <%= form.label :status, "상태" %>
+      <%= form.select :status, options_for_select([["전체", ""], ["완료", "completed"], ["채점중", "scoring"], ["진행중", "in_progress"]], @status), {}, class: "admin-select small" %>
+    </div>
+    <div>
+      <%= form.submit "필터 적용", class: "admin-button secondary" %>
+      <%= link_to "초기화", admin_attempts_path, class: "admin-button" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="admin-card">
+  <% if @attempts.any? %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>응시 ID</th>
+          <th>시험지</th>
+          <th>시작</th>
+          <th>제출</th>
+          <th>점수</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @attempts.each do |attempt| %>
+          <% status = if attempt.submitted_at.present?
+                        "completed"
+                      elsif attempt.responses.any? { |response| response.raw_score.nil? }
+                        "scoring"
+                      else
+                        "in_progress"
+                      end %>
+          <% raw_total = attempt.responses.map(&:raw_score).compact.sum %>
+          <% max_total = attempt.responses.map(&:max_score).compact.sum %>
+          <tr>
+            <td><%= attempt.id %></td>
+            <td><%= attempt.form&.title || "미지정" %></td>
+            <td><%= attempt.started_at&.strftime("%Y-%m-%d") || "-" %></td>
+            <td><%= attempt.submitted_at&.strftime("%Y-%m-%d") || "-" %></td>
+            <td><%= raw_total %> / <%= max_total %></td>
+            <td><span class="admin-badge"><%= status %></span></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="admin-muted">응시 기록이 없습니다.</p>
+  <% end %>
+</section>
+
+<section class="admin-card">
+  <h2>서술형 채점 요약</h2>
+  <% if @scoring_response.present? %>
+    <p class="admin-muted"><%= @scoring_response.item.code %> · <%= @scoring_response.item.prompt %></p>
+    <% rubric = @scoring_response.item.rubric %>
+    <% if rubric.present? %>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>요소</th>
+            <th>점수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rubric.rubric_criteria.order(:position).each do |criterion| %>
+            <% score = @scoring_response.response_rubric_scores.find { |entry| entry.rubric_criterion_id == criterion.id } %>
+            <tr>
+              <td><%= criterion.name %></td>
+              <td><%= score&.level_score || "-" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="admin-muted">연결된 루브릭이 없습니다.</p>
+    <% end %>
+  <% else %>
+    <p class="admin-muted">채점 데이터가 없습니다.</p>
+  <% end %>
+</section>

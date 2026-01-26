@@ -1,22 +1,28 @@
-<h1>Item <%= @item.code %></h1>
+<header class="admin-header">
+  <div>
+    <h1 class="admin-title">문항 상세</h1>
+    <p class="admin-subtitle"><%= @item.code %></p>
+  </div>
+  <div class="admin-actions">
+    <%= link_to "목록", admin_items_path, class: "admin-button" %>
+    <%= link_to "수정", edit_admin_item_path(@item), class: "admin-button" %>
+    <%= link_to "보기/채점", admin_item_item_choices_path(@item), class: "admin-button primary" %>
+  </div>
+</header>
 
-<p>
-  <%= link_to "Back to Items", admin_items_path %>
-  <%= link_to "Edit", edit_admin_item_path(@item) %>
-  <%= link_to "Choices", admin_item_item_choices_path(@item) %>
-</p>
-
-<dl>
-  <dt>Type</dt>
-  <dd><%= @item.item_type %></dd>
-  <dt>Status</dt>
-  <dd><%= @item.status %></dd>
-  <dt>Difficulty</dt>
-  <dd><%= @item.difficulty.presence || "-" %></dd>
-  <dt>Stimulus</dt>
-  <dd><%= @item.stimulus_id || "-" %></dd>
-  <dt>Prompt</dt>
-  <dd><%= simple_format(@item.prompt) %></dd>
-  <dt>Explanation</dt>
-  <dd><%= simple_format(@item.explanation) %></dd>
-</dl>
+<section class="admin-card">
+  <dl>
+    <dt>유형</dt>
+    <dd><%= @item.item_type %></dd>
+    <dt>상태</dt>
+    <dd><%= @item.status %></dd>
+    <dt>난이도</dt>
+    <dd><%= @item.difficulty.presence || "-" %></dd>
+    <dt>지문</dt>
+    <dd><%= @item.stimulus&.code || "-" %></dd>
+    <dt>문항</dt>
+    <dd><%= simple_format(@item.prompt) %></dd>
+    <dt>해설</dt>
+    <dd><%= simple_format(@item.explanation) %></dd>
+  </dl>
+</section>
