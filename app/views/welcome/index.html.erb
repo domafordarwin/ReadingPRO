@@ -1,0 +1,17 @@
+<main class="container">
+  <h1>ReadingPRO</h1>
+  <p>Welcome. This is a test page for the environment.</p>
+
+  <section>
+    <h2>Database</h2>
+    <p>
+      Status:
+      <% if @db_ok %>
+        <strong>ok</strong>
+      <% else %>
+        <strong>error</strong>
+      <% end %>
+    </p>
+    <p>Message: <%= @db_message %></p>
+  </section>
+</main>
