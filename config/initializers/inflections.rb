@@ -12,6 +12,7 @@
 
 ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "stimulus", "stimuli"
+  inflect.irregular "criterion", "criteria"
 end
 
 # These inflection rules are supported but not enabled by default:
