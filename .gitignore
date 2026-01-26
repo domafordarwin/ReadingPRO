@@ -1,1 +1,27 @@
 raw_Data/
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
+# Ruby/Rails
+/.bundle
+/log/*
+/tmp/*
+/storage/*
+/public/assets
+/public/packs
+/node_modules
+.byebug_history
+.env
+.env.*
+!.env.example
+
+# Keep empty dirs
+!/log/.keep
+!/tmp/.keep
+!/storage/.keep
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
