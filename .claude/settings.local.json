@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:\\\\WorkSpace\\\\Project\\\\ReadingPro_Railway\" log --oneline -15)",
+      "Bash(git -C \"c:\\\\WorkSpace\\\\Project\\\\ReadingPro_Railway\" show c35f1de --stat)",
+      "Bash(rails credentials:show:*)"
+    ]
+  }
+}
