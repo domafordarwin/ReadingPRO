@@ -30,12 +30,13 @@ class CreateItemBankCore < ActiveRecord::Migration[8.1]
     add_index :item_choices, %i[item_id choice_no], unique: true
 
     create_table :choice_scores do |t|
-      t.references :item_choice, null: false, foreign_key: true, index: { unique: true }
+      t.references :item_choice, null: false, foreign_key: true, index: false
       t.integer :score_percent, null: false
       t.text :rationale
       t.boolean :is_key, null: false, default: false
       t.timestamps
     end
+    add_index :choice_scores, :item_choice_id, unique: true, if_not_exists: true
     add_check_constraint :choice_scores,
                          "score_percent >= 0 AND score_percent <= 100",
                          name: "choice_scores_score_percent_range"

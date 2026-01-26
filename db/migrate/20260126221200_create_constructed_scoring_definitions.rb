@@ -7,10 +7,11 @@ class CreateConstructedScoringDefinitions < ActiveRecord::Migration[8.1]
     end
 
     create_table :rubrics do |t|
-      t.references :item, null: false, foreign_key: true, index: { unique: true }
+      t.references :item, null: false, foreign_key: true, index: false
       t.string :title
       t.timestamps
     end
+    add_index :rubrics, :item_id, unique: true, if_not_exists: true
 
     create_table :rubric_criteria do |t|
       t.references :rubric, null: false, foreign_key: true
