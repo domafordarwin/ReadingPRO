@@ -1,0 +1,41 @@
+<h1>Items</h1>
+
+<%= form_with url: admin_items_path, method: :get, local: true do |form| %>
+  <div>
+    <%= form.label :q, "Search (code or prompt)" %>
+    <%= form.text_field :q, value: @query %>
+    <%= form.submit "Search" %>
+    <% if @query.present? %>
+      <%= link_to "Clear", admin_items_path %>
+    <% end %>
+  </div>
+<% end %>
+
+<p><%= link_to "New Item", new_admin_item_path %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Type</th>
+      <th>Status</th>
+      <th>Prompt</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @items.each do |item| %>
+      <tr>
+        <td><%= item.code %></td>
+        <td><%= item.item_type %></td>
+        <td><%= item.status %></td>
+        <td><%= truncate(item.prompt, length: 80) %></td>
+        <td>
+          <%= link_to "Show", admin_item_path(item) %>
+          <%= link_to "Edit", edit_admin_item_path(item) %>
+          <%= link_to "Choices", admin_item_item_choices_path(item) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,22 @@
+<h1>Item <%= @item.code %></h1>
+
+<p>
+  <%= link_to "Back to Items", admin_items_path %>
+  <%= link_to "Edit", edit_admin_item_path(@item) %>
+  <%= link_to "Choices", admin_item_item_choices_path(@item) %>
+</p>
+
+<dl>
+  <dt>Type</dt>
+  <dd><%= @item.item_type %></dd>
+  <dt>Status</dt>
+  <dd><%= @item.status %></dd>
+  <dt>Difficulty</dt>
+  <dd><%= @item.difficulty.presence || "-" %></dd>
+  <dt>Stimulus</dt>
+  <dd><%= @item.stimulus_id || "-" %></dd>
+  <dt>Prompt</dt>
+  <dd><%= simple_format(@item.prompt) %></dd>
+  <dt>Explanation</dt>
+  <dd><%= simple_format(@item.explanation) %></dd>
+</dl>

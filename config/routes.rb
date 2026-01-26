@@ -9,6 +9,12 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  namespace :admin do
+    resources :items do
+      resources :item_choices, path: "choices", only: %i[index create update]
+    end
+  end
+
   # Defines the root path route ("/")
   root "welcome#index"
 end

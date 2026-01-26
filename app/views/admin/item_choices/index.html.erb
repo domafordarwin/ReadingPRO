@@ -1,0 +1,79 @@
+<h1>Choices for <%= @item.code %></h1>
+
+<p>
+  <%= link_to "Back to Item", admin_item_path(@item) %>
+  <%= link_to "All Items", admin_items_path %>
+</p>
+
+<% if @missing_choice_scores %>
+  <p><strong>Warning:</strong> Some choices are missing scores.</p>
+<% end %>
+
+<h2>Add Choice</h2>
+<%= form_with model: [:admin, @item, @new_choice], url: admin_item_item_choices_path(@item), local: true do |form| %>
+  <% if @new_choice.errors.any? %>
+    <div>
+      <p>Unable to add choice:</p>
+      <ul>
+        <% @new_choice.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :choice_no %>
+    <%= form.number_field :choice_no %>
+  </div>
+  <div>
+    <%= form.label :content %>
+    <%= form.text_field :content %>
+  </div>
+  <div>
+    <%= form.submit "Add Choice" %>
+  </div>
+<% end %>
+
+<h2>Choice Scores</h2>
+<table>
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Content</th>
+      <th>Score %</th>
+      <th>Rationale</th>
+      <th>Is Key</th>
+      <th>Update</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @choices.each do |choice| %>
+      <% choice_score = choice.choice_score || ChoiceScore.new %>
+      <tr>
+        <td><%= choice.choice_no %></td>
+        <td><%= choice.content %></td>
+        <td colspan="4">
+          <%= form_with url: admin_item_item_choice_path(@item, choice), method: :patch, local: true do |form| %>
+            <%= form.fields_for :choice_score, choice_score do |score_fields| %>
+              <%= score_fields.number_field :score_percent, min: 0, max: 100, step: 1 %>
+              <%= score_fields.text_field :rationale, placeholder: "Rationale" %>
+              <%= score_fields.check_box :is_key %>
+              <%= score_fields.label :is_key, "Key" %>
+            <% end %>
+            <% if choice.choice_score&.errors&.any? %>
+              <div>
+                <ul>
+                  <% choice.choice_score.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+            <%= form.submit "Save" %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
