@@ -4,7 +4,7 @@ module Admin
 
     def index
       @query = params[:q].to_s.strip
-      @stimuli = Stimulus.includes(:items).order(created_at: :desc)
+      @stimuli = ReadingStimulus.includes(:items).order(created_at: :desc)
       if @query.present?
         @stimuli = @stimuli.where("code ILIKE :q OR title ILIKE :q", q: "%#{@query}%")
       end
@@ -13,11 +13,11 @@ module Admin
     def show; end
 
     def new
-      @stimulus = Stimulus.new
+      @stimulus = ReadingStimulus.new
     end
 
     def create
-      @stimulus = Stimulus.new(stimulus_params)
+      @stimulus = ReadingStimulus.new(stimulus_params)
       if @stimulus.save
         redirect_to admin_stimulus_path(@stimulus), notice: "Stimulus created."
       else
@@ -38,7 +38,7 @@ module Admin
     private
 
     def set_stimulus
-      @stimulus = Stimulus.find(params[:id])
+      @stimulus = ReadingStimulus.find(params[:id])
     end
 
     def stimulus_params

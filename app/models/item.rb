@@ -1,5 +1,5 @@
 class Item < ApplicationRecord
-  belongs_to :stimulus, optional: true
+  belongs_to :stimulus, class_name: "ReadingStimulus", optional: true, inverse_of: :items
   has_many :item_sample_answers
   has_one :rubric
   has_many :item_choices

@@ -10,7 +10,7 @@ module Admin
       @difficulty = params[:difficulty].to_s
       @stimulus_id = params[:stimulus_id].presence
 
-      @stimuli = Stimulus.order(:code)
+      @stimuli = ReadingStimulus.order(:code)
       @items = Item.includes(:stimulus).order(created_at: :desc)
       if @query.present?
         @items = @items.where("items.code ILIKE :q OR items.prompt ILIKE :q", q: "%#{@query}%")
@@ -65,7 +65,7 @@ module Admin
     end
 
     def load_stimuli
-      @stimuli = Stimulus.order(:code)
+      @stimuli = ReadingStimulus.order(:code)
     end
   end
 end
