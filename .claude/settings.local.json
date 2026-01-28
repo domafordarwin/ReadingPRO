@@ -21,7 +21,17 @@
       "Bash(bin/rails db:migrate:status:*)",
       "Bash(bin/rails runner:*)",
       "Bash(bin/rails db:seed:*)",
-      "Bash(bundle exec rails:*)"
+      "Bash(bundle exec rails:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(railway run:*)",
+      "Bash(railway link:*)",
+      "Bash(railway shell:*)",
+      "Bash(railway whoami:*)",
+      "Bash(railway projects:*)",
+      "Bash(railway list:*)",
+      "Bash(railway exec:*)"
     ]
   }
 }

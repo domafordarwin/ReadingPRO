@@ -78,8 +78,32 @@ schools.each do |attrs|
   end
 end
 
+puts "Seeding user accounts..."
+
+DEFAULT_PASSWORD = "ReadingPro$12#"
+
+# Admin/Teacher accounts
+admin_accounts = [
+  { email: "admin@readingpro.kr", name: "시스템관리자", role: "admin" },
+  { email: "teacher@shinmyung.edu", name: "신명중 담당교사", role: "teacher" }
+]
+
+admin_accounts.each do |attrs|
+  user = User.find_or_initialize_by(email: attrs[:email])
+  user.assign_attributes(name: attrs[:name], role: attrs[:role], password: DEFAULT_PASSWORD)
+  user.save!
+  puts "  ✓ #{user.role}: #{user.email}"
+end
+
+# Reset passwords for all existing users (ensure they have valid password_digest)
+User.where(password_digest: nil).find_each do |user|
+  user.update!(password: DEFAULT_PASSWORD)
+  puts "  ✓ Password set for: #{user.email}"
+end
+
 puts "Seed completed!"
 puts "  - #{EvaluationIndicator.count} evaluation indicators"
 puts "  - #{SubIndicator.count} sub indicators"
 puts "  - #{ReaderType.count} reader types"
 puts "  - #{School.count} schools"
+puts "  - #{User.count} users"
