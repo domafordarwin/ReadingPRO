@@ -1,39 +1,378 @@
 <% content_for :portal_title do %>
-  진단 결과 리포트
+  내 평가 결과
 <% end %>
 <% content_for :portal_subtitle do %>
-  최근 리포트를 확인하고 PDF로 내려받을 수 있어요.
+  최근 진단 결과를 확인하고 관리할 수 있습니다.
 <% end %>
 <% content_for :portal_nav do %>
   <%= render "student/shared/nav", current: :reports %>
 <% end %>
-<% content_for :portal_actions do %>
-  <a class="portal-button" href="#">리포트 다운로드</a>
+
+<style>
+  .dashboard-header {
+    margin-bottom: 32px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+  }
+
+  .stat-unit {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .reports-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 16px;
+  }
+
+  .report-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .report-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .report-card-left {
+    flex: 1;
+  }
+
+  .report-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .report-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .status-draft {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .status-generated {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .status-published {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+
+  .status-none {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .report-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .report-score {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .score-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .score-label {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+
+  .report-action-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .report-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: #999;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .loading {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .reports-list {
+      grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<% if @attempts.any? %>
+  <!-- 통계 카드 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">총 응시</div>
+      <div class="stat-number"><%= @attempts.count %></div>
+      <div class="stat-unit">회</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">제점 완료</div>
+      <div class="stat-number"><%= @attempts.count { |a| a.report&.published? } %></div>
+      <div class="stat-unit">건</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">평균 점수</div>
+      <div class="stat-number"><%= calculate_average_score(@attempts) %></div>
+      <div class="stat-unit">점</div>
+    </div>
+  </div>
+
+  <!-- 리포트 목록 -->
+  <div class="reports-list">
+    <% @attempts.each do |attempt| %>
+      <% attempt_score = calculate_attempt_score(attempt) %>
+      <div class="report-card" data-attempt-id="<%= attempt.id %>">
+        <div class="report-card-left">
+          <div class="report-title">
+            2025학년도 중등 저학년 문해력 진단 평가
+          </div>
+
+          <div class="report-meta">
+            <% if attempt.report %>
+              <span class="status-badge status-<%= attempt.report.status %>">
+                <%= translate_report_status(attempt.report.status) %>
+              </span>
+            <% else %>
+              <span class="status-badge status-none">미생성</span>
+            <% end %>
+
+            <span class="meta-item">
+              📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
+            </span>
+
+            <span class="meta-item">
+              상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
+            </span>
+          </div>
+        </div>
+
+        <div class="report-card-right">
+          <div class="report-score">
+            <div class="score-number"><%= attempt_score %></div>
+            <div class="score-label">/100점</div>
+          </div>
+
+          <% if attempt.report %>
+            <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
+              <a href="<%= student_show_attempt_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;">
+                진단 결과 보기
+              </a>
+              <a href="<%= student_show_report_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;">
+                종합 보고서 보기
+              </a>
+            </div>
+          <% else %>
+            <button class="report-action-btn" onclick="generateReport(<%= attempt.id %>)">
+              리포트 생성
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <p>진행한 진단이 없습니다.</p>
+    <p style="font-size: 12px; margin-top: 8px;">먼저 진단을 완료해주세요.</p>
+  </div>
 <% end %>
 
-<section class="portal-grid">
-  <div class="portal-card">
-    <h2 class="portal-card-title">독서력 종합 리포트</h2>
-    <p class="portal-card-subtitle">2026-01-20 업데이트</p>
-    <div class="portal-list-item">
-      <span>핵심 지표 3가지 개선</span>
-      <span class="portal-chip">완료</span>
-    </div>
-  </div>
-  <div class="portal-card">
-    <h2 class="portal-card-title">읽기 성향 리포트</h2>
-    <p class="portal-card-subtitle">2026-01-13 업데이트</p>
-    <div class="portal-list-item">
-      <span>성향 유형: 탐험형</span>
-      <span class="portal-chip">완료</span>
-    </div>
-  </div>
-  <div class="portal-card">
-    <h2 class="portal-card-title">감상문 피드백 리포트</h2>
-    <p class="portal-card-subtitle">2026-01-06 업데이트</p>
-    <div class="portal-list-item">
-      <span>문장 구조 개선 안내 포함</span>
-      <span class="portal-chip">완료</span>
-    </div>
-  </div>
-</section>
+<script>
+  function generateReport(attemptId) {
+    if (confirm('이 진단에 대한 리포트를 생성하시겠습니까?')) {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> 생성중...';
+
+      fetch('<%= student_generate_report_path %>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ attempt_id: attemptId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('리포트가 생성되었습니다.');
+          location.reload();
+        } else {
+          alert('오류: ' + data.message);
+          btn.disabled = false;
+          btn.innerHTML = '리포트 생성';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('리포트 생성에 실패했습니다.');
+        btn.disabled = false;
+        btn.innerHTML = '리포트 생성';
+      });
+    }
+  }
+
+  function updateReportStatus(attemptId, newStatus) {
+    const statusName = newStatus === 'generated' ? '생성 완료' : '발행';
+    if (confirm(`리포트를 ${statusName} 상태로 변경하시겠습니까?`)) {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> 처리중...';
+
+      fetch('<%= student_update_report_status_path %>', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+          attempt_id: attemptId,
+          status: newStatus
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert('오류: ' + data.message);
+          btn.disabled = false;
+          btn.innerHTML = newStatus === 'generated' ? '생성 완료' : '발행하기';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('상태 변경에 실패했습니다.');
+        btn.disabled = false;
+        btn.innerHTML = newStatus === 'generated' ? '생성 완료' : '발행하기';
+      });
+    }
+  }
+
+  function downloadReport(attemptId) {
+    alert('PDF 다운로드 기능은 추후 추가될 예정입니다.');
+  }
+</script>
+
+<% content_for :portal_actions do %>
+  <a class="portal-button" href="<%= student_diagnostics_path %>">새로운 진단</a>
+<% end %>

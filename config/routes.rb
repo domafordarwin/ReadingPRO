@@ -32,8 +32,12 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
     get "diagnostics", to: "dashboard#diagnostics"
     get "reports", to: "dashboard#reports"
+    get "reports/:attempt_id", to: "dashboard#show_report", as: "show_report"
+    get "attempts/:attempt_id", to: "dashboard#show_attempt", as: "show_attempt"
     get "about", to: "dashboard#about"
     get "profile", to: "dashboard#profile"
+    post "generate_report", to: "dashboard#generate_report"
+    patch "update_report_status", to: "dashboard#update_report_status"
   end
 
   namespace :parent do
@@ -86,4 +90,6 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "welcome#index"
+
+  match "*path", to: "errors#not_found", via: :all
 end

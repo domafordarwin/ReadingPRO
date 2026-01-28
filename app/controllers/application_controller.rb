@@ -7,6 +7,10 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_role, :current_user
 
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+  rescue_from ActionController::RoutingError, with: :render_not_found
+  rescue_from AbstractController::ActionNotFound, with: :render_not_found
+
   private
 
   def current_user
@@ -30,5 +34,12 @@ class ApplicationController < ActionController::Base
 
     flash[:alert] = "접근 권한이 없습니다."
     redirect_to login_path
+  end
+
+  def render_not_found
+    respond_to do |format|
+      format.html { render "errors/not_found", status: :not_found }
+      format.any { head :not_found }
+    end
   end
 end

@@ -2059,3 +2059,81 @@ body.admin-body {
   margin: 0 0 8px;
   font-size: 14px;
 }
+
+.rp-not-found {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+  background: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 35%, #f4f6f2 100%);
+  font-family: "Gowun Dodum", "Noto Sans KR", sans-serif;
+}
+
+.rp-not-found__card {
+  width: min(520px, 94vw);
+  background: #ffffff;
+  border: 1px solid var(--landing-border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+}
+
+.rp-not-found__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.rp-not-found__title {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-family: "Gowun Batang", "Noto Serif KR", serif;
+  color: var(--landing-ink);
+}
+
+.rp-not-found__description {
+  margin: 0 0 22px;
+  color: var(--landing-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.rp-not-found__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rp-not-found__button {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.rp-not-found__button--primary {
+  background: var(--landing-accent);
+  color: #ffffff;
+}
+
+.rp-not-found__button--secondary {
+  background: #ffffff;
+  color: var(--landing-accent);
+  border-color: var(--landing-accent);
+}
