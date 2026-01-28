@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class User < ApplicationRecord
+  has_secure_password
+
   ROLES = %w[admin teacher parent student].freeze
 
   has_many :guardian_students, foreign_key: :guardian_user_id, dependent: :destroy, inverse_of: :guardian_user

@@ -1,4 +1,5 @@
 class SessionsController < ApplicationController
+  # Demo accounts for testing (username-based)
   TEST_ACCOUNTS = {
     "student01" => { role: "student", label: "학생" },
     "parent01" => { role: "parent", label: "학부모" },
@@ -14,18 +15,30 @@ class SessionsController < ApplicationController
   end
 
   def create
-    username = params[:username].to_s.strip
+    login_id = params[:username].to_s.strip
     password = params[:password].to_s
-    account = TEST_ACCOUNTS[username]
 
+    # Try database authentication first (email-based)
+    user = User.find_by(email: login_id)
+    if user&.authenticate(password)
+      session[:user_id] = user.id
+      session[:role] = user.role
+      session[:username] = user.email
+      redirect_to role_redirect_path(user.role)
+      return
+    end
+
+    # Fallback to demo test accounts (username-based)
+    account = TEST_ACCOUNTS[login_id]
     if account && password == TEST_PASSWORD
       session[:role] = account[:role]
-      session[:username] = username
+      session[:username] = login_id
       redirect_to role_redirect_path(account[:role])
-    else
-      flash.now[:alert] = "사용자명 또는 비밀번호가 올바르지 않습니다."
-      render :new, status: :unprocessable_entity
+      return
     end
+
+    flash.now[:alert] = "이메일 또는 비밀번호가 올바르지 않습니다."
+    render :new, status: :unprocessable_entity
   end
 
   def destroy
