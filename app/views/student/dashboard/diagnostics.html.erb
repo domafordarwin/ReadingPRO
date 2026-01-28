@@ -1,0 +1,54 @@
+<% content_for :portal_title do %>
+  진단 현황
+<% end %>
+<% content_for :portal_subtitle do %>
+  진행 중인 진단과 예정된 일정을 확인하세요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "student/shared/nav", current: :diagnostics %>
+<% end %>
+
+<section class="portal-grid">
+  <div class="portal-stat">
+    <div class="portal-stat-label">진행 중</div>
+    <div class="portal-stat-value">1건</div>
+  </div>
+  <div class="portal-stat">
+    <div class="portal-stat-label">예정</div>
+    <div class="portal-stat-value">2건</div>
+  </div>
+  <div class="portal-stat">
+    <div class="portal-stat-label">완료</div>
+    <div class="portal-stat-value">6건</div>
+  </div>
+</section>
+
+<section class="portal-card" style="margin-top: 18px;">
+  <h2 class="portal-card-title">진단 일정</h2>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>진단명</th>
+        <th>상태</th>
+        <th>기간</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>독서력 종합 진단</td>
+        <td><span class="portal-chip">진행 중</span></td>
+        <td>2026-02-02 ~ 2026-02-05</td>
+      </tr>
+      <tr>
+        <td>읽기 성향 진단</td>
+        <td><span class="portal-chip">예정</span></td>
+        <td>2026-02-10 ~ 2026-02-12</td>
+      </tr>
+      <tr>
+        <td>감상문 피드백 진단</td>
+        <td><span class="portal-chip">예정</span></td>
+        <td>2026-02-17 ~ 2026-02-20</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

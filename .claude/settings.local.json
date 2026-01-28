@@ -3,7 +3,25 @@
     "allow": [
       "Bash(git -C \"c:\\\\WorkSpace\\\\Project\\\\ReadingPro_Railway\" log --oneline -15)",
       "Bash(git -C \"c:\\\\WorkSpace\\\\Project\\\\ReadingPro_Railway\" show c35f1de --stat)",
-      "Bash(rails credentials:show:*)"
+      "Bash(rails credentials:show:*)",
+      "Bash(rails runner:*)",
+      "Bash(grep:*)",
+      "Bash(xargs ls:*)",
+      "Bash(timeout /t 3)",
+      "Bash(bin/rails server:*)",
+      "Bash(bin/rails db:prepare:*)",
+      "Bash(sc query:*)",
+      "Bash(tasklist:*)",
+      "Bash(ls:*)",
+      "Bash(bundle install:*)",
+      "Bash(taskkill:*)",
+      "Bash(bundle exec ruby:*)",
+      "Bash(bundle exec rails runner:*)",
+      "Bash(bin/rails db:migrate:*)",
+      "Bash(bin/rails db:migrate:status:*)",
+      "Bash(bin/rails runner:*)",
+      "Bash(bin/rails db:seed:*)",
+      "Bash(bundle exec rails:*)"
     ]
   }
 }

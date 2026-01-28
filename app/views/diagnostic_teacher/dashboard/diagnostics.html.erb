@@ -1,0 +1,34 @@
+<% content_for :portal_title do %>
+  진단 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  진단 진행 상태와 배정 현황을 확인하세요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "diagnostic_teacher/shared/nav", current: :diagnostics %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">진단 진행 현황</h2>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>진단명</th>
+        <th>대상</th>
+        <th>완료율</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>독서력 종합 진단</td>
+        <td>2학년 전체</td>
+        <td>76%</td>
+      </tr>
+      <tr>
+        <td>읽기 성향 진단</td>
+        <td>1학년 전체</td>
+        <td>42%</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

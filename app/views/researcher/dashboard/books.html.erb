@@ -1,0 +1,34 @@
+<% content_for :portal_title do %>
+  도서 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  도서 등록 현황을 확인하고 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :books %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">도서 목록</h2>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>도서명</th>
+        <th>저자</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>시간을 달리는 소녀</td>
+        <td>츠츠이 야스타카</td>
+        <td>등록됨</td>
+      </tr>
+      <tr>
+        <td>어린 왕자</td>
+        <td>생텍쥐페리</td>
+        <td>검토중</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

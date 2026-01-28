@@ -1,0 +1,49 @@
+<% content_for :portal_title do %>
+  진단 결과 리포트
+<% end %>
+<% content_for :portal_subtitle do %>
+  학년/학급별 결과를 비교합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "school_admin/shared/nav", current: :reports %>
+<% end %>
+<% content_for :portal_actions do %>
+  <a class="portal-button" href="#">엑셀 다운로드</a>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">요약 리포트</h2>
+  <div class="portal-cta" style="margin-bottom: 12px;">
+    <%= link_to "보고서 양식 보기", school_admin_report_template_path, class: "portal-button secondary" %>
+  </div>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>학년</th>
+        <th>평균 점수</th>
+        <th>취약 영역</th>
+        <th>완료율</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1학년</td>
+        <td>68점</td>
+        <td>의사소통</td>
+        <td>88%</td>
+      </tr>
+      <tr>
+        <td>2학년</td>
+        <td>72점</td>
+        <td>심미적 감수성</td>
+        <td>82%</td>
+      </tr>
+      <tr>
+        <td>3학년</td>
+        <td>70점</td>
+        <td>이해력</td>
+        <td>79%</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

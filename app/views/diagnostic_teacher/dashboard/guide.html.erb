@@ -1,0 +1,27 @@
+<% content_for :portal_title do %>
+  독서 발문 가이드
+<% end %>
+<% content_for :portal_subtitle do %>
+  질문 생성과 토론 진행을 돕는 가이드입니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "diagnostic_teacher/shared/nav", current: :guide %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">발문 가이드</h2>
+  <div class="portal-list">
+    <div class="portal-list-item">
+      <span>내용 이해 확인: “핵심 사건을 요약해보세요.”</span>
+      <span class="portal-chip">이해</span>
+    </div>
+    <div class="portal-list-item">
+      <span>인물 분석: “주인공의 선택에 동의하나요?”</span>
+      <span class="portal-chip">분석</span>
+    </div>
+    <div class="portal-list-item">
+      <span>감상 확장: “이 장면이 현재 생활과 어떤 연결이 있나요?”</span>
+      <span class="portal-chip">확장</span>
+    </div>
+  </div>
+</section>

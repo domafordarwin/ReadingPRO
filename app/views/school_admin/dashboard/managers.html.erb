@@ -1,0 +1,37 @@
+<% content_for :portal_title do %>
+  담당자 정보 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  학교 담당자 및 연락처를 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "school_admin/shared/nav", current: :managers %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">담당자 목록</h2>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>이름</th>
+        <th>역할</th>
+        <th>연락처</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>최은정</td>
+        <td>학교 관리자</td>
+        <td>010-2222-3344</td>
+        <td>활성</td>
+      </tr>
+      <tr>
+        <td>박성민</td>
+        <td>담당 교사</td>
+        <td>010-3333-4455</td>
+        <td>활성</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

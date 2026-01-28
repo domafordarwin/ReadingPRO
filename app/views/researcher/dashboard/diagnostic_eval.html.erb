@@ -1,0 +1,23 @@
+<% content_for :portal_title do %>
+  진단 평가
+<% end %>
+<% content_for :portal_subtitle do %>
+  진단 세트별 평가 기준을 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :diagnostic_eval %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">평가 세트</h2>
+  <div class="portal-list">
+    <div class="portal-list-item">
+      <span>초등 저학년 진단 세트</span>
+      <span class="portal-chip">구성중</span>
+    </div>
+    <div class="portal-list-item">
+      <span>중등 진단 세트</span>
+      <span class="portal-chip">확정</span>
+    </div>
+  </div>
+</section>

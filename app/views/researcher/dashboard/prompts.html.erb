@@ -1,0 +1,23 @@
+<% content_for :portal_title do %>
+  프롬프트 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  문항 생성용 프롬프트를 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :prompts %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">프롬프트 목록</h2>
+  <div class="portal-list">
+    <div class="portal-list-item">
+      <span>비문학 핵심 질문 생성 프롬프트</span>
+      <span class="portal-chip">사용중</span>
+    </div>
+    <div class="portal-list-item">
+      <span>문학 감상문 피드백 프롬프트</span>
+      <span class="portal-chip">검토중</span>
+    </div>
+  </div>
+</section>

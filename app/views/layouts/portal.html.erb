@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "ReadingPRO Portal" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  </head>
+  <body class="portal-body">
+    <div class="portal-layout">
+      <aside class="portal-sidebar">
+        <div class="portal-brand">
+          <div class="landing-logo portal-logo">
+            <div class="landing-logo-main">
+              <svg class="landing-logo-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3.5 6.5c4-2 7-.5 8.5.5v11.5c-1.5-1-4.5-2.5-8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                <path d="M20.5 6.5c-4-2-7-.5-8.5.5v11.5c1.5-1 4.5-2.5 8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                <path d="M12 7v11.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+              </svg>
+              <span class="landing-logo-text">ReadingPRO</span>
+            </div>
+            <div class="landing-logo-subtitle">전국독서새물결독서 모임</div>
+          </div>
+        </div>
+        <nav class="portal-nav">
+          <%= yield :portal_nav %>
+        </nav>
+      </aside>
+      <main class="portal-main">
+        <% if content_for?(:portal_header) %>
+          <%= yield :portal_header %>
+        <% else %>
+          <header class="portal-header">
+            <div>
+              <h1 class="portal-title"><%= content_for?(:portal_title) ? yield(:portal_title) : "대시보드" %></h1>
+              <% if content_for?(:portal_subtitle) %>
+                <p class="portal-subtitle"><%= yield(:portal_subtitle) %></p>
+              <% end %>
+            </div>
+            <div class="portal-actions">
+              <%= yield :portal_actions %>
+              <% if current_role.present? %>
+                <%= button_to "로그아웃", logout_path, method: :delete, class: "portal-button secondary" %>
+              <% end %>
+            </div>
+          </header>
+        <% end %>
+        <% if flash[:notice].present? %>
+          <div class="portal-flash portal-flash-notice"><%= flash[:notice] %></div>
+        <% end %>
+        <% if flash[:alert].present? %>
+          <div class="portal-flash portal-flash-alert"><%= flash[:alert] %></div>
+        <% end %>
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>
