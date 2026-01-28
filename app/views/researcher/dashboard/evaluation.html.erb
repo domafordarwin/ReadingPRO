@@ -1,0 +1,27 @@
+<% content_for :portal_title do %>
+  평가 영역
+<% end %>
+<% content_for :portal_subtitle do %>
+  평가 영역별 문항 구성을 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :evaluation %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">평가 영역 구성</h2>
+  <div class="portal-list">
+    <div class="portal-list-item">
+      <span>이해력 영역: 35문항</span>
+      <span class="portal-chip">활성</span>
+    </div>
+    <div class="portal-list-item">
+      <span>의사소통 능력 영역: 28문항</span>
+      <span class="portal-chip">활성</span>
+    </div>
+    <div class="portal-list-item">
+      <span>심미적 감수성 영역: 22문항</span>
+      <span class="portal-chip">검토중</span>
+    </div>
+  </div>
+</section>

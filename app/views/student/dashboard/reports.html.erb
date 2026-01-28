@@ -1,0 +1,39 @@
+<% content_for :portal_title do %>
+  진단 결과 리포트
+<% end %>
+<% content_for :portal_subtitle do %>
+  최근 리포트를 확인하고 PDF로 내려받을 수 있어요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "student/shared/nav", current: :reports %>
+<% end %>
+<% content_for :portal_actions do %>
+  <a class="portal-button" href="#">리포트 다운로드</a>
+<% end %>
+
+<section class="portal-grid">
+  <div class="portal-card">
+    <h2 class="portal-card-title">독서력 종합 리포트</h2>
+    <p class="portal-card-subtitle">2026-01-20 업데이트</p>
+    <div class="portal-list-item">
+      <span>핵심 지표 3가지 개선</span>
+      <span class="portal-chip">완료</span>
+    </div>
+  </div>
+  <div class="portal-card">
+    <h2 class="portal-card-title">읽기 성향 리포트</h2>
+    <p class="portal-card-subtitle">2026-01-13 업데이트</p>
+    <div class="portal-list-item">
+      <span>성향 유형: 탐험형</span>
+      <span class="portal-chip">완료</span>
+    </div>
+  </div>
+  <div class="portal-card">
+    <h2 class="portal-card-title">감상문 피드백 리포트</h2>
+    <p class="portal-card-subtitle">2026-01-06 업데이트</p>
+    <div class="portal-list-item">
+      <span>문장 구조 개선 안내 포함</span>
+      <span class="portal-chip">완료</span>
+    </div>
+  </div>
+</section>

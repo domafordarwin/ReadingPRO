@@ -1,12 +1,16 @@
 class Item < ApplicationRecord
   belongs_to :stimulus, class_name: "ReadingStimulus", optional: true, inverse_of: :items
-  has_many :item_sample_answers
-  has_one :rubric
-  has_many :item_choices
+  belongs_to :evaluation_indicator, optional: true
+  belongs_to :sub_indicator, optional: true
+
+  has_many :item_sample_answers, dependent: :destroy
+  has_one :rubric, dependent: :destroy
+  has_many :item_choices, dependent: :destroy
   has_many :choice_scores, through: :item_choices
-  has_many :form_items
+  has_many :form_items, dependent: :destroy
   has_many :forms, through: :form_items
-  has_many :responses
+  has_many :attempt_items, dependent: :destroy
+  has_many :responses, dependent: :destroy
 
   enum :item_type, { mcq: "mcq", constructed: "constructed" }
   enum :status, { draft: "draft", active: "active", retired: "retired" }

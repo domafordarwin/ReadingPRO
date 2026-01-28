@@ -1,0 +1,35 @@
+<% content_for :portal_title do %>
+  상담 신청하기
+<% end %>
+<% content_for :portal_subtitle do %>
+  학습 상담 또는 진단 해석 상담을 신청할 수 있습니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "parent/shared/nav", current: :consult %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">상담 신청</h2>
+  <form class="portal-form">
+    <label>
+      상담 유형
+      <select>
+        <option selected>진단 결과 상담</option>
+        <option>독서 지도 상담</option>
+        <option>학습 습관 상담</option>
+      </select>
+    </label>
+    <label>
+      희망 일정
+      <input type="text" placeholder="예: 2026-02-05 오후 3시">
+    </label>
+    <label>
+      요청 사항
+      <textarea rows="4" placeholder="상담 시 궁금한 점을 적어주세요"></textarea>
+    </label>
+    <div class="portal-cta">
+      <button type="button" class="portal-button">신청하기</button>
+      <button type="button" class="portal-button secondary">취소</button>
+    </div>
+  </form>
+</section>

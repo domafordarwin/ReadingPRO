@@ -1,0 +1,151 @@
+<% content_for :page_title do %>문항 개발 대시보드<% end %>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <div class="rp-flex rp-items-center rp-justify-between">
+    <div>
+      <h1 class="rp-page-header__title">문항 개발 대시보드</h1>
+      <p class="rp-page-header__subtitle">문항 개발 현황과 검토 대기 항목을 확인하세요.</p>
+    </div>
+    <div class="rp-flex rp-gap-2">
+      <a href="/researcher/item_create" class="rp-btn rp-btn--primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        새 문항 등록
+      </a>
+      <a href="/researcher/evaluation" class="rp-btn rp-btn--secondary">
+        검토 요청
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">등록된 도서</div>
+    <div class="rp-stat__value">0</div>
+    <div class="rp-stat__trend">전체</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">등록된 지문</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);">17</div>
+    <div class="rp-stat__trend rp-stat__trend--up">+3 이번 주</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">개발된 문항</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);">85</div>
+    <div class="rp-stat__trend rp-stat__trend--up">+12 이번 주</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">검토 대기</div>
+    <div class="rp-stat__value">0</div>
+    <div class="rp-stat__trend">승인 대기</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="rp-card rp-mb-6">
+  <div class="rp-card__header">
+    <h3 class="rp-card__title">빠른 액션</h3>
+  </div>
+  <div class="rp-card__body">
+    <div class="rp-grid rp-grid--4">
+      <a href="/researcher/books" class="rp-card rp-card--clickable" style="padding: var(--rp-space-4); text-align: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2" style="margin-bottom: 8px;">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+        </svg>
+        <div style="font-weight: 600; color: var(--rp-text-title);">새 도서 등록</div>
+        <div class="rp-text-muted" style="font-size: 12px;">도서 정보 입력</div>
+      </a>
+      <a href="/researcher/passages" class="rp-card rp-card--clickable" style="padding: var(--rp-space-4); text-align: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2" style="margin-bottom: 8px;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <div style="font-weight: 600; color: var(--rp-text-title);">새 지문 등록</div>
+        <div class="rp-text-muted" style="font-size: 12px;">지문 텍스트 입력</div>
+      </a>
+      <a href="/researcher/item_create" class="rp-card rp-card--clickable" style="padding: var(--rp-space-4); text-align: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2" style="margin-bottom: 8px;">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <div style="font-weight: 600; color: var(--rp-text-title);">새 문항 개발</div>
+        <div class="rp-text-muted" style="font-size: 12px;">MCQ/서술형 문항</div>
+      </a>
+      <a href="/researcher/diagnostic_eval" class="rp-card rp-card--clickable" style="padding: var(--rp-space-4); text-align: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2" style="margin-bottom: 8px;">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <div style="font-weight: 600; color: var(--rp-text-title);">문항 검토하기</div>
+        <div class="rp-text-muted" style="font-size: 12px;">채점 기준 설정</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Items Table -->
+<div class="rp-card">
+  <div class="rp-card__header">
+    <div>
+      <h3 class="rp-card__title">최근 개발 문항</h3>
+      <p class="rp-card__subtitle">최근 등록 및 수정된 문항 목록입니다.</p>
+    </div>
+    <a href="/researcher/item_bank" class="rp-btn rp-btn--secondary rp-btn--sm">
+      전체 문항 보기
+    </a>
+  </div>
+  <div class="rp-card__body">
+    <div class="rp-table-wrapper">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>지문 코드</th>
+            <th>문항 내용</th>
+            <th>유형</th>
+            <th>수정일</th>
+            <th>상태</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ELEMLOW_STIM_S01</strong></td>
+            <td>실험을 시작하기 전 해야 할 일로 가장 적절한 것은?</td>
+            <td><span class="rp-badge rp-badge--default">MCQ</span></td>
+            <td>01/27</td>
+            <td><span class="rp-badge rp-badge--review">검토중</span></td>
+            <td>
+              <a href="#" class="rp-btn rp-btn--ghost rp-btn--sm">편집</a>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>ELEMLOW_STIM_S03</strong></td>
+            <td>주인공의 감정이 바뀐 이유는 무엇인가요?</td>
+            <td><span class="rp-badge rp-badge--primary">서술형</span></td>
+            <td>01/26</td>
+            <td><span class="rp-badge rp-badge--success">작성완료</span></td>
+            <td>
+              <a href="#" class="rp-btn rp-btn--ghost rp-btn--sm">편집</a>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>ELEMHIGH_STIM_S02</strong></td>
+            <td>글의 중심 생각을 두 문장으로 요약하시오.</td>
+            <td><span class="rp-badge rp-badge--primary">서술형</span></td>
+            <td>01/25</td>
+            <td><span class="rp-badge rp-badge--draft">작성중</span></td>
+            <td>
+              <a href="#" class="rp-btn rp-btn--primary rp-btn--sm">계속</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

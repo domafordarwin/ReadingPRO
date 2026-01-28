@@ -1,0 +1,31 @@
+<% content_for :portal_title do %>
+  진단 결과 리포트
+<% end %>
+<% content_for :portal_subtitle do %>
+  학생 진단 결과 보고서 웹 버전입니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "parent/shared/nav", current: :reports %>
+<% end %>
+<% content_for :portal_actions do %>
+  <a class="portal-button" href="#">PDF 다운로드</a>
+<% end %>
+
+<section class="portal-grid">
+  <div class="portal-card">
+    <h2 class="portal-card-title">독서력 종합 보고서</h2>
+    <p class="portal-card-subtitle">핵심 지표와 개선 포인트를 요약합니다.</p>
+    <div class="portal-list-item">
+      <span>읽기 이해력 72점</span>
+      <span class="portal-chip">상승</span>
+    </div>
+  </div>
+  <div class="portal-card">
+    <h2 class="portal-card-title">정성 평가</h2>
+    <p class="portal-card-subtitle">교사 피드백과 추천 활동을 포함합니다.</p>
+    <div class="portal-list-item">
+      <span>요약문 구성력 개선 필요</span>
+      <span class="portal-chip">피드백</span>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,5 @@
+<%= link_to "대시보드", diagnostic_teacher_dashboard_path, class: "portal-nav-link#{' is-active' if current == :dashboard}" %>
+<%= link_to "진단 관리", diagnostic_teacher_diagnostics_path, class: "portal-nav-link#{' is-active' if current == :diagnostics}" %>
+<%= link_to "피드백 관리", diagnostic_teacher_feedbacks_path, class: "portal-nav-link#{' is-active' if current == :feedbacks}" %>
+<%= link_to "보고서 생성", diagnostic_teacher_reports_path, class: "portal-nav-link#{' is-active' if current == :reports}" %>
+<%= link_to "독서 발문 가이드", diagnostic_teacher_guide_path, class: "portal-nav-link#{' is-active' if current == :guide}" %>

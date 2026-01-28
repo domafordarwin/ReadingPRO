@@ -4,7 +4,7 @@ module Admin
       classes = ["admin-nav-link"]
       if current_page?(path)
         classes << "active"
-      elsif path == admin_dashboard_path && request.path == "/admin"
+      elsif path == admin_system_path && request.path == "/admin"
         classes << "active"
       elsif request.path.start_with?(path)
         classes << "active"

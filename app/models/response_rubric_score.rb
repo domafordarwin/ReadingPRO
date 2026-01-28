@@ -1,6 +1,7 @@
 class ResponseRubricScore < ApplicationRecord
   belongs_to :response
   belongs_to :rubric_criterion
+  belongs_to :scorer, class_name: "User", foreign_key: :scored_by, optional: true
 
   validates :rubric_criterion_id, uniqueness: { scope: :response_id }
   validates :level_score,

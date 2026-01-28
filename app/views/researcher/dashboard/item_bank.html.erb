@@ -1,0 +1,43 @@
+<% content_for :portal_title do %>
+  문항 은행
+<% end %>
+<% content_for :portal_subtitle do %>
+  등록된 문항을 조회하고 필터링합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :item_bank %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">문항 리스트</h2>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th>코드</th>
+        <th>영역</th>
+        <th>난이도</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>RP-E-001</td>
+        <td>이해력</td>
+        <td>중</td>
+        <td>사용중</td>
+      </tr>
+      <tr>
+        <td>RP-C-014</td>
+        <td>의사소통</td>
+        <td>상</td>
+        <td>검토중</td>
+      </tr>
+      <tr>
+        <td>RP-A-008</td>
+        <td>심미적 감수성</td>
+        <td>하</td>
+        <td>사용중</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

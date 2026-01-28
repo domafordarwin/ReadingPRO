@@ -1,0 +1,40 @@
+<% content_for :portal_title do %>
+  자녀 정보
+<% end %>
+<% content_for :portal_subtitle do %>
+  학생을 검색하고 정보를 확인하세요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "parent/shared/nav", current: :children %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">학생 찾기</h2>
+  <form class="portal-form">
+    <label>
+      학생 이름
+      <input type="text" placeholder="이름을 입력하세요">
+    </label>
+    <label>
+      학교명
+      <input type="text" placeholder="학교명을 입력하세요">
+    </label>
+    <div class="portal-cta">
+      <button type="button" class="portal-button">검색</button>
+      <button type="button" class="portal-button secondary">초기화</button>
+    </div>
+  </form>
+</section>
+
+<section class="portal-card" style="margin-top: 18px;">
+  <h2 class="portal-card-title">등록된 학생</h2>
+  <div class="portal-list">
+    <div class="portal-list-item">
+      <div>
+        <strong>김민준</strong>
+        <div class="portal-muted">리딩중학교 2학년 · A반</div>
+      </div>
+      <span class="portal-chip">연결됨</span>
+    </div>
+  </div>
+</section>

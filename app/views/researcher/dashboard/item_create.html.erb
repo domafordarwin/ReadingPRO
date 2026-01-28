@@ -1,0 +1,35 @@
+<% content_for :portal_title do %>
+  문항 제작
+<% end %>
+<% content_for :portal_subtitle do %>
+  새 문항을 등록하거나 수정합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :item_create %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">문항 등록</h2>
+  <form class="portal-form">
+    <label>
+      문항 제목
+      <input type="text" placeholder="문항 제목을 입력하세요">
+    </label>
+    <label>
+      평가 영역
+      <select>
+        <option selected>이해력</option>
+        <option>의사소통</option>
+        <option>심미적 감수성</option>
+      </select>
+    </label>
+    <label>
+      문항 설명
+      <textarea rows="4" placeholder="문항 내용을 입력하세요"></textarea>
+    </label>
+    <div class="portal-cta">
+      <button type="button" class="portal-button">저장</button>
+      <button type="button" class="portal-button secondary">임시 저장</button>
+    </div>
+  </form>
+</section>

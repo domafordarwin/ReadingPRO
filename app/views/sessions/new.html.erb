@@ -1,0 +1,63 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>ReadingPRO 로그인</h1>
+      <p>문항은행·채점 시스템</p>
+    </div>
+
+    <% if flash[:alert].present? %>
+      <div class="login-alert"><%= flash[:alert] %></div>
+    <% end %>
+    <% if flash[:notice].present? %>
+      <div class="login-notice"><%= flash[:notice] %></div>
+    <% end %>
+
+    <%= form_with url: login_path, method: :post, class: "login-form", local: true do %>
+      <label class="login-label" for="username">사용자명</label>
+      <input id="username" name="username" type="text" autocomplete="username" class="login-input" placeholder="사용자명을 입력하세요">
+
+      <label class="login-label" for="password">비밀번호</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" class="login-input" placeholder="비밀번호를 입력하세요">
+
+      <button type="submit" class="login-button">로그인</button>
+    <% end %>
+
+    <div class="login-meta">
+      계정이 없으신가요? <a href="#" class="login-link">회원가입</a>
+    </div>
+
+    <% if Rails.env.development? || Rails.env.test? %>
+      <div class="login-divider"></div>
+
+      <div class="login-test-title">테스트용 계정 (로컬)</div>
+      <div class="login-test-box">
+        <div class="login-test-grid">
+          <button type="button" class="login-test-button" data-username="student01">학생</button>
+          <button type="button" class="login-test-button" data-username="parent01">학부모</button>
+          <button type="button" class="login-test-button" data-username="school01">학교 교사</button>
+          <button type="button" class="login-test-button" data-username="diagnostic01">진단 교사</button>
+          <button type="button" class="login-test-button" data-username="research01">연구원</button>
+          <button type="button" class="login-test-button" data-username="admin01">관리자</button>
+        </div>
+        <div class="login-test-hint">비밀번호: <strong>ReadingPro$12#</strong></div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const buttons = document.querySelectorAll(".login-test-button")
+    const username = document.getElementById("username")
+    const password = document.getElementById("password")
+    if (!buttons.length || !username || !password) return
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        username.value = button.dataset.username || ""
+        password.value = "ReadingPro$12#"
+        username.focus()
+      })
+    })
+  })()
+</script>
