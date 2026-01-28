@@ -10,7 +10,7 @@
           </svg>
           <span class="landing-logo-text">ReadingPRO</span>
         </div>
-        <div class="landing-logo-subtitle">전국독서새물결독서 모임</div>
+        <div class="landing-logo-subtitle">(사)전국독서새물결모임</div>
       </div>
       <div class="landing-header-actions">
         <div class="landing-toggle" role="group" aria-label="Landing variant toggle">
@@ -28,6 +28,36 @@
       </div>
     </div>
   </header>
+
+  <!-- 알림 배너 -->
+  <% if @announcements.any? %>
+    <div class="landing-announcements">
+      <div class="landing-container">
+        <% @announcements.each do |announcement| %>
+          <div class="landing-announcement-item">
+            <svg class="landing-announcement-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 2h4"></path>
+              <path d="M12 14v-4"></path>
+              <path d="M4 13a8 8 0 0 1 7.5-8.5"></path>
+              <path d="M20 13a8 8 0 0 0-7.5-8.5"></path>
+              <circle cx="12" cy="13" r="8"></circle>
+              <circle cx="12" cy="18" r="1"></circle>
+            </svg>
+            <span class="landing-announcement-text"><%= announcement.content %></span>
+            <% if announcement.link_url.present? %>
+              <a href="<%= announcement.link_url %>" class="landing-announcement-link" target="_blank">
+                <%= announcement.link_text || "자세히 보기" %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </a>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 
   <main>
     <section class="landing-hero landing-variant" data-variant="v1">
@@ -260,6 +290,76 @@
     © 2026 ReadingPRO. All rights reserved.
   </footer>
 </div>
+
+<style>
+  /* 알림 배너 스타일 */
+  .landing-announcements {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 12px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .landing-announcement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: white;
+  }
+
+  .landing-announcement-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .landing-announcement-icon {
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
+
+  .landing-announcement-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .landing-announcement-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .landing-announcement-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(2px);
+  }
+
+  @media (max-width: 768px) {
+    .landing-announcement-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .landing-announcement-link {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
 
 <script>
   (function () {

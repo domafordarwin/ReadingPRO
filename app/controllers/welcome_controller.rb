@@ -1,6 +1,7 @@
 class WelcomeController < ApplicationController
   def index
     @db_ok, @db_message = db_status
+    @announcements = Announcement.active.ordered.limit(3)
   end
 
   private

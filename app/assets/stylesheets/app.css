@@ -94,11 +94,15 @@ body.admin-body {
   color: #2563eb;
 }
 
+.landing-logo-text {
+  color: #2563eb;
+}
+
 .landing-logo-subtitle {
   font-size: 13px;
   line-height: 1.2;
   font-weight: 500;
-  color: var(--landing-muted);
+  color: #334155;
   letter-spacing: -0.02em;
   text-align: center;
   width: 100%;

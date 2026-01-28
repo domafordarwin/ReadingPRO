@@ -16,8 +16,15 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "system#show"
     get "system", to: "system#show"
-    resources :users, only: %i[index]
+    resources :users, only: %i[index] do
+      patch :update_role, on: :member
+      patch :reset_password, on: :member
+    end
     resources :roles, only: %i[index]
+    resources :notices
+    resources :announcements do
+      patch :toggle_active, on: :member
+    end
   end
 
   namespace :student do

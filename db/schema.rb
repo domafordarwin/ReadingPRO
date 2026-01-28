@@ -14,6 +14,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "announcements", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.integer "display_order", default: 0, null: false
+    t.string "link_text"
+    t.string "link_url"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_announcements_on_active"
+    t.index ["display_order"], name: "index_announcements_on_display_order"
+  end
+
   create_table "attempt_items", force: :cascade do |t|
     t.bigint "attempt_id", null: false
     t.datetime "created_at", precision: nil, default: -> { "CURRENT_TIMESTAMP" }, null: false
@@ -182,6 +194,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
     t.index ["attempt_id", "evaluation_indicator_id"], name: "idx_literacy_achievements_attempt_indicator", unique: true
     t.index ["attempt_id"], name: "index_literacy_achievements_on_attempt_id"
     t.index ["evaluation_indicator_id"], name: "index_literacy_achievements_on_evaluation_indicator_id"
+  end
+
+  create_table "notices", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.datetime "expires_at"
+    t.boolean "important", default: false, null: false
+    t.datetime "published_at", null: false
+    t.text "target_roles", default: [], null: false, array: true
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_notices_on_created_by_id"
+    t.index ["expires_at"], name: "index_notices_on_expires_at"
+    t.index ["important"], name: "index_notices_on_important"
+    t.index ["published_at"], name: "index_notices_on_published_at"
   end
 
   create_table "reader_tendencies", force: :cascade do |t|
@@ -542,6 +570,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
   add_foreign_key "items", "sub_indicators"
   add_foreign_key "literacy_achievements", "attempts"
   add_foreign_key "literacy_achievements", "evaluation_indicators"
+  add_foreign_key "notices", "users", column: "created_by_id"
   add_foreign_key "reader_tendencies", "attempts"
   add_foreign_key "reader_tendencies", "reader_types"
   add_foreign_key "reports", "attempts", on_delete: :cascade
