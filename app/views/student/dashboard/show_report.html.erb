@@ -1,392 +1,900 @@
 <% content_for :portal_title do %>
-  진단 결과 리포트 상세
+  문해력 진단 및 독자성향검사 결과 보고서
 <% end %>
 
 <% content_for :portal_subtitle do %>
-  <%= @student.name %> 학생의 상세 리포트입니다.
-<% end %>
-
-<% content_for :portal_nav do %>
-  <%= render "student/shared/nav", current: :reports %>
+  <%= @student.name %> 학생의 상세 진단 결과
 <% end %>
 
 <style>
+  :root {
+    --primary: #667eea;
+    --primary-dark: #5568d3;
+    --text-dark: #2D2D2D;
+    --text-medium: #555;
+    --text-light: #888;
+    --border: #E0E0E0;
+    --bg-light: #FAFAFA;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+    color: var(--text-dark);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ========== 메인 컨테이너 ========== */
+  .report-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* ========== 큰 헤더 섹션 ========== */
   .report-header {
-    padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    padding: 80px 20px;
+    text-align: center;
+    margin-bottom: 60px;
+    border-radius: 12px;
   }
 
   .report-header h1 {
-    margin: 0 0 8px 0;
-    font-size: 28px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: -0.5px;
   }
 
   .report-header p {
-    margin: 4px 0;
-    font-size: 14px;
-    opacity: 0.9;
+    font-size: 16px;
+    opacity: 0.95;
   }
 
-  .status-indicator {
-    display: inline-block;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 12px;
-  }
-
-  .report-section {
+  /* ========== 상단 탭 네비게이션 ========== */
+  .report-nav {
+    position: sticky;
+    top: 64px;
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border-bottom: 2px solid var(--primary);
+    z-index: 50;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   }
 
-  .report-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #667eea;
+  .nav-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 40px;
   }
 
-  .insight-box {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 16px;
-    margin-bottom: 12px;
-    border-radius: 4px;
-  }
-
-  .insight-label {
-    font-size: 12px;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .insight-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .achievement-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .achievement-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .achievement-card h3 {
-    margin: 0 0 8px 0;
+  .nav-item {
+    padding: 14px 0;
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
     font-size: 14px;
-    opacity: 0.9;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
   }
 
-  .achievement-card .score {
-    font-size: 32px;
+  .nav-item:hover,
+  .nav-item.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  /* ========== 섹션 공통 스타일 ========== */
+  .section {
+    margin-bottom: 60px;
+    scroll-margin-top: 120px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    margin-bottom: 40px;
+  }
+
+  .section-number {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
     font-weight: 700;
-    margin: 8px 0;
   }
 
-  .achievement-card p {
-    margin: 0;
-    font-size: 12px;
-    opacity: 0.8;
-  }
-
-  .direction-list {
-    list-style: none;
-    padding: 0;
-  }
-
-  .direction-item {
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    margin-bottom: 12px;
-    border-left: 4px solid #667eea;
-  }
-
-  .direction-item h4 {
-    margin: 0 0 8px 0;
-    color: #333;
-    font-size: 14px;
-  }
-
-  .direction-item p {
-    margin: 0;
-    color: #666;
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  .reader-type {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 24px;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .reader-type h3 {
-    margin: 0;
-    font-size: 16px;
-    opacity: 0.9;
+  .section-title-group h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
     margin-bottom: 8px;
   }
 
-  .reader-type .type-name {
+  .section-title-group p {
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  /* ========== 섹션 01: 목차 ========== */
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .toc-item {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
+    border: 1px solid #e0e8ff;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .toc-item-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .toc-item-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .toc-item-desc {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 8px;
+  }
+
+  /* ========== 섹션 02: 개요 ========== */
+  .overview-box {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
+    border-left: 5px solid var(--primary);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .overview-box h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+
+  .overview-box p {
+    font-size: 14px;
+    color: var(--text-medium);
+    line-height: 1.8;
+  }
+
+  /* ========== 섹션 03: 독자성향 ========== */
+  .reader-type-card {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .reader-type-name {
     font-size: 32px;
     font-weight: 700;
-    margin: 12px 0;
+    margin-bottom: 16px;
   }
 
-  .reader-type p {
-    margin: 8px 0 0 0;
+  .reader-type-char {
+    font-size: 14px;
+    opacity: 0.95;
+    line-height: 1.7;
+  }
+
+  .type-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .type-feature {
+    background: white;
+    color: var(--text-dark);
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .type-feature h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .type-feature p {
     font-size: 12px;
-    opacity: 0.8;
-    line-height: 1.6;
+    color: var(--text-medium);
   }
 
+  /* ========== 섹션 04: 심층 분석 ========== */
+  .analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+
+  .analysis-table th {
+    background: var(--primary);
+    color: white;
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .analysis-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .analysis-table tbody tr:hover {
+    background: var(--bg-light);
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-badge.excellent {
+    background: #c6f6d5;
+    color: #22543d;
+  }
+
+  .status-badge.good {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .status-badge.needs-improvement {
+    background: #feebc8;
+    color: #7c2d12;
+  }
+
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-bar-fill {
+    flex: 1;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--primary);
+  }
+
+  .progress-bar-value {
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 40px;
+  }
+
+  /* ========== 섹션 05: 학생 프로필 ========== */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .profile-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    border-top: 4px solid var(--primary);
+  }
+
+  .profile-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+  }
+
+  .profile-card p {
+    font-size: 13px;
+    color: var(--text-medium);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .profile-card ul {
+    list-style: none;
+    font-size: 12px;
+    color: var(--text-medium);
+  }
+
+  .profile-card li {
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .profile-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+    font-weight: 700;
+  }
+
+  /* ========== 액션 버튼 ========== */
   .action-buttons {
     display: flex;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 40px;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
   .action-btn {
-    padding: 12px 20px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px 28px;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
     background: white;
+    color: var(--primary);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    transition: all 0.3s;
   }
 
   .action-btn:hover {
-    background: #667eea;
+    background: var(--primary);
     color: white;
-    border-color: #667eea;
   }
 
   .action-btn.primary {
-    background: #667eea;
+    background: var(--primary);
     color: white;
-    border-color: #667eea;
   }
 
   .action-btn.primary:hover {
-    background: #764ba2;
-    border-color: #764ba2;
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
   }
 
-  .back-link {
-    display: inline-block;
-    margin-bottom: 16px;
-    color: #667eea;
-    text-decoration: none;
-    font-size: 14px;
+  /* ========== 인쇄 스타일 ========== */
+  @media print {
+    .report-nav, .action-buttons {
+      display: none !important;
+    }
+    .section {
+      page-break-inside: avoid;
+    }
   }
 
-  .back-link:hover {
-    text-decoration: underline;
-  }
+  /* ========== 반응형 ========== */
+  @media (max-width: 768px) {
+    .report-header {
+      padding: 50px 20px;
+    }
 
-  .empty-message {
-    text-align: center;
-    padding: 32px 16px;
-    color: #999;
-    font-size: 14px;
+    .report-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .nav-wrapper {
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .nav-item {
+      font-size: 12px;
+      padding: 12px 0;
+    }
+
+    .section-header {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .toc-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .type-features {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .action-btn {
+      width: 100%;
+    }
   }
 </style>
 
-<a href="<%= student_reports_path %>" class="back-link">← 리포트 목록으로 돌아가기</a>
-
+<!-- 큰 헤더 섹션 -->
 <div class="report-header">
-  <h1>진단 결과 리포트</h1>
-  <p><%= @student.name %> 학생</p>
-  <p>진단일: <%= @attempt.started_at&.strftime("%Y년 %m월 %d일 %H:%M") %></p>
-  <span class="status-indicator">
-    상태: <%= translate_report_status(@report.status) %>
-  </span>
+  <h1>문해력 진단 및 독자성향검사</h1>
+  <p>독서 능력 진단 및 읽기 성향 분석 결과</p>
 </div>
 
-<% if @comprehensive_analysis %>
-  <div class="report-section">
-    <div class="report-section-title">종합 분석</div>
+<!-- 상단 탭 네비게이션 -->
+<nav class="report-nav">
+  <div class="nav-wrapper">
+    <a href="#toc" class="nav-item active" onclick="updateNav(event, 'toc')">목차</a>
+    <a href="#overview" class="nav-item" onclick="updateNav(event, 'overview')">개요</a>
+    <a href="#reader-type" class="nav-item" onclick="updateNav(event, 'reader-type')">독자성향</a>
+    <a href="#analysis" class="nav-item" onclick="updateNav(event, 'analysis')">심층분석</a>
+    <a href="#profile" class="nav-item" onclick="updateNav(event, 'profile')">학생프로필</a>
+  </div>
+</nav>
 
-    <div class="insight-box">
-      <div class="insight-label">종합 평가</div>
-      <div class="insight-value">
-        <%= @comprehensive_analysis.overall_summary || "평가 중입니다." %>
+<!-- 콘텐츠 -->
+<div class="report-container">
+  <!-- 섹션 01: 목차 -->
+  <section class="section" id="toc">
+    <div class="section-header">
+      <div class="section-number">01</div>
+      <div class="section-title-group">
+        <h2>목차</h2>
+        <p>보고서 구성 안내</p>
       </div>
     </div>
 
-    <% if @comprehensive_analysis.improvement_areas.present? %>
-      <div class="insight-box">
-        <div class="insight-label">개선 영역</div>
-        <div class="insight-value">
-          <%= @comprehensive_analysis.improvement_areas %>
-        </div>
-      </div>
-    <% end %>
+    <p style="color: var(--text-medium); margin-bottom: 40px; font-size: 15px; line-height: 1.8;">
+      이 보고서는 <%= @student.name %>님의 ReadingPRO 문해력 진단 결과를 종합적으로 분석한 자료입니다.
+      독서 능력, 읽기 성향, 학습 특성 등을 5가지 섹션으로 나누어 상세히 설명하고, 앞으로의 학습 방향을 제시합니다.
+    </p>
 
-    <% if @comprehensive_analysis.comprehension_analysis.present? %>
-      <div class="insight-box">
-        <div class="insight-label">독해력 분석</div>
-        <div class="insight-value">
-          <%= @comprehensive_analysis.comprehension_analysis %>
-        </div>
+    <div class="toc-grid">
+      <div class="toc-item">
+        <div class="toc-item-number">01</div>
+        <div class="toc-item-title">목차</div>
+        <div class="toc-item-desc">보고서의 전체 구성 및 작성 목적을 안내합니다</div>
       </div>
-    <% end %>
-  </div>
-<% end %>
-
-<% if @reader_tendency %>
-  <div class="report-section">
-    <div class="report-section-title">독자 성향</div>
-
-    <div class="reader-type">
-      <h3>당신의 독자 유형</h3>
-      <div class="type-name">
-        <%= @reader_tendency.reader_type&.name || "분석중" %>
+      <div class="toc-item">
+        <div class="toc-item-number">02</div>
+        <div class="toc-item-title">개요</div>
+        <div class="toc-item-desc">문해력 진단의 의미와 중요성에 대해 설명합니다</div>
       </div>
-      <p>
-        <%= @reader_tendency.reader_type&.characteristics || "당신의 읽기 성향을 분석합니다." %>
+      <div class="toc-item">
+        <div class="toc-item-number">03</div>
+        <div class="toc-item-title">독자성향</div>
+        <div class="toc-item-desc">47가지 독자 유형 중 학생의 특성을 분석합니다</div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-item-number">04</div>
+        <div class="toc-item-title">심층분석</div>
+        <div class="toc-item-desc">문해력 영역별 성취도를 상세히 분석합니다</div>
+      </div>
+      <div class="toc-item">
+        <div class="toc-item-number">05</div>
+        <div class="toc-item-title">학생프로필</div>
+        <div class="toc-item-desc">개인 맞춤형 학습 지도 방향을 제시합니다</div>
+      </div>
+    </div>
+
+    <div style="background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%); border-left: 5px solid var(--primary); border-radius: 8px; padding: 24px; margin-top: 40px;">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px;">📊 이 보고서의 특징</h3>
+      <p style="font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+        ReadingPRO 진단은 단순한 성적 평가를 넘어 학생의 독서 습관, 읽기 속도, 이해력, 선호도, 학습 스타일 등을
+        종합적으로 분석합니다. 이를 통해 학생의 강점을 파악하고 개선이 필요한 영역을 명확히 하여,
+        보다 효과적인 학습 전략을 수립할 수 있습니다.
       </p>
     </div>
-  </div>
-<% end %>
+  </section>
 
-<% if @literacy_achievements.any? %>
-  <div class="report-section">
-    <div class="report-section-title">문해력 성취</div>
+  <!-- 섹션 02: 개요 -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <div class="section-number">02</div>
+      <div class="section-title-group">
+        <h2>개요</h2>
+        <p>문해력 진단 관련 설명</p>
+      </div>
+    </div>
 
-    <div class="achievement-grid">
-      <% @literacy_achievements.each do |achievement| %>
-        <div class="achievement-card">
-          <h3><%= achievement.evaluation_indicator&.name || "문해력" %></h3>
-          <div class="score"><%= "#{achievement.correct_answers}/#{achievement.total_questions}" %></div>
-          <p>정답률: <%= "#{achievement.accuracy_rate}%" || "평가 중입니다." %></p>
+    <div class="overview-box">
+      <h3>📊 ReadingPRO 문해력 진단이란?</h3>
+      <p>ReadingPRO 문해력 진단은 학생의 읽기 능력을 종합적으로 평가하는 진단 도구입니다. 단순한 읽기 속도와 이해력뿐만 아니라, 독서 습관, 읽기 선호도, 문해 능력 등을 다각적으로 분석하여 학생의 현재 수준을 파악하고 맞춤형 학습 지도를 제공합니다.</p>
+    </div>
+
+    <div class="overview-box">
+      <h3>🎯 진단의 목표</h3>
+      <p>이 진단을 통해 다음과 같은 목표를 달성합니다:</p>
+      <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+        <li>✓ 학생의 현재 문해력 수준 정확히 파악하기</li>
+        <li>✓ 강점과 약점을 명확히 구분하기</li>
+        <li>✓ 학생의 독서 성향과 학습 스타일 이해하기</li>
+        <li>✓ 개인 맞춤형 학습 방향 제시하기</li>
+        <li>✓ 장기적인 독서 습관 형성 지원하기</li>
+      </ul>
+    </div>
+
+    <div class="overview-box">
+      <h3>📌 독자성향검사의 의미</h3>
+      <p><%= @student.name %>님의 독자 성향을 파악하면 선호하는 책의 장르, 읽기 방식, 학습 스타일을 이해할 수 있습니다. 이는 효과적인 독서 지도와 개인 맞춤형 학습 계획 수립에 핵심적인 역할을 합니다.</p>
+    </div>
+
+    <div class="overview-box">
+      <h3>📈 진단 구성 요소</h3>
+      <p>이번 진단은 다음과 같은 요소들로 구성되어 있습니다:</p>
+      <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+        <li><strong>읽기 속도:</strong> 단위 시간당 읽을 수 있는 글자 수</li>
+        <li><strong>이해도:</strong> 읽은 내용의 이해와 해석 능력</li>
+        <li><strong>어휘력:</strong> 사용하고 이해할 수 있는 단어의 범위</li>
+        <li><strong>독자 성향:</strong> 선호하는 독서 유형과 학습 스타일</li>
+        <li><strong>문제해결력:</strong> 텍스트 분석 및 응용 능력</li>
+      </ul>
+    </div>
+
+    <% if @comprehensive_analysis %>
+      <div class="overview-box">
+        <h3>📖 <%= @student.name %>님의 종합 평가</h3>
+        <p><%= @comprehensive_analysis.overall_summary || "종합적인 분석을 통해 학생의 독해 능력을 평가하고 있습니다." %></p>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- 섹션 03: 독자성향 유형 -->
+  <section class="section" id="reader-type">
+    <div class="section-header">
+      <div class="section-number">03</div>
+      <div class="section-title-group">
+        <h2>독자성향</h2>
+        <p>47가지 독자 유형 분석</p>
+      </div>
+    </div>
+
+    <p style="color: var(--text-medium); margin-bottom: 30px; font-size: 15px; line-height: 1.8;">
+      모든 학생은 고유한 읽기 방식과 선호도를 가지고 있습니다. ReadingPRO는 47가지의 독자 유형 분류를 통해
+      <%= @student.name %>님이 어떤 유형의 독자인지 분석하고, 이를 바탕으로 맞춤형 읽기 지도를 제공합니다.
+    </p>
+
+    <% if @reader_tendency %>
+      <div class="reader-type-card">
+        <div class="reader-type-name"><%= @reader_tendency.reader_type&.name || "분석 중" %></div>
+        <div class="reader-type-char">
+          <%= @reader_tendency.reader_type&.characteristics || "독자 성향을 분석 중입니다." %>
+        </div>
+
+        <% if @reader_tendency.reader_type %>
+          <div class="type-features">
+            <div class="type-feature">
+              <h4>📖 주요 특징</h4>
+              <p><%= @reader_tendency.reader_type.characteristics || "읽기 성향 분석 중" %></p>
+            </div>
+            <div class="type-feature">
+              <h4>🎯 강점</h4>
+              <p>깊이 있는 이해와 사색적 읽기에 탁월합니다. 인물의 심리 변화나 사건의 인과관계를 잘 파악합니다.</p>
+            </div>
+            <div class="type-feature">
+              <h4>💡 개선 조언</h4>
+              <p>다양한 장르 경험으로 읽기 폭을 넓혀보세요. 빠른 속도로 정보를 파악하는 기술도 연습해 보시기 바랍니다.</p>
+            </div>
+            <div class="type-feature">
+              <h4>📚 추천 책 유형</h4>
+              <p>깊이 있는 문학작품, 심리 소설, 역사 소설 등이 추천됩니다.</p>
+            </div>
+          </div>
+
+          <div class="overview-box" style="margin-top: 30px;">
+            <h3>🔍 이 유형 독자의 특징</h3>
+            <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+              <li>텍스트의 섬세한 표현과 숨겨진 의미를 찾아내는 능력</li>
+              <li>등장인물의 동기와 감정 변화를 깊이 있게 이해</li>
+              <li>독서를 통한 깊이 있는 사색과 성찰</li>
+              <li>복잡한 플롯과 철학적 주제에 대한 관심</li>
+              <li>천천히 정독하는 읽기 방식을 선호</li>
+            </ul>
+          </div>
+
+          <div class="overview-box" style="margin-top: 30px;">
+            <h3>✨ 효과적인 학습 전략</h3>
+            <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+              <li>읽기 속도 향상을 위한 다양한 문체의 책 읽기</li>
+              <li>주제별 비교 읽기를 통한 비판적 사고력 발전</li>
+              <li>단문과 장문을 균형 있게 읽기</li>
+              <li>시간 제약이 있는 환경에서의 읽기 연습</li>
+              <li>정보 검색 및 속독 기술의 개발</li>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- 섹션 04: 심층 분석 -->
+  <section class="section" id="analysis">
+    <div class="section-header">
+      <div class="section-number">04</div>
+      <div class="section-title-group">
+        <h2>심층분석</h2>
+        <p>선택/서술형 문항 분석</p>
+      </div>
+    </div>
+
+    <p style="color: var(--text-medium); margin-bottom: 30px; font-size: 15px; line-height: 1.8;">
+      이 섹션에서는 <%= @student.name %>님이 푼 각 문항의 결과를 영역별로 분석합니다.
+      정답률, 문제 유형, 난이도 등을 종합적으로 평가하여 학습 강점과 개선 영역을 파악할 수 있습니다.
+    </p>
+
+    <% if @literacy_achievements.any? %>
+      <table class="analysis-table">
+        <thead>
+          <tr>
+            <th>평가 영역</th>
+            <th>문제수</th>
+            <th>정답</th>
+            <th>정답률</th>
+            <th>수준</th>
+            <th>진도</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @literacy_achievements.each do |achievement| %>
+            <tr>
+              <td><strong><%= achievement.evaluation_indicator&.name || "영역" %></strong></td>
+              <td><%= achievement.total_questions %></td>
+              <td><%= achievement.correct_answers %></td>
+              <td><strong><%= achievement.accuracy_rate %>%</strong></td>
+              <td>
+                <% rate = achievement.accuracy_rate.to_i %>
+                <% if rate >= 80 %>
+                  <span class="status-badge excellent">우수</span>
+                <% elsif rate >= 60 %>
+                  <span class="status-badge good">양호</span>
+                <% else %>
+                  <span class="status-badge needs-improvement">개선 필요</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill">
+                    <div class="progress-bar-inner" style="width: <%= achievement.accuracy_rate %>%"></div>
+                  </div>
+                  <div class="progress-bar-value"><%= achievement.accuracy_rate %>%</div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 40px;">
+        <div class="overview-box">
+          <h3>💡 분석 해석 방법</h3>
+          <p style="font-size: 13px; line-height: 1.7;">
+            <strong>정답률 80% 이상:</strong> 우수 - 매우 뛰어난 성취<br>
+            <strong>정답률 60-79%:</strong> 양호 - 기대 수준의 성취<br>
+            <strong>정답률 60% 미만:</strong> 개선 필요 - 보강 학습 권장
+          </p>
+        </div>
+        <div class="overview-box">
+          <h3>🎯 진도 표시기 의미</h3>
+          <p style="font-size: 13px; line-height: 1.7;">
+            막대 그래프는 해당 영역의 정답률을 시각적으로 나타냅니다. 높을수록 해당 영역에서 더 우수한 성적을 거두었음을 의미합니다.
+          </p>
+        </div>
+      </div>
+
+      <% if @comprehensive_analysis && @comprehensive_analysis.comprehension_analysis %>
+        <div class="overview-box" style="margin-top: 40px;">
+          <h3>📊 종합 분석 결과</h3>
+          <p><%= @comprehensive_analysis.comprehension_analysis %></p>
         </div>
       <% end %>
-    </div>
-  </div>
-<% end %>
 
-<% if @guidance_directions.any? %>
-  <div class="report-section">
-    <div class="report-section-title">학습 지도 방향</div>
-
-    <ul class="direction-list">
-      <% @guidance_directions.each do |direction| %>
-        <li class="direction-item">
-          <h4><%= direction.evaluation_indicator&.name || "학습 영역" %></h4>
-          <p><%= direction.content || "지도 내용을 준비 중입니다." %></p>
-        </li>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
-
-<% unless @comprehensive_analysis || @reader_tendency || @literacy_achievements.any? || @guidance_directions.any? %>
-  <div class="report-section">
-    <div class="empty-message">
-      <p>📊 분석 데이터가 아직 준비 중입니다.</p>
-      <p>리포트는 진단이 완료된 후 생성됩니다.</p>
-    </div>
-  </div>
-<% end %>
-
-<div class="report-section">
-  <div class="action-buttons">
-    <% if @report.draft? %>
-      <button class="action-btn primary" onclick="updateReportStatus(<%= @attempt.id %>, 'generated')">
-        생성 완료
-      </button>
-    <% elsif @report.generated? %>
-      <button class="action-btn primary" onclick="updateReportStatus(<%= @attempt.id %>, 'published')">
-        발행하기
-      </button>
-    <% elsif @report.published? %>
-      <button class="action-btn" onclick="downloadPDF()">
-        PDF 다운로드
-      </button>
+      <div class="overview-box" style="margin-top: 40px;">
+        <h3>📌 주요 인사이트</h3>
+        <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+          <% if @literacy_achievements.max_by { |a| a.accuracy_rate.to_i } %>
+            <li><strong>가장 강한 영역:</strong> <%= @literacy_achievements.max_by { |a| a.accuracy_rate.to_i }.evaluation_indicator&.name %> (정답률: <%= @literacy_achievements.max_by { |a| a.accuracy_rate.to_i }.accuracy_rate %>%)</li>
+          <% end %>
+          <% if @literacy_achievements.min_by { |a| a.accuracy_rate.to_i } %>
+            <li><strong>개선이 필요한 영역:</strong> <%= @literacy_achievements.min_by { |a| a.accuracy_rate.to_i }.evaluation_indicator&.name %> (정답률: <%= @literacy_achievements.min_by { |a| a.accuracy_rate.to_i }.accuracy_rate %>%)</li>
+          <% end %>
+          <li><strong>종합 성과:</strong> <%= ((@literacy_achievements.sum { |a| a.accuracy_rate.to_i } / @literacy_achievements.length).round)  %>% 평균 정답률</li>
+        </ul>
+      </div>
+    <% else %>
+      <p style="text-align: center; color: var(--text-light); padding: 40px 20px;">
+        📋 상세 분석 데이터를 준비 중입니다.
+      </p>
     <% end %>
+  </section>
 
-    <button class="action-btn" onclick="printReport()">
-      인쇄하기
-    </button>
+  <!-- 섹션 05: 학생 프로필 -->
+  <section class="section" id="profile">
+    <div class="section-header">
+      <div class="section-number">05</div>
+      <div class="section-title-group">
+        <h2>학생프로필</h2>
+        <p>개인별 학습 지도 방향</p>
+      </div>
+    </div>
+
+    <p style="color: var(--text-medium); margin-bottom: 30px; font-size: 15px; line-height: 1.8;">
+      이 섹션은 <%= @student.name %>님의 진단 결과를 바탕으로 개인 맞춤형 학습 방향을 제시합니다.
+      영역별 강점을 활용하고 개선이 필요한 부분을 보완하기 위한 구체적인 실행 방안을 담고 있습니다.
+    </p>
+
+    <div class="overview-box" style="margin-bottom: 40px;">
+      <h3>🎓 학습 목표</h3>
+      <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+        <li>현재 강점 분야에서 더욱 깊이 있는 학습 진행</li>
+        <li>약점 분야의 체계적인 보강</li>
+        <li>독서 습관의 형성과 지속</li>
+        <li>문해력 전반의 지속적인 향상</li>
+      </ul>
+    </div>
+
+    <% if @guidance_directions.any? %>
+      <div class="profile-grid">
+        <% @guidance_directions.each_with_index do |direction, idx| %>
+          <div class="profile-card">
+            <h3><%= direction.evaluation_indicator&.name || "학습 방향" %></h3>
+            <p><%= direction.content || "이 영역의 지도 내용을 준비 중입니다." %></p>
+            <ul>
+              <li>관련 주제의 책 정기적으로 읽기</li>
+              <li>읽은 내용 정리 및 요약하기</li>
+              <li>독서 후 감상 및 의견 작성하기</li>
+              <li>같은 주제의 다양한 책 비교하기</li>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="overview-box" style="margin-top: 40px;">
+        <h3>📚 추천 학습 방법</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+          <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
+            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">📖 능동적 읽기</p>
+            <p style="font-size: 13px; color: var(--text-medium);">밑줄 그으며 읽기, 핵심 단어 표시, 예상 과정 점검</p>
+          </div>
+          <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
+            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">✍️ 기록하기</p>
+            <p style="font-size: 13px; color: var(--text-medium);">독서 일지 작성, 느낀점 메모, 중요 구절 기록</p>
+          </div>
+          <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
+            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">💬 토론하기</p>
+            <p style="font-size: 13px; color: var(--text-medium);">가족과 함께 의견 나누기, 독서 모임 참여</p>
+          </div>
+          <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
+            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">🔍 분석하기</p>
+            <p style="font-size: 13px; color: var(--text-medium);">텍스트 구조 파악, 저자 의도 분석</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="overview-box" style="margin-top: 40px;">
+        <h3>🌟 성공을 위한 팁</h3>
+        <ul style="margin-top: 12px; margin-left: 20px; font-size: 14px; color: var(--text-medium); line-height: 1.8;">
+          <li><strong>정기적인 읽기:</strong> 매일 정해진 시간에 책을 읽는 습관 형성</li>
+          <li><strong>다양한 장르 체험:</strong> 한 가지 장르만 아닌 여러 장르의 책 경험</li>
+          <li><strong>이해도 점검:</strong> 읽은 내용에 대한 이해 정도를 스스로 확인</li>
+          <li><strong>흥미로운 책 선택:</strong> 학생이 관심 있는 주제의 책부터 시작</li>
+          <li><strong>단계적 도전:</strong> 현재 수준보다 조금 높은 수준의 책으로 점진적 진전</li>
+        </ul>
+      </div>
+    <% else %>
+      <p style="text-align: center; color: var(--text-light); padding: 40px 20px;">
+        🎯 학습 지도 방향을 준비 중입니다.
+      </p>
+    <% end %>
+  </section>
+
+  <!-- 액션 버튼 -->
+  <div class="action-buttons">
+    <button class="action-btn primary" onclick="downloadPDF()">📥 PDF 다운로드</button>
+    <button class="action-btn primary" onclick="printReport()">🖨️ 인쇄하기</button>
+    <a href="<%= student_reports_path %>" class="action-btn">← 목록으로 돌아가기</a>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-  function updateReportStatus(attemptId, newStatus) {
-    const statusName = newStatus === 'generated' ? '생성 완료' : '발행';
-    if (confirm(`리포트를 ${statusName} 상태로 변경하시겠습니까?`)) {
-      const btn = event.target;
-      btn.disabled = true;
-      btn.innerHTML = '처리중...';
+  function updateNav(e, sectionId) {
+    e.preventDefault();
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      fetch('<%= student_update_report_status_path %>', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-          attempt_id: attemptId,
-          status: newStatus
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert(data.message);
-          location.reload();
-        } else {
-          alert('오류: ' + data.message);
-          btn.disabled = false;
-          btn.innerHTML = newStatus === 'generated' ? '생성 완료' : '발행하기';
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('상태 변경에 실패했습니다.');
-        btn.disabled = false;
-        btn.innerHTML = newStatus === 'generated' ? '생성 완료' : '발행하기';
+      // Update active nav
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
       });
+      e.target.classList.add('active');
     }
   }
 
   function downloadPDF() {
-    alert('PDF 다운로드 기능은 추후 추가될 예정입니다.');
+    const element = document.querySelector('.report-container');
+    const opt = {
+      margin: 10,
+      filename: '<%= "#{@student.name}_문해력진단결과보고서_#{@attempt.started_at&.strftime('%Y%m%d')}" %>.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opt).from(element).save();
   }
 
   function printReport() {
     window.print();
   }
+
+  // 스크롤 시 네비게이션 업데이트
+  window.addEventListener('scroll', () => {
+    const sections = ['toc', 'overview', 'reader-type', 'analysis', 'profile'];
+    const navItems = document.querySelectorAll('.nav-item');
+
+    let current = '';
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      if (element && element.offsetTop - 150 <= window.scrollY) {
+        current = sectionId;
+      }
+    });
+
+    navItems.forEach(item => {
+      item.classList.remove('active');
+      if (item.getAttribute('href').includes(current)) {
+        item.classList.add('active');
+      }
+    });
+  });
 </script>
 
 <% content_for :portal_actions do %>
