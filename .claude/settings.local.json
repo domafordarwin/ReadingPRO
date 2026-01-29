@@ -45,7 +45,8 @@
       "Bash(bin/rails assets:clobber:*)",
       "Bash(echo:*)",
       "Bash(powershell -Command \"Stop-Process -Id 40584 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Write-Host ''Process stopped''\")",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(railway status:*)"
     ]
   }
 }

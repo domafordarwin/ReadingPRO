@@ -352,8 +352,8 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('리포트가 생성되었습니다.');
-          location.reload();
+          // 리포트 생성 완료 후 상세보기 페이지로 이동
+          window.location.href = '<%= student_show_report_path %>' + attemptId;
         } else {
           alert('오류: ' + data.message);
           btn.disabled = false;
