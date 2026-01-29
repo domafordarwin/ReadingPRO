@@ -144,10 +144,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   end
 
   def generate_ai_feedback(response)
-    FeedbackAIService.generate_feedback(response)
+    FeedbackAiService.generate_feedback(response)
   end
 
   def refine_feedback_with_prompt(response, prompt)
-    FeedbackAIService.refine_feedback(response, prompt)
+    FeedbackAiService.refine_feedback(response, prompt)
   end
 end

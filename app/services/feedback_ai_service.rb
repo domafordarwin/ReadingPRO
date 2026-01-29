@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class FeedbackAIService
+class FeedbackAiService
   def self.generate_feedback(response)
     new.generate_feedback(response)
   end
