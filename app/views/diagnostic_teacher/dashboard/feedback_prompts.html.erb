@@ -2,19 +2,258 @@
 
 <div class="rp-page-header">
   <h1 class="rp-page-header__title">피드백 프롬프트 관리</h1>
-  <p class="rp-page-header__subtitle">피드백을 정교화하기 위한 프롬프트 템플릿을 만들고 관리합니다</p>
+  <p class="rp-page-header__subtitle">피드백을 정교화하기 위한 프롬프트 템플릿을 관리합니다</p>
 </div>
 
-<div class="rp-content-placeholder">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-  </svg>
-  <h2>피드백 프롬프트 관리</h2>
-  <p>이 페이지는 개발 중입니다.</p>
+<!-- 필터 및 검색 -->
+<div class="rp-prompt-filter">
+  <form method="get" class="rp-filter-form">
+    <div class="rp-filter-group">
+      <input
+        type="text"
+        name="search"
+        placeholder="프롬프트 검색"
+        value="<%= @search_query %>"
+        class="rp-filter-input"
+      />
+      <button type="submit" class="rp-filter-btn">검색</button>
+    </div>
+
+    <div class="rp-filter-group">
+      <select name="category" class="rp-filter-select" onchange="this.form.submit()">
+        <option value="">모든 카테고리</option>
+        <option value="comprehension" <%= 'selected' if @category_filter == 'comprehension' %>>이해력</option>
+        <option value="explanation" <%= 'selected' if @category_filter == 'explanation' %>>설명</option>
+        <option value="difficulty" <%= 'selected' if @category_filter == 'difficulty' %>>난이도</option>
+        <option value="strategy" <%= 'selected' if @category_filter == 'strategy' %>>전략</option>
+        <option value="general" <%= 'selected' if @category_filter == 'general' %>>일반</option>
+      </select>
+    </div>
+
+    <div class="rp-filter-group">
+      <select name="type" class="rp-filter-select" onchange="this.form.submit()">
+        <option value="">모든 유형</option>
+        <option value="template" <%= 'selected' if @type_filter == 'template' %>>템플릿</option>
+        <option value="custom" <%= 'selected' if @type_filter == 'custom' %>>커스텀</option>
+      </select>
+    </div>
+  </form>
+</div>
+
+<!-- 프롬프트 목록 -->
+<div class="rp-prompt-list">
+  <% if @prompts.any? %>
+    <% @prompts.each do |prompt| %>
+      <div class="rp-prompt-card <%= 'rp-prompt-card--template' if prompt.is_template %>">
+        <div class="rp-prompt-header">
+          <div class="rp-prompt-info">
+            <% if prompt.is_template %>
+              <span class="rp-badge rp-badge--template">템플릿</span>
+            <% else %>
+              <span class="rp-badge rp-badge--custom">커스텀</span>
+            <% end %>
+            <span class="rp-badge rp-badge--category"><%= prompt.category_label %></span>
+          </div>
+          <span class="rp-prompt-date"><%= prompt.created_at.strftime("%Y-%m-%d") %></span>
+        </div>
+
+        <div class="rp-prompt-content">
+          <p class="rp-prompt-text"><%= truncate(prompt.prompt_text, length: 150) %></p>
+        </div>
+
+        <div class="rp-prompt-footer">
+          <span class="rp-prompt-author">
+            작성자: <%= prompt.user&.name || prompt.user&.email || "미상" %>
+          </span>
+          <% if prompt.feedback_prompt_histories.any? %>
+            <span class="rp-prompt-usage">
+              사용 횟수: <%= prompt.feedback_prompt_histories.count %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- 페이지네이션 -->
+    <% if @prompts.respond_to?(:total_pages) && @prompts.total_pages > 1 %>
+      <div class="rp-pagination">
+        <% if @prompts.prev_page %>
+          <%= link_to "이전", url_for(params.merge(page: @prompts.prev_page)), class: "rp-pagination-btn" %>
+        <% end %>
+
+        <% (1..@prompts.total_pages).each do |page| %>
+          <% if page == @prompts.current_page %>
+            <span class="rp-pagination-number rp-pagination-number--active"><%= page %></span>
+          <% else %>
+            <%= link_to page, url_for(params.merge(page: page)), class: "rp-pagination-number" %>
+          <% end %>
+        <% end %>
+
+        <% if @prompts.next_page %>
+          <%= link_to "다음", url_for(params.merge(page: @prompts.next_page)), class: "rp-pagination-btn" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <p>프롬프트가 없습니다.</p>
+    </div>
+  <% end %>
 </div>
 
 <style>
-  .rp-content-placeholder {
+  .rp-prompt-filter {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-filter-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .rp-filter-group {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .rp-filter-input,
+  .rp-filter-select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+  }
+
+  .rp-filter-input:focus,
+  .rp-filter-select:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+
+  .rp-filter-btn {
+    padding: 10px 16px;
+    background: #2f5bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .rp-filter-btn:hover {
+    background: #1e4ae8;
+  }
+
+  .rp-prompt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-prompt-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.15s;
+  }
+
+  .rp-prompt-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .rp-prompt-card--template {
+    border-left: 4px solid #06b6d4;
+  }
+
+  .rp-prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .rp-prompt-info {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rp-prompt-date {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .rp-badge--template {
+    background: #cffafe;
+    color: #164e63;
+  }
+
+  .rp-badge--custom {
+    background: #dbeafe;
+    color: #1e3a8a;
+  }
+
+  .rp-badge--category {
+    background: #f3e8ff;
+    color: #6b21a8;
+  }
+
+  .rp-prompt-content {
+    margin-bottom: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .rp-prompt-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+    margin: 0;
+  }
+
+  .rp-prompt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .rp-prompt-author,
+  .rp-prompt-usage {
+    display: inline-block;
+  }
+
+  .rp-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,21 +265,50 @@
     border: 1px dashed #e2e8f0;
   }
 
-  .rp-content-placeholder svg {
+  .rp-empty-state svg {
     color: #cbd5e1;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
 
-  .rp-content-placeholder h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-  }
-
-  .rp-content-placeholder p {
+  .rp-empty-state p {
+    font-size: 14px;
     color: #94a3b8;
     margin: 0;
+  }
+
+  .rp-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .rp-pagination-btn,
+  .rp-pagination-number {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #0f172a;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .rp-pagination-btn:hover,
+  .rp-pagination-number:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+
+  .rp-pagination-number--active {
+    background: #2f5bff;
+    color: white;
+    border-color: #2f5bff;
   }
 
   .rp-page-header {

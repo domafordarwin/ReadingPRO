@@ -5,45 +5,338 @@
   <p class="rp-page-header__subtitle">학생들에게 진단을 배정하고 관리합니다</p>
 </div>
 
-<div class="rp-content-placeholder">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="12" y1="11" x2="12" y2="17"></line>
-    <line x1="9" y1="14" x2="15" y2="14"></line>
-  </svg>
-  <h2>학생별 진단 배정</h2>
-  <p>이 페이지는 개발 중입니다.</p>
+<!-- 배정 현황 통계 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 학생</div>
+    <div class="rp-stat-value"><%= @total_students %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">배정 완료</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @assigned_count %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">미배정</div>
+    <div class="rp-stat-value rp-stat-value--warning"><%= @unassigned_count %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">활성 폼</div>
+    <div class="rp-stat-value"><%= @active_forms_count %></div>
+  </div>
+</div>
+
+<!-- 배정 관리 섹션 -->
+<div class="rp-assignment-section">
+  <div class="rp-section-header">
+    <h2 class="rp-section-title">배정 현황</h2>
+  </div>
+
+  <% if @students_with_assignments.any? %>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>학생명</th>
+          <th>학년/반</th>
+          <th>배정된 폼</th>
+          <th>응시 현황</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @students_with_assignments.each do |student, attempt| %>
+          <tr>
+            <td><strong><%= student.name %></strong></td>
+            <td><%= student.grade_level || "-" %></td>
+            <td>
+              <% if attempt&.form %>
+                <span class="rp-form-tag"><%= attempt.form.title %></span>
+              <% else %>
+                <span class="rp-empty-tag">미배정</span>
+              <% end %>
+            </td>
+            <td>
+              <% if attempt %>
+                <span class="rp-progress-text">
+                  <%= attempt.responses.count %> / <%= attempt.form&.items&.count || 0 %>
+                </span>
+              <% else %>
+                <span class="rp-progress-text">-</span>
+              <% end %>
+            </td>
+            <td>
+              <% if attempt %>
+                <% case attempt.status %>
+                  <% when "in_progress" %>
+                    <span class="rp-badge rp-badge--warning">진행 중</span>
+                  <% when "completed" %>
+                    <span class="rp-badge rp-badge--success">완료</span>
+                <% end %>
+              <% else %>
+                <span class="rp-badge rp-badge--secondary">미배정</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="12" y1="11" x2="12" y2="17"></line>
+        <line x1="9" y1="14" x2="15" y2="14"></line>
+      </svg>
+      <p>학생 정보가 없습니다.</p>
+    </div>
+  <% end %>
+</div>
+
+<!-- 활성 폼 목록 -->
+<div class="rp-forms-section">
+  <div class="rp-section-header">
+    <h2 class="rp-section-title">활성 폼</h2>
+  </div>
+
+  <% if @active_forms.any? %>
+    <div class="rp-forms-grid">
+      <% @active_forms.each do |form| %>
+        <div class="rp-form-card">
+          <h3 class="rp-form-card-title"><%= form.title %></h3>
+          <div class="rp-form-card-info">
+            <p>
+              <strong>항목 수:</strong> <%= form.items.count %>개
+            </p>
+            <% if form.time_limit_minutes %>
+              <p>
+                <strong>제한 시간:</strong> <%= form.time_limit_minutes %>분
+              </p>
+            <% end %>
+            <p>
+              <strong>응시자:</strong> <%= form.attempts.count %>명
+            </p>
+          </div>
+          <span class="rp-form-status">활성</span>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="rp-empty-state-small">
+      <p>활성 폼이 없습니다.</p>
+    </div>
+  <% end %>
 </div>
 
 <style>
-  .rp-content-placeholder {
+  .rp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .rp-stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .rp-stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .rp-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .rp-stat-value--success {
+    color: #10b981;
+  }
+
+  .rp-stat-value--warning {
+    color: #f59e0b;
+  }
+
+  .rp-assignment-section,
+  .rp-forms-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+  }
+
+  .rp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .rp-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rp-table thead {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .rp-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .rp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #475569;
+  }
+
+  .rp-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .rp-form-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #dbeafe;
+    color: #1e3a8a;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .rp-empty-tag {
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  .rp-progress-text {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .rp-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .rp-badge--warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .rp-badge--secondary {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .rp-forms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .rp-form-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    position: relative;
+  }
+
+  .rp-form-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 12px 0;
+  }
+
+  .rp-form-card-info p {
+    font-size: 13px;
+    color: #475569;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-form-card-info p:last-child {
+    margin-bottom: 0;
+  }
+
+  .rp-form-status {
+    display: inline-block;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 8px;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .rp-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 40px;
+    padding: 60px 40px;
     text-align: center;
-    background: white;
-    border-radius: 12px;
-    border: 1px dashed #e2e8f0;
   }
 
-  .rp-content-placeholder svg {
+  .rp-empty-state svg {
     color: #cbd5e1;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
 
-  .rp-content-placeholder h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-  }
-
-  .rp-content-placeholder p {
+  .rp-empty-state p {
+    font-size: 14px;
     color: #94a3b8;
     margin: 0;
+  }
+
+  .rp-empty-state-small {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 14px;
   }
 
   .rp-page-header {

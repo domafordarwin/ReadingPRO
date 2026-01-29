@@ -2,20 +2,233 @@
 
 <div class="rp-page-header">
   <h1 class="rp-page-header__title">공지사항 관리</h1>
-  <p class="rp-page-header__subtitle">학교 공지사항을 작성하고 관리합니다</p>
+  <p class="rp-page-header__subtitle">학교 및 진단 관련 공지사항을 확인합니다</p>
 </div>
 
-<div class="rp-content-placeholder">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-    <polyline points="22 6 12 13 2 6"></polyline>
-  </svg>
-  <h2>공지사항 관리</h2>
-  <p>이 페이지는 개발 중입니다.</p>
+<!-- 검색 필터 -->
+<div class="rp-notice-filter">
+  <form method="get" class="rp-filter-form">
+    <div class="rp-filter-group">
+      <input
+        type="text"
+        name="search"
+        placeholder="제목/내용 검색"
+        value="<%= @search_query %>"
+        class="rp-filter-input"
+      />
+      <button type="submit" class="rp-filter-btn">검색</button>
+    </div>
+
+    <div class="rp-filter-group">
+      <select name="status" class="rp-filter-select" onchange="this.form.submit()">
+        <option value="">모든 상태</option>
+        <option value="active" <%= 'selected' if @status_filter == 'active' %>>활성</option>
+        <option value="important" <%= 'selected' if @status_filter == 'important' %>>중요</option>
+      </select>
+    </div>
+  </form>
+</div>
+
+<!-- 공지사항 목록 -->
+<div class="rp-notice-list">
+  <% if @notices.any? %>
+    <% @notices.each do |notice| %>
+      <div class="rp-notice-card <%= 'rp-notice-card--important' if notice.important %>">
+        <div class="rp-notice-header">
+          <div>
+            <h3 class="rp-notice-title"><%= notice.title %></h3>
+            <p class="rp-notice-meta">
+              <% if notice.important %>
+                <span class="rp-badge rp-badge--important">중요</span>
+              <% end %>
+              <span class="rp-notice-date"><%= notice.published_at.strftime("%Y년 %m월 %d일") %></span>
+            </p>
+          </div>
+          <% if notice.expires_at && notice.expires_at < Time.current %>
+            <span class="rp-badge rp-badge--expired">만료됨</span>
+          <% end %>
+        </div>
+
+        <div class="rp-notice-content">
+          <%= simple_format(notice.content) %>
+        </div>
+
+        <div class="rp-notice-footer">
+          <span class="rp-notice-author">
+            작성자: <%= notice.created_by&.email || "시스템" %>
+          </span>
+          <% if notice.target_roles.present? %>
+            <span class="rp-notice-roles">
+              대상: <%= notice.target_roles.join(", ") %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22 6 12 13 2 6"></polyline>
+      </svg>
+      <p>공지사항이 없습니다.</p>
+    </div>
+  <% end %>
 </div>
 
 <style>
-  .rp-content-placeholder {
+  .rp-notice-filter {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-filter-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .rp-filter-group {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .rp-filter-input,
+  .rp-filter-select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+  }
+
+  .rp-filter-input:focus,
+  .rp-filter-select:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+
+  .rp-filter-btn {
+    padding: 10px 16px;
+    background: #2f5bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .rp-filter-btn:hover {
+    background: #1e4ae8;
+  }
+
+  .rp-notice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-notice-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.15s;
+  }
+
+  .rp-notice-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .rp-notice-card--important {
+    border-left: 4px solid #f59e0b;
+    background: #fffbf0;
+  }
+
+  .rp-notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .rp-notice-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-notice-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rp-notice-date {
+    display: inline-block;
+  }
+
+  .rp-notice-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+    margin-bottom: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .rp-notice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .rp-notice-author,
+  .rp-notice-roles {
+    display: inline-block;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #e0e7ff;
+    color: #3730a3;
+  }
+
+  .rp-badge--important {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .rp-badge--expired {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .rp-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -27,19 +240,13 @@
     border: 1px dashed #e2e8f0;
   }
 
-  .rp-content-placeholder svg {
+  .rp-empty-state svg {
     color: #cbd5e1;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
   }
 
-  .rp-content-placeholder h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-  }
-
-  .rp-content-placeholder p {
+  .rp-empty-state p {
+    font-size: 14px;
     color: #94a3b8;
     margin: 0;
   }

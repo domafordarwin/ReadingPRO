@@ -142,14 +142,37 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   def managers
     @current_page = "managers"
     @page_title = "학교 담당자 관리"
-    # TODO: 구현 필요
+
+    # school_admin 역할 사용자 조회
+    @managers = User.where(role: 'school_admin').includes(:student).order(created_at: :desc)
+    @total_managers = @managers.count
+    @active_managers_count = @managers.count # 현재 모든 사용자가 활성이라고 가정
+
+    # 전체 사용자 통계
+    @total_users = User.count
+    @role_statistics = User.group(:role).count.sort
   end
 
   # 진단 관리 - 학생별 진단 배정
   def assignments
     @current_page = "assignments"
     @page_title = "학생별 진단 배정"
-    # TODO: 구현 필요
+
+    # 학생 및 배정 현황
+    all_students = Student.includes(:attempts).all
+    @total_students = all_students.count
+    @assigned_count = all_students.select { |s| s.attempts.any? }.count
+    @unassigned_count = @total_students - @assigned_count
+
+    # 활성 폼 현황
+    @active_forms = Form.where(status: 'active').includes(:items, :attempts)
+    @active_forms_count = @active_forms.count
+
+    # 학생별 배정 현황
+    @students_with_assignments = all_students.map do |student|
+      attempt = student.attempts.order(created_at: :desc).first
+      [student, attempt]
+    end
   end
 
   # 진단 관리 - 문항 관리
@@ -163,21 +186,79 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   def diagnostics_status
     @current_page = "diagnostics_status"
     @page_title = "응시/채점 현황"
-    # TODO: 구현 필요
+
+    # 통계 계산
+    @total_attempts = Attempt.count
+    @in_progress_count = Attempt.where(status: 'in_progress').count
+    @completed_count = Attempt.where(status: 'completed').count
+
+    # 채점 대기 (응답이 있지만 채점되지 않은 항목)
+    @pending_scoring_count = Response
+      .where.missing(:selected_choice, :response_rubric_scores)
+      .joins(:item)
+      .count
+
+    # 학생별 응시 현황 (최근 순서대로, 페이지네이션)
+    @attempts = Attempt
+      .includes(:student, :responses)
+      .recent
+      .page(params[:page])
+      .per(20)
   end
 
   # 진단 분석 - 피드백 프롬프트
   def feedback_prompts
     @current_page = "feedback_prompts"
     @page_title = "피드백 프롬프트 관리"
-    # TODO: 구현 필요
+
+    # 모든 프롬프트 (템플릿 + 커스텀)
+    @prompts = FeedbackPrompt.includes(:user, :feedback_prompt_histories).recent
+
+    # 검색 기능
+    @search_query = params[:search].to_s.strip
+    if @search_query.present?
+      search_term = "%#{@search_query}%"
+      @prompts = @prompts.where("prompt_text ILIKE ?", search_term)
+    end
+
+    # 카테고리 필터
+    @category_filter = params[:category].to_s.strip
+    @prompts = @prompts.by_category(@category_filter) if @category_filter.present?
+
+    # 유형 필터
+    @type_filter = params[:type].to_s.strip
+    case @type_filter
+    when "template"
+      @prompts = @prompts.templates
+    when "custom"
+      @prompts = @prompts.custom
+    end
+
+    # 페이지네이션
+    @prompts = @prompts.page(params[:page]).per(20)
   end
 
   # 공지사항 및 상담 - 공지사항 관리
   def notices
     @current_page = "notices"
     @page_title = "공지사항 관리"
-    # TODO: 구현 필요
+
+    # 진단담당교사 대상 공지사항
+    @notices = Notice.for_role("teacher").active.includes(:created_by).recent
+
+    # 검색 기능
+    @search_query = params[:search].to_s.strip
+    if @search_query.present?
+      search_term = "%#{@search_query}%"
+      @notices = @notices.where("title ILIKE ? OR content ILIKE ?", search_term, search_term)
+    end
+
+    # 상태 필터
+    @status_filter = params[:status].to_s.strip
+    case @status_filter
+    when "important"
+      @notices = @notices.important
+    end
   end
 
   private
