@@ -96,7 +96,7 @@ Rails.application.routes.draw do
     get "managers", to: "dashboard#managers", as: "managers"
     get "assignments", to: "dashboard#assignments", as: "assignments"
     get "items", to: "dashboard#items", as: "items"
-    get "reports", to: "dashboard#reports", as: "reports_management"
+    get "reports", to: "dashboard#reports", as: "reports"
 
     # 진단 분석
     get "diagnostics/status", to: "dashboard#diagnostics_status", as: "diagnostics_status"

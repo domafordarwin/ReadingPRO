@@ -49,7 +49,7 @@
         <% @students_with_assignments.each do |student, attempt| %>
           <tr>
             <td><strong><%= student.name %></strong></td>
-            <td><%= student.grade_level || "-" %></td>
+            <td><%= "#{student.grade}학년 #{student.class_number}반" if student.grade %></td>
             <td>
               <% if attempt&.form %>
                 <span class="rp-form-tag"><%= attempt.form.title %></span>

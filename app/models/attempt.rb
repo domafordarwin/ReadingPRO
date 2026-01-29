@@ -16,6 +16,8 @@ class Attempt < ApplicationRecord
 
   enum :status, { in_progress: "in_progress", completed: "completed", pending: "pending" }
 
+  scope :recent, -> { order(created_at: :desc) }
+
   # Snapshot form items when attempt starts
   def snapshot_form_items!
     AttemptItem.snapshot_from_form(self)

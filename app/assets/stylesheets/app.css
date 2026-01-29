@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap");
+
 :root {
   color-scheme: light;
   --bg: #f5f7fb;
@@ -26,8 +28,6 @@ body.admin-body {
   background: radial-gradient(circle at top, #eef2ff 0%, #f8fafc 35%, #f4f6f2 100%);
   color: var(--landing-ink);
 }
-
-@import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap");
 
 .landing-page {
   --landing-bg: #f4f6f2;
