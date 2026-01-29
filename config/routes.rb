@@ -105,6 +105,10 @@ Rails.application.routes.draw do
     get "feedbacks/:student_id", to: "feedback#show", as: "feedback"
     post "feedbacks/:response_id/generate", to: "feedback#generate_feedback", as: "feedback_generate"
     post "feedbacks/:response_id/refine", to: "feedback#refine_feedback", as: "feedback_refine"
+    patch "feedbacks/:response_id/update_answer", to: "feedback#update_answer", as: "feedback_update_answer"
+    patch "feedbacks/:response_id/update_feedback", to: "feedback#update_feedback", as: "feedback_update_feedback"
+    post "feedbacks/:student_id/generate_all", to: "feedback#generate_all_feedbacks", as: "feedback_generate_all"
+    get "feedback_prompts/templates", to: "feedback#prompt_templates", as: "feedback_prompt_templates"
     get "feedbacks/:response_id/histories", to: "feedback#prompt_histories", as: "feedback_prompt_histories"
     post "feedbacks/histories/:history_id/load", to: "feedback#load_prompt_history", as: "load_prompt_history"
 

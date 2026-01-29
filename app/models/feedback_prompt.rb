@@ -23,4 +23,20 @@ class FeedbackPrompt < ApplicationRecord
     else category
     end
   end
+
+  # 템플릿 찾거나 생성 (중복 방지)
+  def self.find_or_create_template(prompt_text:, category:, user:)
+    template = templates.find_by(prompt_text: prompt_text, category: category)
+
+    if template
+      template
+    else
+      create!(
+        prompt_text: prompt_text,
+        category: category,
+        user: user,
+        is_template: true
+      )
+    end
+  end
 end

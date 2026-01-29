@@ -5,7 +5,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   before_action -> { require_role("diagnostic_teacher") }
   before_action :set_role
   before_action :set_student, only: [:show]
-  before_action :set_response, only: [:show, :generate_feedback, :refine_feedback]
+  before_action :set_response, only: [:generate_feedback, :refine_feedback]
 
   def index
     @current_page = "feedback"
@@ -46,10 +46,28 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def show
     @current_page = "feedback"
 
-    # 학생의 MCQ 응답들
-    @responses = @student.attempts.flat_map(&:responses)
-      .select { |r| r.item&.mcq? }
-      .sort_by { |r| r.created_at }
+    # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
+    responses = @student.attempts
+      .joins(:responses)
+      .joins("INNER JOIN items ON responses.item_id = items.id")
+      .where("items.item_type = ?", Item.item_types[:mcq])
+      .includes(
+        responses: [
+          :item => [:item_choices => :choice_score],
+          :response_feedbacks,
+          :feedback_prompts,
+          :feedback_prompt_histories => :feedback_prompt
+        ]
+      )
+      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
+      .sort_by(&:created_at)
+
+    @responses = responses.uniq { |r| r.id }
+
+    # 전체 프롬프트 템플릿 로드 (드롭다운용)
+    @prompt_templates = FeedbackPrompt.templates
+      .order(:category)
+      .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
   end
 
   def generate_feedback
@@ -74,13 +92,26 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     prompt = params[:prompt]
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
 
-    # 프롬프트 저장
-    feedback_prompt = @response.feedback_prompts.create!(
-      prompt_text: prompt,
-      user: current_user,
-      category: params[:category] || 'general',
-      is_template: params[:save_as_template] == 'true'
-    )
+    category = params[:category] || 'general'
+    save_as_template = params[:save_as_template] == 'true'
+
+    # 프롬프트 저장 (템플릿으로 저장 여부에 따라)
+    if save_as_template
+      # 전역 템플릿으로 저장 (중복 방지)
+      feedback_prompt = FeedbackPrompt.find_or_create_template(
+        prompt_text: prompt,
+        category: category,
+        user: current_user
+      )
+    else
+      # 응답 특정 커스텀 프롬프트로 저장
+      feedback_prompt = @response.feedback_prompts.create!(
+        prompt_text: prompt,
+        user: current_user,
+        category: category,
+        is_template: false
+      )
+    end
 
     # 정교화된 피드백 생성
     refined_feedback = refine_feedback_with_prompt(@response, prompt)
@@ -127,6 +158,105 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def load_prompt_history
     history = FeedbackPromptHistory.find(params[:history_id])
     render json: { prompt: history.feedback_prompt.prompt_text }
+  end
+
+  def update_answer
+    # 학생의 정답 수정
+    response = Response.find(params[:response_id])
+    selected_choice_id = params[:selected_choice_id]
+
+    # 선택지가 같은 항목에 속하는지 검증
+    selected_choice = ItemChoice.find_by(id: selected_choice_id, item_id: response.item_id)
+    unless selected_choice
+      return render json: { success: false, error: "유효하지 않은 선택지입니다" }, status: :bad_request
+    end
+
+    # 응답 업데이트
+    response.update!(selected_choice_id: selected_choice_id)
+
+    # 점수 재계산
+    ScoreResponseService.call(response.id)
+    response.reload
+
+    # 응답 데이터 반환
+    render json: {
+      success: true,
+      new_score: response.raw_score,
+      is_correct: selected_choice.choice_score&.is_key,
+      choice_label: selected_choice.choice_letter,
+      choice_text: selected_choice.choice_text
+    }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "리소스를 찾을 수 없습니다" }, status: :not_found
+  end
+
+  def update_feedback
+    # 피드백 편집 (교사 피드백 생성/업데이트)
+    response = Response.find(params[:response_id])
+    feedback_text = params[:feedback]
+
+    return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
+
+    # 교사 피드백 생성 또는 업데이트
+    existing_feedback = response.response_feedbacks.where(source: 'teacher').last
+    if existing_feedback
+      existing_feedback.update!(feedback: feedback_text)
+    else
+      response.response_feedbacks.create!(
+        feedback: feedback_text,
+        source: 'teacher',
+        created_by: current_user
+      )
+    end
+
+    render json: { success: true, feedback: feedback_text }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "리소스를 찾을 수 없습니다" }, status: :not_found
+  end
+
+  def generate_all_feedbacks
+    # 전체 피드백 일괄 생성
+    student = Student.find(params[:student_id])
+
+    # AI 피드백이 없는 응답만 필터링
+    responses = student.attempts.flat_map(&:responses)
+      .select { |r| r.item&.mcq? && r.response_feedbacks.where(source: 'ai').empty? }
+      .first(10)  # 타임아웃 방지를 위해 최대 10개
+
+    generated_count = 0
+    errors = []
+
+    responses.each do |response|
+      begin
+        feedback_text = FeedbackAiService.generate_feedback(response)
+        response.response_feedbacks.create!(
+          feedback: feedback_text,
+          source: 'ai',
+          created_by: current_user
+        )
+        generated_count += 1
+      rescue => e
+        errors << { response_id: response.id, error: e.message }
+      end
+    end
+
+    render json: {
+      success: errors.empty?,
+      count: generated_count,
+      total: responses.count,
+      errors: errors
+    }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  end
+
+  def prompt_templates
+    # AJAX 요청으로 템플릿 로드
+    templates = FeedbackPrompt.templates
+      .order(:category, :prompt_text)
+      .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text, category_label: p.category_label } }
+
+    render json: { templates: templates }
   end
 
   private

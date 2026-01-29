@@ -4,56 +4,213 @@
   <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
     <%= link_to "← 돌아가기", diagnostic_teacher_feedbacks_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
   </div>
-  <h1 class="rp-page-header__title"><%= @student.name %>의 피드백</h1>
-  <p class="rp-page-header__subtitle">학생의 객관식 응답에 대한 피드백을 확인합니다</p>
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+    <div>
+      <h1 class="rp-page-header__title"><%= @student.name %>의 피드백</h1>
+      <p class="rp-page-header__subtitle">객관식 문항 응답에 대한 AI 피드백 및 교사 의견을 관리합니다</p>
+    </div>
+    <% # 피드백이 없는 응답이 있는 경우만 표시 %>
+    <% if @responses.any? { |r| r.response_feedbacks.where(source: 'ai').empty? } %>
+      <button class="rp-btn rp-btn--primary" data-action="bulk-generate" style="white-space: nowrap;">
+        전체 AI 피드백 생성
+      </button>
+    <% end %>
+  </div>
 </div>
 
 <% if @responses.any? %>
-  <div class="rp-feedback-list">
+  <div class="rp-feedback-container" data-student-id="<%= @student.id %>">
     <% @responses.each_with_index do |response, index| %>
-      <div class="rp-feedback-card">
-        <div class="rp-feedback-header">
-          <div class="rp-feedback-question-number">문항 <%= index + 1 %></div>
+      <div class="rp-feedback-card" data-response-id="<%= response.id %>">
+        <!-- 카드 헤더: 문항 번호, 정답/오답 배지 -->
+        <div class="rp-feedback-card-header">
+          <div class="rp-feedback-question-number">
+            문항 <%= index + 1 %>
+          </div>
           <% if response.selected_choice %>
-            <span class="rp-badge <%= response.selected_choice.correct? ? 'rp-badge--success' : 'rp-badge--danger' %>">
-              <%= response.selected_choice.correct? ? '정답' : '오답' %>
+            <span class="rp-badge <%= response.selected_choice.choice_score&.is_key ? 'rp-badge--success' : 'rp-badge--danger' %>">
+              <%= response.selected_choice.choice_score&.is_key ? '정답' : '오답' %>
             </span>
+          <% else %>
+            <span class="rp-badge rp-badge--secondary">미응답</span>
           <% end %>
         </div>
 
-        <div class="rp-feedback-body">
-          <div class="rp-feedback-section">
-            <h4>문항</h4>
-            <p><%= response.item.prompt %></p>
-          </div>
-
-          <div class="rp-feedback-section">
-            <h4>학생의 답</h4>
-            <p>
-              <% if response.selected_choice %>
-                <strong><%= response.selected_choice.label %></strong>
-                <% if response.selected_choice.explanation %>
-                  <br><small style="color: #94a3b8;"><%= response.selected_choice.explanation %></small>
-                <% end %>
-              <% else %>
-                <span style="color: #ef4444;">답변 없음</span>
-              <% end %>
-            </p>
-          </div>
-
-          <% if response.response_feedbacks.any? %>
-            <div class="rp-feedback-section">
-              <h4>AI 피드백</h4>
-              <% response.response_feedbacks.each do |feedback| %>
-                <div class="rp-ai-feedback">
-                  <p><%= feedback.feedback_text %></p>
-                  <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
-                    생성일: <%= feedback.created_at.strftime("%Y-%m-%d %H:%M") %>
-                  </div>
-                </div>
-              <% end %>
-            </div>
+        <!-- 섹션 1: 문항 표시 (읽기 전용) -->
+        <div class="rp-feedback-section">
+          <h4>문항</h4>
+          <p><%= response.item.prompt %></p>
+          <% if response.item.explanation.present? %>
+            <details class="rp-expandable-details">
+              <summary style="cursor: pointer; font-size: 12px; color: #64748b;">문항 해설 보기</summary>
+              <p style="margin-top: 8px; padding: 8px; background: #f1f5f9; border-radius: 4px; font-size: 12px;">
+                <%= response.item.explanation %>
+              </p>
+            </details>
           <% end %>
+        </div>
+
+        <!-- 섹션 2: 학생의 답 (수정 가능) -->
+        <div class="rp-feedback-section" id="answer-section-<%= response.id %>">
+          <div class="rp-section-header">
+            <h4>학생의 답</h4>
+            <button class="rp-btn-edit-small" data-action="edit-answer">수정</button>
+          </div>
+
+          <!-- 정적 뷰 (기본) -->
+          <div class="rp-answer-static">
+            <% if response.selected_choice %>
+              <span class="rp-choice-badge"><%= response.selected_choice.choice_letter %></span>
+              <span class="rp-choice-text"><%= response.selected_choice.choice_text %></span>
+              <% if response.selected_choice.explanation.present? %>
+                <br><small style="color: #94a3b8; margin-top: 4px; display: block;"><%= response.selected_choice.explanation %></small>
+              <% end %>
+            <% else %>
+              <span style="color: #ef4444;">답변 없음</span>
+            <% end %>
+          </div>
+
+          <!-- 편집 뷰 (숨김, JS로 토글) -->
+          <div class="rp-answer-edit" style="display: none;">
+            <select class="rp-choice-select">
+              <option value="">-- 선택 --</option>
+              <% response.item.item_choices.each do |choice| %>
+                <option value="<%= choice.id %>" <%= 'selected' if choice.id == response.selected_choice_id %>>
+                  <%= choice.choice_letter %>. <%= choice.choice_text %>
+                </option>
+              <% end %>
+            </select>
+            <div class="rp-edit-actions">
+              <button class="rp-btn rp-btn--primary rp-btn--sm" data-action="save-answer">저장</button>
+              <button class="rp-btn rp-btn--secondary rp-btn--sm" data-action="cancel-answer">취소</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 정답 표시 (참고용) -->
+        <div class="rp-feedback-section" style="background: #eff6ff; border-left: 3px solid #0ea5e9;">
+          <div class="rp-section-header">
+            <h4 style="color: #0284c7;">정답</h4>
+          </div>
+          <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
+          <% if correct_choice %>
+            <span class="rp-choice-badge" style="background: #0284c7; color: white;"><%= correct_choice.choice_letter %></span>
+            <span class="rp-choice-text"><%= correct_choice.choice_text %></span>
+            <% if correct_choice.explanation.present? %>
+              <br><small style="color: #0284c7; margin-top: 4px; display: block;"><%= correct_choice.explanation %></small>
+            <% end %>
+          <% end %>
+        </div>
+
+        <!-- 섹션 3: AI 피드백 및 교사 의견 (수정 가능) -->
+        <div class="rp-feedback-section" id="feedback-section-<%= response.id %>">
+          <div class="rp-section-header">
+            <h4>피드백</h4>
+            <% ai_feedback = response.response_feedbacks.where(source: 'ai').last %>
+            <% if ai_feedback.present? %>
+              <button class="rp-btn-edit-small" data-action="edit-feedback">수정</button>
+            <% else %>
+              <button class="rp-btn rp-btn--primary rp-btn--xs" data-action="generate-feedback">
+                AI 피드백 생성
+              </button>
+            <% end %>
+          </div>
+
+          <!-- 피드백 표시 영역 -->
+          <div class="rp-feedback-display">
+            <% ai_feedback = response.response_feedbacks.where(source: 'ai').last %>
+            <% teacher_feedback = response.response_feedbacks.where(source: 'teacher').last %>
+
+            <% if ai_feedback.present? %>
+              <div class="rp-feedback-item rp-feedback-item--ai">
+                <span class="rp-badge rp-badge--info">AI</span>
+                <p class="rp-feedback-text"><%= ai_feedback.feedback %></p>
+                <small class="rp-feedback-meta"><%= ai_feedback.created_at.strftime("%Y-%m-%d %H:%M") %></small>
+              </div>
+            <% end %>
+
+            <% if teacher_feedback.present? %>
+              <div class="rp-feedback-item rp-feedback-item--teacher">
+                <span class="rp-badge rp-badge--success">교사</span>
+                <p class="rp-feedback-text"><%= teacher_feedback.feedback %></p>
+                <small class="rp-feedback-meta"><%= teacher_feedback.created_at.strftime("%Y-%m-%d %H:%M") %></small>
+              </div>
+            <% end %>
+
+            <% if ai_feedback.blank? && teacher_feedback.blank? %>
+              <p style="color: #94a3b8; font-size: 13px;">피드백이 아직 없습니다.</p>
+            <% end %>
+          </div>
+
+          <!-- 피드백 편집 영역 (숨김) -->
+          <div class="rp-feedback-edit" style="display: none;">
+            <textarea class="rp-feedback-textarea" rows="6" placeholder="피드백을 입력하세요..."><%= teacher_feedback&.feedback || ai_feedback&.feedback %></textarea>
+            <div class="rp-edit-actions">
+              <button class="rp-btn rp-btn--primary rp-btn--sm" data-action="save-feedback">저장</button>
+              <button class="rp-btn rp-btn--secondary rp-btn--sm" data-action="cancel-feedback">취소</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 섹션 4: 프롬프트를 통한 피드백 정교화 -->
+        <div class="rp-feedback-section rp-prompt-section">
+          <h4>프롬프트로 피드백 정교화</h4>
+
+          <div class="rp-prompt-controls">
+            <div class="rp-form-group">
+              <label for="category-<%= response.id %>">카테고리</label>
+              <select id="category-<%= response.id %>" class="rp-prompt-category" data-response-id="<%= response.id %>">
+                <option value="general">일반</option>
+                <option value="comprehension">이해력</option>
+                <option value="explanation">설명</option>
+                <option value="difficulty">난이도</option>
+                <option value="strategy">전략</option>
+              </select>
+            </div>
+
+            <div class="rp-form-group">
+              <label for="template-<%= response.id %>">템플릿 불러오기 (선택)</label>
+              <select id="template-<%= response.id %>" class="rp-prompt-template" data-response-id="<%= response.id %>">
+                <option value="">직접 입력</option>
+                <% @prompt_templates.group_by { |p| p[:category] }.each do |category, templates| %>
+                  <optgroup label="<%= FeedbackPrompt.new(category: category).category_label %>">
+                    <% templates.each do |template| %>
+                      <option value="<%= template[:id] %>" data-text="<%= template[:prompt_text] %>">
+                        <%= template[:prompt_text].truncate(50) %>
+                      </option>
+                    <% end %>
+                  </optgroup>
+                <% end %>
+              </select>
+            </div>
+
+            <div class="rp-form-group">
+              <label for="prompt-<%= response.id %>">커스텀 프롬프트</label>
+              <textarea id="prompt-<%= response.id %>" class="rp-prompt-input" rows="4"
+                        placeholder="예: 더 친절한 톤으로 설명해주세요
+초등학교 5학년 수준으로 풀어서 설명해주세요
+비유를 통해 쉽게 설명해주세요"></textarea>
+            </div>
+
+            <div class="rp-form-group">
+              <label class="rp-checkbox">
+                <input type="checkbox" class="rp-save-template" data-response-id="<%= response.id %>">
+                <span>템플릿으로 저장</span>
+              </label>
+            </div>
+
+            <button class="rp-btn rp-btn--primary" data-action="refine-feedback" data-response-id="<%= response.id %>">
+              프롬프트로 정교화
+            </button>
+          </div>
+
+          <!-- 프롬프트 사용 이력 -->
+          <details class="rp-prompt-history">
+            <summary>프롬프트 사용 이력 (<span class="history-count">0</span>)</summary>
+            <div class="rp-history-list" data-response-id="<%= response.id %>">
+              <!-- JS로 AJAX 로드 -->
+            </div>
+          </details>
         </div>
       </div>
     <% end %>
@@ -61,14 +218,21 @@
 <% else %>
   <div class="rp-empty-state">
     <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
-    <p>피드백 데이터가 없습니다.</p>
+    <p>객관식 응답 데이터가 없습니다.</p>
   </div>
 <% end %>
 
+<!-- 로딩 오버레이 -->
+<div class="rp-loading-overlay" style="display: none;">
+  <div class="rp-spinner"></div>
+  <p>처리 중...</p>
+</div>
+
 <style>
-  .rp-feedback-list {
+  .rp-feedback-container {
     display: grid;
-    gap: 16px;
+    gap: 24px;
+    margin-bottom: 32px;
   }
 
   .rp-feedback-card {
@@ -76,9 +240,10 @@
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
-  .rp-feedback-header {
+  .rp-feedback-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -94,20 +259,24 @@
     color: #0f172a;
   }
 
-  .rp-feedback-body {
+  .rp-feedback-section {
     padding: 16px;
-    display: grid;
-    gap: 12px;
+    border-bottom: 1px solid #e2e8f0;
   }
 
-  .rp-feedback-section {
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 8px;
+  .rp-feedback-section:last-child {
+    border-bottom: none;
+  }
+
+  .rp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
   }
 
   .rp-feedback-section h4 {
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 13px;
     font-weight: 600;
     color: #0f172a;
@@ -116,28 +285,808 @@
   }
 
   .rp-feedback-section p {
-    margin: 0;
+    margin: 8px 0;
     font-size: 13px;
     line-height: 1.6;
     color: #475569;
   }
 
-  .rp-ai-feedback {
-    background: white;
-    padding: 12px;
-    border-left: 3px solid #2f5bff;
+  .rp-btn-edit-small {
+    background: none;
+    border: none;
+    color: #2f5bff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
     border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .rp-btn-edit-small:hover {
+    background: #eff6ff;
+  }
+
+  .rp-choice-badge {
+    display: inline-block;
+    background: #2f5bff;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  .rp-choice-text {
+    font-size: 13px;
+    color: #475569;
+  }
+
+  .rp-answer-static,
+  .rp-answer-edit {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+
+  .rp-choice-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .rp-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .rp-feedback-display {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rp-feedback-item {
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #cbd5e1;
+  }
+
+  .rp-feedback-item--ai {
+    border-left-color: #0ea5e9;
+    background: #f0f9ff;
+  }
+
+  .rp-feedback-item--teacher {
+    border-left-color: #22c55e;
+    background: #f0fdf4;
+  }
+
+  .rp-feedback-text {
+    margin: 8px 0;
     font-size: 13px;
     line-height: 1.6;
     color: #475569;
   }
 
-  .rp-ai-feedback p {
+  .rp-feedback-meta {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+
+  .rp-feedback-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .rp-feedback-textarea:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+
+  .rp-prompt-section {
+    background: #f8fafc;
+  }
+
+  .rp-prompt-controls {
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+  }
+
+  .rp-form-group {
+    margin-bottom: 12px;
+  }
+
+  .rp-form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+
+  .rp-prompt-category,
+  .rp-prompt-template {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .rp-prompt-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  .rp-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    gap: 6px;
+  }
+
+  .rp-checkbox input {
+    cursor: pointer;
+  }
+
+  .rp-prompt-history {
+    margin-top: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .rp-prompt-history summary {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 12px;
+  }
+
+  .rp-history-list {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .rp-history-item {
+    padding: 8px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border-left: 3px solid #cbd5e1;
+  }
+
+  .rp-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .rp-history-prompt {
+    font-size: 12px;
+    color: #475569;
     margin: 0;
   }
 
-  .rp-badge--danger {
-    background: #fee2e2;
-    color: #b91c1c;
+  .rp-history-date {
+    font-size: 10px;
+    color: #94a3b8;
+  }
+
+  .rp-empty-text {
+    color: #94a3b8;
+    font-size: 12px;
+  }
+
+  .rp-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 1000;
+  }
+
+  .rp-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .rp-loading-overlay p {
+    color: white;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .rp-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: white;
+    opacity: 0;
+    transform: translateY(100px);
+    transition: all 0.3s;
+    z-index: 999;
+    max-width: 300px;
+  }
+
+  .rp-toast--show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .rp-toast--success {
+    background: #22c55e;
+  }
+
+  .rp-toast--error {
+    background: #ef4444;
+  }
+
+  .rp-toast--info {
+    background: #0ea5e9;
+  }
+
+  .rp-expandable-details {
+    margin-top: 8px;
+  }
+
+  .rp-expandable-details summary {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .rp-expandable-details summary:hover {
+    text-decoration: underline;
+  }
+
+  .rp-btn-edit-small {
+    font-size: 12px;
+  }
+
+  .rp-btn--xs {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 </style>
+
+<script>
+  // Feedback Page Controller
+  class FeedbackPage {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      this.bindAnswerEditing();
+      this.bindFeedbackEditing();
+      this.bindFeedbackGeneration();
+      this.bindPromptRefinement();
+      this.bindTemplateLoading();
+      this.bindBulkGeneration();
+      this.loadAllPromptHistories();
+    }
+
+    // Answer Editing
+    bindAnswerEditing() {
+      document.querySelectorAll('[data-action="edit-answer"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.toggleAnswerEdit(e.target));
+      });
+
+      document.querySelectorAll('[data-action="save-answer"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.saveAnswer(e.target));
+      });
+
+      document.querySelectorAll('[data-action="cancel-answer"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.cancelAnswerEdit(e.target));
+      });
+    }
+
+    toggleAnswerEdit(button) {
+      const section = button.closest('.rp-feedback-section');
+      const staticView = section.querySelector('.rp-answer-static');
+      const editView = section.querySelector('.rp-answer-edit');
+
+      if (staticView.style.display !== 'none') {
+        staticView.style.display = 'none';
+        editView.style.display = 'block';
+        editView.querySelector('.rp-choice-select').focus();
+      }
+    }
+
+    async saveAnswer(button) {
+      const section = button.closest('.rp-feedback-section');
+      const card = button.closest('.rp-feedback-card');
+      const responseId = card.dataset.responseId;
+      const select = section.querySelector('.rp-choice-select');
+      const selectedChoiceId = select.value;
+
+      if (!selectedChoiceId) {
+        this.showToast('선택지를 선택하세요', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '저장 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/update_answer`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({ selected_choice_id: selectedChoiceId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 정적 뷰 업데이트
+          const staticView = section.querySelector('.rp-answer-static');
+          staticView.innerHTML = `
+            <span class="rp-choice-badge">${data.choice_label}</span>
+            <span class="rp-choice-text">${data.choice_text}</span>
+          `;
+
+          // 정답/오답 배지 업데이트
+          const badge = card.querySelector('.rp-feedback-card-header .rp-badge');
+          if (data.is_correct) {
+            badge.className = 'rp-badge rp-badge--success';
+            badge.textContent = '정답';
+          } else {
+            badge.className = 'rp-badge rp-badge--danger';
+            badge.textContent = '오답';
+          }
+
+          this.showToast('답변이 수정되었습니다', 'success');
+
+          // 정적 뷰로 돌아가기
+          section.querySelector('.rp-answer-static').style.display = 'block';
+          section.querySelector('.rp-answer-edit').style.display = 'none';
+        } else {
+          this.showToast(data.error || '저장 실패', 'error');
+        }
+      } catch (error) {
+        this.showToast('네트워크 오류', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '저장';
+      }
+    }
+
+    cancelAnswerEdit(button) {
+      const section = button.closest('.rp-feedback-section');
+      section.querySelector('.rp-answer-static').style.display = 'block';
+      section.querySelector('.rp-answer-edit').style.display = 'none';
+    }
+
+    // Feedback Editing
+    bindFeedbackEditing() {
+      document.querySelectorAll('[data-action="edit-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.toggleFeedbackEdit(e.target));
+      });
+
+      document.querySelectorAll('[data-action="save-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.saveFeedback(e.target));
+      });
+
+      document.querySelectorAll('[data-action="cancel-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.cancelFeedbackEdit(e.target));
+      });
+    }
+
+    toggleFeedbackEdit(button) {
+      const section = button.closest('.rp-feedback-section');
+      section.querySelector('.rp-feedback-display').style.display = 'none';
+      section.querySelector('.rp-feedback-edit').style.display = 'block';
+      section.querySelector('.rp-feedback-textarea').focus();
+    }
+
+    async saveFeedback(button) {
+      const section = button.closest('.rp-feedback-section');
+      const card = button.closest('.rp-feedback-card');
+      const responseId = card.dataset.responseId;
+      const textarea = section.querySelector('.rp-feedback-textarea');
+      const feedbackText = textarea.value.trim();
+
+      if (!feedbackText) {
+        this.showToast('피드백 내용을 입력하세요', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '저장 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/update_feedback`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({ feedback: feedbackText })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 피드백 디스플레이 업데이트
+          this.updateFeedbackDisplay(section, data.feedback, 'teacher');
+
+          this.showToast('피드백이 저장되었습니다', 'success');
+
+          // 디스플레이 뷰로 돌아가기
+          section.querySelector('.rp-feedback-display').style.display = 'block';
+          section.querySelector('.rp-feedback-edit').style.display = 'none';
+        } else {
+          this.showToast(data.error || '저장 실패', 'error');
+        }
+      } catch (error) {
+        this.showToast('네트워크 오류', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '저장';
+      }
+    }
+
+    cancelFeedbackEdit(button) {
+      const section = button.closest('.rp-feedback-section');
+      section.querySelector('.rp-feedback-display').style.display = 'block';
+      section.querySelector('.rp-feedback-edit').style.display = 'none';
+    }
+
+    // AI Feedback Generation
+    bindFeedbackGeneration() {
+      document.querySelectorAll('[data-action="generate-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.generateFeedback(e.target));
+      });
+    }
+
+    async generateFeedback(button) {
+      const card = button.closest('.rp-feedback-card');
+      const responseId = card.dataset.responseId;
+
+      button.disabled = true;
+      button.textContent = 'AI 생성 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const section = card.querySelector('#feedback-section-' + responseId);
+          this.updateFeedbackDisplay(section, data.feedback, 'ai');
+
+          // "생성" 버튼을 "수정" 버튼으로 변경
+          button.outerHTML = '<button class="rp-btn-edit-small" data-action="edit-feedback">수정</button>';
+          this.bindFeedbackEditing(); // 다시 바인딩
+
+          this.showToast('AI 피드백이 생성되었습니다', 'success');
+        } else {
+          this.showToast(data.error || 'AI 생성 실패', 'error');
+        }
+      } catch (error) {
+        this.showToast('네트워크 오류', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'AI 피드백 생성';
+      }
+    }
+
+    // Prompt Refinement
+    bindPromptRefinement() {
+      document.querySelectorAll('[data-action="refine-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => this.refineFeedback(e.target));
+      });
+    }
+
+    async refineFeedback(button) {
+      const card = button.closest('.rp-feedback-card');
+      const responseId = card.dataset.responseId;
+      const section = button.closest('.rp-prompt-section');
+
+      const category = section.querySelector('.rp-prompt-category').value;
+      const promptText = section.querySelector('.rp-prompt-input').value.trim();
+      const saveAsTemplate = section.querySelector('.rp-save-template').checked;
+
+      if (!promptText) {
+        this.showToast('프롬프트를 입력하세요', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '정교화 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/refine`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({
+            prompt: promptText,
+            category: category,
+            save_as_template: saveAsTemplate
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 피드백 디스플레이 업데이트
+          const feedbackSection = card.querySelector('#feedback-section-' + responseId);
+          this.updateFeedbackDisplay(feedbackSection, data.feedback, 'teacher');
+
+          // 프롬프트 입력 초기화
+          section.querySelector('.rp-prompt-input').value = '';
+          section.querySelector('.rp-save-template').checked = false;
+
+          // 프롬프트 이력 다시 로드
+          this.loadPromptHistory(responseId);
+
+          this.showToast('피드백이 정교화되었습니다', 'success');
+
+          if (saveAsTemplate) {
+            this.showToast('템플릿으로 저장되었습니다', 'info');
+          }
+        } else {
+          this.showToast(data.error || '정교화 실패', 'error');
+        }
+      } catch (error) {
+        this.showToast('네트워크 오류', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '프롬프트로 정교화';
+      }
+    }
+
+    // Template Loading
+    bindTemplateLoading() {
+      document.querySelectorAll('.rp-prompt-template').forEach(select => {
+        select.addEventListener('change', (e) => {
+          const templateId = e.target.value;
+          if (!templateId) return;
+
+          const section = e.target.closest('.rp-prompt-section');
+          const promptInput = section.querySelector('.rp-prompt-input');
+          const option = e.target.options[e.target.selectedIndex];
+
+          if (option.dataset.text) {
+            promptInput.value = option.dataset.text;
+            promptInput.focus();
+          }
+        });
+      });
+    }
+
+    // Bulk Generation
+    bindBulkGeneration() {
+      const bulkBtn = document.querySelector('[data-action="bulk-generate"]');
+      if (bulkBtn) {
+        bulkBtn.addEventListener('click', () => this.bulkGenerateFeedback());
+      }
+    }
+
+    async bulkGenerateFeedback() {
+      const container = document.querySelector('.rp-feedback-container');
+      const cards = container.querySelectorAll('.rp-feedback-card');
+      const cardsWithoutFeedback = Array.from(cards).filter(card => {
+        const generateBtn = card.querySelector('[data-action="generate-feedback"]');
+        return generateBtn !== null;
+      });
+
+      if (cardsWithoutFeedback.length === 0) {
+        this.showToast('모든 응답에 피드백이 있습니다', 'info');
+        return;
+      }
+
+      const confirmed = confirm(
+        `${cardsWithoutFeedback.length}개의 응답에 AI 피드백을 생성하시겠습니까?\n(약 ${cardsWithoutFeedback.length * 2}초 정도 소요됩니다)`
+      );
+      if (!confirmed) return;
+
+      this.showLoadingOverlay(`0 / ${cardsWithoutFeedback.length} 완료`);
+
+      let successCount = 0;
+
+      for (let i = 0; i < cardsWithoutFeedback.length; i++) {
+        const card = cardsWithoutFeedback[i];
+        const responseId = card.dataset.responseId;
+
+        try {
+          const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/generate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': this.getCSRFToken()
+            }
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            successCount++;
+            const section = card.querySelector('#feedback-section-' + responseId);
+            this.updateFeedbackDisplay(section, data.feedback, 'ai');
+
+            // 버튼 교체
+            const generateBtn = card.querySelector('[data-action="generate-feedback"]');
+            if (generateBtn) {
+              generateBtn.outerHTML = '<button class="rp-btn-edit-small" data-action="edit-feedback">수정</button>';
+            }
+          }
+        } catch (error) {
+          console.error('Bulk generate error:', error);
+        }
+
+        // 진행률 업데이트
+        this.updateLoadingOverlay(`${i + 1} / ${cardsWithoutFeedback.length} 완료`);
+
+        // API 레이트 제한 방지를 위해 약간의 지연
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      this.hideLoadingOverlay();
+      this.bindFeedbackEditing(); // 새로운 버튼 바인딩
+      this.showToast(`${successCount}개의 AI 피드백이 생성되었습니다`, 'success');
+    }
+
+    // Prompt History
+    loadAllPromptHistories() {
+      const cards = document.querySelectorAll('.rp-feedback-card');
+      cards.forEach(card => {
+        const responseId = card.dataset.responseId;
+        this.loadPromptHistory(responseId);
+      });
+    }
+
+    async loadPromptHistory(responseId) {
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/histories`);
+        const data = await response.json();
+
+        const card = document.querySelector(`.rp-feedback-card[data-response-id="${responseId}"]`);
+        const historyList = card.querySelector(`.rp-history-list[data-response-id="${responseId}"]`);
+        const historyCount = card.querySelector('.rp-prompt-history .history-count');
+
+        if (data.histories && data.histories.length > 0) {
+          historyList.innerHTML = data.histories.map(h => `
+            <div class="rp-history-item">
+              <div class="rp-history-header">
+                <span class="rp-badge rp-badge--info" style="font-size: 10px;">${h.category_label}</span>
+                <span class="rp-history-date">${h.created_at_display}</span>
+              </div>
+              <p class="rp-history-prompt">${h.prompt_text}</p>
+            </div>
+          `).join('');
+
+          historyCount.textContent = data.histories.length;
+        } else {
+          historyList.innerHTML = '<p class="rp-empty-text">이력이 없습니다</p>';
+          historyCount.textContent = '0';
+        }
+      } catch (error) {
+        console.error('History load failed:', error);
+      }
+    }
+
+    // Helper Methods
+    updateFeedbackDisplay(section, feedbackText, source) {
+      const displayArea = section.querySelector('.rp-feedback-display');
+      const badgeClass = source === 'ai' ? 'rp-badge--info' : 'rp-badge--success';
+      const badgeLabel = source === 'ai' ? 'AI' : '교사';
+      const now = new Date().toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const feedbackHTML = `
+        <div class="rp-feedback-item rp-feedback-item--${source}">
+          <span class="rp-badge ${badgeClass}">${badgeLabel}</span>
+          <p class="rp-feedback-text">${feedbackText}</p>
+          <small class="rp-feedback-meta">${now}</small>
+        </div>
+      `;
+
+      // 새로운 피드백을 맨 위에 추가
+      displayArea.insertAdjacentHTML('afterbegin', feedbackHTML);
+    }
+
+    showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `rp-toast rp-toast--${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('rp-toast--show');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.remove('rp-toast--show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    showLoadingOverlay(message) {
+      const overlay = document.querySelector('.rp-loading-overlay');
+      overlay.querySelector('p').textContent = message;
+      overlay.style.display = 'flex';
+    }
+
+    updateLoadingOverlay(message) {
+      const overlay = document.querySelector('.rp-loading-overlay');
+      overlay.querySelector('p').textContent = message;
+    }
+
+    hideLoadingOverlay() {
+      const overlay = document.querySelector('.rp-loading-overlay');
+      overlay.style.display = 'none';
+    }
+
+    getCSRFToken() {
+      return document.querySelector('meta[name="csrf-token"]').content;
+    }
+  }
+
+  // 페이지 로드 시 초기화
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.rp-feedback-container')) {
+      new FeedbackPage();
+    }
+  });
+</script>
