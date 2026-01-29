@@ -46,6 +46,9 @@ gem "kaminari"
 # PDF parsing for importing test items
 gem "pdf-reader"
 
+# Anthropic Claude API
+gem "anthropic"
+
 group :development, :test do
   # Load environment variables from .env file
   gem "dotenv-rails"

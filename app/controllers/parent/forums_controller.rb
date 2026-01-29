@@ -2,7 +2,7 @@
 
 class Parent::ForumsController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("parent") }
+  before_action -> { require_role_any("parent", "school_admin") }
   before_action :set_role
   before_action :set_forum, only: [:show, :edit, :update, :destroy, :close, :reopen]
   before_action :authorize_forum_author, only: [:edit, :update, :destroy, :reopen]

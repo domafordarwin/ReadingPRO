@@ -2,9 +2,9 @@
 
 class Student::ConsultationsController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("student") }
+  before_action -> { require_role_any("student", "school_admin") }
   before_action :set_role
-  before_action :set_student
+  before_action :set_student, only: [:index, :show, :edit, :update, :destroy, :close, :reopen, :create]
   before_action :set_consultation_post, only: [:show, :edit, :update, :destroy, :close, :reopen]
   before_action :authorize_consultation_post, only: [:show, :edit, :update, :destroy, :close]
   before_action :authorize_post_author, only: [:reopen]

@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  response: one
+  user: one
+  prompt_text: MyText
+  title: MyString
+  category: MyString
+  is_template: false
+
+two:
+  response: two
+  user: two
+  prompt_text: MyText
+  title: MyString
+  category: MyString
+  is_template: false

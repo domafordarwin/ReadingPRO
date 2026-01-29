@@ -47,7 +47,8 @@
       "Bash(powershell -Command \"Stop-Process -Id 40584 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Write-Host ''Process stopped''\")",
       "Bash(curl:*)",
       "Bash(railway status:*)",
-      "Bash(bin/rails db:migrate:down:*)"
+      "Bash(bin/rails db:migrate:down:*)",
+      "Bash(bin/rails db:schema:dump:*)"
     ]
   }
 }

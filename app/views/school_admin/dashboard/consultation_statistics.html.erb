@@ -1,0 +1,191 @@
+<% content_for :page_title do %>상담 통계 대시보드<% end %>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <div class="rp-flex rp-items-center rp-justify-between">
+    <div>
+      <h1 class="rp-page-header__title">상담 통계 대시보드</h1>
+      <p class="rp-page-header__subtitle">상담 신청 및 처리 현황을 확인하세요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">전체 상담 신청</div>
+    <div class="rp-stat__value"><%= @total_requests %></div>
+    <div class="rp-stat__trend">건</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">대기 중</div>
+    <div class="rp-stat__value" style="color: #ff9800;"><%= @pending_count %></div>
+    <div class="rp-stat__trend">미처리</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">승인됨</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= @approved_count %></div>
+    <div class="rp-stat__trend">진행 중</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">완료됨</div>
+    <div class="rp-stat__value" style="color: #666;"><%= @completed_count %></div>
+    <div class="rp-stat__trend">종료</div>
+  </div>
+</div>
+
+<!-- Status Distribution -->
+<div class="rp-grid rp-grid--2 rp-mb-6">
+  <!-- Status Chart -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h3 class="rp-card__title">상담 상태별 현황</h3>
+    </div>
+    <div class="rp-card__body">
+      <% @by_status.each do |status| %>
+        <div style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-size: 12px; color: #666;"><%= status[:label] %></span>
+            <span style="font-weight: 600;"><%= status[:count] %>건</span>
+          </div>
+          <% percentage = @total_requests.zero? ? 0 : (status[:count].to_f / @total_requests * 100) %>
+          <div style="height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+            <div style="height: 100%; width: <%= percentage %>%; background: <%= status_color(status[:color]) %>; transition: width 0.3s;"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Category Distribution -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h3 class="rp-card__title">상담 유형별 현황</h3>
+    </div>
+    <div class="rp-card__body">
+      <% @by_category.each do |category| %>
+        <div style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-size: 12px; color: #666;"><%= category[:label] %></span>
+            <span style="font-weight: 600;"><%= category[:count] %>건</span>
+          </div>
+          <% percentage = @total_requests.zero? ? 0 : (category[:count].to_f / @total_requests * 100) %>
+          <div style="height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+            <div style="height: 100%; width: <%= percentage %>%; background: #667eea; transition: width 0.3s;"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Requests -->
+<div class="rp-card rp-mb-6">
+  <div class="rp-card__header">
+    <h3 class="rp-card__title">최근 상담 신청</h3>
+  </div>
+  <div class="rp-card__body">
+    <% if @recent_requests.any? %>
+      <div class="rp-table-wrapper">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th style="width: 20%;">신청자</th>
+              <th style="width: 25%;">제목</th>
+              <th style="width: 15%;">상담 유형</th>
+              <th style="width: 15%;">상태</th>
+              <th style="width: 25%;">신청일</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_requests.each do |request| %>
+              <tr>
+                <td><%= request.user&.name || request.student&.name %></td>
+                <td><%= request.title %></td>
+                <td><%= ConsultationRequest::CATEGORY_LABELS[request.category] %></td>
+                <td>
+                  <span class="rp-badge" style="background: <%= status_badge_color(request.status) %>; color: white;">
+                    <%= ConsultationRequest::STATUS_LABELS[request.status] %>
+                  </span>
+                </td>
+                <td><%= request.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div style="text-align: center; padding: 40px; color: #999;">
+        상담 신청 내역이 없습니다.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rp-table thead {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .rp-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .rp-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+
+  .rp-table tbody tr:hover {
+    background: #fafafa;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+</style>
+
+<% def status_color(status) %>
+  <% case status %>
+  <% when 'warning' %>
+    #ff9800
+  <% when 'success' %>
+    #4caf50
+  <% when 'danger' %>
+    #f44336
+  <% when 'secondary' %>
+    #999
+  <% else %>
+    #667eea
+  <% end %>
+<% end %>
+
+<% def status_badge_color(status) %>
+  <% case status %>
+  <% when 'pending' %>
+    #ff9800
+  <% when 'approved' %>
+    #4caf50
+  <% when 'rejected' %>
+    #f44336
+  <% when 'completed' %>
+    #999
+  <% else %>
+    #667eea
+  <% end %>
+<% end %>

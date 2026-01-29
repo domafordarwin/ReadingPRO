@@ -5,18 +5,73 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def index
     @current_page = "school_reports"
+
+    # 학교 기본 정보
+    @school = School.first
+    @school_name = @school&.name || "학교"
+
+    # 학생 통계
+    @students = Student.all
+    @total_students = @students.count
+    @total_classes = @students.pluck(:class_number).uniq.compact.count
+
+    # 진단 참여 통계
+    @total_attempts = Attempt.count
+    @completed_attempts = Attempt.where(status: 'completed').count
+    @participation_rate = @total_students.zero? ? 0 : ((@total_attempts.to_f / @total_students) * 100).round(1)
+
+    # 리포트 통계
+    @completed_reports = Report.where(status: 'completed').count
+    @pending_feedback = Report.where(status: ['draft', 'generated']).count
+
+    # 학년별 진단 결과
+    @grade_scores = calculate_grade_scores
   end
 
   def students
     @current_page = "student_mgmt"
+    @students = Student.all.order(:name)
+    @search_query = params[:search].to_s.strip
+    @students = @students.where("name ILIKE ?", "%#{@search_query}%") if @search_query.present?
+    @students = @students.page(params[:page]).per(20)
   end
 
   def diagnostics
     @current_page = "distribution"
+    @attempts = Attempt.includes(:student).order(created_at: :desc).page(params[:page]).per(10)
   end
 
   def reports
     @current_page = "school_reports"
+    @reports = Report.includes(:attempt).order(created_at: :desc).page(params[:page]).per(10)
+  end
+
+  def consultation_statistics
+    @current_page = "consultation_statistics"
+
+    # 상담 신청 통계
+    @total_requests = ConsultationRequest.count
+    @pending_count = ConsultationRequest.pending.count
+    @approved_count = ConsultationRequest.approved.count
+    @rejected_count = ConsultationRequest.where(status: 'rejected').count
+    @completed_count = ConsultationRequest.completed.count
+
+    # 상담 유형별 분류
+    @by_category = ConsultationRequest
+      .group(:category)
+      .count
+      .map { |category, count| { category: category, label: ConsultationRequest::CATEGORY_LABELS[category], count: count } }
+
+    # 상담 상태별 분류
+    @by_status = [
+      { status: 'pending', label: '대기 중', count: @pending_count, color: 'warning' },
+      { status: 'approved', label: '승인됨', count: @approved_count, color: 'success' },
+      { status: 'rejected', label: '거절됨', count: @rejected_count, color: 'danger' },
+      { status: 'completed', label: '완료됨', count: @completed_count, color: 'secondary' }
+    ]
+
+    # 최근 상담 신청
+    @recent_requests = ConsultationRequest.includes(:student, :user).recent.limit(10)
   end
 
   def report_template
@@ -64,5 +119,23 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def set_role
     @current_role = "school_admin"
+  end
+
+  def calculate_grade_scores
+    grades = [1, 2, 3]
+    grades.map do |grade|
+      students_in_grade = @students.select { |s| s.grade == grade }
+      if students_in_grade.any?
+        attempts = Attempt.where(student_id: students_in_grade.map(&:id))
+        if attempts.any?
+          avg_score = attempts.flat_map(&:responses).sum { |r| r.raw_score.to_i } / attempts.count.to_f
+          { grade: grade, score: avg_score.round(1) }
+        else
+          { grade: grade, score: 0 }
+        end
+      else
+        { grade: grade, score: 0 }
+      end
+    end
   end
 end

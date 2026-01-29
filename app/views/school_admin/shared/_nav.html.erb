@@ -2,6 +2,9 @@
 <%= link_to "학생 관리", school_admin_students_path, class: "portal-nav-link#{' is-active' if current == :students}" %>
 <%= link_to "진단 관리", school_admin_diagnostics_path, class: "portal-nav-link#{' is-active' if current == :diagnostics}" %>
 <%= link_to "진단 결과 리포트", school_admin_reports_path, class: "portal-nav-link#{' is-active' if current == :reports}" %>
+<%= link_to "상담 통계", school_admin_consultation_statistics_path, class: "portal-nav-link#{' is-active' if current == :consultation_statistics}" %>
+<%= link_to "학생 상담 게시판", school_admin_student_consultations_path, class: "portal-nav-link#{' is-active' if current == :student_consultations}" %>
+<%= link_to "학부모 포럼", school_admin_parent_forums_path, class: "portal-nav-link#{' is-active' if current == :parent_forums}" %>
 <%= link_to "보고서 양식", school_admin_report_template_path, class: "portal-nav-link#{' is-active' if current == :report_template}" %>
 <%= link_to "ReadingPRO 소개", school_admin_about_path, class: "portal-nav-link#{' is-active' if current == :about}" %>
 <%= link_to "담당자 정보 관리", school_admin_managers_path, class: "portal-nav-link#{' is-active' if current == :managers}" %>

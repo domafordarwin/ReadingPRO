@@ -104,9 +104,86 @@ User.where(password_digest: nil).find_each do |user|
   puts "  ✓ Password set for: #{user.email}"
 end
 
+puts "Seeding feedback prompt templates..."
+
+# 피드백 프롬프트 템플릿
+feedback_templates = [
+  {
+    category: "comprehension",
+    title: "이해력 강화 피드백",
+    prompt_text: "이 문항은 글의 주요 내용을 정확하게 이해하는 능력을 평가합니다. 학생이 정답을 선택했는지 다시 한 번 확인하고, 선택한 이유를 설명해주세요. 정답이 아닌 선택지를 선택했다면 그 선택지가 왜 틀렸는지 설명하면 더 좋습니다."
+  },
+  {
+    category: "comprehension",
+    title: "추론적 이해 피드백",
+    prompt_text: "이 문항은 글에 직접 명시되지 않은 내용을 근거를 바탕으로 추론하는 능력을 평가합니다. 학생의 답변이 글의 어느 부분에 근거하고 있는지 설명하고, 올바른 추론 과정이 무엇인지 가르쳐주세요."
+  },
+  {
+    category: "explanation",
+    title: "설명 및 논증 피드백",
+    prompt_text: "학생이 자신의 답변을 어떻게 정당화하는지 생각해보세요. 올바른 논리적 근거는 무엇인지 설명하고, 학생이 더 나은 논증을 만들기 위해 어떤 점을 개선해야 하는지 제시해주세요."
+  },
+  {
+    category: "explanation",
+    title: "상세한 해설 제공",
+    prompt_text: "학생을 위해 이 문항의 정답과 그 이유를 단계별로 설명해주세요. 왜 다른 선택지는 틀렸는지도 함께 설명하면 학생의 이해도가 높아질 것입니다."
+  },
+  {
+    category: "difficulty",
+    title: "난이도 조정 피드백",
+    prompt_text: "이 문항의 어려운 부분이 무엇인지 파악하고, 그 부분을 더 쉽게 이해할 수 있도록 설명해주세요. 비슷하지만 더 쉬운 예시를 들면 도움이 될 수 있습니다."
+  },
+  {
+    category: "difficulty",
+    title: "기초 개념 강화",
+    prompt_text: "이 문항을 이해하기 위해 필요한 기초 개념이 무엇인지 생각해보세요. 학생이 그 기초 개념을 더 잘 이해할 수 있도록 설명하고 관련 예제를 제시해주세요."
+  },
+  {
+    category: "strategy",
+    title: "문제 풀이 전략",
+    prompt_text: "이 유형의 문항을 풀 때 효과적인 전략이나 팁을 제시해주세요. 학생이 이러한 전략을 이용하면 앞으로 더 쉽게 답을 찾을 수 있을 것입니다."
+  },
+  {
+    category: "strategy",
+    title: "텍스트 분석 방법",
+    prompt_text: "이 문항을 해결하기 위해 텍스트를 어떻게 분석해야 하는지 단계별로 설명해주세요. 학생이 이 방법을 배우면 유사한 문항들도 쉽게 풀 수 있을 것입니다."
+  },
+  {
+    category: "general",
+    title: "격려 및 동기부여",
+    prompt_text: "학생의 노력을 격려하고, 이 문항을 틀렸다면 다음에 어떻게 개선할 수 있을지 긍정적으로 안내해주세요. 학생이 계속 노력할 수 있도록 동기부여하는 것이 중요합니다."
+  },
+  {
+    category: "general",
+    title: "종합 평가 및 조언",
+    prompt_text: "학생의 답변을 종합적으로 평가하고, 전체적인 개선 방향을 제시해주세요. 학생이 무엇을 잘했고 무엇을 더 개선해야 하는지 명확하게 알 수 있도록 해주세요."
+  }
+]
+
+# 시스템 사용자 찾기 (피드백 프롬프트의 생성자)
+system_user = User.find_by(email: "system@readingpro.local") || User.create!(
+  email: "system@readingpro.local",
+  password: DEFAULT_PASSWORD,
+  password_confirmation: DEFAULT_PASSWORD,
+  role: "admin"
+)
+
+feedback_templates.each do |attrs|
+  FeedbackPrompt.find_or_create_by!(
+    user: system_user,
+    category: attrs[:category],
+    prompt_text: attrs[:prompt_text]
+  ) do |prompt|
+    prompt.title = attrs[:title]
+    prompt.is_template = true
+    prompt.response_id = nil  # 템플릿은 특정 응답과 연결되지 않음
+  end
+end
+
 puts "Seed completed!"
 puts "  - #{EvaluationIndicator.count} evaluation indicators"
 puts "  - #{SubIndicator.count} sub indicators"
 puts "  - #{ReaderType.count} reader types"
 puts "  - #{School.count} schools"
 puts "  - #{User.count} users"
+puts "  - #{FeedbackPrompt.where(is_template: true).count} feedback prompt templates"

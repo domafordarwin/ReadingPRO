@@ -6,6 +6,8 @@ class Response < ApplicationRecord
 
   has_many :response_rubric_scores, dependent: :destroy
   has_many :response_feedbacks, dependent: :destroy
+  has_many :feedback_prompts, dependent: :destroy
+  has_many :feedback_prompt_histories, dependent: :destroy
 
   validates :item_id, uniqueness: { scope: :attempt_id }
 

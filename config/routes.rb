@@ -76,17 +76,45 @@ Rails.application.routes.draw do
     get "report_template", to: "dashboard#report_template"
     get "about", to: "dashboard#about"
     get "managers", to: "dashboard#managers"
+    get "consultation_statistics", to: "dashboard#consultation_statistics"
+
+    # 학생 상담 게시판 접근
+    get "student_consultations", to: "student/consultations#index", as: "student_consultations"
+    get "student_consultations/:id", to: "student/consultations#show", as: "student_consultation"
+
+    # 학부모 포럼 접근
+    get "parent_forums", to: "parent/forums#index", as: "parent_forums"
+    get "parent_forums/:id", to: "parent/forums#show", as: "parent_forum"
   end
 
   namespace :diagnostic_teacher do
     root to: "dashboard#index"
     get "dashboard", to: "dashboard#index"
-    get "diagnostics", to: "dashboard#diagnostics"
-    get "feedbacks", to: "dashboard#feedbacks"
-    get "reports", to: "dashboard#reports"
+
+    # 진단 관리
+    get "diagnostics/management", to: "dashboard#diagnostics", as: "diagnostics_management"
+    get "managers", to: "dashboard#managers", as: "managers"
+    get "assignments", to: "dashboard#assignments", as: "assignments"
+    get "items", to: "dashboard#items", as: "items"
+    get "reports", to: "dashboard#reports", as: "reports_management"
+
+    # 진단 분석
+    get "diagnostics/status", to: "dashboard#diagnostics_status", as: "diagnostics_status"
+    get "feedback_prompts", to: "dashboard#feedback_prompts", as: "feedback_prompts"
+    get "feedbacks", to: "feedback#index", as: "feedbacks"
+    get "feedbacks/:student_id", to: "feedback#show", as: "feedback"
+    post "feedbacks/:response_id/generate", to: "feedback#generate_feedback", as: "feedback_generate"
+    post "feedbacks/:response_id/refine", to: "feedback#refine_feedback", as: "feedback_refine"
+    get "feedbacks/:response_id/histories", to: "feedback#prompt_histories", as: "feedback_prompt_histories"
+    post "feedbacks/histories/:history_id/load", to: "feedback#load_prompt_history", as: "load_prompt_history"
+
+    # 공지사항 및 상담 관리
+    get "notices", to: "dashboard#notices", as: "notices"
     get "students/:student_id/reports/:attempt_id", to: "dashboard#show_student_report", as: "show_student_report"
-    get "guide", to: "dashboard#guide"
     get "consultation_statistics", to: "dashboard#consultation_statistics"
+
+    # 기타
+    get "guide", to: "dashboard#guide"
     resources :consultation_requests, only: [:index, :show] do
       member do
         patch :approve

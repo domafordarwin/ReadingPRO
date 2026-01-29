@@ -4,7 +4,7 @@
 <div class="rp-page-header">
   <div class="rp-flex rp-items-center rp-justify-between">
     <div>
-      <h1 class="rp-page-header__title">리딩중학교 대시보드</h1>
+      <h1 class="rp-page-header__title"><%= @school_name %> 대시보드</h1>
       <p class="rp-page-header__subtitle">학교 전체 진단 현황과 운영 지표를 확인하세요.</p>
     </div>
     <div class="rp-flex rp-gap-2">
@@ -22,22 +22,22 @@
 <div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
   <div class="rp-stat">
     <div class="rp-stat__label">전체 학생</div>
-    <div class="rp-stat__value">320명</div>
-    <div class="rp-stat__trend">12개 학급</div>
+    <div class="rp-stat__value"><%= @total_students %>명</div>
+    <div class="rp-stat__trend"><%= @total_classes %>개 학급</div>
   </div>
   <div class="rp-stat">
     <div class="rp-stat__label">진단 참여율</div>
-    <div class="rp-stat__value" style="color: var(--rp-success);">84%</div>
-    <div class="rp-stat__trend rp-stat__trend--up">+5% 전월 대비</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= @participation_rate %>%</div>
+    <div class="rp-stat__trend rp-stat__trend--up"><%= @total_attempts %>건</div>
   </div>
   <div class="rp-stat">
     <div class="rp-stat__label">완료 리포트</div>
-    <div class="rp-stat__value">215건</div>
-    <div class="rp-stat__trend">이번 학기</div>
+    <div class="rp-stat__value"><%= @completed_reports %>건</div>
+    <div class="rp-stat__trend">완료됨</div>
   </div>
   <div class="rp-stat">
     <div class="rp-stat__label">대기 피드백</div>
-    <div class="rp-stat__value" style="color: var(--rp-warning);">18건</div>
+    <div class="rp-stat__value" style="color: var(--rp-warning);"><%= @pending_feedback %>건</div>
     <div class="rp-stat__trend">검토 필요</div>
   </div>
 </div>
@@ -55,21 +55,14 @@
     <div class="rp-card__body">
       <div class="rp-chart-placeholder" style="height: 180px;">
         <div style="display: flex; gap: 24px; align-items: flex-end; height: 100%;">
-          <div style="text-align: center; flex: 1;">
-            <div class="rp-chart-bar" style="height: 68%; width: 100%;"></div>
-            <div style="margin-top: 8px; font-size: 12px; color: var(--rp-text-muted);">1학년</div>
-            <div style="font-weight: 600; color: var(--rp-text-title);">68점</div>
-          </div>
-          <div style="text-align: center; flex: 1;">
-            <div class="rp-chart-bar" style="height: 72%; width: 100%;"></div>
-            <div style="margin-top: 8px; font-size: 12px; color: var(--rp-text-muted);">2학년</div>
-            <div style="font-weight: 600; color: var(--rp-text-title);">72점</div>
-          </div>
-          <div style="text-align: center; flex: 1;">
-            <div class="rp-chart-bar" style="height: 70%; width: 100%;"></div>
-            <div style="margin-top: 8px; font-size: 12px; color: var(--rp-text-muted);">3학년</div>
-            <div style="font-weight: 600; color: var(--rp-text-title);">70점</div>
-          </div>
+          <% @grade_scores.each do |grade_data| %>
+            <div style="text-align: center; flex: 1;">
+              <% height_percent = grade_data[:score].zero? ? 5 : (grade_data[:score] / 100 * 100) %>
+              <div class="rp-chart-bar" style="height: <%= height_percent %>%; width: 100%;"></div>
+              <div style="margin-top: 8px; font-size: 12px; color: var(--rp-text-muted);"><%= grade_data[:grade] %>학년</div>
+              <div style="font-weight: 600; color: var(--rp-text-title);"><%= grade_data[:score] %>점</div>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>

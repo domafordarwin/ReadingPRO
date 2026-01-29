@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_115104) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_115106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -183,6 +183,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115104) do
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_evaluation_indicators_on_name", unique: true
+  end
+
+  create_table "feedback_prompt_histories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "feedback_prompt_id", null: false
+    t.text "prompt_result"
+    t.bigint "response_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["feedback_prompt_id"], name: "index_feedback_prompt_histories_on_feedback_prompt_id"
+    t.index ["response_id"], name: "index_feedback_prompt_histories_on_response_id"
+    t.index ["user_id"], name: "index_feedback_prompt_histories_on_user_id"
+  end
+
+  create_table "feedback_prompts", force: :cascade do |t|
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.boolean "is_template"
+    t.text "prompt_text"
+    t.bigint "response_id", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["response_id"], name: "index_feedback_prompts_on_response_id"
+    t.index ["user_id"], name: "index_feedback_prompts_on_user_id"
   end
 
   create_table "form_items", force: :cascade do |t|
@@ -713,6 +738,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115104) do
   add_foreign_key "consultation_requests", "students"
   add_foreign_key "consultation_requests", "users"
   add_foreign_key "educational_recommendations", "attempts"
+  add_foreign_key "feedback_prompt_histories", "feedback_prompts"
+  add_foreign_key "feedback_prompt_histories", "responses"
+  add_foreign_key "feedback_prompt_histories", "users"
+  add_foreign_key "feedback_prompts", "responses"
+  add_foreign_key "feedback_prompts", "users"
   add_foreign_key "form_items", "forms"
   add_foreign_key "form_items", "items"
   add_foreign_key "guardian_students", "students"

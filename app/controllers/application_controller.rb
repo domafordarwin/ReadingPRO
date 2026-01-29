@@ -36,6 +36,13 @@ class ApplicationController < ActionController::Base
     redirect_to login_path
   end
 
+  def require_role_any(*roles)
+    return if roles.include?(current_role)
+
+    flash[:alert] = "접근 권한이 없습니다."
+    redirect_to login_path
+  end
+
   def render_not_found
     respond_to do |format|
       format.html { render "errors/not_found", status: :not_found }

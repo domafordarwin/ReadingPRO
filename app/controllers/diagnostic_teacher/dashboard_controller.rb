@@ -138,6 +138,48 @@ class DiagnosticTeacher::DashboardController < ApplicationController
       .map { |month, requests| { month: month.strftime("%Y-%m"), count: requests.count } }
   end
 
+  # 진단 관리 - 학교 담당자 관리
+  def managers
+    @current_page = "managers"
+    @page_title = "학교 담당자 관리"
+    # TODO: 구현 필요
+  end
+
+  # 진단 관리 - 학생별 진단 배정
+  def assignments
+    @current_page = "assignments"
+    @page_title = "학생별 진단 배정"
+    # TODO: 구현 필요
+  end
+
+  # 진단 관리 - 문항 관리
+  def items
+    @current_page = "items"
+    @page_title = "문항 관리"
+    # TODO: 구현 필요 (Researcher::ItemsController와 연계)
+  end
+
+  # 진단 분석 - 응시/채점 현황
+  def diagnostics_status
+    @current_page = "diagnostics_status"
+    @page_title = "응시/채점 현황"
+    # TODO: 구현 필요
+  end
+
+  # 진단 분석 - 피드백 프롬프트
+  def feedback_prompts
+    @current_page = "feedback_prompts"
+    @page_title = "피드백 프롬프트 관리"
+    # TODO: 구현 필요
+  end
+
+  # 공지사항 및 상담 - 공지사항 관리
+  def notices
+    @current_page = "notices"
+    @page_title = "공지사항 관리"
+    # TODO: 구현 필요
+  end
+
   private
 
   def set_role
