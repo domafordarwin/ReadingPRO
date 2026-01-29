@@ -30,6 +30,15 @@
     font-size: 15px;
   }
 
+  /* ========== 리포트 래퍼 (스크롤 가능) ========== */
+  .report-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
   /* ========== 메인 컨테이너 ========== */
   .report-container {
     max-width: 1400px;
@@ -463,25 +472,27 @@
   }
 </style>
 
-<!-- 큰 헤더 섹션 -->
-<div class="report-header">
-  <h1>문해력 진단 및 독자성향검사</h1>
-  <p>독서 능력 진단 및 읽기 성향 분석 결과</p>
-</div>
-
-<!-- 상단 탭 네비게이션 -->
-<nav class="report-nav">
-  <div class="nav-wrapper">
-    <a href="#toc" class="nav-item active" onclick="updateNav(event, 'toc')">목차</a>
-    <a href="#overview" class="nav-item" onclick="updateNav(event, 'overview')">개요</a>
-    <a href="#reader-type" class="nav-item" onclick="updateNav(event, 'reader-type')">독자성향</a>
-    <a href="#analysis" class="nav-item" onclick="updateNav(event, 'analysis')">심층분석</a>
-    <a href="#profile" class="nav-item" onclick="updateNav(event, 'profile')">학생프로필</a>
+<!-- 스크롤 가능한 래퍼 -->
+<div class="report-wrapper">
+  <!-- 큰 헤더 섹션 -->
+  <div class="report-header">
+    <h1>문해력 진단 및 독자성향검사</h1>
+    <p>독서 능력 진단 및 읽기 성향 분석 결과</p>
   </div>
-</nav>
 
-<!-- 콘텐츠 -->
-<div class="report-container">
+  <!-- 상단 탭 네비게이션 -->
+  <nav class="report-nav">
+    <div class="nav-wrapper">
+      <a href="#toc" class="nav-item active" onclick="updateNav(event, 'toc')">목차</a>
+      <a href="#overview" class="nav-item" onclick="updateNav(event, 'overview')">개요</a>
+      <a href="#reader-type" class="nav-item" onclick="updateNav(event, 'reader-type')">독자성향</a>
+      <a href="#analysis" class="nav-item" onclick="updateNav(event, 'analysis')">심층분석</a>
+      <a href="#profile" class="nav-item" onclick="updateNav(event, 'profile')">학생프로필</a>
+    </div>
+  </nav>
+
+  <!-- 콘텐츠 -->
+  <div class="report-container">
   <!-- 섹션 01: 목차 -->
   <section class="section" id="toc">
     <div class="section-header">
@@ -841,6 +852,7 @@
     <button class="action-btn primary" onclick="printReport()">🖨️ 인쇄하기</button>
     <a href="<%= student_reports_path %>" class="action-btn">← 목록으로 돌아가기</a>
   </div>
+</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>

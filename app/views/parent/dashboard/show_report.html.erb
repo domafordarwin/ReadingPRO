@@ -689,13 +689,24 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* 스크롤 가능한 래퍼 */
+  .report-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 </style>
 
-<!-- 뒤로가기 -->
-<a href="<%= parent_reports_path(student_id: @student.id) %>" class="back-link">← 리포트 목록으로 돌아가기</a>
+<!-- 스크롤 가능한 래퍼 -->
+<div class="report-wrapper">
+  <!-- 뒤로가기 -->
+  <a href="<%= parent_reports_path(student_id: @student.id) %>" class="back-link">← 리포트 목록으로 돌아가기</a>
 
-<!-- 헤더 섹션 -->
-<div class="report-header-section">
+  <!-- 헤더 섹션 -->
+  <div class="report-header-section">
   <div class="report-header-org">
     <div class="icon">📚</div>
     <div class="text">
@@ -960,6 +971,7 @@
       ← 목록으로 돌아가기
     </button>
   </div>
+</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
