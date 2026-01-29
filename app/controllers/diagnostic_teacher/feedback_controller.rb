@@ -53,10 +53,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .where("items.item_type = ?", Item.item_types[:mcq])
       .includes(
         responses: [
-          :item => [:item_choices => :choice_score],
+          { item: { item_choices: :choice_score } },
           :response_feedbacks,
           :feedback_prompts,
-          :feedback_prompt_histories => :feedback_prompt
+          { feedback_prompt_histories: :feedback_prompt }
         ]
       )
       .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
