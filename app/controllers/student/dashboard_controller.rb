@@ -108,9 +108,8 @@ class Student::DashboardController < ApplicationController
   end
 
   def set_student
-    # 현재 로그인한 사용자와 연결된 학생 찾기
-    # 임시로 김하윤 학생으로 설정 (나중에 현재 사용자 기반으로 변경)
-    @student = Student.find_by(name: "김하윤") || current_user&.students&.first
+    # 현재 로그인한 사용자와 연결된 학생 정보
+    @student = current_user&.student
   end
 
   def format_attempts_json(attempts)

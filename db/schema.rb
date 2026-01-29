@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_002928) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_010314) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -250,6 +250,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_002928) do
     t.index ["expires_at"], name: "index_notices_on_expires_at"
     t.index ["important"], name: "index_notices_on_important"
     t.index ["published_at"], name: "index_notices_on_published_at"
+  end
+
+  create_table "parent_forum_comments", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.boolean "is_teacher_reply", default: false
+    t.bigint "parent_forum_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_parent_forum_comments_on_created_by_id"
+    t.index ["is_teacher_reply"], name: "index_parent_forum_comments_on_is_teacher_reply"
+    t.index ["parent_forum_id"], name: "index_parent_forum_comments_on_parent_forum_id"
+  end
+
+  create_table "parent_forums", force: :cascade do |t|
+    t.string "category", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "last_activity_at"
+    t.string "status", default: "open", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "views_count", default: 0
+    t.index ["category"], name: "index_parent_forums_on_category"
+    t.index ["created_by_id"], name: "index_parent_forums_on_created_by_id"
+    t.index ["last_activity_at"], name: "index_parent_forums_on_last_activity_at"
+    t.index ["status"], name: "index_parent_forums_on_status"
   end
 
   create_table "reader_tendencies", force: :cascade do |t|
@@ -617,6 +645,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_002928) do
   add_foreign_key "literacy_achievements", "attempts"
   add_foreign_key "literacy_achievements", "evaluation_indicators"
   add_foreign_key "notices", "users", column: "created_by_id"
+  add_foreign_key "parent_forum_comments", "parent_forums", on_delete: :cascade
+  add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
+  add_foreign_key "parent_forums", "users", column: "created_by_id"
   add_foreign_key "reader_tendencies", "attempts"
   add_foreign_key "reader_tendencies", "reader_types"
   add_foreign_key "reports", "attempts", on_delete: :cascade

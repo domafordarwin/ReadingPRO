@@ -7,30 +7,37 @@
 </div>
 
 <!-- Child Selector -->
-<div class="rp-card rp-mb-6">
-  <div class="rp-flex rp-items-center rp-justify-between">
-    <div class="rp-flex rp-items-center rp-gap-4">
-      <div class="rp-avatar" style="width: 48px; height: 48px; font-size: 18px;">민</div>
-      <div>
-        <h3 style="margin: 0; font-weight: 600; color: var(--rp-text-title);">김민준</h3>
-        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">리딩중학교 2학년</p>
+<% if @selected_student %>
+  <div class="rp-card rp-mb-6">
+    <div class="rp-flex rp-items-center rp-justify-between">
+      <div class="rp-flex rp-items-center rp-gap-4">
+        <div class="rp-avatar" style="width: 48px; height: 48px; font-size: 18px;"><%= @selected_student.name.first %></div>
+        <div>
+          <h3 style="margin: 0; font-weight: 600; color: var(--rp-text-title);"><%= @selected_student.name %></h3>
+          <p class="rp-text-muted" style="margin: 0; font-size: 13px;"><%= @selected_student.school&.name || "학교" %> <%= @selected_student.grade || "학년" %></p>
+        </div>
+        <span class="rp-badge rp-badge--success">활동 중</span>
       </div>
-      <span class="rp-badge rp-badge--success">활동 중</span>
-    </div>
-    <div class="rp-flex rp-gap-2">
-      <select class="rp-select" style="width: 180px;">
-        <option selected>김민준 (2학년)</option>
-        <option>김서연 (5학년)</option>
-      </select>
-      <a href="/parent/consult" class="rp-btn rp-btn--primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-        </svg>
-        상담 신청
-      </a>
+      <div class="rp-flex rp-gap-2">
+        <% if @students.count > 1 %>
+          <select class="rp-select" style="width: 180px;" onchange="window.location.href='<%= parent_dashboard_path %>?student_id=' + this.value">
+            <% @students.each do |student| %>
+              <option value="<%= student.id %>" <%= 'selected' if student.id == @selected_student.id %>>
+                <%= student.name %>
+              </option>
+            <% end %>
+          </select>
+        <% end %>
+        <a href="<%= parent_forums_path %>" class="rp-btn rp-btn--primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+          공유 게시판
+        </a>
+      </div>
     </div>
   </div>
-</div>
+<% end %>
 
 <!-- Stats Grid -->
 <div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">

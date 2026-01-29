@@ -71,19 +71,16 @@
       </div>
     </div>
 
-    <!-- Avatar with Student Name -->
-    <div class="rp-avatar-container">
-      <div class="rp-avatar">
-        <span><%= (current_user&.student&.name&.first || 'U').upcase %></span>
-      </div>
-      <div class="rp-user-info">
-        <% if current_user&.student %>
-          <span class="rp-student-name"><%= current_user.student.name %></span>
-        <% else %>
-          <span class="rp-user-email"><%= current_user&.email || '사용자' %></span>
-        <% end %>
-      </div>
-    </div>
+    <!-- User Name Button -->
+    <button class="rp-user-name-btn">
+      <% if current_user&.student %>
+        <%= current_user.student.name %>
+      <% elsif current_user&.parent? %>
+        <%= current_user.name || current_user.email || '사용자' %>
+      <% else %>
+        <%= current_user&.name || current_user&.email || '사용자' %>
+      <% end %>
+    </button>
 
     <!-- Logout Button -->
     <%= button_to "로그아웃", logout_path, method: :delete, class: "rp-btn rp-btn--secondary rp-btn--sm" rescue link_to("로그아웃", "#", class: "rp-btn rp-btn--secondary rp-btn--sm") %>

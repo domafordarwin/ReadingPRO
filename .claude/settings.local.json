@@ -35,7 +35,14 @@
       "Bash(bin/rails db:rollback:*)",
       "Bash(bin/rails db:test:prepare:*)",
       "Bash(bin/rails generate:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(Get-Process)",
+      "Bash(Where-Object {$_Port -eq 3000})",
+      "Bash(Stop-Process -Force)",
+      "Bash(bin/rails routes:*)",
+      "Bash(bin/rails assets:clobber:*)"
     ]
   }
 }

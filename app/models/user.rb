@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :attempts, dependent: :nullify
   has_many :created_consultation_posts, class_name: "ConsultationPost", foreign_key: :created_by_id, dependent: :nullify
   has_many :consultation_comments, foreign_key: :created_by_id, dependent: :nullify
+  has_many :created_parent_forums, class_name: "ParentForum", foreign_key: :created_by_id, dependent: :nullify
+  has_many :parent_forum_comments, foreign_key: :created_by_id, dependent: :nullify
 
   validates :role, presence: true, inclusion: { in: ROLES }
   validates :email, uniqueness: true, allow_nil: true

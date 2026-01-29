@@ -18,7 +18,7 @@
       "start_diagnosis" => "/parent/children",
       "diagnosis_status" => "/parent/reports",
       "reports" => "/parent/reports",
-      "feedback" => "/parent/consult"
+      "feedback" => "/parent/forums"
     },
     "school_admin" => {
       "student_mgmt" => "/school_admin/students",
@@ -106,6 +106,8 @@
         { id: "diagnosis_status", label: "진단 현황", icon: "list" }
       ]
     }
+  elsif current_role.to_s == "parent"
+    # Parent only sees reports and feedback, no diagnosis menu
   else
     menu_a_items << { id: "start_diagnosis", label: "진단 시작", icon: "play-circle" }
     menu_a_items << { id: "diagnosis_status", label: "진단 현황", icon: "list" }

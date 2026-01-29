@@ -170,3 +170,86 @@ bundle lock --add-platform ruby
 3. AI 기반 프롬프트 생성 통합
 4. 지문-문항 자동 연결
 5. 평가 영역별 통계 대시보드
+
+---
+
+## 작업 진행 기록 (2026-01-29)
+
+### 실제 계정 연동 및 헤더 UI 개선 작업
+
+#### 완료된 작업 ✅
+
+1. **학생-사용자 직접 연결 설정**
+   - `db/migrate/20260129002928_add_user_id_to_students.rb` 마이그레이션 생성
+   - `User.has_one :student` 관계 설정
+   - `Student.belongs_to :user` 관계 설정
+   - student_54를 student_54@shinmyung.edu 계정에 연결
+
+2. **하드코딩된 학생 참조 제거**
+   - Student::DashboardController: `Student.find_by(name: "김하윤")` → `current_user&.student`로 변경
+   - Student::ConsultationsController: hardcoded 참조 → `current_user&.student` 로 변경
+   - Student::ConsultationCommentsController: hardcoded 참조 → `current_user&.student` 로 변경
+   - ✅ 모든 "김하윤" 참조 완전히 제거됨
+
+3. **헤더 UI 개선**
+   - Avatar 제거 (U 배지 제거)
+   - 학생 이름만 버튼 형식으로 표시
+   - `app/views/shared/_unified_header.html.erb` 업데이트
+   - `.rp-user-name-btn` 스타일 추가 (design_system.css)
+   - 조건부 표시: 학생인 경우 학생명, 아닌 경우 이메일 표시
+
+4. **페이지네이션 지원**
+   - `gem "kaminari"` Gemfile에 추가
+   - Student::ConsultationsController에서 `.page(params[:page]).per(20)` 사용
+   - **⚠️ 중요: Rails 서버 재시작 필수** (gem 로드 필요)
+
+#### 현재 상태
+
+| 컴포넌트 | 상태 |
+|---------|------|
+| 학생 대시보드 | ✅ 현재 사용자 데이터 표시 |
+| 상담 게시판 | ✅ 현재 사용자 게시물만 표시 |
+| 헤더 표시 | ✅ 학생명 버튼 형식 표시 |
+| 페이지네이션 | ⚠️ Rails 서버 재시작 후 작동 |
+
+#### 에러 처리 기록
+
+**에러: `NoMethodError - undefined method 'page' for ActiveRecord::Relation`**
+- **원인**: `gem "kaminari"` 추가 후 Rails 서버를 재시작하지 않음
+- **해결방법**: `bin/rails server` 재시작
+- **예방**: Gemfile 수정 후 항상 Rails 서버 재시작 필수
+- **발생 파일**: `app/controllers/student/consultations_controller.rb:38`
+
+#### 테스트 계정 정보
+
+```
+학생 계정:
+  이메일: student_54@shinmyung.edu
+  비밀번호: ReadingPro$12#
+  연결 학생: 소수환 (상위 성적)
+
+부모 계정:
+  이메일: parent_54@shinmyung.edu
+  비밀번호: ReadingPro$12#
+  자녀: 소수환 (student_id: 54)
+```
+
+#### 검증 체크리스트
+
+- [x] 모든 hardcoded 학생 참조 제거 확인
+- [x] Student::DashboardController `set_student` 메서드 확인
+- [x] Student::ConsultationsController `set_student` 메서드 확인
+- [x] Student::ConsultationCommentsController `set_student` 메서드 확인
+- [x] 헤더에 현재 사용자 학생명 표시 확인
+- [ ] Rails 서버 재시작 후 상담 게시판 페이지네이션 작동 확인
+
+#### 다음 단계
+
+1. Rails 서버 재시작 (`bin/rails server`)
+2. test 계정으로 로그인: student_54@shinmyung.edu
+3. 다음 기능 검증:
+   - 대시보드: 소수환 학생 데이터 표시
+   - 상담 게시판: 현재 사용자의 게시물만 표시
+   - 페이지네이션: 20개/페이지로 정상 작동
+   - 헤더: "소수환" 버튼으로 표시
+4. 부모 계정으로도 동일 검증

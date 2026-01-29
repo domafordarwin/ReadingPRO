@@ -55,6 +55,13 @@ Rails.application.routes.draw do
     get "reports/:attempt_id", to: "dashboard#show_report", as: "show_report"
     get "attempts/:attempt_id", to: "dashboard#show_attempt", as: "show_attempt"
     get "consult", to: "dashboard#consult"
+    resources :forums do
+      member do
+        patch :close
+        patch :reopen
+      end
+      resources :comments, controller: 'forum_comments', only: [:create, :destroy]
+    end
   end
 
   namespace :school_admin do
@@ -81,6 +88,9 @@ Rails.application.routes.draw do
         patch :mark_as_answered
       end
       resources :comments, controller: 'consultation_comments', only: [:create, :destroy]
+    end
+    resources :forums, only: [:index, :show] do
+      resources :comments, controller: 'forum_comments', only: [:create, :destroy]
     end
   end
 

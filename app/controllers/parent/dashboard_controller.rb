@@ -7,6 +7,17 @@ class Parent::DashboardController < ApplicationController
 
   def index
     @current_page = "dashboard"
+
+    # 현재 로그인한 부모의 자녀 목록
+    @students = current_user.guardian_students.includes(:student).map(&:student)
+
+    # 첫 번째 자녀를 기본으로 선택 (URL 파라미터로 다른 자녀 선택 가능)
+    selected_student_id = params[:student_id]
+    @selected_student = if selected_student_id
+                          @students.find { |s| s.id == selected_student_id.to_i }
+                        else
+                          @students.first
+                        end
   end
 
   def children
