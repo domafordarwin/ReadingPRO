@@ -94,6 +94,33 @@ class Parent::DashboardController < ApplicationController
     @constructed_responses = @responses.select { |r| r.item.constructed? }
   end
 
+  def latest_report
+    # 부모가 볼 첫 번째 자녀의 최신 리포트로 이동
+    # 또는 URL 파라미터로 지정된 자녀의 최신 리포트로 이동
+    student_id = params[:student_id]
+
+    if student_id
+      student = @students.find { |s| s.id == student_id.to_i }
+    else
+      student = @students.first
+    end
+
+    if student
+      latest_attempt = student.attempts
+        .joins(:report)
+        .order(created_at: :desc)
+        .first
+
+      if latest_attempt
+        redirect_to parent_show_report_path(latest_attempt.id, student_id: student.id)
+      else
+        redirect_to parent_reports_path, alert: "작성된 리포트가 없습니다."
+      end
+    else
+      redirect_to parent_reports_path, alert: "학생을 찾을 수 없습니다."
+    end
+  end
+
   private
 
   def set_role

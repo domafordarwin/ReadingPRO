@@ -101,6 +101,20 @@ class Student::DashboardController < ApplicationController
     @constructed_responses = @responses.select { |r| r.item.constructed? }
   end
 
+  def latest_report
+    # 최신 리포트가 있는 attempt를 찾아 직접 상세 보고서로 이동
+    latest_attempt = @student.attempts
+      .joins(:report)
+      .order(created_at: :desc)
+      .first
+
+    if latest_attempt
+      redirect_to student_show_report_path(latest_attempt.id)
+    else
+      redirect_to student_reports_path, alert: "작성된 리포트가 없습니다."
+    end
+  end
+
   private
 
   def set_role
