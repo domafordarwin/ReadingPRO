@@ -103,6 +103,16 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
+  .report-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    height: 100%;
+  }
+
   .report-card-left {
     flex: 1;
   }
@@ -262,49 +272,47 @@
   <div class="reports-list">
     <% @attempts.each do |attempt| %>
       <% attempt_score = calculate_attempt_score(attempt) %>
-      <div class="report-card" data-attempt-id="<%= attempt.id %>">
-        <div class="report-card-left">
-          <div class="report-title">
-            2025학년도 중등 저학년 문해력 진단 평가
-          </div>
+      <% if attempt.report %>
+        <a href="<%= parent_show_report_path(attempt.id, student_id: @student.id) %>" class="report-card report-card-link">
+          <div class="report-card-left">
+            <div class="report-title">
+              2025학년도 중등 저학년 문해력 진단 평가
+            </div>
 
-          <div class="report-meta">
-            <% if attempt.report %>
+            <div class="report-meta">
               <span class="status-badge status-<%= attempt.report.status %>">
                 <%= translate_report_status(attempt.report.status) %>
               </span>
-            <% else %>
-              <span class="status-badge status-none">미생성</span>
-            <% end %>
 
-            <span class="meta-item">
-              📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
-            </span>
+              <span class="meta-item">
+                📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
+              </span>
 
-            <span class="meta-item">
-              상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
-            </span>
-          </div>
-        </div>
-
-        <div class="report-card-right">
-          <div class="report-score">
-            <div class="score-number"><%= attempt_score %></div>
-            <div class="score-label">/100점</div>
-          </div>
-
-          <% if attempt.report %>
-            <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
-              <a href="<%= parent_show_attempt_path(attempt.id, student_id: @student.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;">
-                진단 결과 보기
-              </a>
-              <a href="<%= parent_show_report_path(attempt.id, student_id: @student.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;">
-                종합 보고서 보기
-              </a>
+              <span class="meta-item">
+                상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
+              </span>
             </div>
-          <% end %>
-        </div>
-      </div>
+          </div>
+
+          <div class="report-card-right">
+            <div class="report-score">
+              <div class="score-number"><%= attempt_score %></div>
+              <div class="score-label">/100점</div>
+            </div>
+
+            <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
+              <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= parent_show_attempt_path(attempt.id, student_id: @student.id) %>');">
+                진단 결과 보기
+              </button>
+              <div style="flex: 1; pointer-events: none;">
+                <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; width: 100%; pointer-events: auto;" onclick="event.stopPropagation();">
+                  상세보고서 보기
+                </button>
+              </div>
+            </div>
+          </div>
+        </a>
+      <% end %>
     <% end %>
   </div>
 <% else %>
@@ -316,6 +324,10 @@
 <% end %>
 
 <script>
+  function navigateTo(path) {
+    window.location.href = path;
+  }
+
   function changeStudent(studentId) {
     window.location.href = '<%= parent_reports_path %>' + '?student_id=' + studentId;
   }
