@@ -3,7 +3,7 @@
 class User < ApplicationRecord
   has_secure_password
 
-  ROLES = %w[admin teacher parent student diagnostic_teacher].freeze
+  ROLES = %w[admin teacher parent student diagnostic_teacher researcher school_admin].freeze
 
   has_one :student, dependent: :nullify
   has_many :guardian_students, foreign_key: :guardian_user_id, dependent: :destroy, inverse_of: :guardian_user
@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :parent_forum_comments, foreign_key: :created_by_id, dependent: :nullify
   has_many :consultation_requests, dependent: :destroy
   has_many :consultation_request_responses, foreign_key: :created_by_id, dependent: :nullify
+  has_many :notifications, dependent: :destroy
 
   validates :role, presence: true, inclusion: { in: ROLES }
   validates :email, uniqueness: true, allow_nil: true

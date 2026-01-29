@@ -86,6 +86,13 @@ Rails.application.routes.draw do
     get "reports", to: "dashboard#reports"
     get "students/:student_id/reports/:attempt_id", to: "dashboard#show_student_report", as: "show_student_report"
     get "guide", to: "dashboard#guide"
+    get "consultation_statistics", to: "dashboard#consultation_statistics"
+    resources :consultation_requests, only: [:index, :show] do
+      member do
+        patch :approve
+        patch :reject
+      end
+    end
     resources :consultations, only: [:index, :show] do
       member do
         patch :mark_as_answered
@@ -117,6 +124,15 @@ Rails.application.routes.draw do
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
+
+  resources :notifications, only: [:index, :show] do
+    member do
+      patch :mark_as_read
+    end
+    collection do
+      patch :mark_all_as_read
+    end
+  end
 
   # Defines the root path route ("/")
   root "welcome#index"

@@ -133,67 +133,151 @@
   }
 </style>
 
+<!-- 도서 검색 및 필터 -->
+<style>
+  .books-filter {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .books-filter__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .books-filter__item label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .books-filter__item input,
+  .books-filter__item select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+  }
+</style>
+
+<%= form_with url: researcher_books_path, method: :get, local: true, class: "books-filter" do |f| %>
+  <div class="books-filter__item">
+    <%= f.text_field :search, placeholder: "도서 검색 (ISBN/제목/저자)", value: @search_query, style: "min-width: 250px;" %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :genre, options_for_select(Book::GENRES.map { |g| [Book::GENRE_LABELS[g], g] }, @genre_filter), { include_blank: "장르 선택" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :level, options_for_select(Book::READING_LEVELS.map { |l| [Book::READING_LEVEL_LABELS[l], l] }, @level_filter), { include_blank: "읽기 수준" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :status, options_for_select(Book::STATUSES.map { |s| [Book::STATUS_LABELS[s], s] }, @status_filter), { include_blank: "상태 선택" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.submit "검색", class: "btn-primary" %>
+  </div>
+<% end %>
+
 <!-- 도서 통계 -->
 <div class="books-stats">
   <div class="books-stat">
     <div class="books-stat__label">등록된 도서</div>
-    <div class="books-stat__value">2</div>
+    <div class="books-stat__value"><%= @total_count %></div>
   </div>
   <div class="books-stat">
-    <div class="books-stat__label">활용 문항</div>
-    <div class="books-stat__value">47</div>
+    <div class="books-stat__label">사용 가능</div>
+    <div class="books-stat__value"><%= @available_count %></div>
   </div>
   <div class="books-stat">
-    <div class="books-stat__label">검토 필요</div>
-    <div class="books-stat__value">1</div>
+    <div class="books-stat__label">현재 페이지</div>
+    <div class="books-stat__value"><%= @page %> / <%= @total_pages %></div>
   </div>
 </div>
 
 <!-- 도서 목록 -->
 <section class="portal-card">
   <h2 class="portal-card-title">도서 목록</h2>
-  <table class="books-table">
-    <thead>
-      <tr>
-        <th style="width: 35%;">도서명</th>
-        <th style="width: 25%;">저자</th>
-        <th style="width: 15%;">상태</th>
-        <th style="width: 25%;">작업</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-          <div class="books-table__title">시간을 달리는 소녀</div>
-          <div class="books-table__author">문학 / 2010년 발행</div>
-        </td>
-        <td>츠츠이 야스타카</td>
-        <td>
-          <span class="books-status books-status--registered">등록됨</span>
-        </td>
-        <td>
-          <div class="books-actions">
-            <a href="#" class="books-action-btn">편집</a>
-            <a href="#" class="books-action-btn">삭제</a>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <div class="books-table__title">어린 왕자</div>
-          <div class="books-table__author">아동문학 / 1943년 발행</div>
-        </td>
-        <td>생텍쥐페리</td>
-        <td>
-          <span class="books-status books-status--review">검토중</span>
-        </td>
-        <td>
-          <div class="books-actions">
-            <a href="#" class="books-action-btn">편집</a>
-            <a href="#" class="books-action-btn">삭제</a>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+
+  <% if @books.any? %>
+    <table class="books-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">도서명</th>
+          <th style="width: 15%;">저자</th>
+          <th style="width: 15%;">ISBN</th>
+          <th style="width: 15%;">수준</th>
+          <th style="width: 15%;">상태</th>
+          <th style="width: 15%;">작업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @books.each do |book| %>
+          <tr>
+            <td>
+              <div class="books-table__title"><%= book.title %></div>
+              <div class="books-table__author"><%= book.genre_label %> / <%= book.publication_year %></div>
+            </td>
+            <td><%= book.author.presence || '-' %></td>
+            <td><%= book.isbn %></td>
+            <td><%= book.reading_level_label %></td>
+            <td>
+              <% if book.status == 'available' %>
+                <span class="books-status books-status--registered"><%= book.status_label %></span>
+              <% elsif book.status == 'unavailable' %>
+                <span class="books-status books-status--review"><%= book.status_label %></span>
+              <% else %>
+                <span class="books-status"><%= book.status_label %></span>
+              <% end %>
+            </td>
+            <td>
+              <div class="books-actions">
+                <a href="#" class="books-action-btn">편집</a>
+                <a href="#" class="books-action-btn">삭제</a>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <!-- 페이지네이션 -->
+    <div class="passages-pagination" style="margin-top: 24px;">
+      <% if @page > 1 %>
+        <%= link_to "← 이전", researcher_books_path(page: @page - 1, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+      <% else %>
+        <span class="disabled">← 이전</span>
+      <% end %>
+
+      <% (1..@total_pages).each do |page_num| %>
+        <% if page_num == @page %>
+          <span class="active"><%= page_num %></span>
+        <% else %>
+          <%= link_to page_num, researcher_books_path(page: page_num, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+        <% end %>
+      <% end %>
+
+      <% if @page < @total_pages %>
+        <%= link_to "다음 →", researcher_books_path(page: @page + 1, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+      <% else %>
+        <span class="disabled">다음 →</span>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="passages-empty">
+      <div class="passages-empty__icon">📚</div>
+      <div class="passages-empty__message">도서가 없습니다</div>
+      <div class="passages-empty__submessage">
+        <% if @search_query.present? || @genre_filter.present? || @level_filter.present? || @status_filter.present? %>
+          검색 조건에 맞는 도서가 없습니다.
+        <% else %>
+          새로운 도서를 추가해주세요.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </section>

@@ -40,10 +40,12 @@ class Researcher::DashboardController < ApplicationController
 
   def prompts
     @current_page = "item_mgmt"
+    load_prompts_with_filters
   end
 
   def books
     @current_page = "item_bank"
+    load_books_with_filters
   end
 
   private
@@ -142,5 +144,84 @@ class Researcher::DashboardController < ApplicationController
 
     # 필터링 옵션
     @available_statuses = Form.statuses.keys
+  end
+
+  def load_prompts_with_filters
+    @search_query = params[:search].to_s.strip
+    @status_filter = params[:status].to_s.strip
+    @category_filter = params[:category].to_s.strip
+
+    # 기본 쿼리
+    @prompts = Prompt.order(created_at: :desc)
+
+    # 검색
+    if @search_query.present?
+      @prompts = @prompts.where("code ILIKE :q OR title ILIKE :q", q: "%#{@search_query}%")
+    end
+
+    # status 필터
+    if @status_filter.present?
+      @prompts = @prompts.by_status(@status_filter)
+    end
+
+    # category 필터
+    if @category_filter.present?
+      @prompts = @prompts.by_category(@category_filter)
+    end
+
+    # 통계
+    @total_count = @prompts.count
+    @active_count = Prompt.active.count
+    @page = [params[:page].to_i, 1].max
+    @per_page = 25
+    @total_pages = (@total_count.to_f / @per_page).ceil
+    @prompts = @prompts.offset((@page - 1) * @per_page).limit(@per_page)
+
+    # 필터링 옵션
+    @available_statuses = Prompt::STATUSES
+    @available_categories = Prompt::CATEGORIES
+  end
+
+  def load_books_with_filters
+    @search_query = params[:search].to_s.strip
+    @status_filter = params[:status].to_s.strip
+    @genre_filter = params[:genre].to_s.strip
+    @level_filter = params[:level].to_s.strip
+
+    # 기본 쿼리
+    @books = Book.order(created_at: :desc)
+
+    # 검색
+    if @search_query.present?
+      @books = @books.where("isbn ILIKE :q OR title ILIKE :q OR author ILIKE :q", q: "%#{@search_query}%")
+    end
+
+    # status 필터
+    if @status_filter.present?
+      @books = @books.by_status(@status_filter)
+    end
+
+    # genre 필터
+    if @genre_filter.present?
+      @books = @books.by_genre(@genre_filter)
+    end
+
+    # reading_level 필터
+    if @level_filter.present?
+      @books = @books.by_level(@level_filter)
+    end
+
+    # 통계
+    @total_count = @books.count
+    @available_count = Book.available.count
+    @page = [params[:page].to_i, 1].max
+    @per_page = 25
+    @total_pages = (@total_count.to_f / @per_page).ceil
+    @books = @books.offset((@page - 1) * @per_page).limit(@per_page)
+
+    # 필터링 옵션
+    @available_statuses = Book::STATUSES
+    @available_genres = Book::GENRES
+    @available_levels = Book::READING_LEVELS
   end
 end

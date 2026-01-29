@@ -85,7 +85,10 @@ DEFAULT_PASSWORD = "ReadingPro$12#"
 # Admin/Teacher accounts
 admin_accounts = [
   { email: "admin@readingpro.kr", name: "시스템관리자", role: "admin" },
-  { email: "teacher@shinmyung.edu", name: "신명중 담당교사", role: "teacher" }
+  { email: "teacher@shinmyung.edu", name: "신명중 담당교사", role: "teacher" },
+  { email: "researcher@readingpro.kr", name: "문항개발위원", role: "researcher" },
+  { email: "teacher_diagnostic@shinmyung.edu", name: "진단담당교사", role: "diagnostic_teacher" },
+  { email: "school_admin@shinmyung.edu", name: "학교담당자", role: "school_admin" }
 ]
 
 admin_accounts.each do |attrs|

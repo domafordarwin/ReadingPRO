@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_115104) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
     t.index ["form_id"], name: "index_attempts_on_form_id"
     t.index ["school_assessment_id"], name: "index_attempts_on_school_assessment_id"
     t.index ["student_id"], name: "index_attempts_on_student_id"
+  end
+
+  create_table "books", force: :cascade do |t|
+    t.string "author"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "genre"
+    t.string "isbn", null: false
+    t.integer "publication_year"
+    t.string "publisher"
+    t.string "reading_level"
+    t.string "status", default: "available"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "word_count"
+    t.index ["genre"], name: "index_books_on_genre"
+    t.index ["isbn"], name: "index_books_on_isbn", unique: true
+    t.index ["reading_level"], name: "index_books_on_reading_level"
+    t.index ["status"], name: "index_books_on_status"
   end
 
   create_table "choice_scores", force: :cascade do |t|
@@ -281,6 +300,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
     t.index ["published_at"], name: "index_notices_on_published_at"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "message"
+    t.bigint "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.string "notification_type", null: false
+    t.boolean "read", default: false
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["user_id", "created_at"], name: "index_notifications_on_user_id_and_created_at"
+    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "parent_forum_comments", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -307,6 +342,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
     t.index ["created_by_id"], name: "index_parent_forums_on_created_by_id"
     t.index ["last_activity_at"], name: "index_parent_forums_on_last_activity_at"
     t.index ["status"], name: "index_parent_forums_on_status"
+  end
+
+  create_table "prompts", force: :cascade do |t|
+    t.string "category"
+    t.string "code", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "status", default: "draft"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "usage_count", default: 0
+    t.index ["category"], name: "index_prompts_on_category"
+    t.index ["code"], name: "index_prompts_on_code", unique: true
+    t.index ["status"], name: "index_prompts_on_status"
   end
 
   create_table "reader_tendencies", force: :cascade do |t|
@@ -643,7 +693,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
     t.string "role", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.check_constraint "role::text = ANY (ARRAY['admin'::character varying, 'teacher'::character varying, 'parent'::character varying, 'student'::character varying, 'diagnostic_teacher'::character varying]::text[])", name: "users_role_check"
+    t.check_constraint "role::text = ANY (ARRAY['admin'::character varying, 'teacher'::character varying, 'parent'::character varying, 'student'::character varying, 'diagnostic_teacher'::character varying, 'researcher'::character varying, 'school_admin'::character varying]::text[])", name: "users_role_check"
   end
 
   add_foreign_key "attempt_items", "attempts", on_delete: :cascade
@@ -678,6 +728,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
   add_foreign_key "literacy_achievements", "attempts"
   add_foreign_key "literacy_achievements", "evaluation_indicators"
   add_foreign_key "notices", "users", column: "created_by_id"
+  add_foreign_key "notifications", "users"
   add_foreign_key "parent_forum_comments", "parent_forums", on_delete: :cascade
   add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
   add_foreign_key "parent_forums", "users", column: "created_by_id"

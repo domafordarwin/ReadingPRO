@@ -35,6 +35,8 @@ class ConsultationRequest < ApplicationRecord
 
   # Callbacks
   before_validation :set_initial_status, on: :create
+  after_create :create_notification_for_teacher
+  after_update :create_status_change_notification, if: :status_changed?
 
   # Scopes
   scope :recent, -> { order(created_at: :desc) }
@@ -101,6 +103,37 @@ class ConsultationRequest < ApplicationRecord
 
     unless user.students.include?(student)
       errors.add(:student, "은(는) 본인의 자녀가 아닙니다")
+    end
+  end
+
+  def create_notification_for_teacher
+    # 모든 진단담당교사에게 알림 생성
+    User.where(role: 'diagnostic_teacher').each do |teacher|
+      Notification.create!(
+        user: teacher,
+        notification_type: 'consultation_request_created',
+        notifiable: self,
+        message: "#{student.name} 학생 상담 신청: #{category_label} (#{scheduled_at.strftime('%Y-%m-%d %H:%M')})"
+      )
+    end
+  end
+
+  def create_status_change_notification
+    # 상담 신청자(학부모)에게 알림 생성
+    if status == 'approved'
+      Notification.create!(
+        user: user,
+        notification_type: 'consultation_request_approved',
+        notifiable: self,
+        message: "#{student.name} 학생 상담 신청이 승인되었습니다."
+      )
+    elsif status == 'rejected'
+      Notification.create!(
+        user: user,
+        notification_type: 'consultation_request_rejected',
+        notifiable: self,
+        message: "#{student.name} 학생 상담 신청이 거절되었습니다."
+      )
     end
   end
 end

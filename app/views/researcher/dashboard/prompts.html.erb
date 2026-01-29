@@ -177,59 +177,137 @@
   }
 </style>
 
+<!-- 프롬프트 검색 및 필터 -->
+<style>
+  .prompts-filter {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .prompts-filter__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .prompts-filter__item label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .prompts-filter__item input,
+  .prompts-filter__item select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+  }
+</style>
+
+<%= form_with url: researcher_prompts_path, method: :get, local: true, class: "prompts-filter" do |f| %>
+  <div class="prompts-filter__item">
+    <%= f.text_field :search, placeholder: "프롬프트 검색", value: @search_query, style: "min-width: 200px;" %>
+  </div>
+  <div class="prompts-filter__item">
+    <%= f.select :status, options_for_select(Prompt::STATUSES.map { |s| [Prompt::STATUS_LABELS[s], s] }, @status_filter), { include_blank: "상태 선택" } %>
+  </div>
+  <div class="prompts-filter__item">
+    <%= f.select :category, options_for_select(Prompt::CATEGORIES.map { |c| [Prompt::CATEGORY_LABELS[c], c] }, @category_filter), { include_blank: "카테고리 선택" } %>
+  </div>
+  <div class="prompts-filter__item">
+    <%= f.submit "검색", class: "btn-primary" %>
+  </div>
+<% end %>
+
 <!-- 프롬프트 통계 -->
 <div class="prompt-summary">
   <div class="prompt-summary__header">
     <h2 class="prompt-summary__title">프롬프트 현황</h2>
     <div class="prompt-summary__total">
-      2<span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
+      <%= @total_count %><span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
     </div>
   </div>
 
   <div class="prompt-stats">
     <div class="prompt-stat">
       <div class="prompt-stat__label">사용중인 프롬프트</div>
-      <div class="prompt-stat__value">1</div>
+      <div class="prompt-stat__value"><%= @active_count %></div>
     </div>
     <div class="prompt-stat">
-      <div class="prompt-stat__label">검토 중인 프롬프트</div>
-      <div class="prompt-stat__value">1</div>
+      <div class="prompt-stat__label">현재 페이지</div>
+      <div class="prompt-stat__value"><%= @page %> / <%= @total_pages %></div>
     </div>
     <div class="prompt-stat">
-      <div class="prompt-stat__label">마지막 업데이트</div>
-      <div class="prompt-stat__value" style="font-size: 14px;">01/28</div>
+      <div class="prompt-stat__label">페이지당 항목</div>
+      <div class="prompt-stat__value"><%= @per_page %></div>
     </div>
   </div>
 </div>
 
 <!-- 프롬프트 목록 -->
-<div class="prompts-grid">
-  <!-- 비문학 프롬프트 -->
-  <div class="prompt-card">
-    <div class="prompt-card__icon">📝</div>
-    <h3 class="prompt-card__title">비문학 핵심 질문 생성</h3>
-    <p class="prompt-card__description">
-      비문학 지문을 분석하여 핵심적인 이해 질문을 자동으로 생성합니다. 문자적, 추론적, 비판적 이해 수준의 질문을 포함합니다.
-    </p>
-    <div class="prompt-card__meta">
-      <span class="prompt-card__status prompt-card__status--active">사용중</span>
-      <a href="#" class="prompt-card__action">상세보기 →</a>
-    </div>
+<% if @prompts.any? %>
+  <div class="prompts-grid">
+    <% @prompts.each do |prompt| %>
+      <div class="prompt-card">
+        <div class="prompt-card__icon">📝</div>
+        <h3 class="prompt-card__title"><%= prompt.title %></h3>
+        <p class="prompt-card__description">
+          <%= truncate(prompt.description.presence || prompt.content, length: 150, omission: "...") %>
+        </p>
+        <div class="prompt-card__meta">
+          <% if prompt.status == 'active' %>
+            <span class="prompt-card__status prompt-card__status--active"><%= prompt.status_label %></span>
+          <% elsif prompt.status == 'draft' %>
+            <span class="prompt-card__status prompt-card__status--review"><%= prompt.status_label %></span>
+          <% else %>
+            <span class="prompt-card__status"><%= prompt.status_label %></span>
+          <% end %>
+          <a href="#" class="prompt-card__action">상세보기 →</a>
+        </div>
+      </div>
+    <% end %>
   </div>
 
-  <!-- 문학 감상 프롬프트 -->
-  <div class="prompt-card">
-    <div class="prompt-card__icon">📖</div>
-    <h3 class="prompt-card__title">문학 감상문 피드백</h3>
-    <p class="prompt-card__description">
-      학생 감상문에 대해 구조화된 피드백을 제공합니다. 표현 기법 이해, 감정 공감, 미적 가치 판단을 중심으로 평가합니다.
-    </p>
-    <div class="prompt-card__meta">
-      <span class="prompt-card__status prompt-card__status--review">검토중</span>
-      <a href="#" class="prompt-card__action">상세보기 →</a>
+  <!-- 페이지네이션 -->
+  <div class="passages-pagination">
+    <% if @page > 1 %>
+      <%= link_to "← 이전", researcher_prompts_path(page: @page - 1, search: @search_query, status: @status_filter, category: @category_filter) %>
+    <% else %>
+      <span class="disabled">← 이전</span>
+    <% end %>
+
+    <% (1..@total_pages).each do |page_num| %>
+      <% if page_num == @page %>
+        <span class="active"><%= page_num %></span>
+      <% else %>
+        <%= link_to page_num, researcher_prompts_path(page: page_num, search: @search_query, status: @status_filter, category: @category_filter) %>
+      <% end %>
+    <% end %>
+
+    <% if @page < @total_pages %>
+      <%= link_to "다음 →", researcher_prompts_path(page: @page + 1, search: @search_query, status: @status_filter, category: @category_filter) %>
+    <% else %>
+      <span class="disabled">다음 →</span>
+    <% end %>
+  </div>
+<% else %>
+  <div class="passages-empty">
+    <div class="passages-empty__icon">📝</div>
+    <div class="passages-empty__message">프롬프트가 없습니다</div>
+    <div class="passages-empty__submessage">
+      <% if @search_query.present? || @status_filter.present? || @category_filter.present? %>
+        검색 조건에 맞는 프롬프트가 없습니다.
+      <% else %>
+        새로운 프롬프트를 추가해주세요.
+      <% end %>
     </div>
   </div>
-</div>
+<% end %>
 
 <!-- 추가 지원 문항 -->
 <section class="portal-card">

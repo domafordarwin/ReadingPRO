@@ -13,7 +13,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 대시보드 통계
     @total_diagnoses = Attempt.count
-    @pending_diagnoses = Attempt.where("completed_at IS NULL").count
+    @pending_diagnoses = Attempt.where.not(status: 'completed').count
     @completed_feedback = 0
     @pending_feedback = 0
 
@@ -93,6 +93,49 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def guide
     @current_page = "notice"
+  end
+
+  def consultation_statistics
+    @current_page = "consultation_statistics"
+
+    # 상담 신청 통계
+    @total_requests = ConsultationRequest.count
+    @pending_count = ConsultationRequest.pending.count
+    @approved_count = ConsultationRequest.approved.count
+    @rejected_count = ConsultationRequest.where(status: 'rejected').count
+    @completed_count = ConsultationRequest.completed.count
+
+    # 상담 유형별 분류
+    @by_category = ConsultationRequest
+      .group(:category)
+      .count
+      .map { |category, count| { category: category, label: ConsultationRequest::CATEGORY_LABELS[category], count: count } }
+
+    # 상담 상태별 분류
+    @by_status = [
+      { status: 'pending', label: '대기 중', count: @pending_count, color: 'warning' },
+      { status: 'approved', label: '승인됨', count: @approved_count, color: 'success' },
+      { status: 'rejected', label: '거절됨', count: @rejected_count, color: 'danger' },
+      { status: 'completed', label: '완료됨', count: @completed_count, color: 'secondary' }
+    ]
+
+    # 최근 상담 신청 (최근 10개)
+    @recent_requests = ConsultationRequest.includes(:student, :user).recent.limit(10)
+
+    # 평균 응답 시간 (승인된 상담 기준)
+    approved_requests = ConsultationRequest.approved
+    if approved_requests.any?
+      @avg_response_time = (approved_requests.sum { |r| (r.updated_at - r.created_at) / 3600 } / approved_requests.count).round(1)
+    else
+      @avg_response_time = 0
+    end
+
+    # 월별 상담 신청 추이 (최근 12개월)
+    @monthly_trends = ConsultationRequest
+      .where("created_at >= ?", 12.months.ago)
+      .group_by { |r| r.created_at.beginning_of_month }
+      .sort
+      .map { |month, requests| { month: month.strftime("%Y-%m"), count: requests.count } }
   end
 
   private
