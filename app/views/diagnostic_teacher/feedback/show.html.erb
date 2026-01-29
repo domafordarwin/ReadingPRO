@@ -1,757 +1,143 @@
-<% content_for :page_title, "#{@student.name} - MCQ 피드백" %>
+<% content_for :page_title, "학생 피드백" %>
 
 <div class="rp-page-header">
-  <div class="rp-breadcrumb">
-    <%= link_to "MCQ 피드백", diagnostic_teacher_feedbacks_path, class: "rp-breadcrumb__item" %>
-    <span class="rp-breadcrumb__separator">></span>
-    <span class="rp-breadcrumb__current"><%= @student.name %></span>
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+    <%= link_to "← 돌아가기", diagnostic_teacher_feedbacks_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
   </div>
-  <h1 class="rp-page-header__title"><%= @student.name %></h1>
-  <p class="rp-page-header__subtitle"><%= "#{@student.grade}학년 #{@student.class_number}반" %> · <%= @student.school.name %></p>
+  <h1 class="rp-page-header__title"><%= @student.name %>의 피드백</h1>
+  <p class="rp-page-header__subtitle">학생의 객관식 응답에 대한 피드백을 확인합니다</p>
 </div>
 
-<!-- 학생 정보 카드 -->
-<div class="rp-student-info-card">
-  <div class="rp-student-info-card__content">
-    <div class="rp-student-info-item">
-      <span class="rp-student-info-item__label">이메일</span>
-      <span class="rp-student-info-item__value"><%= @student.user&.email || "-" %></span>
-    </div>
-    <div class="rp-student-info-item">
-      <span class="rp-student-info-item__label">총 MCQ 응답</span>
-      <span class="rp-student-info-item__value"><%= @responses.count %></span>
-    </div>
-    <div class="rp-student-info-item">
-      <span class="rp-student-info-item__label">피드백 완료</span>
-      <span class="rp-student-info-item__value">
-        <%= @responses.select { |r| r.feedback_prompts.any? }.count %> / <%= @responses.count %>
-      </span>
-    </div>
-  </div>
-</div>
-
-<!-- MCQ 응답 목록 -->
-<div class="rp-mcq-responses">
-  <% if @responses.any? %>
+<% if @responses.any? %>
+  <div class="rp-feedback-list">
     <% @responses.each_with_index do |response, index| %>
-      <div class="rp-response-card">
-        <!-- 응답 헤더 -->
-        <div class="rp-response-header">
-          <div class="rp-response-header__info">
-            <h3 class="rp-response-header__title">
-              문항 <%= index + 1 %>: <%= response.item&.code || "알수없음" %>
-            </h3>
-            <p class="rp-response-header__meta">
-              <span class="rp-response-meta-item">
-                유형: <strong><%= response.item&.item_type == 'mcq' ? '객관식' : '주관식' %></strong>
-              </span>
-              <span class="rp-response-meta-item">
-                응답일: <strong><%= l(response.created_at, format: :long) %></strong>
-              </span>
+      <div class="rp-feedback-card">
+        <div class="rp-feedback-header">
+          <div class="rp-feedback-question-number">문항 <%= index + 1 %></div>
+          <% if response.selected_choice %>
+            <span class="rp-badge <%= response.selected_choice.correct? ? 'rp-badge--success' : 'rp-badge--danger' %>">
+              <%= response.selected_choice.correct? ? '정답' : '오답' %>
+            </span>
+          <% end %>
+        </div>
+
+        <div class="rp-feedback-body">
+          <div class="rp-feedback-section">
+            <h4>문항</h4>
+            <p><%= response.item.prompt %></p>
+          </div>
+
+          <div class="rp-feedback-section">
+            <h4>학생의 답</h4>
+            <p>
+              <% if response.selected_choice %>
+                <strong><%= response.selected_choice.label %></strong>
+                <% if response.selected_choice.explanation %>
+                  <br><small style="color: #94a3b8;"><%= response.selected_choice.explanation %></small>
+                <% end %>
+              <% else %>
+                <span style="color: #ef4444;">답변 없음</span>
+              <% end %>
             </p>
           </div>
-          <div class="rp-response-header__status">
-            <% if response.feedback_prompts.any? %>
-              <span class="rp-badge rp-badge--success">피드백 완료</span>
-            <% else %>
-              <span class="rp-badge rp-badge--warning">피드백 필요</span>
-            <% end %>
-          </div>
-        </div>
 
-        <!-- 문항 내용 -->
-        <div class="rp-response-content">
-          <div class="rp-response-section">
-            <h4 class="rp-response-section__title">문항 내용</h4>
-            <p class="rp-response-section__text"><%= response.item&.prompt || "-" %></p>
-          </div>
-
-          <!-- 선택지 (MCQ인 경우) -->
-          <% if response.item&.item_type == 'mcq' && response.item.item_choices.any? %>
-            <div class="rp-response-section">
-              <h4 class="rp-response-section__title">선택지</h4>
-              <div class="rp-choices-list">
-                <% response.item.item_choices.each do |choice| %>
-                  <div class="rp-choice-item">
-                    <span class="rp-choice-label"><%= choice.choice_text %></span>
-                    <% if response.response_value == choice.id.to_s %>
-                      <span class="rp-badge rp-badge--info">학생 선택</span>
-                    <% end %>
+          <% if response.response_feedbacks.any? %>
+            <div class="rp-feedback-section">
+              <h4>AI 피드백</h4>
+              <% response.response_feedbacks.each do |feedback| %>
+                <div class="rp-ai-feedback">
+                  <p><%= feedback.feedback_text %></p>
+                  <div style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
+                    생성일: <%= feedback.created_at.strftime("%Y-%m-%d %H:%M") %>
                   </div>
-                <% end %>
-              </div>
+                </div>
+              <% end %>
             </div>
           <% end %>
-
-          <!-- 학생 응답 -->
-          <div class="rp-response-section">
-            <h4 class="rp-response-section__title">학생 응답</h4>
-            <div class="rp-student-response">
-              <% if response.item&.item_type == 'mcq' %>
-                <% choice = response.item.item_choices.find { |c| c.id.to_s == response.response_value } %>
-                <p><%= choice&.choice_text || "응답 없음" %></p>
-              <% else %>
-                <p><%= response.response_value || "응답 없음" %></p>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- 정답 및 설명 -->
-          <div class="rp-response-section">
-            <h4 class="rp-response-section__title">정답 및 설명</h4>
-            <div class="rp-correct-answer">
-              <% if response.item&.item_type == 'mcq' %>
-                <p><strong>정답:</strong> <%= response.item.item_choices.find { |c| c.is_correct }.choice_text %></p>
-              <% end %>
-              <p><strong>설명:</strong> <%= response.item&.explanation || "-" %></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 기존 피드백 -->
-        <% if response.feedback_prompts.any? %>
-          <div class="rp-feedback-section">
-            <h4 class="rp-feedback-section__title">제공된 피드백</h4>
-            <% response.feedback_prompts.each do |prompt| %>
-              <div class="rp-feedback-item">
-                <div class="rp-feedback-item__header">
-                  <span class="rp-feedback-category"><%= prompt.category_label %></span>
-                  <span class="rp-feedback-date"><%= time_ago_in_words(prompt.created_at) %> 전</span>
-                </div>
-                <p class="rp-feedback-item__content"><%= prompt.prompt_text %></p>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-
-        <!-- 피드백 생성 섹션 -->
-        <div class="rp-feedback-generation">
-          <div class="rp-feedback-generation__header">
-            <h4 class="rp-feedback-generation__title">피드백 생성 및 정제</h4>
-            <p class="rp-feedback-generation__hint">AI를 사용하여 자동 피드백을 생성하거나, 프롬프트를 입력하여 맞춤형 피드백을 만드세요</p>
-          </div>
-
-          <!-- AI 피드백 생성 버튼 -->
-          <div class="rp-feedback-action">
-            <%= button_to "AI 피드백 자동 생성",
-                diagnostic_teacher_feedback_generate_path(response.id),
-                method: :post,
-                class: "rp-btn rp-btn--primary rp-btn--large",
-                data: { turbo_method: :post } %>
-            <span class="rp-feedback-action__note">AI가 학생 응답을 분석하여 자동으로 피드백을 생성합니다</span>
-          </div>
-
-          <!-- 프롬프트를 통한 피드백 정제 -->
-          <div class="rp-prompt-section">
-            <h5 class="rp-prompt-section__title">프롬프트를 통한 정제</h5>
-
-            <%= form_with url: diagnostic_teacher_feedback_refine_path(response.id),
-                method: :post,
-                class: "rp-prompt-form",
-                local: true do |f| %>
-              <div class="rp-prompt-form__group">
-                <label class="rp-prompt-form__label">피드백 카테고리</label>
-                <%= f.select :category,
-                    options_for_select(
-                      FeedbackPrompt::CATEGORIES.map { |cat| [FeedbackPrompt.new(category: cat).category_label, cat] },
-                      "comprehension"
-                    ),
-                    {},
-                    class: "rp-select" %>
-              </div>
-
-              <div class="rp-prompt-form__group">
-                <label class="rp-prompt-form__label">피드백 내용</label>
-                <div class="rp-prompt-form__hint">학생의 이해도를 높이기 위한 구체적인 피드백을 입력하세요</div>
-                <%= f.text_area :prompt_text,
-                    rows: 4,
-                    placeholder: "예: 이 문제는 주어진 정보를 비교 분석하는 능력을 평가합니다. 학생은 A와 B의 차이점을 명확하게 구분하지 못했습니다. 다음과 같은 점을 보완하면 좋을 것 같습니다...",
-                    class: "rp-textarea" %>
-              </div>
-
-              <div class="rp-prompt-form__actions">
-                <%= f.submit "피드백 정제 및 저장",
-                    class: "rp-btn rp-btn--primary" %>
-              </div>
-            <% end %>
-          </div>
-
-          <!-- 프롬프트 히스토리 -->
-          <div class="rp-prompt-history" id="prompt-histories-<%= response.id %>">
-            <h5 class="rp-prompt-history__title">프롬프트 이력</h5>
-            <div class="rp-prompt-history__loading" style="display: none;">
-              <span>로딩 중...</span>
-            </div>
-            <div class="rp-prompt-history__content">
-              <!-- 이력이 JavaScript로 로드됨 -->
-            </div>
-          </div>
         </div>
       </div>
     <% end %>
-  <% else %>
-    <div class="rp-empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
-        <path d="M12 6v6l4.25 2.52"></path>
-      </svg>
-      <h3>MCQ 응답이 없습니다</h3>
-      <p>이 학생은 아직 MCQ 응답이 없습니다</p>
-    </div>
-  <% end %>
-</div>
+  </div>
+<% else %>
+  <div class="rp-empty-state">
+    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+    <p>피드백 데이터가 없습니다.</p>
+  </div>
+<% end %>
 
 <style>
-  .rp-page-header {
-    margin-bottom: 24px;
-  }
-
-  .rp-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
-
-  .rp-breadcrumb__item {
-    color: #2f5bff;
-    text-decoration: none;
-  }
-
-  .rp-breadcrumb__item:hover {
-    text-decoration: underline;
-  }
-
-  .rp-breadcrumb__separator {
-    color: #cbd5e1;
-  }
-
-  .rp-breadcrumb__current {
-    color: #475569;
-    font-weight: 500;
-  }
-
-  .rp-page-header__title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-  }
-
-  .rp-page-header__subtitle {
-    font-size: 14px;
-    color: #94a3b8;
-    margin: 0;
-  }
-
-  .rp-student-info-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
+  .rp-feedback-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    gap: 16px;
   }
 
-  .rp-student-info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .rp-student-info-item__label {
-    font-size: 13px;
-    color: #94a3b8;
-    font-weight: 500;
-  }
-
-  .rp-student-info-item__value {
-    font-size: 16px;
-    font-weight: 600;
-    color: #0f172a;
-  }
-
-  .rp-mcq-responses {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .rp-response-card {
+  .rp-feedback-card {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     overflow: hidden;
   }
 
-  .rp-response-header {
+  .rp-feedback-header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
+    padding: 16px;
     background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
   }
 
-  .rp-response-header__info {
-    flex: 1;
-  }
-
-  .rp-response-header__title {
-    font-size: 16px;
+  .rp-feedback-question-number {
+    font-size: 14px;
     font-weight: 600;
     color: #0f172a;
-    margin: 0 0 8px 0;
   }
 
-  .rp-response-header__meta {
-    display: flex;
-    gap: 16px;
-    margin: 0;
-    font-size: 13px;
-    color: #64748b;
+  .rp-feedback-body {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
   }
 
-  .rp-response-meta-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  .rp-feedback-section {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
   }
 
-  .rp-response-header__status {
-    flex-shrink: 0;
-  }
-
-  .rp-response-content {
-    padding: 20px;
-  }
-
-  .rp-response-section {
-    margin-bottom: 20px;
-  }
-
-  .rp-response-section:last-child {
-    margin-bottom: 0;
-  }
-
-  .rp-response-section__title {
+  .rp-feedback-section h4 {
+    margin: 0 0 8px;
     font-size: 13px;
     font-weight: 600;
-    color: #94a3b8;
-    margin: 0 0 12px 0;
+    color: #0f172a;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .rp-response-section__text {
-    font-size: 14px;
-    color: #0f172a;
+  .rp-feedback-section p {
     margin: 0;
+    font-size: 13px;
     line-height: 1.6;
-  }
-
-  .rp-choices-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .rp-choice-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-
-  .rp-choice-label {
-    color: #0f172a;
-  }
-
-  .rp-student-response {
-    padding: 12px;
-    background: #eff6ff;
-    border-left: 3px solid #2f5bff;
-    border-radius: 6px;
-  }
-
-  .rp-student-response p {
-    margin: 0;
-    color: #0f172a;
-    font-size: 14px;
-  }
-
-  .rp-correct-answer {
-    padding: 12px;
-    background: #dcfce7;
-    border-left: 3px solid #15803d;
-    border-radius: 6px;
-  }
-
-  .rp-correct-answer p {
-    margin: 6px 0 0 0;
-    color: #0f172a;
-    font-size: 14px;
-  }
-
-  .rp-correct-answer p:first-child {
-    margin-top: 0;
-  }
-
-  .rp-feedback-section {
-    padding: 20px;
-    background: #f0fdf4;
-    border-top: 1px solid #e2e8f0;
-  }
-
-  .rp-feedback-section__title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #15803d;
-    margin: 0 0 12px 0;
-    text-transform: uppercase;
-  }
-
-  .rp-feedback-item {
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border-left: 3px solid #15803d;
-  }
-
-  .rp-feedback-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .rp-feedback-item__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .rp-feedback-category {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 6px;
-    background: #dcfce7;
-    color: #15803d;
-    border-radius: 4px;
-  }
-
-  .rp-feedback-date {
-    font-size: 12px;
-    color: #94a3b8;
-  }
-
-  .rp-feedback-item__content {
-    font-size: 14px;
-    color: #0f172a;
-    margin: 0;
-    line-height: 1.6;
-  }
-
-  .rp-feedback-generation {
-    padding: 20px;
-    border-top: 1px solid #e2e8f0;
-    background: #fefce8;
-  }
-
-  .rp-feedback-generation__header {
-    margin-bottom: 20px;
-  }
-
-  .rp-feedback-generation__title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-  }
-
-  .rp-feedback-generation__hint {
-    font-size: 13px;
-    color: #94a3b8;
-    margin: 0;
-  }
-
-  .rp-feedback-action {
-    margin-bottom: 20px;
-    padding: 16px;
-    background: white;
-    border: 1px solid #fde047;
-    border-radius: 8px;
-  }
-
-  .rp-feedback-action__note {
-    display: block;
-    margin-top: 8px;
-    font-size: 12px;
-    color: #94a3b8;
-  }
-
-  .rp-prompt-section {
-    margin-bottom: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-  }
-
-  .rp-prompt-section__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 12px 0;
-  }
-
-  .rp-prompt-form {
-    background: white;
-    padding: 16px;
-    border: 1px solid #fde047;
-    border-radius: 8px;
-  }
-
-  .rp-prompt-form__group {
-    margin-bottom: 12px;
-  }
-
-  .rp-prompt-form__label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
     color: #475569;
-    margin-bottom: 6px;
   }
 
-  .rp-prompt-form__hint {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-bottom: 6px;
-  }
-
-  .rp-select,
-  .rp-textarea {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: inherit;
-  }
-
-  .rp-textarea {
-    resize: vertical;
-    line-height: 1.5;
-  }
-
-  .rp-select:focus,
-  .rp-textarea:focus {
-    outline: none;
-    border-color: #2f5bff;
-    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
-  }
-
-  .rp-prompt-form__actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .rp-prompt-history {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-  }
-
-  .rp-prompt-history__title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0 0 12px 0;
-  }
-
-  .rp-prompt-history__content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .rp-prompt-history__item {
+  .rp-ai-feedback {
     background: white;
     padding: 12px;
-    border-radius: 6px;
-    border-left: 3px solid #cbd5e1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .rp-prompt-history__item-info {
-    flex: 1;
-  }
-
-  .rp-prompt-history__item-category {
-    font-size: 11px;
-    font-weight: 600;
-    color: #94a3b8;
-    margin-bottom: 4px;
-  }
-
-  .rp-prompt-history__item-text {
+    border-left: 3px solid #2f5bff;
+    border-radius: 4px;
     font-size: 13px;
-    color: #0f172a;
+    line-height: 1.6;
+    color: #475569;
+  }
+
+  .rp-ai-feedback p {
     margin: 0;
   }
 
-  .rp-prompt-history__item-date {
-    font-size: 12px;
-    color: #94a3b8;
-    flex-shrink: 0;
-    margin-left: 12px;
-  }
-
-  .rp-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .rp-badge--success {
-    background: #dcfce7;
-    color: #15803d;
-  }
-
-  .rp-badge--warning {
-    background: #fef3c7;
-    color: #b45309;
-  }
-
-  .rp-badge--info {
-    background: #e0f2fe;
-    color: #0369a1;
-  }
-
-  .rp-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-
-  .rp-btn--primary {
-    background: #2f5bff;
-    color: white;
-  }
-
-  .rp-btn--primary:hover {
-    background: #1e4ae8;
-  }
-
-  .rp-btn--large {
-    padding: 12px 16px;
-    font-size: 14px;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .rp-empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    background: white;
-    border-radius: 12px;
-  }
-
-  .rp-empty-state svg {
-    color: #94a3b8;
-    margin-bottom: 16px;
-  }
-
-  .rp-empty-state h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 16px 0 8px 0;
-  }
-
-  .rp-empty-state p {
-    font-size: 14px;
-    color: #94a3b8;
-    margin: 0;
+  .rp-badge--danger {
+    background: #fee2e2;
+    color: #b91c1c;
   }
 </style>
-
-<script>
-  // 각 응답에 대한 프롬프트 히스토리 로드
-  document.addEventListener('turbo:load', function() {
-    const historyContainers = document.querySelectorAll('.rp-prompt-history');
-
-    historyContainers.forEach(container => {
-      const matches = container.id.match(/prompt-histories-(\d+)/);
-      if (matches) {
-        const responseId = matches[1];
-        loadPromptHistories(responseId, container);
-      }
-    });
-  });
-
-  function loadPromptHistories(responseId, container) {
-    const contentDiv = container.querySelector('.rp-prompt-history__content');
-    const loadingDiv = container.querySelector('.rp-prompt-history__loading');
-
-    loadingDiv.style.display = 'block';
-
-    fetch(`<%= diagnostic_teacher_feedback_prompt_histories_path('RESPONSE_ID') %>`.replace('RESPONSE_ID', responseId), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      loadingDiv.style.display = 'none';
-
-      if (data.histories && data.histories.length > 0) {
-        contentDiv.innerHTML = data.histories.map(history => `
-          <div class="rp-prompt-history__item">
-            <div class="rp-prompt-history__item-info">
-              <div class="rp-prompt-history__item-category">${escapeHtml(history.category_label)}</div>
-              <p class="rp-prompt-history__item-text">${escapeHtml(history.prompt_text)}</p>
-            </div>
-            <div class="rp-prompt-history__item-date">${history.created_at_display}</div>
-          </div>
-        `).join('');
-      } else {
-        contentDiv.innerHTML = '<p style="color: #94a3b8; font-size: 13px; margin: 0;">프롬프트 이력이 없습니다</p>';
-      }
-    })
-    .catch(error => {
-      loadingDiv.style.display = 'none';
-      contentDiv.innerHTML = '<p style="color: #dc2626; font-size: 13px; margin: 0;">이력을 불러올 수 없습니다</p>';
-      console.error('Error loading prompt histories:', error);
-    });
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-</script>
