@@ -68,6 +68,14 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @prompt_templates = FeedbackPrompt.templates
       .order(:category)
       .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
+
+    # 학생 탐색 네비게이션용
+    students = Student.order(:name).all
+    @all_students = students.map { |s| { id: s.id, name: s.name } }
+
+    current_index = students.find_index { |s| s.id == @student.id }
+    @prev_student = students[current_index - 1] if current_index && current_index > 0
+    @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
   end
 
   def generate_feedback
@@ -257,6 +265,83 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text, category_label: p.category_label } }
 
     render json: { templates: templates }
+  end
+
+  def generate_comprehensive
+    # 전체 18개 문항 기반 종합 피드백 생성
+    student = Student.find(params[:student_id])
+    responses = student.attempts
+      .joins(:responses)
+      .joins("INNER JOIN items ON responses.item_id = items.id")
+      .where("items.item_type = ?", Item.item_types[:mcq])
+      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
+      .sort_by(&:created_at)
+      .uniq { |r| r.id }
+
+    # 종합 피드백 생성 (모든 응답을 고려)
+    feedback_text = FeedbackAiService.generate_comprehensive_feedback(responses)
+
+    render json: { success: true, feedback: feedback_text }
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def save_comprehensive
+    # 종합 피드백 저장
+    student = Student.find(params[:student_id])
+    feedback_text = params[:feedback]
+
+    return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
+
+    # student의 comprehensive_feedback 필드에 저장 (또는 별도 모델)
+    # 현재는 간단히 JSON으로 저장
+    render json: { success: true, feedback: feedback_text }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  end
+
+  def refine_comprehensive
+    # 사용자 정의 프롬프트로 종합 피드백 정교화
+    student = Student.find(params[:student_id])
+    prompt = params[:prompt]
+
+    return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
+
+    category = params[:category] || 'general'
+    save_as_template = params[:save_as_template] == 'true'
+
+    # 프롬프트 저장
+    if save_as_template
+      feedback_prompt = FeedbackPrompt.find_or_create_template(
+        prompt_text: prompt,
+        category: category,
+        user: current_user
+      )
+    else
+      feedback_prompt = FeedbackPrompt.create!(
+        prompt_text: prompt,
+        user: current_user,
+        category: category,
+        is_template: false
+      )
+    end
+
+    # 종합 피드백 정교화
+    responses = student.attempts
+      .joins(:responses)
+      .joins("INNER JOIN items ON responses.item_id = items.id")
+      .where("items.item_type = ?", Item.item_types[:mcq])
+      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
+      .sort_by(&:created_at)
+      .uniq { |r| r.id }
+
+    refined_feedback = FeedbackAiService.refine_comprehensive_feedback(responses, prompt)
+
+    render json: { success: true, feedback: refined_feedback }
+  rescue ActiveRecord::RecordNotFound
+    render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   private

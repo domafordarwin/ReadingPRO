@@ -9,6 +9,14 @@ class FeedbackAiService
     new.refine_feedback(response, prompt)
   end
 
+  def self.generate_comprehensive_feedback(responses)
+    new.generate_comprehensive_feedback(responses)
+  end
+
+  def self.refine_comprehensive_feedback(responses, prompt)
+    new.refine_comprehensive_feedback(responses, prompt)
+  end
+
   def generate_feedback(response)
     item = response.item
     selected_choice = response.selected_choice
@@ -80,7 +88,113 @@ class FeedbackAiService
     end
   end
 
+  def generate_comprehensive_feedback(responses)
+    summary = build_comprehensive_summary(responses)
+
+    begin
+      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+
+      prompt_text = <<~PROMPT
+        학생이 객관식 18개 문항을 풀었습니다. 다음 정보를 바탕으로 학생의 전체 성능을 분석하고 종합 피드백을 작성해주세요.
+
+        [학생 성과 요약]
+        #{summary}
+
+        [요청사항]
+        1. 학생의 강점을 구체적으로 언급해주세요.
+        2. 개선이 필요한 영역을 명확히 지적해주세요.
+        3. 향후 학습 방향에 대한 조언을 제시해주세요.
+        4. 격려적이고 건설적인 톤을 유지해주세요. (한글, 500-800자)
+      PROMPT
+
+      message = client.messages(
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: prompt_text
+          }
+        ]
+      )
+
+      message.content[0].text
+    rescue StandardError => e
+      Rails.logger.error("AI Comprehensive Feedback Generation Error: #{e.message}")
+      fallback_comprehensive_feedback(responses)
+    end
+  end
+
+  def refine_comprehensive_feedback(responses, user_prompt)
+    basic_feedback = generate_comprehensive_feedback(responses)
+    summary = build_comprehensive_summary(responses)
+
+    refinement_prompt = <<~PROMPT
+      다음은 학생의 18개 문항 시험에 대한 기본 종합 피드백입니다:
+
+      [학생 성과 요약]
+      #{summary}
+
+      [기본 피드백]
+      #{basic_feedback}
+
+      [교사 요청사항]
+      #{user_prompt}
+
+      위의 요청사항을 반영하여 더 구체적이고 도움이 되는 종합 피드백으로 정제해주세요.
+      학생의 동기부여를 높이기 위해 친절하고 격려적인 톤을 유지하세요.
+    PROMPT
+
+    begin
+      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+
+      message = client.messages(
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1200,
+        messages: [
+          {
+            role: "user",
+            content: refinement_prompt
+          }
+        ]
+      )
+
+      message.content[0].text
+    rescue StandardError => e
+      Rails.logger.error("AI Comprehensive Feedback Refinement Error: #{e.message}")
+      "#{basic_feedback}\n\n[교사 추가 의견]\n#{user_prompt}"
+    end
+  end
+
   private
+
+  def build_comprehensive_summary(responses)
+    total = responses.length
+    correct = responses.count { |r| r.selected_choice&.choice_score&.is_key }
+    incorrect = total - correct
+    correct_percentage = total > 0 ? ((correct.to_f / total) * 100).round(1) : 0
+
+    by_difficulty = responses.group_by { |r| r.item.difficulty || '미지정' }
+      .transform_values do |items|
+        correct_count = items.count { |r| r.selected_choice&.choice_score&.is_key }
+        "#{correct_count}/#{items.length}"
+      end
+
+    summary = "- 총 문항: #{total}개\n"
+    summary += "- 정답: #{correct}개 (#{correct_percentage}%)\n"
+    summary += "- 오답: #{incorrect}개\n"
+    summary += "\n[난이도별 정답률]\n"
+    by_difficulty.each do |difficulty, count|
+      summary += "- #{difficulty}: #{count}\n"
+    end
+
+    summary
+  end
+
+  def fallback_comprehensive_feedback(responses)
+    summary = build_comprehensive_summary(responses)
+    "다음은 학생의 시험 결과 요약입니다:\n\n#{summary}\n\n자세한 분석을 위해 각 문항별 피드백을 참고해주세요."
+  end
 
   def build_feedback_prompt(item, selected_choice, response)
     correct_choice = item.item_choices.find(&:correct?)

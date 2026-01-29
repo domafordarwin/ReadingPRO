@@ -1,11 +1,36 @@
 <% content_for :page_title, "학생 피드백" %>
 
 <div class="rp-page-header">
-  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-    <%= link_to "← 돌아가기", diagnostic_teacher_feedbacks_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+  <!-- 학생 탐색 네비게이션 -->
+  <div class="rp-student-nav">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <%= link_to "← 목록", diagnostic_teacher_feedbacks_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+      <% if @prev_student %>
+        <%= link_to "< 이전", diagnostic_teacher_feedback_path(@prev_student[:id]), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+      <% end %>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center;">
+      <input type="text" id="student-search" class="rp-student-search" placeholder="학생 검색..." />
+      <select id="student-select" class="rp-student-select">
+        <option value="">학생 선택</option>
+        <% @all_students.each do |student| %>
+          <option value="<%= student[:id] %>" <%= 'selected' if student[:id] == @student.id %>>
+            <%= student[:name] %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <% if @next_student %>
+        <%= link_to "다음 >", diagnostic_teacher_feedback_path(@next_student[:id]), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+      <% end %>
+    </div>
   </div>
+
   <h1 class="rp-page-header__title"><%= @student.name %>의 객관식 피드백</h1>
-  <p class="rp-page-header__subtitle">18개 문항 종합 분석 (정답/오답/점수)</p>
+  <p class="rp-page-header__subtitle">18개 문항 종합 분석</p>
 </div>
 
 <% if @responses.any? %>
@@ -40,127 +65,71 @@
   <!-- 수평선 -->
   <div style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>
 
-  <!-- ===== 하단: 상세 피드백 섹션 ===== -->
+  <!-- ===== 하단: 통합 피드백 섹션 ===== -->
   <div style="margin-top: 32px;">
     <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-      개별 피드백 및 분석
+      종합 분석 및 피드백
     </h2>
 
-    <div class="rp-feedback-container" data-student-id="<%= @student.id %>">
-      <% @responses.each_with_index do |response, index| %>
-        <div class="rp-feedback-card" data-response-id="<%= response.id %>">
-          <!-- 카드 헤더 -->
-          <div class="rp-feedback-card-header">
-            <div class="rp-feedback-question-number">문항 <%= index + 1 %></div>
-            <% if response.selected_choice %>
-              <span class="rp-badge <%= response.selected_choice.choice_score&.is_key ? 'rp-badge--success' : 'rp-badge--danger' %>">
-                <%= response.selected_choice.choice_score&.is_key ? '정답' : '오답' %>
-              </span>
-            <% else %>
-              <span class="rp-badge rp-badge--secondary">미응답</span>
-            <% end %>
-          </div>
+    <div class="rp-comprehensive-feedback" data-student-id="<%= @student.id %>">
+      <!-- 피드백 섹션 -->
+      <div class="rp-feedback-section">
+        <div class="rp-section-header">
+          <h4>18개 문항 종합 피드백</h4>
+          <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback">
+            AI 종합 피드백 생성
+          </button>
+        </div>
 
-          <!-- 문항 내용 -->
-          <div class="rp-feedback-section">
-            <h4>문항</h4>
-            <p><%= response.item.prompt %></p>
-            <% if response.item.explanation.present? %>
-              <details class="rp-expandable-details">
-                <summary style="cursor: pointer; font-size: 12px; color: #64748b;">문항 해설 보기</summary>
-                <p style="margin-top: 8px; padding: 8px; background: #f1f5f9; border-radius: 4px; font-size: 12px;">
-                  <%= response.item.explanation %>
-                </p>
-              </details>
-            <% end %>
-          </div>
+        <!-- 피드백 표시 -->
+        <div class="rp-feedback-display" id="comprehensive-feedback-display">
+          <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 위의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
+        </div>
 
-          <!-- 피드백 섹션 -->
-          <div class="rp-feedback-section" id="feedback-section-<%= response.id %>">
-            <div class="rp-section-header">
-              <h4>피드백</h4>
-              <% ai_feedback = response.response_feedbacks.where(source: 'ai').last %>
-              <% if ai_feedback.present? %>
-                <button class="rp-btn-edit-small" data-action="edit-feedback">수정</button>
-              <% else %>
-                <button class="rp-btn rp-btn--primary rp-btn--xs" data-action="generate-feedback">
-                  AI 피드백 생성
-                </button>
-              <% end %>
-            </div>
-
-            <!-- 피드백 표시 -->
-            <div class="rp-feedback-display">
-              <% ai_feedback = response.response_feedbacks.where(source: 'ai').last %>
-              <% teacher_feedback = response.response_feedbacks.where(source: 'teacher').last %>
-
-              <% if ai_feedback.present? %>
-                <div class="rp-feedback-item rp-feedback-item--ai">
-                  <span class="rp-badge rp-badge--info">AI</span>
-                  <p class="rp-feedback-text"><%= ai_feedback.feedback %></p>
-                  <small class="rp-feedback-meta"><%= ai_feedback.created_at.strftime("%Y-%m-%d %H:%M") %></small>
-                </div>
-              <% end %>
-
-              <% if teacher_feedback.present? %>
-                <div class="rp-feedback-item rp-feedback-item--teacher">
-                  <span class="rp-badge rp-badge--success">교사</span>
-                  <p class="rp-feedback-text"><%= teacher_feedback.feedback %></p>
-                  <small class="rp-feedback-meta"><%= teacher_feedback.created_at.strftime("%Y-%m-%d %H:%M") %></small>
-                </div>
-              <% end %>
-
-              <% if ai_feedback.blank? && teacher_feedback.blank? %>
-                <p style="color: #94a3b8; font-size: 13px;">피드백이 아직 없습니다.</p>
-              <% end %>
-            </div>
-
-            <!-- 피드백 편집 -->
-            <div class="rp-feedback-edit" style="display: none;">
-              <textarea class="rp-feedback-textarea" rows="6" placeholder="피드백을 입력하세요..."><%= teacher_feedback&.feedback || ai_feedback&.feedback %></textarea>
-              <div class="rp-edit-actions">
-                <button class="rp-btn rp-btn--primary rp-btn--sm" data-action="save-feedback">저장</button>
-                <button class="rp-btn rp-btn--secondary rp-btn--sm" data-action="cancel-feedback">취소</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 프롬프트 정교화 섹션 -->
-          <div class="rp-feedback-section rp-prompt-section">
-            <h4>프롬프트로 피드백 정교화</h4>
-
-            <div class="rp-prompt-controls">
-              <div class="rp-form-group">
-                <label for="category-<%= response.id %>">카테고리</label>
-                <select id="category-<%= response.id %>" class="rp-prompt-category">
-                  <option value="general">일반</option>
-                  <option value="comprehension">이해력</option>
-                  <option value="explanation">설명</option>
-                  <option value="difficulty">난이도</option>
-                  <option value="strategy">전략</option>
-                </select>
-              </div>
-
-              <div class="rp-form-group">
-                <label for="prompt-<%= response.id %>">커스텀 프롬프트</label>
-                <textarea id="prompt-<%= response.id %>" class="rp-prompt-input" rows="3"
-                          placeholder="예: 더 친절한 톤으로 설명해주세요"></textarea>
-              </div>
-
-              <div class="rp-form-group">
-                <label class="rp-checkbox">
-                  <input type="checkbox" class="rp-save-template">
-                  <span>템플릿으로 저장</span>
-                </label>
-              </div>
-
-              <button class="rp-btn rp-btn--primary" data-action="refine-feedback" data-response-id="<%= response.id %>">
-                프롬프트로 정교화
-              </button>
-            </div>
+        <!-- 피드백 편집 -->
+        <div class="rp-feedback-edit" style="display: none;">
+          <textarea class="rp-feedback-textarea" id="comprehensive-feedback-textarea" rows="8" placeholder="종합 피드백을 입력하세요..."></textarea>
+          <div class="rp-edit-actions">
+            <button class="rp-btn rp-btn--primary rp-btn--sm" id="save-comprehensive-feedback">저장</button>
+            <button class="rp-btn rp-btn--secondary rp-btn--sm" id="cancel-comprehensive-feedback">취소</button>
           </div>
         </div>
-      <% end %>
+      </div>
+
+      <!-- 프롬프트 정교화 섹션 -->
+      <div class="rp-feedback-section rp-prompt-section">
+        <h4>프롬프트로 피드백 정교화</h4>
+
+        <div class="rp-prompt-controls">
+          <div class="rp-form-group">
+            <label for="comprehensive-category">카테고리</label>
+            <select id="comprehensive-category" class="rp-prompt-category">
+              <option value="general">일반</option>
+              <option value="comprehension">이해력</option>
+              <option value="explanation">설명</option>
+              <option value="difficulty">난이도</option>
+              <option value="strategy">전략</option>
+            </select>
+          </div>
+
+          <div class="rp-form-group">
+            <label for="comprehensive-prompt">커스텀 프롬프트</label>
+            <textarea id="comprehensive-prompt" class="rp-prompt-input" rows="4"
+                      placeholder="예: 학생의 약점 분석과 개선 방안을 포함한 피드백을 만들어주세요"></textarea>
+          </div>
+
+          <div class="rp-form-group">
+            <label class="rp-checkbox">
+              <input type="checkbox" id="comprehensive-save-template">
+              <span>템플릿으로 저장</span>
+            </label>
+          </div>
+
+          <button class="rp-btn rp-btn--primary" id="refine-comprehensive-feedback">
+            프롬프트로 정교화
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -178,6 +147,43 @@
 </div>
 
 <style>
+  /* ===== 학생 탐색 네비게이션 ===== */
+  .rp-student-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rp-student-search {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 150px;
+    font-family: inherit;
+  }
+
+  .rp-student-search::placeholder {
+    color: #94a3b8;
+  }
+
+  .rp-student-select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+  }
+
   /* ===== 상단 테이블 스타일 ===== */
   .rp-overview-section {
     background: white;
@@ -612,15 +618,68 @@
     }
 
     init() {
-      this.bindFeedbackEvents();
+      this.bindStudentNavigation();
+      this.bindComprehensiveFeedbackEvents();
       this.updateCorrectCount();
     }
 
+    // 학생 탐색 네비게이션 바인딩
+    bindStudentNavigation() {
+      const studentSelect = document.getElementById('student-select');
+      const studentSearch = document.getElementById('student-search');
+
+      if (studentSelect) {
+        studentSelect.addEventListener('change', (e) => {
+          if (e.target.value) {
+            window.location.href = `/diagnostic_teacher/feedbacks/${e.target.value}`;
+          }
+        });
+      }
+
+      if (studentSearch) {
+        studentSearch.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+          const options = studentSelect.querySelectorAll('option');
+
+          options.forEach(option => {
+            if (option.value === '') return;
+            const text = option.textContent.toLowerCase();
+            option.style.display = text.includes(query) ? '' : 'none';
+          });
+        });
+      }
+    }
+
+    // 종합 피드백 이벤트 바인딩
+    bindComprehensiveFeedbackEvents() {
+      // AI 종합 피드백 생성
+      const generateBtn = document.getElementById('generate-comprehensive-feedback');
+      if (generateBtn) {
+        generateBtn.addEventListener('click', () => this.generateComprehensiveFeedback());
+      }
+
+      // 편집 모드 토글
+      const feedbackDisplay = document.getElementById('comprehensive-feedback-display');
+      if (feedbackDisplay) {
+        feedbackDisplay.addEventListener('click', (e) => {
+          if (e.target.closest('.rp-feedback-item')) {
+            this.toggleFeedbackEdit();
+          }
+        });
+      }
+
+      // 저장/취소 버튼
+      const saveBtn = document.getElementById('save-comprehensive-feedback');
+      const cancelBtn = document.getElementById('cancel-comprehensive-feedback');
+      const refineBtn = document.getElementById('refine-comprehensive-feedback');
+
+      if (saveBtn) saveBtn.addEventListener('click', () => this.saveComprehensiveFeedback());
+      if (cancelBtn) cancelBtn.addEventListener('click', () => this.cancelFeedbackEdit());
+      if (refineBtn) refineBtn.addEventListener('click', () => this.refineComprehensiveFeedback());
+    }
+
     bindFeedbackEvents() {
-      // AI 피드백 생성
-      document.querySelectorAll('[data-action="generate-feedback"]').forEach(btn => {
-        btn.addEventListener('click', (e) => this.generateFeedback(e.target));
-      });
+      // 기존 개별 피드백 바인딩 (필요시 유지)
 
       // 피드백 수정
       document.querySelectorAll('[data-action="edit-feedback"]').forEach(btn => {
@@ -820,6 +879,197 @@
       }
     }
 
+    // 종합 피드백 생성
+    async generateComprehensiveFeedback() {
+      const btn = document.getElementById('generate-comprehensive-feedback');
+      const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+
+      btn.disabled = true;
+      btn.textContent = 'AI 생성 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${studentId}/generate_comprehensive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const displayArea = document.getElementById('comprehensive-feedback-display');
+          const now = new Date().toLocaleString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
+
+          displayArea.innerHTML = `
+            <div class="rp-feedback-item rp-feedback-item--ai">
+              <span class="rp-badge rp-badge--info">AI 종합</span>
+              <p class="rp-feedback-text">${data.feedback}</p>
+              <small class="rp-feedback-meta">${now}</small>
+              <button class="rp-btn-edit-small" onclick="this.closest('.rp-comprehensive-feedback').__feedbackPage.toggleFeedbackEdit()">수정</button>
+            </div>
+          `;
+
+          btn.textContent = '재생성';
+          this.showToast('AI 종합 피드백이 생성되었습니다', 'success');
+          window.__feedbackPage = this; // 전역 참조
+        } else {
+          alert(data.error || 'AI 생성 실패');
+        }
+      } catch (error) {
+        alert('네트워크 오류');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    toggleFeedbackEdit() {
+      const displayArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display');
+      const editArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-edit');
+
+      if (displayArea && editArea) {
+        const isDisplaying = displayArea.style.display !== 'none';
+        displayArea.style.display = isDisplaying ? 'none' : 'block';
+        editArea.style.display = isDisplaying ? 'block' : 'none';
+
+        if (isDisplaying) {
+          const feedbackText = displayArea.querySelector('.rp-feedback-text')?.textContent || '';
+          document.getElementById('comprehensive-feedback-textarea').value = feedbackText;
+          document.getElementById('comprehensive-feedback-textarea').focus();
+        }
+      }
+    }
+
+    cancelFeedbackEdit() {
+      const displayArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display');
+      const editArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-edit');
+
+      if (displayArea && editArea) {
+        displayArea.style.display = 'block';
+        editArea.style.display = 'none';
+      }
+    }
+
+    async saveComprehensiveFeedback() {
+      const btn = document.getElementById('save-comprehensive-feedback');
+      const textarea = document.getElementById('comprehensive-feedback-textarea');
+      const feedbackText = textarea.value.trim();
+
+      if (!feedbackText) {
+        alert('피드백 내용을 입력하세요');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
+
+      try {
+        const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${studentId}/save_comprehensive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({ feedback: feedbackText })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const displayArea = document.getElementById('comprehensive-feedback-display');
+          const editArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-edit');
+
+          displayArea.innerHTML = `
+            <div class="rp-feedback-item rp-feedback-item--teacher">
+              <span class="rp-badge rp-badge--success">교사</span>
+              <p class="rp-feedback-text">${feedbackText}</p>
+              <small class="rp-feedback-meta">방금 저장됨</small>
+              <button class="rp-btn-edit-small" onclick="this.closest('.rp-comprehensive-feedback').__feedbackPage.toggleFeedbackEdit()">수정</button>
+            </div>
+          `;
+
+          displayArea.style.display = 'block';
+          editArea.style.display = 'none';
+          this.showToast('피드백이 저장되었습니다', 'success');
+        } else {
+          alert(data.error || '저장 실패');
+        }
+      } catch (error) {
+        alert('네트워크 오류');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '저장';
+      }
+    }
+
+    async refineComprehensiveFeedback() {
+      const btn = document.getElementById('refine-comprehensive-feedback');
+      const category = document.getElementById('comprehensive-category').value;
+      const promptText = document.getElementById('comprehensive-prompt').value.trim();
+      const saveAsTemplate = document.getElementById('comprehensive-save-template').checked;
+
+      if (!promptText) {
+        alert('프롬프트를 입력하세요');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '정교화 중...';
+
+      try {
+        const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${studentId}/refine_comprehensive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({
+            prompt: promptText,
+            category: category,
+            save_as_template: saveAsTemplate
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const displayArea = document.getElementById('comprehensive-feedback-display');
+          const now = new Date().toLocaleString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
+
+          displayArea.innerHTML = `
+            <div class="rp-feedback-item rp-feedback-item--teacher">
+              <span class="rp-badge rp-badge--success">교사</span>
+              <p class="rp-feedback-text">${data.feedback}</p>
+              <small class="rp-feedback-meta">${now}</small>
+              <button class="rp-btn-edit-small" onclick="this.closest('.rp-comprehensive-feedback').__feedbackPage.toggleFeedbackEdit()">수정</button>
+            </div>
+          `;
+
+          document.getElementById('comprehensive-prompt').value = '';
+          document.getElementById('comprehensive-save-template').checked = false;
+
+          this.showToast('피드백이 정교화되었습니다', 'success');
+          if (saveAsTemplate) this.showToast('템플릿으로 저장되었습니다', 'info');
+        } else {
+          alert(data.error || '정교화 실패');
+        }
+      } catch (error) {
+        alert('네트워크 오류');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '프롬프트로 정교화';
+      }
+    }
+
     updateCorrectCount() {
       const totalCorrect = document.querySelectorAll('.rp-score-badge--correct').length;
       document.getElementById('correct-count').textContent = totalCorrect;
@@ -862,6 +1112,13 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    new FeedbackPage();
+    const feedbackPage = new FeedbackPage();
+    window.__feedbackPage = feedbackPage;
+
+    // 종합 피드백 컨테이너에도 참조 추가
+    const comprehensiveContainer = document.querySelector('.rp-comprehensive-feedback');
+    if (comprehensiveContainer) {
+      comprehensiveContainer.__feedbackPage = feedbackPage;
+    }
   });
 </script>

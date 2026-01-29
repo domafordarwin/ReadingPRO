@@ -111,6 +111,9 @@ Rails.application.routes.draw do
     get "feedback_prompts/templates", to: "feedback#prompt_templates", as: "feedback_prompt_templates"
     get "feedbacks/:response_id/histories", to: "feedback#prompt_histories", as: "feedback_prompt_histories"
     post "feedbacks/histories/:history_id/load", to: "feedback#load_prompt_history", as: "load_prompt_history"
+    post "feedbacks/:student_id/generate_comprehensive", to: "feedback#generate_comprehensive", as: "feedback_generate_comprehensive"
+    post "feedbacks/:student_id/save_comprehensive", to: "feedback#save_comprehensive", as: "feedback_save_comprehensive"
+    post "feedbacks/:student_id/refine_comprehensive", to: "feedback#refine_comprehensive", as: "feedback_refine_comprehensive"
 
     # 공지사항 및 상담 관리
     get "notices", to: "dashboard#notices", as: "notices"
