@@ -9,7 +9,7 @@
 </div>
 
 <% if @responses.any? %>
-  <!-- ===== 상단: 전체 문항 한눈에 보기 테이블 ===== -->
+  <!-- ===== 상단: 응답 현황 (응축된 형태) ===== -->
   <div class="rp-overview-section">
     <h2 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
       객관식 응답 현황
@@ -18,82 +18,22 @@
       </span>
     </h2>
 
-    <div class="rp-table-wrapper">
-      <table class="rp-overview-table">
-        <thead>
-          <tr>
-            <th>문항</th>
-            <th>정답</th>
-            <th>학생답</th>
-            <th>점수</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @responses.each_with_index do |response, index| %>
-            <tr class="rp-table-row" data-response-id="<%= response.id %>">
-              <!-- 문항번호 -->
-              <td class="rp-table-cell rp-table-cell--question">
-                <strong><%= index + 1 %></strong>
-              </td>
-
-              <!-- 정답 -->
-              <td class="rp-table-cell rp-table-cell--correct">
-                <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
-                <% if correct_choice %>
-                  <span class="rp-choice-badge rp-choice-badge--correct">
-                    <%= correct_choice.choice_letter %>
-                  </span>
-                  <span class="rp-choice-label"><%= correct_choice.choice_text.truncate(30) %></span>
-                <% end %>
-              </td>
-
-              <!-- 학생답 (클릭으로 수정 가능) -->
-              <td class="rp-table-cell rp-table-cell--student">
-                <div class="rp-student-answer" data-response-id="<%= response.id %>" data-item-id="<%= response.item.id %>">
-                  <% if response.selected_choice %>
-                    <span class="rp-choice-badge rp-choice-badge--student">
-                      <%= response.selected_choice.choice_letter %>
-                    </span>
-                    <span class="rp-choice-label rp-answer-clickable">
-                      <%= response.selected_choice.choice_text.truncate(30) %>
-                    </span>
-                  <% else %>
-                    <span class="rp-no-answer">미응답</span>
-                  <% end %>
-                </div>
-
-                <!-- 수정 모드 (숨김) -->
-                <div class="rp-answer-edit-mode" style="display: none; width: 100%;">
-                  <select class="rp-answer-select" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px;">
-                    <option value="">-- 선택 --</option>
-                    <% response.item.item_choices.each do |choice| %>
-                      <option value="<%= choice.id %>" <%= 'selected' if choice.id == response.selected_choice_id %>>
-                        <%= choice.choice_letter %>. <%= choice.choice_text %>
-                      </option>
-                    <% end %>
-                  </select>
-                  <div style="display: flex; gap: 4px; margin-top: 6px;">
-                    <button class="rp-btn rp-btn--primary rp-btn--xs" data-action="save-answer">저장</button>
-                    <button class="rp-btn rp-btn--secondary rp-btn--xs" data-action="cancel-answer">취소</button>
-                  </div>
-                </div>
-              </td>
-
-              <!-- 점수 -->
-              <td class="rp-table-cell rp-table-cell--score">
-                <% if response.selected_choice %>
-                  <% is_correct = response.selected_choice.choice_score&.is_key %>
-                  <span class="rp-score-badge <%= is_correct ? 'rp-score-badge--correct' : 'rp-score-badge--incorrect' %>">
-                    <%= is_correct ? '✓ 정답' : '✗ 오답' %>
-                  </span>
-                <% else %>
-                  <span class="rp-score-badge rp-score-badge--unanswered">미응답</span>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+    <div class="rp-answer-grid">
+      <% @responses.each_with_index do |response, index| %>
+        <div class="rp-answer-cell" data-response-id="<%= response.id %>">
+          <div class="rp-answer-cell-number"><%= index + 1 %></div>
+          <div class="rp-answer-cell-status">
+            <% if response.selected_choice %>
+              <% is_correct = response.selected_choice.choice_score&.is_key %>
+              <span class="rp-cell-badge <%= is_correct ? 'rp-cell-badge--correct' : 'rp-cell-badge--incorrect' %>">
+                <%= is_correct ? '✓' : '✗' %>
+              </span>
+            <% else %>
+              <span class="rp-cell-badge rp-cell-badge--unanswered">-</span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 
@@ -247,59 +187,74 @@
     margin-bottom: 24px;
   }
 
-  .rp-table-wrapper {
-    overflow-x: auto;
+  /* 응축된 응답 현황 그리드 */
+  .rp-answer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+    gap: 8px;
+    max-width: 100%;
   }
 
-  .rp-overview-table {
-    width: 100%;
-    border-collapse: collapse;
+  .rp-answer-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 60px;
+  }
+
+  .rp-answer-cell:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .rp-answer-cell-number {
     font-size: 13px;
-  }
-
-  .rp-overview-table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .rp-overview-table th {
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: 600;
+    font-weight: 700;
     color: #0f172a;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 12px;
+    margin-bottom: 6px;
   }
 
-  .rp-table-row {
-    border-bottom: 1px solid #e2e8f0;
-    transition: background 0.15s;
+  .rp-answer-cell-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
   }
 
-  .rp-table-row:hover {
-    background: #f8fafc;
+  .rp-cell-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
   }
 
-  .rp-table-cell {
-    padding: 14px 16px;
-    color: #475569;
+  .rp-cell-badge--correct {
+    background: #22c55e;
   }
 
-  .rp-table-cell--question {
-    font-weight: 600;
-    color: #0f172a;
-    width: 60px;
+  .rp-cell-badge--incorrect {
+    background: #ef4444;
   }
 
-  .rp-table-cell--correct,
-  .rp-table-cell--student {
-    min-width: 200px;
-  }
-
-  .rp-table-cell--score {
-    text-align: center;
-    width: 120px;
+  .rp-cell-badge--unanswered {
+    background: #d1d5db;
+    color: #6b7280;
+    font-size: 16px;
   }
 
   .rp-choice-badge {
@@ -657,98 +612,8 @@
     }
 
     init() {
-      this.bindTableClickEvents();
       this.bindFeedbackEvents();
       this.updateCorrectCount();
-    }
-
-    // 표에서 학생답 클릭 이벤트
-    bindTableClickEvents() {
-      document.querySelectorAll('.rp-answer-clickable').forEach(element => {
-        element.addEventListener('click', (e) => {
-          const row = e.target.closest('.rp-table-row');
-          const answerDiv = row.querySelector('.rp-student-answer');
-          const editDiv = row.querySelector('.rp-answer-edit-mode');
-
-          answerDiv.style.display = 'none';
-          editDiv.style.display = 'block';
-          editDiv.querySelector('.rp-answer-select').focus();
-        });
-      });
-
-      // 답변 저장
-      document.querySelectorAll('[data-action="save-answer"]').forEach(btn => {
-        btn.addEventListener('click', (e) => this.saveAnswer(e.target));
-      });
-
-      // 답변 취소
-      document.querySelectorAll('[data-action="cancel-answer"]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const row = e.target.closest('.rp-table-row');
-          row.querySelector('.rp-student-answer').style.display = 'block';
-          row.querySelector('.rp-answer-edit-mode').style.display = 'none';
-        });
-      });
-    }
-
-    async saveAnswer(button) {
-      const row = button.closest('.rp-table-row');
-      const responseId = row.dataset.responseId;
-      const select = row.querySelector('.rp-answer-select');
-      const selectedChoiceId = select.value;
-
-      if (!selectedChoiceId) {
-        alert('선택지를 선택하세요');
-        return;
-      }
-
-      button.disabled = true;
-      button.textContent = '저장 중...';
-
-      try {
-        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/update_answer`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': this.getCSRFToken()
-          },
-          body: JSON.stringify({ selected_choice_id: selectedChoiceId })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          // 표 업데이트
-          const studentCell = row.querySelector('.rp-student-answer');
-          studentCell.innerHTML = `
-            <span class="rp-choice-badge rp-choice-badge--student">${data.choice_label}</span>
-            <span class="rp-choice-label rp-answer-clickable">${data.choice_text.substring(0, 30)}</span>
-          `;
-
-          // 점수 업데이트
-          const scoreCell = row.querySelector('.rp-table-cell--score');
-          const badgeClass = data.is_correct ? 'rp-score-badge--correct' : 'rp-score-badge--incorrect';
-          const badgeText = data.is_correct ? '✓ 정답' : '✗ 오답';
-          scoreCell.innerHTML = `<span class="rp-score-badge ${badgeClass}">${badgeText}</span>`;
-
-          // 정답 개수 업데이트
-          this.updateCorrectCount();
-
-          // 모드 전환
-          row.querySelector('.rp-student-answer').style.display = 'block';
-          row.querySelector('.rp-answer-edit-mode').style.display = 'none';
-
-          this.showToast('답변이 수정되었습니다', 'success');
-          this.bindTableClickEvents(); // 클릭 이벤트 재바인딩
-        } else {
-          alert(data.error || '저장 실패');
-        }
-      } catch (error) {
-        alert('네트워크 오류');
-      } finally {
-        button.disabled = false;
-        button.textContent = '저장';
-      }
     }
 
     bindFeedbackEvents() {
