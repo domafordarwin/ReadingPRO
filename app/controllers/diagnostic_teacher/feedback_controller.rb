@@ -8,7 +8,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   before_action :set_response, only: [:show, :generate_feedback, :refine_feedback]
 
   def index
-    @current_page = "feedbacks"
+    @current_page = "feedback"
 
     # MCQ 문항에 대한 응답 목록 (학생별로 그룹화)
     mcq_responses = Response
@@ -44,7 +44,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   end
 
   def show
-    @current_page = "feedbacks"
+    @current_page = "feedback"
 
     # 학생의 MCQ 응답들
     @responses = @student.attempts.flat_map(&:responses)
@@ -132,7 +132,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   private
 
   def set_role
-    @current_role = "diagnostic_teacher"
+    @current_role = "teacher"
   end
 
   def set_student
