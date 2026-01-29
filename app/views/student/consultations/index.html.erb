@@ -1,0 +1,381 @@
+<% content_for :page_title, "상담 게시판" %>
+
+<div class="rp-page-header">
+  <div class="rp-page-header__top">
+    <h1 class="rp-page-header__title">상담 게시판</h1>
+    <div class="rp-page-header__actions">
+      <%= link_to "새 글 작성", new_student_consultation_path, class: "rp-btn rp-btn--primary" %>
+    </div>
+  </div>
+</div>
+
+<!-- 통계 카드 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-card__label">내 게시글</div>
+    <div class="rp-stat-card__value"><%= @my_posts_count %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-card__label">답변 대기</div>
+    <div class="rp-stat-card__value rp-stat-card__value--warning"><%= @open_posts_count %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-card__label">답변 완료</div>
+    <div class="rp-stat-card__value rp-stat-card__value--success"><%= @answered_posts_count %></div>
+  </div>
+</div>
+
+<!-- 검색 및 필터 -->
+<div class="rp-filter-section">
+  <%= form_with url: student_consultations_path, method: :get, class: "rp-filter-form", local: true do |f| %>
+    <div class="rp-filter-form__row">
+      <!-- 검색 -->
+      <div class="rp-filter-form__group rp-filter-form__group--search">
+        <%= f.text_field :search,
+            value: @search_query,
+            placeholder: "제목 또는 내용으로 검색",
+            class: "rp-input" %>
+      </div>
+
+      <!-- 카테고리 필터 -->
+      <div class="rp-filter-form__group">
+        <%= f.select :category,
+            options_for_select(
+              [["전체 카테고리", ""]] +
+              ConsultationPost::CATEGORY_LABELS.map { |k, v| [v, k] },
+              @category_filter
+            ),
+            {},
+            class: "rp-select" %>
+      </div>
+
+      <!-- 상태 필터 -->
+      <div class="rp-filter-form__group">
+        <%= f.select :status,
+            options_for_select(
+              [["전체 상태", ""], ["답변 대기", "open"], ["답변 완료", "answered"], ["마감", "closed"]],
+              @status_filter
+            ),
+            {},
+            class: "rp-select" %>
+      </div>
+
+      <!-- 내 글만 보기 -->
+      <div class="rp-filter-form__group">
+        <label class="rp-checkbox">
+          <%= f.check_box :my_posts, { checked: @show_my_posts }, "1", "0" %>
+          <span>내 글만</span>
+        </label>
+      </div>
+
+      <div class="rp-filter-form__actions">
+        <%= f.submit "검색", class: "rp-btn rp-btn--primary" %>
+        <%= link_to "초기화", student_consultations_path, class: "rp-btn rp-btn--secondary" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- 게시글 목록 -->
+<div class="rp-consultation-list">
+  <% if @posts.any? %>
+    <div class="rp-table-responsive">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th class="rp-table__th" style="width: 10%;">상태</th>
+            <th class="rp-table__th" style="width: 12%;">카테고리</th>
+            <th class="rp-table__th" style="width: 40%;">제목</th>
+            <th class="rp-table__th" style="width: 8%;">조회</th>
+            <th class="rp-table__th" style="width: 12%;">최근 활동</th>
+            <th class="rp-table__th" style="width: 10%;">공개</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @posts.each do |post| %>
+            <tr class="rp-table__row rp-table__row--clickable"
+                onclick="window.location='<%= student_consultation_path(post) %>'">
+              <td class="rp-table__td">
+                <% if post.closed? %>
+                  <span class="rp-badge rp-badge--gray">마감</span>
+                <% elsif post.answered? %>
+                  <span class="rp-badge rp-badge--success">답변완료</span>
+                <% else %>
+                  <span class="rp-badge rp-badge--warning">답변대기</span>
+                <% end %>
+              </td>
+              <td class="rp-table__td">
+                <span class="rp-badge rp-badge--outline"><%= post.category_label %></span>
+              </td>
+              <td class="rp-table__td">
+                <div class="rp-consultation-title">
+                  <%= post.title %>
+                  <% if post.consultation_comments.any? %>
+                    <span class="rp-badge rp-badge--small rp-badge--info">
+                      <%= post.consultation_comments.count %>
+                    </span>
+                  <% end %>
+                  <% if post.has_teacher_reply? %>
+                    <span class="rp-badge rp-badge--small rp-badge--success">교사답변</span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="rp-table__td"><%= post.views_count %></td>
+              <td class="rp-table__td">
+                <%= time_ago_in_words(post.last_activity_at) %> 전
+              </td>
+              <td class="rp-table__td">
+                <% if post.private? %>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="비공개 게시글">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                <% else %>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="공개 게시글">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 8v4M12 16h.01"></path>
+                  </svg>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="rp-pagination">
+      <%= paginate @posts %>
+    </div>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <h3>게시글이 없습니다</h3>
+      <p>새로운 상담 글을 작성해보세요.</p>
+      <%= link_to "글 작성하기", new_student_consultation_path, class: "rp-btn rp-btn--primary" %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  .rp-page-header__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .rp-page-header__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .rp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .rp-stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .rp-stat-card__label {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  .rp-stat-card__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .rp-stat-card__value--warning {
+    color: #f59e0b;
+  }
+
+  .rp-stat-card__value--success {
+    color: #22c55e;
+  }
+
+  .rp-filter-section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .rp-filter-form__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .rp-filter-form__group--search {
+    grid-column: 1 / -1;
+  }
+
+  .rp-filter-form__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+  }
+
+  .rp-table-responsive {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .rp-table th,
+  .rp-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .rp-table th {
+    font-weight: 600;
+    color: #94a3b8;
+    background: #f8fafc;
+  }
+
+  .rp-table__row--clickable {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .rp-table__row--clickable:hover {
+    background: #f8fafc;
+  }
+
+  .rp-consultation-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .rp-badge--small {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+
+  .rp-badge--success {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .rp-badge--warning {
+    background: #fef3c7;
+    color: #b45309;
+  }
+
+  .rp-badge--info {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+
+  .rp-badge--gray {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  .rp-badge--outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 3px 7px;
+  }
+
+  .rp-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: white;
+    border-radius: 12px;
+  }
+
+  .rp-empty-state svg {
+    color: #94a3b8;
+    margin-bottom: 16px;
+  }
+
+  .rp-empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-empty-state p {
+    color: #94a3b8;
+    margin: 0 0 16px 0;
+  }
+
+  .rp-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .rp-checkbox input {
+    cursor: pointer;
+  }
+
+  .rp-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 16px;
+  }
+
+  .rp-pagination a,
+  .rp-pagination span {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-decoration: none;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-pagination a:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  .rp-pagination .current {
+    background: #2f5bff;
+    color: white;
+    border-color: #2f5bff;
+  }
+</style>

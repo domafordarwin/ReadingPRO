@@ -31,7 +31,11 @@
       "Bash(railway whoami:*)",
       "Bash(railway projects:*)",
       "Bash(railway list:*)",
-      "Bash(railway exec:*)"
+      "Bash(railway exec:*)",
+      "Bash(bin/rails db:rollback:*)",
+      "Bash(bin/rails db:test:prepare:*)",
+      "Bash(bin/rails generate:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

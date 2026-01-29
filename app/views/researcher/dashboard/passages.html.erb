@@ -8,27 +8,331 @@
   <%= render "researcher/shared/nav", current: :passages %>
 <% end %>
 
-<section class="portal-card">
-  <h2 class="portal-card-title">지문 리스트</h2>
-  <table class="portal-table">
-    <thead>
-      <tr>
-        <th>코드</th>
-        <th>유형</th>
-        <th>상태</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>STIM_S01</td>
-        <td>비문학</td>
-        <td>검토중</td>
-      </tr>
-      <tr>
-        <td>STIM_L03</td>
-        <td>문학</td>
-        <td>사용중</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
+<style>
+  .passages-search {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .passages-search input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .passages-search button {
+    padding: 10px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .passages-search button:hover {
+    background: #764ba2;
+  }
+
+  .passages-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .passages-stat {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .passages-stat__label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .passages-stat__value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .passages-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .passages-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .passages-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .passages-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .passages-card__code {
+    font-weight: 700;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .passages-card__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+
+  .passages-card__content {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    max-height: 80px;
+    overflow: hidden;
+  }
+
+  .passages-card__meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .passages-card__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .passages-card__meta-label {
+    color: #999;
+    font-size: 11px;
+  }
+
+  .passages-card__meta-value {
+    color: #333;
+    font-weight: 600;
+  }
+
+  .passages-card__actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .passages-card__action {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .passages-card__action:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+
+  .passages-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .passages-pagination a,
+  .passages-pagination span {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    text-decoration: none;
+    color: #667eea;
+  }
+
+  .passages-pagination a:hover {
+    background: #f8f9fa;
+  }
+
+  .passages-pagination .active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .passages-pagination .disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .passages-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .passages-empty__icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .passages-empty__message {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .passages-empty__submessage {
+    font-size: 13px;
+    color: #999;
+  }
+
+  @media (max-width: 1024px) {
+    .passages-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .passages-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .passages-search {
+      flex-direction: column;
+    }
+
+    .passages-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="portal-card">
+  <!-- 검색 기능 -->
+  <%= form_with url: researcher_passages_path, method: :get, local: true, class: "passages-search" do |f| %>
+    <%= f.text_field :search, placeholder: "지문 코드 또는 제목으로 검색...", value: @search_query %>
+    <%= f.submit "검색", class: "btn-primary" %>
+  <% end %>
+
+  <!-- 통계 -->
+  <div class="passages-stats">
+    <div class="passages-stat">
+      <div class="passages-stat__label">총 지문 수</div>
+      <div class="passages-stat__value"><%= @total_count %></div>
+    </div>
+    <div class="passages-stat">
+      <div class="passages-stat__label">현재 페이지</div>
+      <div class="passages-stat__value"><%= @page %> / <%= @total_pages %></div>
+    </div>
+    <div class="passages-stat">
+      <div class="passages-stat__label">페이지당 항목</div>
+      <div class="passages-stat__value"><%= @per_page %></div>
+    </div>
+  </div>
+
+  <!-- 지문 카드 그리드 -->
+  <% if @stimuli.any? %>
+    <div class="passages-grid">
+      <% @stimuli.each do |stimulus| %>
+        <div class="passages-card">
+          <div class="passages-card__header">
+            <div class="passages-card__code"><%= stimulus.code %></div>
+          </div>
+
+          <h3 class="passages-card__title"><%= stimulus.title %></h3>
+
+          <div class="passages-card__content">
+            <%= truncate(stimulus.body, length: 200, omission: "...") %>
+          </div>
+
+          <div class="passages-card__meta">
+            <div class="passages-card__meta-item">
+              <span class="passages-card__meta-label">연관 문항</span>
+              <span class="passages-card__meta-value"><%= stimulus.items.count %>개</span>
+            </div>
+            <div class="passages-card__meta-item">
+              <span class="passages-card__meta-label">마지막 업데이트</span>
+              <span class="passages-card__meta-value"><%= stimulus.updated_at.strftime("%m/%d") %></span>
+            </div>
+          </div>
+
+          <div class="passages-card__actions">
+            <%= link_to "편집", edit_researcher_stimulus_path(stimulus), class: "passages-card__action" %>
+            <%= link_to "삭제", researcher_stimulus_path(stimulus), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "passages-card__action" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="passages-pagination">
+      <% if @page > 1 %>
+        <%= link_to "← 이전", researcher_passages_path(page: @page - 1, search: @search_query) %>
+      <% else %>
+        <span class="disabled">← 이전</span>
+      <% end %>
+
+      <% (1..@total_pages).each do |page_num| %>
+        <% if page_num == @page %>
+          <span class="active"><%= page_num %></span>
+        <% else %>
+          <%= link_to page_num, researcher_passages_path(page: page_num, search: @search_query) %>
+        <% end %>
+      <% end %>
+
+      <% if @page < @total_pages %>
+        <%= link_to "다음 →", researcher_passages_path(page: @page + 1, search: @search_query) %>
+      <% else %>
+        <span class="disabled">다음 →</span>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="passages-empty">
+      <div class="passages-empty__icon">📄</div>
+      <div class="passages-empty__message">지문이 없습니다</div>
+      <div class="passages-empty__submessage">
+        <% if @search_query.present? %>
+          "<%= @search_query %>"에 해당하는 지문이 없습니다.
+        <% else %>
+          새로운 지문을 추가해주세요.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

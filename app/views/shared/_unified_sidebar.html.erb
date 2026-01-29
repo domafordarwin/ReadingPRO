@@ -9,14 +9,14 @@
     "student" => {
       "dashboard" => "/student",
       "start_diagnosis" => "/student/diagnostics",
-      "diagnosis_status" => "/student/diagnostics",
+      "diagnosis_status" => "/student/reports",
       "reports" => "/student/reports",
-      "feedback" => "/student/profile"
+      "feedback" => "/student/consultations"
     },
     "parent" => {
       "dashboard" => "/parent",
       "start_diagnosis" => "/parent/children",
-      "diagnosis_status" => "/parent/children",
+      "diagnosis_status" => "/parent/reports",
       "reports" => "/parent/reports",
       "feedback" => "/parent/consult"
     },
@@ -34,7 +34,7 @@
       "start_diagnosis" => "/diagnostic_teacher/diagnostics",
       "diagnosis_status" => "/diagnostic_teacher/diagnostics",
       "reports" => "/diagnostic_teacher/reports",
-      "feedback" => "/diagnostic_teacher/feedbacks",
+      "feedback" => "/diagnostic_teacher/consultations",
       "student_mgmt" => "/diagnostic_teacher/diagnostics",
       "distribution" => "/diagnostic_teacher/diagnostics",
       "school_reports" => "/diagnostic_teacher/reports",
@@ -89,16 +89,35 @@
   end
 
   # Menu definitions with RBAC
+  # Build menu items based on role
+  menu_a_items = [
+    { id: "dashboard", label: "대시보드", icon: "home" },
+  ]
+
+  # Add literacy test submenu for student role, regular items for others
+  if current_role.to_s == "student"
+    menu_a_items << {
+      id: "literacy_test",
+      label: "문해력 검사",
+      icon: "book-open",
+      hasSubmenu: true,
+      children: [
+        { id: "start_diagnosis", label: "진단 바로가기", icon: "play-circle" },
+        { id: "diagnosis_status", label: "진단 현황", icon: "list" }
+      ]
+    }
+  else
+    menu_a_items << { id: "start_diagnosis", label: "진단 시작", icon: "play-circle" }
+    menu_a_items << { id: "diagnosis_status", label: "진단 현황", icon: "list" }
+  end
+
+  menu_a_items << { id: "reports", label: "결과 리포트", icon: "bar-chart" }
+  menu_a_items << { id: "feedback", label: "피드백/상담", icon: "message-circle" }
+
   menu_groups = {
     "A" => {
       label: "학습/진단",
-      items: [
-        { id: "dashboard", label: "대시보드", icon: "home" },
-        { id: "start_diagnosis", label: "진단 시작", icon: "play-circle" },
-        { id: "diagnosis_status", label: "진단 현황", icon: "list" },
-        { id: "reports", label: "결과 리포트", icon: "bar-chart" },
-        { id: "feedback", label: "피드백/상담", icon: "message-circle" }
-      ]
+      items: menu_a_items
     },
     "B" => {
       label: "학교 운영",
@@ -165,12 +184,36 @@
         <div class="rp-nav-group__label"><%= group[:label] %></div>
 
         <% group[:items].each do |item| %>
-          <% is_active = (current_page.to_s == item[:id].to_s) %>
+          <% is_active = (current_page.to_s == item[:id].to_s) || item[:children]&.any? { |child| current_page.to_s == child[:id].to_s } %>
           <% item_path = current_paths[item[:id]] || "#" %>
-          <a href="<%= item_path %>" class="rp-nav-item<%= ' rp-nav-item--active' if is_active %>">
-            <%= render_icon(item[:icon], size: 18) rescue nil %>
-            <span><%= item[:label] %></span>
-          </a>
+
+          <% if item[:hasSubmenu] %>
+            <div class="rp-nav-item-group">
+              <button class="rp-nav-item rp-nav-item--parent<%= ' rp-nav-item--active' if is_active %>" data-toggle-submenu>
+                <%= render_icon(item[:icon], size: 18) rescue nil %>
+                <span><%= item[:label] %></span>
+                <svg class="rp-nav-item__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <div class="rp-nav-submenu<%= ' rp-nav-submenu--open' if is_active %>">
+                <% item[:children].each do |child| %>
+                  <% child_is_active = (current_page.to_s == child[:id].to_s) %>
+                  <% child_path = current_paths[child[:id]] || "#" %>
+                  <a href="<%= child_path %>" class="rp-nav-subitem<%= ' rp-nav-subitem--active' if child_is_active %>">
+                    <%= render_icon(child[:icon], size: 16) rescue nil %>
+                    <span><%= child[:label] %></span>
+                  </a>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <a href="<%= item_path %>" class="rp-nav-item<%= ' rp-nav-item--active' if is_active %>">
+              <%= render_icon(item[:icon], size: 18) rescue nil %>
+              <span><%= item[:label] %></span>
+            </a>
+          <% end %>
         <% end %>
       </nav>
     <% end %>
@@ -186,6 +229,32 @@
     </a>
   </div>
 </aside>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('[data-toggle-submenu]');
+
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const submenu = this.nextElementSibling;
+        const isOpen = submenu.classList.contains('rp-nav-submenu--open');
+
+        // Close all other submenus
+        document.querySelectorAll('.rp-nav-submenu--open').forEach(menu => {
+          if (menu !== submenu) {
+            menu.classList.remove('rp-nav-submenu--open');
+            menu.previousElementSibling.classList.remove('rp-nav-item--active');
+          }
+        });
+
+        // Toggle current submenu
+        submenu.classList.toggle('rp-nav-submenu--open');
+        this.classList.toggle('rp-nav-item--active');
+      });
+    });
+  });
+</script>
 
 <%
   # Helper method for icons (fallback)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_002928) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
     t.text "overall_summary"
     t.datetime "updated_at", null: false
     t.index ["attempt_id"], name: "index_comprehensive_analyses_on_attempt_id", unique: true
+  end
+
+  create_table "consultation_comments", force: :cascade do |t|
+    t.bigint "consultation_post_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.boolean "is_best_answer", default: false, null: false
+    t.boolean "is_teacher_reply", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["consultation_post_id", "created_at"], name: "idx_on_consultation_post_id_created_at_eebe5cd549"
+    t.index ["consultation_post_id", "is_best_answer"], name: "idx_on_consultation_post_id_is_best_answer_9cf41298a2"
+    t.index ["consultation_post_id"], name: "index_consultation_comments_on_consultation_post_id"
+    t.index ["created_by_id"], name: "index_consultation_comments_on_created_by_id"
+  end
+
+  create_table "consultation_posts", force: :cascade do |t|
+    t.string "category", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "last_activity_at"
+    t.string "status", default: "open", null: false
+    t.bigint "student_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "views_count", default: 0, null: false
+    t.string "visibility", default: "private", null: false
+    t.index ["category"], name: "index_consultation_posts_on_category"
+    t.index ["created_at"], name: "index_consultation_posts_on_created_at"
+    t.index ["created_by_id"], name: "index_consultation_posts_on_created_by_id"
+    t.index ["last_activity_at"], name: "index_consultation_posts_on_last_activity_at"
+    t.index ["status"], name: "index_consultation_posts_on_status"
+    t.index ["student_id", "created_at"], name: "idx_on_consultation_posts_student_id_created_at"
+    t.index ["student_id"], name: "index_consultation_posts_on_student_id"
+    t.index ["visibility", "status"], name: "index_consultation_posts_on_visibility_and_status"
+    t.index ["visibility"], name: "index_consultation_posts_on_visibility"
+    t.check_constraint "category::text = ANY (ARRAY['assessment'::character varying, 'learning'::character varying, 'personal'::character varying, 'technical'::character varying, 'other'::character varying]::text[])", name: "consultation_posts_category_check"
+    t.check_constraint "status::text = ANY (ARRAY['open'::character varying, 'answered'::character varying, 'closed'::character varying]::text[])", name: "consultation_posts_status_check"
+    t.check_constraint "visibility::text = ANY (ARRAY['private'::character varying, 'public'::character varying]::text[])", name: "consultation_posts_visibility_check"
   end
 
   create_table "educational_recommendations", force: :cascade do |t|
@@ -521,9 +561,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
     t.bigint "school_id", null: false
     t.integer "student_number"
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.index ["school_id", "grade", "class_number", "student_number"], name: "idx_students_school_grade_class_number"
     t.index ["school_id", "student_number"], name: "ux_students_school_student_number", unique: true, where: "(student_number IS NOT NULL)"
     t.index ["school_id"], name: "index_students_on_school_id"
+    t.index ["user_id"], name: "index_students_on_user_id"
   end
 
   create_table "sub_indicators", force: :cascade do |t|
@@ -544,7 +586,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
     t.string "role", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.check_constraint "role::text = ANY (ARRAY['admin'::character varying, 'teacher'::character varying, 'parent'::character varying, 'student'::character varying]::text[])", name: "users_role_check"
+    t.check_constraint "role::text = ANY (ARRAY['admin'::character varying, 'teacher'::character varying, 'parent'::character varying, 'student'::character varying, 'diagnostic_teacher'::character varying]::text[])", name: "users_role_check"
   end
 
   add_foreign_key "attempt_items", "attempts", on_delete: :cascade
@@ -555,6 +597,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
   add_foreign_key "attempts", "users"
   add_foreign_key "choice_scores", "item_choices"
   add_foreign_key "comprehensive_analyses", "attempts"
+  add_foreign_key "consultation_comments", "consultation_posts", on_delete: :cascade
+  add_foreign_key "consultation_comments", "users", column: "created_by_id"
+  add_foreign_key "consultation_posts", "students"
+  add_foreign_key "consultation_posts", "users", column: "created_by_id"
   add_foreign_key "educational_recommendations", "attempts"
   add_foreign_key "form_items", "forms"
   add_foreign_key "form_items", "items"
@@ -606,5 +652,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_110000) do
   add_foreign_key "school_sub_indicator_stats", "school_assessments"
   add_foreign_key "school_sub_indicator_stats", "sub_indicators"
   add_foreign_key "students", "schools"
+  add_foreign_key "students", "users"
   add_foreign_key "sub_indicators", "evaluation_indicators"
 end

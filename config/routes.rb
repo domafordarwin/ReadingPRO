@@ -38,6 +38,13 @@ Rails.application.routes.draw do
     get "profile", to: "dashboard#profile"
     post "generate_report", to: "dashboard#generate_report"
     patch "update_report_status", to: "dashboard#update_report_status"
+    resources :consultations do
+      member do
+        patch :close
+        patch :reopen
+      end
+      resources :comments, controller: 'consultation_comments', only: [:create, :destroy]
+    end
   end
 
   namespace :parent do
@@ -45,6 +52,8 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
     get "children", to: "dashboard#children"
     get "reports", to: "dashboard#reports"
+    get "reports/:attempt_id", to: "dashboard#show_report", as: "show_report"
+    get "attempts/:attempt_id", to: "dashboard#show_attempt", as: "show_attempt"
     get "consult", to: "dashboard#consult"
   end
 
@@ -65,7 +74,14 @@ Rails.application.routes.draw do
     get "diagnostics", to: "dashboard#diagnostics"
     get "feedbacks", to: "dashboard#feedbacks"
     get "reports", to: "dashboard#reports"
+    get "students/:student_id/reports/:attempt_id", to: "dashboard#show_student_report", as: "show_student_report"
     get "guide", to: "dashboard#guide"
+    resources :consultations, only: [:index, :show] do
+      member do
+        patch :mark_as_answered
+      end
+      resources :comments, controller: 'consultation_comments', only: [:create, :destroy]
+    end
   end
 
   namespace :researcher do
@@ -79,9 +95,10 @@ Rails.application.routes.draw do
     get "item_create", to: "dashboard#item_create"
     get "prompts", to: "dashboard#prompts"
     get "books", to: "dashboard#books"
-    resources :items, only: %i[index edit update] do
+    resources :items, only: %i[index create edit update] do
       patch "move_criterion", on: :member
     end
+    resources :stimuli, only: %i[edit update destroy]
   end
 
   get "login", to: "sessions#new"

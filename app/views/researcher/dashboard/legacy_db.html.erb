@@ -8,16 +8,316 @@
   <%= render "researcher/shared/nav", current: :legacy_db %>
 <% end %>
 
-<section class="portal-card">
-  <h2 class="portal-card-title">기출 문항</h2>
-  <div class="portal-list">
-    <div class="portal-list-item">
-      <span>2019 전국 독서 진단 문항</span>
-      <span class="portal-chip">120문항</span>
+<style>
+  .legacy-summary {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .legacy-summary__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .legacy-summary__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .legacy-summary__total {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .legacy-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .legacy-stat {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .legacy-stat__label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .legacy-stat__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .legacy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .legacy-list-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+
+  .legacy-list-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .legacy-list-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .legacy-list-item__title {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .legacy-list-item__description {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .legacy-list-item__meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .legacy-list-item__count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .legacy-list-item__count-label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 600;
+  }
+
+  .legacy-list-item__count-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .legacy-list-item__action {
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 1px solid #667eea;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .legacy-list-item__action:hover {
+    background: #f8f9ff;
+    color: #764ba2;
+    border-color: #764ba2;
+  }
+
+  .legacy-categories {
+    margin-top: 32px;
+  }
+
+  .legacy-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .legacy-category {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .legacy-category__title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .legacy-category__items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .legacy-category-item {
+    font-size: 13px;
+    color: #666;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .legacy-category-item__count {
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  @media (max-width: 1024px) {
+    .legacy-category-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .legacy-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .legacy-list-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .legacy-list-item__meta {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .legacy-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- 기출 문항 통계 -->
+<div class="legacy-summary">
+  <div class="legacy-summary__header">
+    <h2 class="legacy-summary__title">기출 문항 DB 현황</h2>
+    <div class="legacy-summary__total">
+      200<span style="font-size: 14px; color: #666; margin-left: 4px;">문항</span>
     </div>
-    <div class="portal-list-item">
-      <span>2021 교과 연계 문항</span>
-      <span class="portal-chip">80문항</span>
+  </div>
+
+  <div class="legacy-stats">
+    <div class="legacy-stat">
+      <div class="legacy-stat__label">비문학</div>
+      <div class="legacy-stat__value">120</div>
+    </div>
+    <div class="legacy-stat">
+      <div class="legacy-stat__label">문학</div>
+      <div class="legacy-stat__value">80</div>
+    </div>
+    <div class="legacy-stat">
+      <div class="legacy-stat__label">마지막 업데이트</div>
+      <div class="legacy-stat__value" style="font-size: 14px;">01/28</div>
+    </div>
+  </div>
+</div>
+
+<!-- 기출 문항 목록 -->
+<section class="portal-card">
+  <h2 class="portal-card-title">기출 문항 데이터</h2>
+
+  <div class="legacy-list">
+    <div class="legacy-list-item">
+      <div class="legacy-list-item__info">
+        <div class="legacy-list-item__title">2019 전국 독서 진단 문항</div>
+        <div class="legacy-list-item__description">전국 단위 표준 독서 진단에서 출제된 문항 모음</div>
+      </div>
+      <div class="legacy-list-item__meta">
+        <div class="legacy-list-item__count">
+          <div class="legacy-list-item__count-label">문항 수</div>
+          <div class="legacy-list-item__count-value">120</div>
+        </div>
+        <a href="#" class="legacy-list-item__action">조회</a>
+      </div>
+    </div>
+
+    <div class="legacy-list-item">
+      <div class="legacy-list-item__info">
+        <div class="legacy-list-item__title">2021 교과 연계 문항</div>
+        <div class="legacy-list-item__description">교육과정 성취도 평가 및 수능 기출 문항 중심</div>
+      </div>
+      <div class="legacy-list-item__meta">
+        <div class="legacy-list-item__count">
+          <div class="legacy-list-item__count-label">문항 수</div>
+          <div class="legacy-list-item__count-value">80</div>
+        </div>
+        <a href="#" class="legacy-list-item__action">조회</a>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- 카테고리별 분석 -->
+<div class="legacy-categories">
+  <h3 style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px;">📊 유형별 분석</h3>
+  <div class="legacy-category-grid">
+    <div class="legacy-category">
+      <div class="legacy-category__title">유형별 분포</div>
+      <div class="legacy-category__items">
+        <div class="legacy-category-item">
+          <span>객관식 (MCQ)</span>
+          <span class="legacy-category-item__count">150</span>
+        </div>
+        <div class="legacy-category-item">
+          <span>주관식 (단답형)</span>
+          <span class="legacy-category-item__count">40</span>
+        </div>
+        <div class="legacy-category-item">
+          <span>서술형</span>
+          <span class="legacy-category-item__count">10</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="legacy-category">
+      <div class="legacy-category__title">난이도별 분포</div>
+      <div class="legacy-category__items">
+        <div class="legacy-category-item">
+          <span>상 (높음)</span>
+          <span class="legacy-category-item__count">60</span>
+        </div>
+        <div class="legacy-category-item">
+          <span>중 (보통)</span>
+          <span class="legacy-category-item__count">100</span>
+        </div>
+        <div class="legacy-category-item">
+          <span>하 (낮음)</span>
+          <span class="legacy-category-item__count">40</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

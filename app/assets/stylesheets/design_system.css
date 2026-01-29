@@ -392,6 +392,77 @@
   background: rgba(255,255,255,0.2);
 }
 
+/* Submenu Styles */
+.rp-nav-item-group {
+  position: relative;
+}
+
+.rp-nav-item--parent {
+  justify-content: space-between;
+}
+
+.rp-nav-item__chevron {
+  margin-left: auto;
+  transition: transform var(--rp-transition-fast);
+  flex-shrink: 0;
+}
+
+.rp-nav-item--parent[data-toggle-submenu] .rp-nav-item__chevron {
+  transform: rotate(0deg);
+}
+
+.rp-nav-item--active .rp-nav-item__chevron {
+  transform: rotate(180deg);
+}
+
+.rp-nav-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--rp-transition-normal) ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-1);
+  padding: 0;
+}
+
+.rp-nav-submenu--open {
+  max-height: 500px;
+  padding: var(--rp-space-2) 0;
+}
+
+.rp-nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-2) var(--rp-space-3) var(--rp-space-2) var(--rp-space-5);
+  border-radius: var(--rp-radius-md);
+  color: var(--rp-text-body);
+  text-decoration: none;
+  font-size: var(--rp-font-size-sm);
+  transition: all var(--rp-transition-fast);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.rp-nav-subitem:hover {
+  background: var(--rp-bg-subtle);
+  color: var(--rp-text-title);
+  padding-left: var(--rp-space-6);
+}
+
+.rp-nav-subitem--active {
+  background: var(--rp-primary);
+  color: white;
+  font-weight: 500;
+}
+
+.rp-nav-subitem--active:hover {
+  background: var(--rp-primary-hover);
+}
+
 /* ============================================
    8. Main Content Area
    ============================================ */

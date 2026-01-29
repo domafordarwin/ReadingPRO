@@ -8,16 +8,270 @@
   <%= render "researcher/shared/nav", current: :diagnostic_eval %>
 <% end %>
 
+<style>
+  .diagnostic-search {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .diagnostic-search input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .diagnostic-search button {
+    padding: 10px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .diagnostic-search button:hover {
+    background: #764ba2;
+  }
+
+  .diagnostic-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .diagnostic-stat {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .diagnostic-stat__label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .diagnostic-stat__value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .diagnostic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .diagnostic-list-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+
+  .diagnostic-list-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .diagnostic-list-item__title {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .diagnostic-list-item__meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .diagnostic-list-item__count {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .diagnostic-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .diagnostic-status--draft {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .diagnostic-status--active {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .diagnostic-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .diagnostic-empty__icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .diagnostic-empty__message {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .diagnostic-empty__submessage {
+    font-size: 13px;
+    color: #999;
+  }
+
+  .diagnostic-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .diagnostic-pagination a,
+  .diagnostic-pagination span {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    text-decoration: none;
+    color: #667eea;
+  }
+
+  .diagnostic-pagination a:hover {
+    background: #f8f9fa;
+  }
+
+  .diagnostic-pagination .active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .diagnostic-pagination .disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    .diagnostic-search {
+      flex-direction: column;
+    }
+
+    .diagnostic-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .diagnostic-list-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .diagnostic-list-item__meta {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- 검색 기능 -->
+<%= form_with url: researcher_diagnostic_eval_path, method: :get, local: true, class: "diagnostic-search" do |f| %>
+  <%= f.text_field :search, placeholder: "평가 세트명으로 검색...", value: @search_query %>
+  <%= f.submit "검색", class: "btn-primary" %>
+<% end %>
+
+<!-- 통계 -->
+<div class="diagnostic-stats">
+  <div class="diagnostic-stat">
+    <div class="diagnostic-stat__label">총 평가 세트</div>
+    <div class="diagnostic-stat__value"><%= @total_count %></div>
+  </div>
+  <div class="diagnostic-stat">
+    <div class="diagnostic-stat__label">활성 세트</div>
+    <div class="diagnostic-stat__value"><%= @forms.select { |f| f.active? }.count %></div>
+  </div>
+  <div class="diagnostic-stat">
+    <div class="diagnostic-stat__label">준비 중인 세트</div>
+    <div class="diagnostic-stat__value"><%= @forms.select { |f| f.draft? }.count %></div>
+  </div>
+</div>
+
 <section class="portal-card">
   <h2 class="portal-card-title">평가 세트</h2>
-  <div class="portal-list">
-    <div class="portal-list-item">
-      <span>초등 저학년 진단 세트</span>
-      <span class="portal-chip">구성중</span>
+
+  <% if @forms.any? %>
+    <div class="diagnostic-list">
+      <% @forms.each do |form| %>
+        <div class="diagnostic-list-item">
+          <div class="diagnostic-list-item__title"><%= form.title %></div>
+          <div class="diagnostic-list-item__meta">
+            <div class="diagnostic-list-item__count">
+              문항 수: <strong><%= form.items.count %></strong>개
+            </div>
+            <span class="diagnostic-status diagnostic-status--<%= form.status %>">
+              <%= form.status == 'draft' ? '준비중' : '확정' %>
+            </span>
+          </div>
+        </div>
+      <% end %>
     </div>
-    <div class="portal-list-item">
-      <span>중등 진단 세트</span>
-      <span class="portal-chip">확정</span>
+
+    <!-- 페이지네이션 -->
+    <div class="diagnostic-pagination">
+      <% if @page > 1 %>
+        <%= link_to "← 이전", researcher_diagnostic_eval_path(page: @page - 1, search: @search_query) %>
+      <% else %>
+        <span class="disabled">← 이전</span>
+      <% end %>
+
+      <% (1..@total_pages).each do |page_num| %>
+        <% if page_num == @page %>
+          <span class="active"><%= page_num %></span>
+        <% else %>
+          <%= link_to page_num, researcher_diagnostic_eval_path(page: page_num, search: @search_query) %>
+        <% end %>
+      <% end %>
+
+      <% if @page < @total_pages %>
+        <%= link_to "다음 →", researcher_diagnostic_eval_path(page: @page + 1, search: @search_query) %>
+      <% else %>
+        <span class="disabled">다음 →</span>
+      <% end %>
     </div>
-  </div>
+  <% else %>
+    <div class="diagnostic-empty">
+      <div class="diagnostic-empty__icon">📋</div>
+      <div class="diagnostic-empty__message">평가 세트가 없습니다</div>
+      <div class="diagnostic-empty__submessage">
+        <% if @search_query.present? %>
+          "<%= @search_query %>"에 해당하는 평가 세트가 없습니다.
+        <% else %>
+          새로운 평가 세트를 추가해주세요.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </section>

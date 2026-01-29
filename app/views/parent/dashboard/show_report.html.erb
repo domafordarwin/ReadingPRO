@@ -1,0 +1,327 @@
+<% content_for :portal_title do %>
+  진단 결과 리포트 상세
+<% end %>
+
+<% content_for :portal_subtitle do %>
+  <%= @student.name %> 학생의 상세 리포트입니다.
+<% end %>
+
+<% content_for :portal_nav do %>
+  <%= render "parent/shared/nav", current: :reports %>
+<% end %>
+
+<style>
+  .report-header {
+    padding: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+
+  .report-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+  }
+
+  .report-header p {
+    margin: 4px 0;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .status-indicator {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+
+  .report-section {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .report-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #667eea;
+  }
+
+  .insight-box {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+  }
+
+  .insight-label {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .insight-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .achievement-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .achievement-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .achievement-card .score {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 8px 0;
+  }
+
+  .achievement-card p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .direction-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .direction-item {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 4px solid #667eea;
+  }
+
+  .direction-item h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .direction-item p {
+    margin: 0;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .reader-type {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .reader-type h3 {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+  }
+
+  .reader-type .type-name {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 12px 0;
+  }
+
+  .reader-type p {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .action-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .empty-message {
+    text-align: center;
+    padding: 32px 16px;
+    color: #999;
+    font-size: 14px;
+  }
+</style>
+
+<a href="<%= parent_reports_path(student_id: @student.id) %>" class="back-link">← 리포트 목록으로 돌아가기</a>
+
+<div class="report-header">
+  <h1>진단 결과 리포트</h1>
+  <p><%= @student.name %> 학생</p>
+  <p>진단일: <%= @attempt.started_at&.strftime("%Y년 %m월 %d일 %H:%M") %></p>
+  <span class="status-indicator">
+    상태: <%= translate_report_status(@report.status) %>
+  </span>
+</div>
+
+<% if @comprehensive_analysis %>
+  <div class="report-section">
+    <div class="report-section-title">종합 분석</div>
+
+    <div class="insight-box">
+      <div class="insight-label">종합 평가</div>
+      <div class="insight-value">
+        <%= @comprehensive_analysis.overall_summary || "평가 중입니다." %>
+      </div>
+    </div>
+
+    <% if @comprehensive_analysis.improvement_areas.present? %>
+      <div class="insight-box">
+        <div class="insight-label">개선 영역</div>
+        <div class="insight-value">
+          <%= @comprehensive_analysis.improvement_areas %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @comprehensive_analysis.comprehension_analysis.present? %>
+      <div class="insight-box">
+        <div class="insight-label">독해력 분석</div>
+        <div class="insight-value">
+          <%= @comprehensive_analysis.comprehension_analysis %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @reader_tendency %>
+  <div class="report-section">
+    <div class="report-section-title">독자 성향</div>
+
+    <div class="reader-type">
+      <h3>학생의 독자 유형</h3>
+      <div class="type-name">
+        <%= @reader_tendency.reader_type&.name || "분석중" %>
+      </div>
+      <p>
+        <%= @reader_tendency.reader_type&.characteristics || "읽기 성향을 분석합니다." %>
+      </p>
+    </div>
+  </div>
+<% end %>
+
+<% if @literacy_achievements.any? %>
+  <div class="report-section">
+    <div class="report-section-title">문해력 성취</div>
+
+    <div class="achievement-grid">
+      <% @literacy_achievements.each do |achievement| %>
+        <div class="achievement-card">
+          <h3><%= achievement.evaluation_indicator&.name || "문해력" %></h3>
+          <div class="score"><%= "#{achievement.correct_answers}/#{achievement.total_questions}" %></div>
+          <p>정답률: <%= "#{achievement.accuracy_rate}%" || "평가 중입니다." %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if @guidance_directions.any? %>
+  <div class="report-section">
+    <div class="report-section-title">학습 지도 방향</div>
+
+    <ul class="direction-list">
+      <% @guidance_directions.each do |direction| %>
+        <li class="direction-item">
+          <h4><%= direction.evaluation_indicator&.name || "학습 영역" %></h4>
+          <p><%= direction.content || "지도 내용을 준비 중입니다." %></p>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% unless @comprehensive_analysis || @reader_tendency || @literacy_achievements.any? || @guidance_directions.any? %>
+  <div class="report-section">
+    <div class="empty-message">
+      <p>📊 분석 데이터가 아직 준비 중입니다.</p>
+      <p>리포트는 진단이 완료된 후 생성됩니다.</p>
+    </div>
+  </div>
+<% end %>
+
+<div class="report-section">
+  <div class="action-buttons">
+    <button class="action-btn" onclick="printReport()">
+      인쇄하기
+    </button>
+  </div>
+</div>
+
+<script>
+  function printReport() {
+    window.print();
+  }
+</script>
+
+<% content_for :portal_actions do %>
+  <a class="portal-button" href="<%= parent_reports_path(student_id: @student.id) %>">목록으로 돌아가기</a>
+<% end %>

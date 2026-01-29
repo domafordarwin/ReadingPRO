@@ -8,26 +8,191 @@
   <%= render "researcher/shared/nav", current: :books %>
 <% end %>
 
+<style>
+  .books-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .books-stat {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .books-stat__label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .books-stat__value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .books-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+
+  .books-table thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .books-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+  }
+
+  .books-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease;
+  }
+
+  .books-table tbody tr:hover {
+    background: #f8f9fa;
+  }
+
+  .books-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .books-table__title {
+    font-weight: 600;
+  }
+
+  .books-table__author {
+    color: #666;
+    font-size: 13px;
+  }
+
+  .books-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .books-status--registered {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .books-status--review {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .books-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .books-action-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #667eea;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .books-action-btn:hover {
+    color: #764ba2;
+  }
+
+  @media (max-width: 768px) {
+    .books-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .books-table {
+      font-size: 12px;
+    }
+
+    .books-table th,
+    .books-table td {
+      padding: 8px 12px;
+    }
+  }
+</style>
+
+<!-- 도서 통계 -->
+<div class="books-stats">
+  <div class="books-stat">
+    <div class="books-stat__label">등록된 도서</div>
+    <div class="books-stat__value">2</div>
+  </div>
+  <div class="books-stat">
+    <div class="books-stat__label">활용 문항</div>
+    <div class="books-stat__value">47</div>
+  </div>
+  <div class="books-stat">
+    <div class="books-stat__label">검토 필요</div>
+    <div class="books-stat__value">1</div>
+  </div>
+</div>
+
+<!-- 도서 목록 -->
 <section class="portal-card">
   <h2 class="portal-card-title">도서 목록</h2>
-  <table class="portal-table">
+  <table class="books-table">
     <thead>
       <tr>
-        <th>도서명</th>
-        <th>저자</th>
-        <th>상태</th>
+        <th style="width: 35%;">도서명</th>
+        <th style="width: 25%;">저자</th>
+        <th style="width: 15%;">상태</th>
+        <th style="width: 25%;">작업</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>시간을 달리는 소녀</td>
+        <td>
+          <div class="books-table__title">시간을 달리는 소녀</div>
+          <div class="books-table__author">문학 / 2010년 발행</div>
+        </td>
         <td>츠츠이 야스타카</td>
-        <td>등록됨</td>
+        <td>
+          <span class="books-status books-status--registered">등록됨</span>
+        </td>
+        <td>
+          <div class="books-actions">
+            <a href="#" class="books-action-btn">편집</a>
+            <a href="#" class="books-action-btn">삭제</a>
+          </div>
+        </td>
       </tr>
       <tr>
-        <td>어린 왕자</td>
+        <td>
+          <div class="books-table__title">어린 왕자</div>
+          <div class="books-table__author">아동문학 / 1943년 발행</div>
+        </td>
         <td>생텍쥐페리</td>
-        <td>검토중</td>
+        <td>
+          <span class="books-status books-status--review">검토중</span>
+        </td>
+        <td>
+          <div class="books-actions">
+            <a href="#" class="books-action-btn">편집</a>
+            <a href="#" class="books-action-btn">삭제</a>
+          </div>
+        </td>
       </tr>
     </tbody>
   </table>

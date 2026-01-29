@@ -30,6 +30,16 @@ class Researcher::ItemsController < ApplicationController
     @items = @items.offset((@page - 1) * @per_page).limit(@per_page)
   end
 
+  def create
+    @item = Item.new(item_params)
+
+    if @item.save
+      redirect_to edit_researcher_item_path(@item), notice: "문항이 성공적으로 생성되었습니다."
+    else
+      redirect_to researcher_item_create_path, alert: "문항 생성에 실패했습니다: #{@item.errors.full_messages.join(', ')}"
+    end
+  end
+
   def edit
     @rubric = @item.rubric || @item.build_rubric
     @criteria = @rubric.rubric_criteria.includes(:rubric_levels).order(:position)
@@ -83,6 +93,10 @@ class Researcher::ItemsController < ApplicationController
 
   def set_item
     @item = Item.find(params[:id])
+  end
+
+  def item_params
+    params.require(:item).permit(:code, :item_type, :prompt, :explanation, :difficulty, :status, :stimulus_id, :evaluation_indicator_id, :sub_indicator_id)
   end
 
   def update_item_status!

@@ -72,8 +72,8 @@
     </div>
 
     <!-- Avatar -->
-    <div class="rp-avatar" title="사용자">
-      <span>U</span>
+    <div class="rp-avatar" title="<%= current_user&.student&.name || current_user&.email || '사용자' %>">
+      <span><%= (current_user&.student&.name&.first || 'U').upcase %></span>
     </div>
 
     <!-- Logout Button -->

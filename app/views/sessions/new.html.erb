@@ -1,8 +1,18 @@
-<div class="login-page">
-  <div class="login-card">
-    <div class="login-header">
-      <h1>ReadingPRO 로그인</h1>
-      <p>문항은행·채점 시스템</p>
+<div class="login-page-new">
+  <div class="login-bg-decoration login-bg-decoration-left"></div>
+  <div class="login-bg-decoration login-bg-decoration-right"></div>
+  <div class="login-card-new">
+    <div class="login-header-new">
+      <h1>문해력 진단 및 클리닉 프로그램</h1>
+      <div class="login-logo">
+        <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.5 6.5c4-2 7-.5 8.5.5v11.5c-1.5-1-4.5-2.5-8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+          <path d="M20.5 6.5c-4-2-7-.5-8.5.5v11.5c1.5-1 4.5-2.5 8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+          <path d="M12 7v11.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+        </svg>
+        <span class="logo-text"><strong>ReadingPRO</strong></span>
+      </div>
+      <p class="login-subtitle">(사)전국독서새물결협회</p>
     </div>
 
     <% if flash[:alert].present? %>
@@ -12,52 +22,414 @@
       <div class="login-notice"><%= flash[:notice] %></div>
     <% end %>
 
-    <%= form_with url: login_path, method: :post, class: "login-form", local: true do %>
-      <label class="login-label" for="username">사용자명</label>
-      <input id="username" name="username" type="text" autocomplete="username" class="login-input" placeholder="사용자명을 입력하세요">
+    <%= form_with url: login_path, method: :post, class: "login-form-new", local: true do %>
+      <!-- User Type Dropdown -->
+      <div class="login-field-group">
+        <label class="login-field-label" for="user_type">사용자 유형</label>
+        <select id="user_type" class="login-select" onchange="updatePlaceholder(this.value)">
+          <option value="student">🧑‍🎓 학생 회원</option>
+          <option value="parent">👨‍👩‍👧 학부모</option>
+          <option value="school_teacher">👨‍🏫 학교교사</option>
+          <option value="diagnostic_teacher">📋 진단교사</option>
+          <option value="researcher">📊 문항개발</option>
+          <option value="admin">⚙️ 시스템관리자</option>
+        </select>
+      </div>
 
-      <label class="login-label" for="password">비밀번호</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" class="login-input" placeholder="비밀번호를 입력하세요">
+      <!-- Email Field -->
+      <div class="login-field-group">
+        <label class="login-field-label" for="email">이메일</label>
+        <div class="login-input-wrapper">
+          <span class="input-icon">👤</span>
+          <input id="email" name="username" type="email" autocomplete="email" class="login-input-new" placeholder="example@school.com">
+        </div>
+      </div>
 
-      <button type="submit" class="login-button">로그인</button>
+      <!-- Password Field -->
+      <div class="login-field-group">
+        <label class="login-field-label" for="password">비밀번호</label>
+        <div class="login-input-wrapper">
+          <span class="input-icon">🔐</span>
+          <input id="password" name="password" type="password" autocomplete="current-password" class="login-input-new" placeholder="비밀번호를 입력하세요">
+          <button type="button" class="password-toggle" onclick="togglePassword()">👁️</button>
+        </div>
+      </div>
+
+      <!-- Login Button -->
+      <button type="submit" class="login-button-new">로그인</button>
     <% end %>
 
-    <div class="login-meta">
-      계정이 없으신가요? <a href="#" class="login-link">회원가입</a>
+    <!-- Help Links -->
+    <div class="login-help-links">
+      <a href="#" class="login-help-link">비밀번호를 잊으셨나요?</a>
+      <a href="#" class="login-help-link">회원가입</a>
     </div>
 
+    <!-- Test Accounts Section -->
     <% if Rails.env.development? || Rails.env.test? %>
-      <div class="login-divider"></div>
-
-      <div class="login-test-title">테스트용 계정 (로컬)</div>
-      <div class="login-test-box">
-        <div class="login-test-grid">
-          <button type="button" class="login-test-button" data-username="student01">학생</button>
-          <button type="button" class="login-test-button" data-username="parent01">학부모</button>
-          <button type="button" class="login-test-button" data-username="school01">학교 교사</button>
-          <button type="button" class="login-test-button" data-username="diagnostic01">진단 교사</button>
-          <button type="button" class="login-test-button" data-username="research01">연구원</button>
-          <button type="button" class="login-test-button" data-username="admin01">관리자</button>
+      <div class="login-test-section">
+        <div class="login-test-title">테스트 계정 (개발용)</div>
+        <div class="login-test-buttons-grid">
+          <button type="button" class="login-test-btn" data-username="student_54@shinmyung.edu" data-usertype="student">
+            <span class="test-icon">🧑‍🎓</span>
+            <span class="test-label">학생</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="parent_54@shinmyung.edu" data-usertype="parent">
+            <span class="test-icon">👨‍👩‍👧</span>
+            <span class="test-label">학부모</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="school01" data-usertype="school_teacher">
+            <span class="test-icon">👨‍🏫</span>
+            <span class="test-label">학교교사</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="diagnostic01" data-usertype="diagnostic_teacher">
+            <span class="test-icon">📋</span>
+            <span class="test-label">진단교사</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="research01" data-usertype="researcher">
+            <span class="test-icon">📊</span>
+            <span class="test-label">문항개발</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="admin01" data-usertype="admin">
+            <span class="test-icon">⚙️</span>
+            <span class="test-label">시스템관리자</span>
+          </button>
         </div>
-        <div class="login-test-hint">비밀번호: <strong>ReadingPro$12#</strong></div>
+        <div class="login-test-password">비밀번호: <strong>ReadingPro$12#</strong></div>
       </div>
     <% end %>
   </div>
 </div>
 
-<script>
-  (function () {
-    const buttons = document.querySelectorAll(".login-test-button")
-    const username = document.getElementById("username")
-    const password = document.getElementById("password")
-    if (!buttons.length || !username || !password) return
+<style>
+  .login-page-new {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
 
-    buttons.forEach((button) => {
-      button.addEventListener("click", () => {
-        username.value = button.dataset.username || ""
-        password.value = "ReadingPro$12#"
-        username.focus()
-      })
-    })
-  })()
+  .login-bg-decoration {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  .login-bg-decoration-left {
+    background: rgba(255, 255, 255, 0.8);
+    bottom: -80px;
+    left: -100px;
+  }
+
+  .login-bg-decoration-right {
+    background: rgba(255, 255, 255, 0.8);
+    top: -80px;
+    right: -100px;
+  }
+
+  .login-card-new {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .login-header-new {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .login-header-new h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 16px 0;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    color: #667eea;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    color: #667eea;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+  }
+
+  .login-alert, .login-notice {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  .login-alert {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+  }
+
+  .login-notice {
+    background-color: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+  }
+
+  .login-form-new {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .login-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .login-field-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .login-select, .login-input-new {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .login-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23667eea' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .login-select:focus, .login-input-new:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .login-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .login-input-new {
+    width: 100%;
+    padding-left: 40px;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-button-new {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .login-button-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .login-button-new:active {
+    transform: translateY(0);
+  }
+
+  .login-help-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+
+  .login-help-link {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .login-help-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+  }
+
+  .login-test-section {
+    border-top: 1px solid #eee;
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+
+  .login-test-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .login-test-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .login-test-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 11px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .login-test-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .test-icon {
+    font-size: 16px;
+  }
+
+  .test-label {
+    white-space: nowrap;
+  }
+
+  .login-test-password {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+  }
+
+  .login-test-password strong {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .login-card-new {
+      padding: 32px 24px;
+    }
+
+    .login-header-new h1 {
+      font-size: 20px;
+    }
+
+    .login-test-buttons-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<script>
+  function updatePlaceholder(userType) {
+    const emailInput = document.getElementById('email');
+    const typeTexts = {
+      student: 'example@school.com',
+      parent: 'example@school.com',
+      school_teacher: 'teacher@school.com',
+      diagnostic_teacher: 'teacher@school.com',
+      researcher: 'researcher@school.com',
+      admin: 'admin@school.com'
+    };
+    emailInput.placeholder = typeTexts[userType] || 'example@school.com';
+  }
+
+  function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const testButtons = document.querySelectorAll('.login-test-btn');
+    const emailInput = document.getElementById('email');
+    const userTypeSelect = document.getElementById('user_type');
+    const passwordInput = document.getElementById('password');
+
+    testButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        emailInput.value = button.dataset.username || '';
+        userTypeSelect.value = button.dataset.usertype || 'student';
+        passwordInput.value = 'ReadingPro$12#';
+        updatePlaceholder(userTypeSelect.value);
+        emailInput.focus();
+      });
+    });
+  });
 </script>
