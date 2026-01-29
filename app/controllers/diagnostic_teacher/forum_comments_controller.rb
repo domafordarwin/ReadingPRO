@@ -38,7 +38,7 @@ class DiagnosticTeacher::ForumCommentsController < ApplicationController
   private
 
   def set_forum
-    @forum = ParentForum.find(params[:parent_forum_id])
+    @forum = ParentForum.find(params[:forum_id])
   end
 
   def set_comment

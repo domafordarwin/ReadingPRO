@@ -42,7 +42,8 @@
       "Bash(Where-Object {$_Port -eq 3000})",
       "Bash(Stop-Process -Force)",
       "Bash(bin/rails routes:*)",
-      "Bash(bin/rails assets:clobber:*)"
+      "Bash(bin/rails assets:clobber:*)",
+      "Bash(echo:*)"
     ]
   }
 }

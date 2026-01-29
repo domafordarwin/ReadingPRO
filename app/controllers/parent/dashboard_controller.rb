@@ -37,6 +37,33 @@ class Parent::DashboardController < ApplicationController
 
   def consult
     @current_page = "feedback"
+
+    # 상담 신청 목록 조회
+    @consultation_requests = current_user.consultation_requests
+                                        .includes(:student)
+                                        .recent
+                                        .page(params[:page])
+                                        .per(10)
+
+    # 새 상담 신청 폼용
+    @new_request = ConsultationRequest.new
+  end
+
+  def create_consultation_request
+    @new_request = ConsultationRequest.new(consultation_request_params)
+    @new_request.user = current_user
+
+    if @new_request.save
+      redirect_to parent_consult_path, notice: "상담 신청이 완료되었습니다."
+    else
+      @students = current_user.students
+      @consultation_requests = current_user.consultation_requests
+                                           .includes(:student)
+                                           .recent
+                                           .page(params[:page])
+                                           .per(10)
+      render :consult, status: :unprocessable_entity
+    end
   end
 
   def show_report
@@ -115,5 +142,9 @@ class Parent::DashboardController < ApplicationController
       is_generated: report.generated?,
       is_published: report.published?
     }
+  end
+
+  def consultation_request_params
+    params.require(:consultation_request).permit(:student_id, :category, :scheduled_at, :content)
   end
 end

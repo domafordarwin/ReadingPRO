@@ -253,3 +253,101 @@ bundle lock --add-platform ruby
    - 페이지네이션: 20개/페이지로 정상 작동
    - 헤더: "소수환" 버튼으로 표시
 4. 부모 계정으로도 동일 검증
+
+---
+
+## 작업 진행 기록 (2026-01-29 계속)
+
+### 학생/학부모 게시판 구축 및 댓글 라우팅 문제 해결
+
+#### 완료된 작업 ✅
+
+**1. 학생 게시판 접속 문제 해결**
+   - 원인: User-Student 데이터 연결 미흡 (user_id = NULL)
+   - 해결: 61개 student를 해당 user와 자동 연결
+   - 결과: student_54@shinmyung.edu 계정으로 consultations 게시판 접속 가능
+
+**2. 학부모 상담 신청 시스템 구현** ✅
+   - 모델 생성:
+     - `ConsultationRequest` (상담 신청)
+     - `ConsultationRequestResponse` (교사 답변)
+   - 마이그레이션:
+     - `20260129115000_create_consultation_requests.rb`
+     - `20260129115100_create_consultation_request_responses.rb`
+   - 기능:
+     - 자녀 선택 (드롭다운)
+     - 상담 유형 (진단결과, 독서지도, 학습습관, 진단해석, 기타)
+     - 희망 일정 (미래 시간만 허용)
+     - 요청사항 (10자 이상 1000자 이하)
+     - 상담 신청 이력 조회 (상태: 대기/승인/거절/완료)
+     - 페이지네이션 (10개/페이지)
+   - 뷰: `app/views/parent/dashboard/consult.html.erb` (완전 재구현)
+
+**3. 댓글 라우팅 문제 해결** ✅
+   - 근본 원인: 모든 Comment 모델의 외래키가 `model_name_id`이지만, 라우팅이 `parent_resource_id`로 기대
+   - 해결 방법: routes.rb에 `foreign_key` 옵션 추가
+   - 수정된 라우팅:
+     ```ruby
+     # Student Consultations Comments
+     resources :comments, controller: 'consultation_comments',
+       only: [:create, :destroy],
+       foreign_key: 'consultation_post_id'
+
+     # Parent Forums Comments
+     resources :comments, controller: 'forum_comments',
+       only: [:create, :destroy],
+       foreign_key: 'parent_forum_id'
+
+     # DiagnosticTeacher (동일하게 설정)
+     ```
+   - 수정된 Controller:
+     - `Parent::ForumCommentsController#set_forum`: params[:forum_id]로 변경
+     - `DiagnosticTeacher::ForumCommentsController#set_forum`: params[:forum_id]로 변경
+   - 결과: 학부모 게시판 댓글 작성/삭제 시 올바른 포럼으로 리다이렉트
+
+**4. 학생 게시판에 학부모 접근 차단** ✅
+   - 구현 방식:
+     - 컨트롤러 레벨: `before_action -> { require_role("student") }`
+     - 모델 레벨: `ConsultationPost#visible_to?`에서 `return false if user.parent?` 추가
+   - 결과: 부모가 URL을 직접 입력해도 접근 불가
+
+#### 생성/수정된 파일 목록
+
+**생성된 파일:**
+- `app/models/consultation_request.rb`
+- `app/models/consultation_request_response.rb`
+- `db/migrate/20260129115000_create_consultation_requests.rb`
+- `db/migrate/20260129115100_create_consultation_request_responses.rb`
+
+**수정된 파일:**
+- `app/models/user.rb` (consultation_requests 관계 추가)
+- `app/models/student.rb` (consultation_requests 관계 추가)
+- `app/models/consultation_post.rb` (parent 차단 로직)
+- `app/controllers/parent/dashboard_controller.rb` (consult, create_consultation_request 액션)
+- `app/controllers/parent/forum_comments_controller.rb` (params[:forum_id] 수정)
+- `app/controllers/diagnostic_teacher/forum_comments_controller.rb` (params[:forum_id] 수정)
+- `app/views/parent/dashboard/consult.html.erb` (완전 재구현)
+- `app/views/parent/forums/show.html.erb` (form 수정)
+- `config/routes.rb` (foreign_key 옵션, 상담 신청 라우팅)
+
+#### 최종 테스트 결과
+
+| 기능 | 상태 |
+|------|------|
+| 학생 상담 게시판 접속 | ✅ 정상 |
+| 학생 댓글 삭제 | ✅ 정상 |
+| 부모 상담 신청 | ✅ 정상 |
+| 부모 포럼 댓글 작성/삭제 | ✅ 정상 |
+| 교사 포럼 댓글 작성/삭제 | ✅ 정상 |
+| 부모의 학생 게시판 접근 차단 | ✅ 정상 |
+
+#### 향후 계획 (요청 없음 - 보관)
+
+⚠️ **다음 항목은 사용자 요청이 없으면 다시 묻지 않음:**
+- 학부모-학생 게시판 연결 (학부모가 학생 상담 게시판 모니터링 기능)
+  → 현재 계획 없음
+
+**요청 시 수행 가능한 기능들:**
+1. 진단담당교사 상담 신청 관리 페이지 (승인/거절)
+2. 알림 시스템 (상담 신청/승인 알림)
+3. 상담 통계 대시보드

@@ -6,6 +6,7 @@ class Student < ApplicationRecord
   has_many :guardian_students, dependent: :destroy
   has_many :guardians, through: :guardian_students, source: :guardian_user
   has_many :consultation_posts, dependent: :destroy
+  has_many :consultation_requests, dependent: :destroy
 
   validates :name, presence: true
   validates :school, presence: true

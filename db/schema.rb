@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_010314) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_115100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,6 +116,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_010314) do
     t.check_constraint "category::text = ANY (ARRAY['assessment'::character varying, 'learning'::character varying, 'personal'::character varying, 'technical'::character varying, 'other'::character varying]::text[])", name: "consultation_posts_category_check"
     t.check_constraint "status::text = ANY (ARRAY['open'::character varying, 'answered'::character varying, 'closed'::character varying]::text[])", name: "consultation_posts_status_check"
     t.check_constraint "visibility::text = ANY (ARRAY['private'::character varying, 'public'::character varying]::text[])", name: "consultation_posts_visibility_check"
+  end
+
+  create_table "consultation_request_responses", force: :cascade do |t|
+    t.bigint "consultation_request_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["consultation_request_id"], name: "idx_on_consultation_request_id_477576d09e"
+    t.index ["created_at"], name: "index_consultation_request_responses_on_created_at"
+    t.index ["created_by_id"], name: "index_consultation_request_responses_on_created_by_id"
+  end
+
+  create_table "consultation_requests", force: :cascade do |t|
+    t.string "category", default: "other", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "responded_at"
+    t.datetime "scheduled_at", null: false
+    t.string "status", default: "pending", null: false
+    t.bigint "student_id", null: false
+    t.text "teacher_response"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_consultation_requests_on_created_at"
+    t.index ["status"], name: "index_consultation_requests_on_status"
+    t.index ["student_id"], name: "index_consultation_requests_on_student_id"
+    t.index ["user_id", "student_id"], name: "index_consultation_requests_on_user_id_and_student_id"
+    t.index ["user_id"], name: "index_consultation_requests_on_user_id"
   end
 
   create_table "educational_recommendations", force: :cascade do |t|
@@ -629,6 +658,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_010314) do
   add_foreign_key "consultation_comments", "users", column: "created_by_id"
   add_foreign_key "consultation_posts", "students"
   add_foreign_key "consultation_posts", "users", column: "created_by_id"
+  add_foreign_key "consultation_request_responses", "consultation_requests"
+  add_foreign_key "consultation_request_responses", "users", column: "created_by_id"
+  add_foreign_key "consultation_requests", "students"
+  add_foreign_key "consultation_requests", "users"
   add_foreign_key "educational_recommendations", "attempts"
   add_foreign_key "form_items", "forms"
   add_foreign_key "form_items", "items"

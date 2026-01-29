@@ -474,14 +474,17 @@
    ============================================ */
 .rp-main {
   flex: 1;
-  padding: var(--rp-space-6);
+  padding: var(--rp-space-3);
   max-width: calc(100vw - var(--rp-sidebar-width));
   overflow-x: hidden;
 }
 
 .rp-main__container {
-  max-width: var(--rp-content-max-width);
-  margin: 0 auto;
+  margin: 0;
+  background: var(--rp-surface);
+  border-radius: var(--rp-radius-lg);
+  box-shadow: var(--rp-shadow-md);
+  padding: var(--rp-space-6);
 }
 
 /* Page Header */

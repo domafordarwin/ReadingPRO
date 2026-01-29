@@ -75,10 +75,13 @@ class ConsultationPost < ApplicationRecord
   def visible_to?(user)
     return false unless user
 
+    # 부모는 접근 불가
+    return false if user.parent?
+
     # 작성자는 항상 볼 수 있음
     return true if created_by_id == user.id
 
-    # 공개 글은 모든 사용자가 볼 수 있음
+    # 공개 글은 모든 사용자(학생)가 볼 수 있음
     return true if public?
 
     # 비공개 글은 진단담당교사만 볼 수 있음

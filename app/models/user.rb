@@ -15,6 +15,8 @@ class User < ApplicationRecord
   has_many :consultation_comments, foreign_key: :created_by_id, dependent: :nullify
   has_many :created_parent_forums, class_name: "ParentForum", foreign_key: :created_by_id, dependent: :nullify
   has_many :parent_forum_comments, foreign_key: :created_by_id, dependent: :nullify
+  has_many :consultation_requests, dependent: :destroy
+  has_many :consultation_request_responses, foreign_key: :created_by_id, dependent: :nullify
 
   validates :role, presence: true, inclusion: { in: ROLES }
   validates :email, uniqueness: true, allow_nil: true

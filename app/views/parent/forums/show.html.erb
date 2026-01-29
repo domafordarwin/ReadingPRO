@@ -67,7 +67,7 @@
               <small style="color: #999;"><%= comment.created_at.strftime("%Y.%m.%d %H:%M") %></small>
             </div>
             <% if comment.created_by_id == current_user&.id %>
-              <%= button_to "삭제", parent_forum_comment_path(parent_forum_id: @forum.id, id: comment.id), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
+              <%= button_to "삭제", parent_forum_comment_path(forum_id: @forum.id, id: comment.id), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
             <% end %>
           </div>
           <p style="margin: 8px 0; color: #333; line-height: 1.6;">
@@ -84,14 +84,15 @@
   <% unless @forum.closed? %>
     <div style="padding-top: 24px; border-top: 1px solid #e0e0e0;">
       <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">댓글 작성</h3>
-      <%= form_tag parent_forum_comments_path(@forum), method: :post, local: true do %>
+      <form action="<%= "/parent/forums/#{@forum.id}/comments" %>" method="post" class="rp-form">
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
         <div class="rp-form-group">
-          <%= text_area_tag "parent_forum_comment[content]", "", placeholder: "댓글을 입력해주세요...", rows: 4, class: "rp-textarea" %>
+          <textarea name="parent_forum_comment[content]" placeholder="댓글을 입력해주세요..." rows="4" class="rp-textarea"></textarea>
         </div>
         <div style="display: flex; justify-content: flex-end;">
-          <%= submit_tag "댓글 작성", class: "rp-btn rp-btn--primary" %>
+          <input type="submit" value="댓글 작성" class="rp-btn rp-btn--primary">
         </div>
-      <% end %>
+      </form>
     </div>
   <% else %>
     <div style="padding-top: 24px; border-top: 1px solid #e0e0e0; text-align: center; color: #999;">
