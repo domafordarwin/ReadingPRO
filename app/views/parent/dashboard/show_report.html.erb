@@ -985,11 +985,20 @@
   }
 
   function downloadPDF() {
-    const element = document.documentElement.cloneNode(true);
+    // 헤더부터 마지막 섹션까지만 추출
+    const headerElement = document.querySelector('.report-header-section');
+    const reportSections = document.querySelectorAll('.report-section');
 
-    // 네비게이션, 액션 버튼, 뒤로가기 링크 제거
-    const elementsToRemove = element.querySelectorAll('.report-nav, .back-link, .action-buttons');
-    elementsToRemove.forEach(el => el.remove());
+    // 컨테이너 생성
+    const container = document.createElement('div');
+    container.appendChild(headerElement.cloneNode(true));
+
+    // 액션 버튼이 없는 섹션만 추가
+    reportSections.forEach(section => {
+      if (!section.querySelector('.action-buttons')) {
+        container.appendChild(section.cloneNode(true));
+      }
+    });
 
     const opt = {
       margin: 10,
@@ -999,7 +1008,7 @@
       jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(container).save();
   }
 
   function printReport() {
