@@ -872,7 +872,15 @@
   }
 
   function downloadPDF() {
-    const element = document.querySelector('.report-container');
+    // 헤더와 컨텐츠만 추출
+    const headerElement = document.querySelector('.report-header');
+    const contentElement = document.querySelector('.report-container');
+
+    // 컨테이너 생성
+    const container = document.createElement('div');
+    container.appendChild(headerElement.cloneNode(true));
+    container.appendChild(contentElement.cloneNode(true));
+
     const opt = {
       margin: 10,
       filename: '<%= "#{@student.name}_문해력진단결과보고서_#{@attempt.started_at&.strftime('%Y%m%d')}" %>.pdf',
@@ -881,7 +889,7 @@
       jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(container).save();
   }
 
   function printReport() {
