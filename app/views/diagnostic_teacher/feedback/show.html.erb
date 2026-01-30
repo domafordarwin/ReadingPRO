@@ -804,7 +804,7 @@
   <script>
     class FeedbackPage {
       constructor() {
-        this.currentComprehensiveFeedback = '<%= @comprehensive_feedback || "" %>'.trim();
+        this.currentComprehensiveFeedback = <%= (@comprehensive_feedback || "").to_json %>.trim();
         this.bindAll();
       }
 
