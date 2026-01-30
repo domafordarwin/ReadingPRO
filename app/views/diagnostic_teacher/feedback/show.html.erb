@@ -1499,7 +1499,8 @@
         editArea.style.display = isDisplaying ? 'block' : 'none';
 
         if (isDisplaying) {
-          const feedbackText = displayArea.querySelector('.rp-feedback-text')?.textContent || '';
+          // HTML 텍스트가 아닌 실제 데이터베이스 값 사용
+          const feedbackText = this.currentComprehensiveFeedback || '';
           document.getElementById('comprehensive-feedback-textarea').value = feedbackText;
           document.getElementById('comprehensive-feedback-textarea').focus();
         }
