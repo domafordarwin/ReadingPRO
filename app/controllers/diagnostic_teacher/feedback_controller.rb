@@ -46,9 +46,29 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def show
     @current_page = "feedback"
 
+    # 학생 탐색 네비게이션용 (attempt가 없어도 필요)
+    students = Student.order(:name).all
+    @all_students = students.map { |s| { id: s.id, name: s.name } }
+
+    current_index = students.find_index { |s| s.id == @student.id }
+    @prev_student = students[current_index - 1] if current_index && current_index > 0
+    @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
+
     # 최신 Attempt 로드
     @latest_attempt = @student.attempts.order(:created_at).last
-    return unless @latest_attempt
+
+    # Attempt가 없으면 초기화 후 반환
+    unless @latest_attempt
+      @responses = []
+      @constructed_responses = []
+      @constructed_by_item = {}
+      @comprehensive_feedback = nil
+      @reader_tendency = nil
+      @diagnosis_items = {}
+      @recommendation_items = {}
+      @prompt_templates = []
+      return
+    end
 
     # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
     @responses = Response
@@ -128,14 +148,6 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @prompt_templates = FeedbackPrompt.templates
       .order(:category)
       .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
-
-    # 학생 탐색 네비게이션용
-    students = Student.order(:name).all
-    @all_students = students.map { |s| { id: s.id, name: s.name } }
-
-    current_index = students.find_index { |s| s.id == @student.id }
-    @prev_student = students[current_index - 1] if current_index && current_index > 0
-    @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
   end
 
   def generate_feedback
