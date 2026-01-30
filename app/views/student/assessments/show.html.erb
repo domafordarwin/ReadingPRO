@@ -1,0 +1,652 @@
+<% content_for :page_title, "진단 응시" %>
+
+<style>
+  .assessment-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .assessment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .assessment-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .assessment-timer {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .progress-section {
+    margin-bottom: 24px;
+  }
+
+  .progress-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #667eea;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .question-section {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .stimulus-section {
+    background: #f8fafc;
+    border-left: 4px solid #0284c7;
+    padding: 16px;
+    margin-bottom: 24px;
+    border-radius: 4px;
+  }
+
+  .stimulus-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0284c7;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stimulus-text {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #333;
+    white-space: pre-wrap;
+  }
+
+  .question-number {
+    font-size: 13px;
+    color: #999;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .question-prompt {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* MCQ Options */
+  .options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option {
+    padding: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+  }
+
+  .option:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+
+  .option.selected {
+    border-color: #667eea;
+    background: #f0f5ff;
+  }
+
+  .option input[type="radio"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+  }
+
+  .option-label {
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .option-text {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  /* Constructed Response */
+  .textarea-container {
+    position: relative;
+  }
+
+  .answer-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .answer-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .char-count {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+    text-align: right;
+  }
+
+  /* Navigation */
+  .navigation-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .nav-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-previous {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-previous:hover:not(:disabled) {
+    background: #e0e0e0;
+  }
+
+  .btn-next {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-next:hover:not(:disabled) {
+    background: #764ba2;
+  }
+
+  .btn-submit {
+    background: #10b981;
+    color: white;
+    padding: 12px 32px;
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    background: #059669;
+  }
+
+  .nav-info {
+    color: #999;
+    font-size: 13px;
+  }
+
+  /* Question Navigation */
+  .question-nav {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .question-nav-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .question-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 8px;
+  }
+
+  .question-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s ease;
+    background: white;
+  }
+
+  .question-item:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+
+  .question-item.current {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+
+  .question-item.answered {
+    border-color: #10b981;
+    background: #ecfdf5;
+    color: #059669;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+  }
+
+  .modal-message {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .modal-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-cancel {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-cancel:hover {
+    background: #e0e0e0;
+  }
+
+  .btn-confirm {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-confirm:hover {
+    background: #764ba2;
+  }
+
+  @media (max-width: 768px) {
+    .assessment-container {
+      padding: 12px;
+    }
+
+    .assessment-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .question-items {
+      grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+    }
+
+    .question-section {
+      padding: 16px;
+    }
+  }
+</style>
+
+<div class="assessment-container">
+  <!-- 헤더 -->
+  <div class="assessment-header">
+    <div>
+      <h1 class="assessment-title"><%= @form.title %></h1>
+      <div style="font-size: 13px; color: #999; margin-top: 4px;">
+        <%= @attempt_items.count %>개 문항
+      </div>
+    </div>
+  </div>
+
+  <!-- 진행 상황 바 -->
+  <div class="progress-section">
+    <div class="progress-label" id="progress-text">1 / <%= @attempt_items.count %></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- 문항 콘텐츠 -->
+  <div id="question-container" class="question-section">
+    <!-- 지문 표시 (JavaScript로 동적 렌더링) -->
+    <!-- 문항 표시 (JavaScript로 동적 렌더링) -->
+  </div>
+
+  <!-- 하단 네비게이션 -->
+  <div class="navigation-section">
+    <button class="nav-button btn-previous" id="prev-button" onclick="previousQuestion()">
+      ← 이전
+    </button>
+    <div class="nav-info">
+      <span id="question-counter">1</span> / <span id="total-counter"><%= @attempt_items.count %></span>
+    </div>
+    <button class="nav-button btn-next" id="next-button" onclick="nextQuestion()">
+      다음 →
+    </button>
+  </div>
+
+  <!-- 문항 네비게이션 -->
+  <div class="question-nav">
+    <div class="question-nav-title">문항 선택</div>
+    <div class="question-items" id="question-nav-items">
+      <% @attempt_items.each_with_index do |attempt_item, index| %>
+        <button class="question-item<%= ' current' if index == 0 %>"
+                data-index="<%= index %>"
+                onclick="goToQuestion(<%= index %>)">
+          <%= index + 1 %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 제출 확인 모달 -->
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal-content">
+    <div class="modal-title">진단 제출</div>
+    <div class="modal-message">
+      진단을 제출하시겠습니까?<br>
+      제출 후에는 답변을 수정할 수 없습니다.
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-button btn-cancel" onclick="closeSubmitModal()">취소</button>
+      <button class="modal-button btn-confirm" onclick="confirmSubmit()">제출</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const attemptItems = <%= @attempt_items.to_json(only: [:id], include: { item: { only: [:id, :item_type, :prompt, :stimulus_id], include: { stimulus: { only: [:body] }, item_choices: { only: [:id, :choice_no, :content] } } } }).html_safe %>;
+  const responses = <%= @responses.to_json(only: [:item_id, :selected_choice_id, :answer_text]).html_safe %>;
+  let currentIndex = 0;
+
+  // 초기 렌더링
+  document.addEventListener('DOMContentLoaded', function() {
+    renderQuestion(0);
+    updateProgressBar();
+  });
+
+  function renderQuestion(index) {
+    if (index < 0 || index >= attemptItems.length) return;
+
+    currentIndex = index;
+    const attemptItem = attemptItems[index];
+    const item = attemptItem.item;
+    const response = responses[item.id] || {};
+
+    let html = '';
+
+    // 지문 표시
+    if (item.stimulus && item.stimulus.body) {
+      html += `
+        <div class="stimulus-section">
+          <div class="stimulus-title">지문</div>
+          <div class="stimulus-text">${escapeHtml(item.stimulus.body)}</div>
+        </div>
+      `;
+    }
+
+    // 문항 번호 및 내용
+    html += `<div class="question-number">문항 ${index + 1}</div>`;
+    html += `<div class="question-prompt">${escapeHtml(item.prompt)}</div>`;
+
+    // 답변 입력 영역
+    if (item.item_type === 'mcq') {
+      html += '<div class="options-container">';
+      item.item_choices.forEach(choice => {
+        const isSelected = response.selected_choice_id === choice.id;
+        html += `
+          <label class="option${isSelected ? ' selected' : ''}">
+            <input type="radio"
+                   name="answer"
+                   value="${choice.id}"
+                   ${isSelected ? 'checked' : ''}
+                   onchange="saveResponse(${item.id}, 'mcq', this.value)">
+            <span class="option-label">
+              <strong>${choice.choice_no}.</strong>
+              <span class="option-text">${escapeHtml(choice.content)}</span>
+            </span>
+          </label>
+        `;
+      });
+      html += '</div>';
+    } else if (item.item_type === 'constructed') {
+      const answerText = response.answer_text || '';
+      html += `
+        <div class="textarea-container">
+          <textarea class="answer-textarea"
+                    placeholder="여기에 답변을 입력하세요..."
+                    onchange="saveResponse(${item.id}, 'constructed', this.value)"
+                    onkeyup="updateCharCount(this)">${escapeHtml(answerText)}</textarea>
+          <div class="char-count"><span id="char-count">0</span> / 1000자</div>
+        </div>
+      `;
+    }
+
+    document.getElementById('question-container').innerHTML = html;
+
+    // 버튼 상태 업데이트
+    document.getElementById('prev-button').disabled = index === 0;
+    document.getElementById('next-button').innerHTML = index === attemptItems.length - 1 ? '제출 →' : '다음 →';
+    document.getElementById('next-button').onclick = index === attemptItems.length - 1 ? 'openSubmitModal()' : 'nextQuestion()';
+
+    // 문항 네비게이션 업데이트
+    document.querySelectorAll('.question-item').forEach((el, i) => {
+      el.classList.toggle('current', i === index);
+    });
+
+    updateProgressBar();
+    updateQuestionCounter();
+  }
+
+  function saveResponse(itemId, itemType, value) {
+    if (itemType === 'mcq') {
+      const selectedId = parseInt(value);
+      responses[itemId] = { selected_choice_id: selectedId, answer_text: null };
+
+      // 라디오 버튼 선택 처리
+      document.querySelectorAll('input[name="answer"]').forEach(input => {
+        input.parentElement.classList.toggle('selected', input.checked);
+      });
+    } else {
+      responses[itemId] = { answer_text: value, selected_choice_id: null };
+    }
+
+    // 서버에 저장 (비동기)
+    fetch('<%= student_assessments_submit_response_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        attempt_id: <%= @attempt.id %>,
+        item_id: itemId,
+        item_type: itemType,
+        selected_choice_id: itemType === 'mcq' ? parseInt(value) : null,
+        answer_text: itemType === 'constructed' ? value : null
+      })
+    }).catch(err => console.error('Save failed:', err));
+
+    // 문항 체크 표시 업데이트
+    updateQuestionItemStatus(attemptItems.findIndex(a => a.item.id === itemId));
+  }
+
+  function updateQuestionItemStatus(index) {
+    const item = attemptItems[index].item;
+    const response = responses[item.id];
+    const el = document.querySelectorAll('.question-item')[index];
+    if (!el) return;
+
+    const isAnswered = (item.item_type === 'mcq' && response?.selected_choice_id) ||
+                       (item.item_type === 'constructed' && response?.answer_text);
+    el.classList.toggle('answered', isAnswered);
+  }
+
+  function nextQuestion() {
+    if (currentIndex < attemptItems.length - 1) {
+      renderQuestion(currentIndex + 1);
+    }
+  }
+
+  function previousQuestion() {
+    if (currentIndex > 0) {
+      renderQuestion(currentIndex - 1);
+    }
+  }
+
+  function goToQuestion(index) {
+    renderQuestion(index);
+  }
+
+  function updateProgressBar() {
+    const progress = ((currentIndex + 1) / attemptItems.length) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
+  }
+
+  function updateQuestionCounter() {
+    document.getElementById('question-counter').textContent = currentIndex + 1;
+  }
+
+  function updateCharCount(textarea) {
+    const count = textarea.value.length;
+    document.getElementById('char-count').textContent = Math.min(count, 1000);
+  }
+
+  function openSubmitModal() {
+    document.getElementById('submit-modal').classList.add('show');
+  }
+
+  function closeSubmitModal() {
+    document.getElementById('submit-modal').classList.remove('show');
+  }
+
+  function confirmSubmit() {
+    fetch('<%= student_assessments_submit_attempt_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        attempt_id: <%= @attempt.id %>
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = data.redirect_url;
+      }
+    })
+    .catch(err => alert('제출 중 오류가 발생했습니다.'));
+  }
+
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+</script>

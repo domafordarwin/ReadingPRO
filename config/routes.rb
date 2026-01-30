@@ -39,6 +39,15 @@ Rails.application.routes.draw do
     get "profile", to: "dashboard#profile"
     post "generate_report", to: "dashboard#generate_report"
     patch "update_report_status", to: "dashboard#update_report_status"
+
+    # Assessments
+    resources :assessments, only: [:show, :create] do
+      collection do
+        post :submit_response
+        post :submit_attempt
+      end
+    end
+
     resources :consultations do
       member do
         patch :close
