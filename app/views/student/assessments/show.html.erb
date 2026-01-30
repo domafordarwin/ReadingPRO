@@ -337,54 +337,24 @@
 </style>
 
 <script>
-  // Assessment form JavaScript initialization
-  const attemptId = <%= @attempt.id %>;
-  const totalItems = <%= @attempt_items&.count || 0 %>;
+  // Parse assessment data from server
+  const assessmentDataJson = <%= raw(@assessment_data) %>;
+  const data = JSON.parse(assessmentDataJson);
 
-  let attemptItems = [];
-  let responses = {};
+  const attemptId = data.attemptId;
+  const totalItems = data.totalItems;
+  let attemptItems = data.attemptItems;
+  let responses = data.responses;
   let currentIndex = 0;
 
   // Initialize page
   document.addEventListener('DOMContentLoaded', function() {
     if (totalItems > 0) {
-      loadAssessmentData();
       renderQuestion(0);
     } else {
       document.getElementById('question-container').innerHTML = '<p>문항이 없습니다.</p>';
     }
   });
-
-  function loadAssessmentData() {
-    // Build attempt items data from page data
-    <% @attempt_items.each_with_index do |ai, idx| %>
-      attemptItems.push({
-        id: <%= ai.id %>,
-        item: {
-          id: <%= ai.item&.id %>,
-          item_type: '<%= ai.item&.item_type %>',
-          prompt: '<%= (ai.item&.prompt || '').gsub("'", "\\'") %>',
-          stimulus_id: <%= ai.item&.stimulus_id %>,
-          stimulus: <%= ai.item&.stimulus ? "{body: '#{ai.item.stimulus.body.gsub("'", "\\'")}'}" : 'null' %>,
-          item_choices: [
-            <% if ai.item&.item_choices %>
-              <% ai.item.item_choices.each do |ic| %>
-                { id: <%= ic.id %>, choice_no: '<%= ic.choice_no %>', content: '<%= (ic.content || '').gsub("'", "\\'") %>' },
-              <% end %>
-            <% end %>
-          ]
-        }
-      });
-    <% end %>
-
-    <% @responses.each do |item_id, resp| %>
-      responses[<%= item_id %>] = {
-        item_id: <%= resp.item_id %>,
-        selected_choice_id: <%= resp.selected_choice_id %>,
-        answer_text: '<%= (resp.answer_text || '').gsub("'", "\\'") %>'
-      };
-    <% end %>
-  }
 
   function renderQuestion(index) {
     if (index < 0 || index >= attemptItems.length) return;

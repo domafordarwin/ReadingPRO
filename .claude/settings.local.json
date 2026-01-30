@@ -62,7 +62,8 @@
       "Bash(lsof:*)",
       "WebFetch(domain:new-wave-for-reading.vercel.app)",
       "Bash(dir \"c:\\\\WorkSpace\\\\Project\\\\2026_project\\\\ReadingPro_Railway\\\\app\\\\views\\\\researcher\\\\items\"\" | findstr \"edit \")",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(ruby -c:*)"
     ]
   }
 }

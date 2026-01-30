@@ -53,6 +53,9 @@ class Student::AssessmentsController < ApplicationController
     end
 
     @responses = @attempt.responses.includes(:item, :selected_choice).index_by(&:item_id)
+
+    # Prepare assessment data as JSON string for safe rendering
+    @assessment_data = build_assessment_json
   rescue StandardError => e
     Rails.logger.error("Assessment show error: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
@@ -100,6 +103,37 @@ class Student::AssessmentsController < ApplicationController
   end
 
   private
+
+  def build_assessment_json
+    attempt_items_data = @attempt_items.map do |ai|
+      {
+        id: ai.id,
+        item: {
+          id: ai.item.id,
+          item_type: ai.item.item_type,
+          prompt: ai.item.prompt || "",
+          stimulus_id: ai.item.stimulus_id,
+          stimulus: ai.item.stimulus ? { body: ai.item.stimulus.body } : nil,
+          item_choices: ai.item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content || "" } }
+        }
+      }
+    end
+
+    responses_data = @responses.transform_values do |resp|
+      {
+        item_id: resp.item_id,
+        selected_choice_id: resp.selected_choice_id,
+        answer_text: resp.answer_text || ""
+      }
+    end
+
+    {
+      attemptId: @attempt.id,
+      totalItems: @attempt_items.count,
+      attemptItems: attempt_items_data,
+      responses: responses_data
+    }.to_json
+  end
 
   def set_student
     @student = current_user&.student
