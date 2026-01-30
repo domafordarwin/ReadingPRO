@@ -128,9 +128,11 @@
           </div>
 
           <div style="display: flex; gap: 8px;">
-            <button class="rp-btn rp-btn--primary rp-generate-constructed-feedback" data-response-id="<%= @constructed_responses.first.id %>" style="flex: 1; font-size: 12px;">
-              AI 피드백 생성
-            </button>
+            <% if @constructed_responses.any? %>
+              <button class="rp-btn rp-btn--primary rp-generate-constructed-feedback" data-response-id="<%= @constructed_responses.first.id %>" style="flex: 1; font-size: 12px;">
+                AI 피드백 생성
+              </button>
+            <% end %>
           </div>
         </div>
       </div>
