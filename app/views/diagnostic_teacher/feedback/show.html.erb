@@ -68,7 +68,7 @@
               <% @responses.each_with_index do |response, index| %>
                 <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
                 <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f0f9ff; color: #0284c7; font-weight: 600;">
-                  <%= correct_choice&.choice_letter %>
+                  <%= correct_choice&.choice_no %>
                 </td>
               <% end %>
             </tr>
@@ -78,7 +78,7 @@
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">학생답</th>
               <% @responses.each_with_index do |response, index| %>
                 <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f5f5f5; color: #475569;">
-                  <%= response.selected_choice&.choice_letter || '—' %>
+                  <%= response.selected_choice&.choice_no || '—' %>
                 </td>
               <% end %>
             </tr>
@@ -88,12 +88,13 @@
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">수정답</th>
               <% @responses.each_with_index do |response, index| %>
                 <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">
-                  <input type="text"
+                  <input type="number"
                          class="rp-edit-answer-input"
                          data-response-id="<%= response.id %>"
                          data-item-index="<%= index %>"
-                         maxlength="1"
-                         style="width: 40px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace;">
+                         min="1"
+                         max="5"
+                         style="width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace;">
                 </td>
               <% end %>
             </tr>
@@ -797,18 +798,18 @@
       const input = e.target;
       const responseId = input.dataset.responseId;
       const itemIndex = input.dataset.itemIndex;
-      const newAnswer = input.value.toUpperCase().trim();
+      const newAnswer = parseInt(input.value.trim());
 
       if (!newAnswer) {
         input.style.borderColor = '#cbd5e1';
         return;
       }
 
-      // 유효한 선택지인지 검증 (A-E)
-      if (!/^[A-E]$/.test(newAnswer)) {
+      // 유효한 선택지인지 검증 (1-5)
+      if (newAnswer < 1 || newAnswer > 5) {
         input.style.borderColor = '#ef4444';
         input.style.backgroundColor = '#fee2e2';
-        this.showToast('A-E 중 하나의 선택지를 입력하세요', 'error');
+        this.showToast('1-5 중 하나의 숫자를 입력하세요', 'error');
         setTimeout(() => {
           input.style.borderColor = '#cbd5e1';
           input.style.backgroundColor = 'white';
@@ -826,7 +827,7 @@
             'X-CSRF-Token': this.getCSRFToken()
           },
           body: JSON.stringify({
-            selected_choice_letter: newAnswer
+            selected_choice_no: newAnswer
           })
         });
 
