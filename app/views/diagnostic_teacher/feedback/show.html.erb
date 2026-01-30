@@ -130,7 +130,13 @@
 
         <!-- 피드백 표시 -->
         <div class="rp-feedback-display" id="comprehensive-feedback-display">
-          <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 위의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
+          <% if @comprehensive_feedback.present? %>
+            <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
+              <%= simple_format(@comprehensive_feedback) %>
+            </div>
+          <% else %>
+            <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 위의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
+          <% end %>
         </div>
 
         <!-- 피드백 액션 버튼 -->
@@ -772,8 +778,19 @@
 <script>
   class FeedbackPage {
     constructor() {
-      this.currentComprehensiveFeedback = null;
+      // 기존 종합 피드백이 있으면 로드 (ERB에서 전달)
+      this.currentComprehensiveFeedback = <% if @comprehensive_feedback.present? %>'<%= j(@comprehensive_feedback) %>'<% else %>null<% end %>;
       this.init();
+
+      // 초기 로드 시 종합 피드백이 있으면 액션 버튼 표시
+      if (this.currentComprehensiveFeedback) {
+        setTimeout(() => {
+          const actionsArea = document.getElementById('comprehensive-feedback-actions');
+          if (actionsArea) {
+            actionsArea.style.display = 'flex';
+          }
+        }, 100);
+      }
     }
 
     init() {

@@ -54,6 +54,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
       .order(:created_at)
 
+    # 최신 Attempt의 종합 피드백 로드
+    latest_attempt = @student.attempts.order(:created_at).last
+    @comprehensive_feedback = latest_attempt&.comprehensive_feedback
+
     # 전체 프롬프트 템플릿 로드 (드롭다운용)
     @prompt_templates = FeedbackPrompt.templates
       .order(:category)
