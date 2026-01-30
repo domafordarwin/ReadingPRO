@@ -300,15 +300,25 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     custom_prompt = params[:prompt]
 
     if custom_prompt.present? && existing_feedback.present?
-      # 기존 피드백 + 커스텀 프롬프트로 정교화
-      combined_context = "기존 피드백:\n#{existing_feedback}\n\n" +
-                        "추가 정보:\n#{custom_prompt}"
-      feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, combined_context)
+      # 기존 피드백을 개선하는 명확한 지침으로 사용
+      improvement_prompt = <<~PROMPT
+        다음은 학생에 대해 이미 작성된 종합 피드백입니다:
+
+        [기존 종합 피드백]
+        #{existing_feedback}
+
+        [교사의 개선 요청]
+        #{custom_prompt}
+
+        위의 교사 요청을 반영하여 기존 피드백을 더 나은 버전으로 재작성해주세요.
+        기존 피드백의 장점은 유지하면서, 교사의 요청 사항을 명확히 반영하세요.
+      PROMPT
+      feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, improvement_prompt)
     elsif custom_prompt.present?
-      # 커스텀 프롬프트만 사용
+      # 커스텀 프롬프트만 사용 - AI가 완전히 새로운 피드백 생성
       feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, custom_prompt)
     else
-      # 기본 피드백 생성
+      # 기본 피드백 생성 - AI가 자체 분석으로 피드백 생성
       feedback_text = FeedbackAiService.generate_comprehensive_feedback(responses)
     end
 
