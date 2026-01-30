@@ -800,11 +800,16 @@
 </script>
 
 <% if @responses.any? %>
+  <!-- 데이터 저장 -->
+  <div id="feedback-data" style="display:none;"
+       data-comprehensive-feedback="<%= h(@comprehensive_feedback || '') %>"></div>
+
   <!-- 기존 JavaScript 코드: 피드백 생성 및 편집 기능 -->
   <script>
     class FeedbackPage {
       constructor() {
-        this.currentComprehensiveFeedback = <%= (@comprehensive_feedback || "").to_json %>.trim();
+        const feedbackDataEl = document.getElementById('feedback-data');
+        this.currentComprehensiveFeedback = feedbackDataEl ? (feedbackDataEl.getAttribute('data-comprehensive-feedback') || '').trim() : '';
         this.bindAll();
       }
 
