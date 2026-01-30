@@ -1,171 +1,182 @@
 <% content_for :page_title, "진단 응시" %>
 
-<style>
-  /* ========================================
-     Assessment Page - rp-* Design System
-     ======================================== */
+<div class="rp-assessment">
+  <!-- CSRF Token -->
+  <input type="hidden" id="csrf-token" value="<%= form_authenticity_token %>">
 
+  <!-- Header -->
+  <div class="rp-assessment__header">
+    <h1 class="rp-assessment__title"><%= @form&.title || "진단" %></h1>
+    <p class="rp-assessment__subtitle"><%= @attempt_items&.count || 0 %>개 문항</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="rp-progress">
+    <div class="rp-progress__header">
+      <p class="rp-progress__label">진행률</p>
+      <div class="rp-progress__percentage"><span id="progress-percentage">0</span>%</div>
+    </div>
+    <div class="rp-progress__bar">
+      <div class="rp-progress__fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Question Container -->
+  <div id="question-container" class="rp-question-section"></div>
+
+  <!-- Navigation -->
+  <div class="rp-navigation">
+    <button class="rp-btn rp-btn--secondary" id="prev-button" onclick="previousQuestion()">
+      ← 이전
+    </button>
+    <div class="rp-navigation__counter">
+      <span id="question-counter">1</span> / <span id="total-counter"><%= @attempt_items&.count || 0 %></span>
+    </div>
+    <div class="rp-navigation__buttons">
+      <button class="rp-btn rp-btn--primary" id="next-button" onclick="nextQuestion()">
+        다음 →
+      </button>
+    </div>
+  </div>
+
+  <!-- Question Navigation Grid -->
+  <div class="rp-question-nav">
+    <div class="rp-question-nav__label">문항 선택</div>
+    <div class="rp-question-nav__grid" id="question-nav-items"></div>
+  </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="rp-modal--assessment" id="submit-modal">
+  <div class="rp-modal--assessment__content">
+    <h2 class="rp-modal--assessment__title">진단 제출</h2>
+    <p class="rp-modal--assessment__message">
+      진단을 제출하시겠습니까?<br>
+      제출 후에는 답변을 수정할 수 없습니다.
+    </p>
+    <div class="rp-modal--assessment__buttons">
+      <button class="rp-btn rp-btn--secondary" onclick="closeSubmitModal()">취소</button>
+      <button class="rp-btn rp-btn--primary" onclick="confirmSubmit()">제출</button>
+    </div>
+  </div>
+</div>
+
+<style>
   .rp-assessment {
     max-width: 900px;
     margin: 0 auto;
     padding: 24px;
   }
 
-  /* Header Section */
   .rp-assessment__header {
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--rp-border);
+    border-bottom: 1px solid #ddd;
   }
 
   .rp-assessment__title {
     font-size: 24px;
     font-weight: 700;
-    color: var(--rp-text-title);
     margin: 0;
   }
 
   .rp-assessment__subtitle {
     font-size: 13px;
-    color: var(--rp-text-muted);
+    color: #666;
     margin: 0;
   }
 
-  /* Progress Bar */
   .rp-progress {
     margin-bottom: 32px;
     background: white;
-    border: 1px solid var(--rp-border);
+    border: 1px solid #ddd;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 
   .rp-progress__header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     margin-bottom: 12px;
-    gap: 16px;
   }
 
   .rp-progress__label {
     font-size: 12px;
     font-weight: 600;
-    color: var(--rp-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0;
+    color: #999;
   }
 
   .rp-progress__percentage {
     font-size: 14px;
     font-weight: 700;
-    color: var(--rp-primary);
+    color: #2f5bff;
   }
 
   .rp-progress__bar {
     width: 100%;
     height: 8px;
-    background: var(--rp-bg-subtle);
+    background: #f0f0f0;
     border-radius: 4px;
     overflow: hidden;
   }
 
   .rp-progress__fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--rp-primary) 0%, var(--rp-primary) 100%);
+    background: #2f5bff;
     width: 0%;
     transition: width 0.3s ease;
   }
 
-  .rp-progress__timer {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--rp-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .rp-progress__timer-label {
-    font-size: 12px;
-    color: var(--rp-text-muted);
-    font-weight: 600;
-  }
-
-  .rp-progress__timer-value {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'Monaco', 'Courier New', monospace;
-    color: var(--rp-text-title);
-  }
-
-  .rp-progress__timer-value.warning {
-    color: var(--rp-warning);
-  }
-
-  .rp-progress__timer-value.danger {
-    color: var(--rp-danger);
-  }
-
-  /* Question Section Card */
   .rp-question-section {
     background: white;
-    border: 1px solid var(--rp-border);
+    border: 1px solid #ddd;
     border-radius: 12px;
     padding: 32px;
     margin-bottom: 32px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 
-  /* Stimulus (Reading Passage) */
   .rp-stimulus {
-    background: var(--rp-bg-subtle);
-    border-left: 4px solid var(--rp-primary);
-    border-radius: 8px;
+    background: #f9f9f9;
+    border-left: 4px solid #2f5bff;
     padding: 16px;
     margin-bottom: 24px;
+    border-radius: 8px;
   }
 
   .rp-stimulus__label {
     font-size: 11px;
     font-weight: 700;
-    color: var(--rp-primary);
+    color: #2f5bff;
     margin-bottom: 8px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .rp-stimulus__text {
     font-size: 13px;
     line-height: 1.8;
-    color: var(--rp-text-body);
+    color: #333;
     white-space: pre-wrap;
     word-break: break-word;
   }
 
-  /* Question Content */
   .rp-question__number {
     font-size: 12px;
     font-weight: 600;
-    color: var(--rp-text-muted);
+    color: #999;
     margin-bottom: 8px;
-    text-transform: uppercase;
   }
 
   .rp-question__prompt {
     font-size: 16px;
     font-weight: 600;
-    color: var(--rp-text-title);
-    line-height: 1.6;
+    color: #333;
     margin-bottom: 24px;
+    line-height: 1.6;
   }
 
-  /* MCQ Options Container */
   .rp-options {
     display: flex;
     flex-direction: column;
@@ -174,123 +185,70 @@
 
   .rp-option {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
     padding: 16px;
-    border: 2px solid var(--rp-border);
+    border: 2px solid #ddd;
     border-radius: 8px;
-    background: white;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .rp-option:hover {
-    border-color: var(--rp-primary);
-    background: var(--rp-bg-subtle);
+    border-color: #2f5bff;
+    background: #f9f9ff;
   }
 
   .rp-option--selected {
-    border-color: var(--rp-primary);
+    border-color: #2f5bff;
     background: rgba(47, 91, 255, 0.04);
   }
 
   .rp-option input[type="radio"] {
     width: 20px;
     height: 20px;
-    margin: 2px 0 0 0;
+    margin-right: 12px;
     cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .rp-option__content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
   }
 
   .rp-option__label {
     font-weight: 600;
-    color: var(--rp-text-title);
-    cursor: pointer;
-  }
-
-  .rp-option__text {
-    font-size: 13px;
-    color: var(--rp-text-body);
-    line-height: 1.5;
-  }
-
-  /* Constructed Response */
-  .rp-textarea-wrapper {
-    position: relative;
   }
 
   .rp-textarea {
     width: 100%;
     min-height: 200px;
     padding: 12px;
-    border: 2px solid var(--rp-border);
+    border: 2px solid #ddd;
     border-radius: 8px;
     font-family: inherit;
     font-size: 13px;
     line-height: 1.6;
-    color: var(--rp-text-body);
     resize: vertical;
-    transition: all 0.2s ease;
   }
 
   .rp-textarea:focus {
     outline: none;
-    border-color: var(--rp-primary);
-    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+    border-color: #2f5bff;
   }
 
-  .rp-textarea__counter {
-    font-size: 12px;
-    color: var(--rp-text-muted);
-    margin-top: 8px;
-    text-align: right;
-  }
-
-  /* Navigation Section */
   .rp-navigation {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid var(--rp-border);
+    border-top: 1px solid #ddd;
     gap: 16px;
-    flex-wrap: wrap;
   }
 
-  .rp-navigation__counter {
-    font-size: 13px;
-    color: var(--rp-text-muted);
-    font-weight: 500;
-  }
-
-  .rp-navigation__buttons {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  /* Question Navigation Grid */
   .rp-question-nav {
     margin-top: 32px;
     padding-top: 24px;
-    border-top: 1px solid var(--rp-border);
+    border-top: 1px solid #ddd;
   }
 
   .rp-question-nav__label {
     font-size: 12px;
     font-weight: 700;
-    color: var(--rp-text-muted);
+    color: #999;
     margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   .rp-question-nav__grid {
@@ -304,34 +262,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--rp-border);
+    border: 2px solid #ddd;
     border-radius: 8px;
-    background: white;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--rp-text-body);
     cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .rp-question-nav__item:hover {
-    border-color: var(--rp-primary);
-    background: var(--rp-bg-subtle);
+    font-weight: 600;
+    font-size: 12px;
   }
 
   .rp-question-nav__item--current {
-    background: var(--rp-primary);
+    background: #2f5bff;
     color: white;
-    border-color: var(--rp-primary);
+    border-color: #2f5bff;
   }
 
-  .rp-question-nav__item--answered {
-    border-color: var(--rp-success);
-    background: rgba(34, 197, 94, 0.05);
-    color: var(--rp-success);
-  }
-
-  /* Modal Overlay */
   .rp-modal--assessment {
     display: none;
     position: fixed;
@@ -354,20 +297,16 @@
     border-radius: 12px;
     padding: 32px;
     max-width: 420px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     text-align: center;
   }
 
   .rp-modal--assessment__title {
     font-size: 18px;
     font-weight: 700;
-    color: var(--rp-text-title);
-    margin: 0 0 16px 0;
+    margin-bottom: 16px;
   }
 
   .rp-modal--assessment__message {
-    font-size: 14px;
-    color: var(--rp-text-body);
     margin-bottom: 28px;
     line-height: 1.6;
   }
@@ -377,203 +316,49 @@
     gap: 12px;
   }
 
-  /* Responsive Design */
-  @media (max-width: 1024px) {
-    .rp-assessment {
-      padding: 20px;
-    }
-
-    .rp-question-section {
-      padding: 24px;
-    }
+  .rp-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
   }
 
-  @media (max-width: 768px) {
-    .rp-assessment {
-      padding: 16px;
-    }
-
-    .rp-assessment__header {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-    }
-
-    .rp-assessment__title {
-      font-size: 20px;
-    }
-
-    .rp-progress {
-      margin-bottom: 24px;
-    }
-
-    .rp-question-section {
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .rp-question__prompt {
-      font-size: 15px;
-      margin-bottom: 20px;
-    }
-
-    .rp-stimulus {
-      padding: 12px;
-      margin-bottom: 20px;
-    }
-
-    .rp-stimulus__text {
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .rp-navigation {
-      gap: 12px;
-    }
-
-    .rp-navigation__buttons {
-      width: 100%;
-      gap: 8px;
-    }
-
-    .rp-question-nav__grid {
-      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    }
-
-    .rp-modal--assessment__content {
-      padding: 24px;
-      margin: 16px;
-      max-width: calc(100% - 32px);
-    }
+  .rp-btn--primary {
+    background: #2f5bff;
+    color: white;
   }
 
-  @media (max-width: 480px) {
-    .rp-assessment {
-      padding: 12px;
-    }
-
-    .rp-assessment__title {
-      font-size: 18px;
-    }
-
-    .rp-question-section {
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .rp-question__prompt {
-      font-size: 14px;
-    }
-
-    .rp-options {
-      gap: 10px;
-    }
-
-    .rp-option {
-      padding: 12px;
-    }
-
-    .rp-navigation {
-      flex-direction: column;
-      align-items: stretch;
-      margin-top: 24px;
-    }
-
-    .rp-navigation__buttons {
-      width: 100%;
-    }
-
-    .rp-navigation__buttons .rp-btn {
-      flex: 1;
-    }
-
-    .rp-question-nav__grid {
-      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
-    }
+  .rp-btn--secondary {
+    background: #f0f0f0;
+    color: #333;
   }
 </style>
 
-<div class="rp-assessment">
-  <!-- CSRF Token (hidden) -->
-  <input type="hidden" id="csrf-token" value="<%= form_authenticity_token %>">
-
-  <!-- Header -->
-  <div class="rp-assessment__header">
-    <h1 class="rp-assessment__title"><%= @form.title %></h1>
-    <p class="rp-assessment__subtitle"><%= @attempt_items.count %>개 문항</p>
-  </div>
-
-  <!-- Progress Bar -->
-  <div class="rp-progress">
-    <div class="rp-progress__header">
-      <p class="rp-progress__label">진행률</p>
-      <div class="rp-progress__percentage"><span id="progress-percentage">0</span>%</div>
-    </div>
-    <div class="rp-progress__bar">
-      <div class="rp-progress__fill" id="progress-fill"></div>
-    </div>
-    <% if @attempt.time_limit_minutes.present? %>
-      <div class="rp-progress__timer">
-        <span class="rp-progress__timer-label">남은 시간</span>
-        <div class="rp-progress__timer-value" id="timer-display">--:--</div>
-      </div>
-    <% end %>
-  </div>
-
-  <!-- Question Content Card -->
-  <div id="question-container" class="rp-question-section">
-    <!-- Dynamically rendered by JavaScript -->
-  </div>
-
-  <!-- Navigation -->
-  <div class="rp-navigation">
-    <button class="rp-btn rp-btn--secondary" id="prev-button" onclick="previousQuestion()">
-      ← 이전
-    </button>
-    <div class="rp-navigation__counter">
-      <span id="question-counter">1</span> / <span id="total-counter"><%= @attempt_items.count %></span>
-    </div>
-    <div class="rp-navigation__buttons">
-      <button class="rp-btn rp-btn--primary" id="next-button" onclick="nextQuestion()">
-        다음 →
-      </button>
-    </div>
-  </div>
-
-  <!-- Question Navigation Grid -->
-  <div class="rp-question-nav">
-    <div class="rp-question-nav__label">문항 선택</div>
-    <div class="rp-question-nav__grid" id="question-nav-items">
-      <% @attempt_items.each_with_index do |attempt_item, index| %>
-        <button class="rp-question-nav__item<%= ' rp-question-nav__item--current' if index == 0 %>"
-                data-index="<%= index %>"
-                onclick="goToQuestion(<%= index %>)">
-          <%= index + 1 %>
-        </button>
-      <% end %>
-    </div>
-  </div>
-</div>
-
-<!-- Submit Confirmation Modal -->
-<div class="rp-modal--assessment" id="submit-modal">
-  <div class="rp-modal--assessment__content">
-    <h2 class="rp-modal--assessment__title">진단 제출</h2>
-    <p class="rp-modal--assessment__message">
-      진단을 제출하시겠습니까?<br>
-      제출 후에는 답변을 수정할 수 없습니다.
-    </p>
-    <div class="rp-modal--assessment__buttons">
-      <button class="rp-btn rp-btn--secondary" onclick="closeSubmitModal()">취소</button>
-      <button class="rp-btn rp-btn--primary" onclick="confirmSubmit()">제출</button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // Build attempt items from server data
-  const attemptItems = [
-    <% @attempt_items.each do |ai| %>
-      {
+  // Simple data initialization
+  const attemptId = <%= @attempt.id %>;
+  const totalItems = <%= @attempt_items&.count || 0 %>;
+
+  let attemptItems = [];
+  let responses = {};
+  let currentIndex = 0;
+
+  // Initialize page
+  document.addEventListener('DOMContentLoaded', function() {
+    if (totalItems > 0) {
+      loadAssessmentData();
+      renderQuestion(0);
+    } else {
+      document.getElementById('question-container').innerHTML = '<p>문항이 없습니다.</p>';
+    }
+  });
+
+  function loadAssessmentData() {
+    // Build attempt items data from page data
+    <% @attempt_items.each_with_index do |ai, idx| %>
+      attemptItems.push({
         id: <%= ai.id %>,
         item: {
           id: <%= ai.item&.id %>,
@@ -589,37 +374,17 @@
             <% end %>
           ]
         }
-      },
+      });
     <% end %>
-  ];
 
-  // Build responses from server data
-  const responses = {
     <% @responses.each do |item_id, resp| %>
-      <%= item_id %>: {
+      responses[<%= item_id %>] = {
         item_id: <%= resp.item_id %>,
         selected_choice_id: <%= resp.selected_choice_id %>,
         answer_text: '<%= (resp.answer_text || '').gsub("'", "\\'") %>'
-      },
+      };
     <% end %>
-  };
-
-  const timeLimitMinutes = <%= @attempt.time_limit_minutes.present? ? @attempt.time_limit_minutes : 'null' %>;
-  const attemptStartedAt = new Date('<%= @attempt.created_at.iso8601 %>');
-
-  let currentIndex = 0;
-  let timerInterval = null;
-
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    renderQuestion(0);
-    updateProgressBar();
-
-    // Start timer if time limit exists
-    if (timeLimitMinutes) {
-      startTimer();
-    }
-  });
+  }
 
   function renderQuestion(index) {
     if (index < 0 || index >= attemptItems.length) return;
@@ -631,111 +396,62 @@
 
     let html = '';
 
-    // Render stimulus (reading passage)
+    // Stimulus
     if (item.stimulus && item.stimulus.body) {
-      html += `
-        <div class="rp-stimulus">
-          <div class="rp-stimulus__label">지문</div>
-          <div class="rp-stimulus__text">${escapeHtml(item.stimulus.body)}</div>
-        </div>
-      `;
+      html += `<div class="rp-stimulus">
+        <div class="rp-stimulus__label">지문</div>
+        <div class="rp-stimulus__text">${escapeHtml(item.stimulus.body)}</div>
+      </div>`;
     }
 
-    // Render question number and prompt
+    // Question number and prompt
     html += `<div class="rp-question__number">문항 ${index + 1}</div>`;
     html += `<div class="rp-question__prompt">${escapeHtml(item.prompt)}</div>`;
 
-    // Render answer input area
+    // Answer input
     if (item.item_type === 'mcq') {
       html += '<div class="rp-options">';
       item.item_choices.forEach(choice => {
         const isSelected = response.selected_choice_id === choice.id;
-        html += `
-          <label class="rp-option${isSelected ? ' rp-option--selected' : ''}">
-            <input type="radio"
-                   name="answer"
-                   value="${choice.id}"
-                   ${isSelected ? 'checked' : ''}
-                   onchange="saveResponse(${item.id}, 'mcq', this.value)">
-            <span class="rp-option__content">
-              <span class="rp-option__label">${choice.choice_no}.</span>
-              <span class="rp-option__text">${escapeHtml(choice.content)}</span>
-            </span>
-          </label>
-        `;
+        html += `<label class="rp-option${isSelected ? ' rp-option--selected' : ''}">
+          <input type="radio" name="answer" value="${choice.id}" ${isSelected ? 'checked' : ''}
+            onchange="saveResponse(${item.id}, 'mcq', this.value)">
+          <span class="rp-option__label">${choice.choice_no}. ${escapeHtml(choice.content)}</span>
+        </label>`;
       });
       html += '</div>';
     } else if (item.item_type === 'constructed') {
       const answerText = response.answer_text || '';
-      html += `
-        <div class="rp-textarea-wrapper">
-          <textarea class="rp-textarea"
-                    placeholder="여기에 답변을 입력하세요..."
-                    onchange="saveResponse(${item.id}, 'constructed', this.value)"
-                    onkeyup="updateCharCount(this)">${escapeHtml(answerText)}</textarea>
-          <div class="rp-textarea__counter"><span id="char-count">0</span> / 1000자</div>
-        </div>
-      `;
+      html += `<textarea class="rp-textarea" placeholder="여기에 답변을 입력하세요..."
+        onchange="saveResponse(${item.id}, 'constructed', this.value)">${escapeHtml(answerText)}</textarea>`;
     }
 
     document.getElementById('question-container').innerHTML = html;
-
-    // Update button states
     document.getElementById('prev-button').disabled = index === 0;
     document.getElementById('next-button').innerHTML = index === attemptItems.length - 1 ? '제출 →' : '다음 →';
     document.getElementById('next-button').onclick = index === attemptItems.length - 1 ? 'openSubmitModal()' : 'nextQuestion()';
-
-    // Update question navigation
-    document.querySelectorAll('.rp-question-nav__item').forEach((el, i) => {
-      el.classList.toggle('rp-question-nav__item--current', i === index);
-    });
+    document.getElementById('question-counter').textContent = currentIndex + 1;
 
     updateProgressBar();
-    updateQuestionCounter();
+    updateQuestionNav();
   }
 
   function saveResponse(itemId, itemType, value) {
     if (itemType === 'mcq') {
-      const selectedId = parseInt(value);
-      responses[itemId] = { selected_choice_id: selectedId, answer_text: null };
-
-      // Update MCQ option selection
-      document.querySelectorAll('input[name="answer"]').forEach(input => {
-        input.parentElement.classList.toggle('rp-option--selected', input.checked);
-      });
+      responses[itemId] = { selected_choice_id: parseInt(value) };
+      fetch('<%= student_assessments_submit_response_path %>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
+        body: JSON.stringify({ attempt_id: attemptId, item_id: itemId, item_type: itemType, selected_choice_id: parseInt(value) })
+      }).catch(err => console.error('Error:', err));
     } else {
-      responses[itemId] = { answer_text: value, selected_choice_id: null };
+      responses[itemId] = { answer_text: value };
+      fetch('<%= student_assessments_submit_response_path %>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
+        body: JSON.stringify({ attempt_id: attemptId, item_id: itemId, item_type: itemType, answer_text: value })
+      }).catch(err => console.error('Error:', err));
     }
-
-    // Save to server (async)
-    fetch('<%= student_assessments_submit_response_path %>', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.getElementById('csrf-token').value
-      },
-      body: JSON.stringify({
-        attempt_id: <%= @attempt.id %>,
-        item_id: itemId,
-        item_type: itemType,
-        selected_choice_id: itemType === 'mcq' ? parseInt(value) : null,
-        answer_text: itemType === 'constructed' ? value : null
-      })
-    }).catch(err => console.error('Save failed:', err));
-
-    // Update question item status
-    updateQuestionItemStatus(attemptItems.findIndex(a => a.item.id === itemId));
-  }
-
-  function updateQuestionItemStatus(index) {
-    const item = attemptItems[index].item;
-    const response = responses[item.id];
-    const el = document.querySelectorAll('.rp-question-nav__item')[index];
-    if (!el) return;
-
-    const isAnswered = (item.item_type === 'mcq' && response?.selected_choice_id) ||
-                       (item.item_type === 'constructed' && response?.answer_text);
-    el.classList.toggle('rp-question-nav__item--answered', isAnswered);
   }
 
   function nextQuestion() {
@@ -750,76 +466,6 @@
     }
   }
 
-  function goToQuestion(index) {
-    renderQuestion(index);
-  }
-
-  function updateProgressBar() {
-    const progress = ((currentIndex + 1) / attemptItems.length) * 100;
-    document.getElementById('progress-fill').style.width = progress + '%';
-    document.getElementById('progress-percentage').textContent = Math.round(progress);
-  }
-
-  function updateQuestionCounter() {
-    document.getElementById('question-counter').textContent = currentIndex + 1;
-  }
-
-  function startTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-
-    const updateTimer = () => {
-      const now = new Date();
-      const elapsedMs = now - attemptStartedAt;
-      const totalMs = timeLimitMinutes * 60 * 1000;
-      const remainingMs = Math.max(0, totalMs - elapsedMs);
-
-      const minutes = Math.floor(remainingMs / (60 * 1000));
-      const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000);
-
-      const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      const timerElement = document.getElementById('timer-display');
-
-      if (timerElement) {
-        timerElement.textContent = display;
-
-        // Change color based on time remaining
-        if (remainingMs === 0) {
-          // Time's up - auto submit
-          timerElement.className = 'rp-progress__timer-value danger';
-          clearInterval(timerInterval);
-          confirmSubmit();
-        } else if (remainingMs < 5 * 60 * 1000) {
-          // Less than 5 minutes - danger
-          timerElement.className = 'rp-progress__timer-value danger';
-        } else if (remainingMs < 10 * 60 * 1000) {
-          // Less than 10 minutes - warning
-          timerElement.className = 'rp-progress__timer-value warning';
-        } else {
-          // Normal
-          timerElement.className = 'rp-progress__timer-value';
-        }
-      }
-    };
-
-    // Update immediately
-    updateTimer();
-
-    // Update every second
-    timerInterval = setInterval(updateTimer, 1000);
-  }
-
-  function stopTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
-  function updateCharCount(textarea) {
-    const count = textarea.value.length;
-    document.getElementById('char-count').textContent = Math.min(count, 1000);
-  }
-
   function openSubmitModal() {
     document.getElementById('submit-modal').classList.add('show');
   }
@@ -829,33 +475,36 @@
   }
 
   function confirmSubmit() {
-    stopTimer();
-
     fetch('<%= student_assessments_submit_attempt_path %>', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.getElementById('csrf-token').value
-      },
-      body: JSON.stringify({
-        attempt_id: <%= @attempt.id %>
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
+      body: JSON.stringify({ attempt_id: attemptId })
+    }).then(res => res.json()).then(data => {
       if (data.success) {
         window.location.href = data.redirect_url;
       }
-    })
-    .catch(err => alert('제출 중 오류가 발생했습니다.'));
+    }).catch(err => alert('제출 중 오류가 발생했습니다.'));
+  }
+
+  function updateProgressBar() {
+    const progress = ((currentIndex + 1) / attemptItems.length) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
+    document.getElementById('progress-percentage').textContent = Math.round(progress);
+  }
+
+  function updateQuestionNav() {
+    const navGrid = document.getElementById('question-nav-items');
+    navGrid.innerHTML = '';
+    for (let i = 0; i < attemptItems.length; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'rp-question-nav__item' + (i === currentIndex ? ' rp-question-nav__item--current' : '');
+      btn.textContent = i + 1;
+      btn.onclick = () => renderQuestion(i);
+      navGrid.appendChild(btn);
+    }
   }
 
   function escapeHtml(unsafe) {
-    return unsafe
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 </script>
