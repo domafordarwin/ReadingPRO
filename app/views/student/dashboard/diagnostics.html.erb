@@ -12,7 +12,10 @@
       <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
         <h4><%= form.title %></h4>
         <p>문항 수: <%= form.items.count %>개</p>
-        <%= button_to "시작하기", student_assessments_path(form_id: form.id), method: :post, class: "rp-btn rp-btn--primary" %>
+        <%= form_with url: student_assessments_path, method: :post, local: true do |f| %>
+          <%= f.hidden_field :form_id, value: form.id %>
+          <%= f.submit "시작하기", class: "rp-btn rp-btn--primary" %>
+        <% end %>
       </div>
     <% end %>
   <% else %>
