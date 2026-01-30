@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_30_000641) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_30_004051) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_30_000641) do
   end
 
   create_table "attempts", force: :cascade do |t|
+    t.text "comprehensive_feedback"
     t.datetime "created_at", null: false
     t.bigint "form_id"
     t.bigint "school_assessment_id"

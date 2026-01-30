@@ -282,8 +282,15 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .sort_by(&:created_at)
       .uniq { |r| r.id }
 
-    # 종합 피드백 생성 (모든 응답을 고려)
-    feedback_text = FeedbackAiService.generate_comprehensive_feedback(responses)
+    # 종합 피드백 생성
+    custom_prompt = params[:prompt]
+    if custom_prompt.present?
+      # 커스텀 프롬프트 사용
+      feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, custom_prompt)
+    else
+      # 기본 피드백 생성
+      feedback_text = FeedbackAiService.generate_comprehensive_feedback(responses)
+    end
 
     render json: { success: true, feedback: feedback_text }
   rescue => e
@@ -297,9 +304,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
     return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
 
-    # student의 comprehensive_feedback 필드에 저장 (또는 별도 모델)
-    # 현재는 간단히 JSON으로 저장
-    render json: { success: true, feedback: feedback_text }
+    # 가장 최근 Attempt에 종합 피드백 저장
+    attempt = student.attempts.order(:created_at).last
+    if attempt
+      attempt.update!(comprehensive_feedback: feedback_text)
+    end
+
+    render json: { success: true, feedback: feedback_text, message: "피드백이 저장되었습니다" }
   rescue ActiveRecord::RecordNotFound
     render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
   end
