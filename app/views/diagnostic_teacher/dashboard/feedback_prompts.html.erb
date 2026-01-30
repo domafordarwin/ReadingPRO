@@ -78,19 +78,19 @@
     <% if @prompts.respond_to?(:total_pages) && @prompts.total_pages > 1 %>
       <div class="rp-pagination">
         <% if @prompts.prev_page %>
-          <%= link_to "이전", url_for(params.merge(page: @prompts.prev_page)), class: "rp-pagination-btn" %>
+          <%= link_to "이전", diagnostic_teacher_feedback_prompts_path(params.permit(:search, :category, :type, page: @prompts.prev_page)), class: "rp-pagination-btn" %>
         <% end %>
 
         <% (1..@prompts.total_pages).each do |page| %>
           <% if page == @prompts.current_page %>
             <span class="rp-pagination-number rp-pagination-number--active"><%= page %></span>
           <% else %>
-            <%= link_to page, url_for(params.merge(page: page)), class: "rp-pagination-number" %>
+            <%= link_to page, diagnostic_teacher_feedback_prompts_path(params.permit(:search, :category, :type, page: page)), class: "rp-pagination-number" %>
           <% end %>
         <% end %>
 
         <% if @prompts.next_page %>
-          <%= link_to "다음", url_for(params.merge(page: @prompts.next_page)), class: "rp-pagination-btn" %>
+          <%= link_to "다음", diagnostic_teacher_feedback_prompts_path(params.permit(:search, :category, :type, page: @prompts.next_page)), class: "rp-pagination-btn" %>
         <% end %>
       </div>
     <% end %>
