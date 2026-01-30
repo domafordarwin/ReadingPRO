@@ -338,7 +338,7 @@
 
 <script>
   // Parse assessment data from server
-  const data = JSON.parse(<%= @assessment_data.to_json %>);
+  const data = <%= raw(@assessment_data) %>;
 
   const attemptId = data.attemptId;
   const totalItems = data.totalItems;
