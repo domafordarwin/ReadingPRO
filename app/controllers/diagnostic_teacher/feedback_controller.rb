@@ -171,8 +171,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # ID로 찾기
       selected_choice = ItemChoice.find_by(id: selected_choice_id, item_id: response.item_id)
     elsif selected_choice_letter.present?
-      # 문자(A-E)로 찾기
-      selected_choice = ItemChoice.find_by(choice_letter: selected_choice_letter.upcase, item_id: response.item_id)
+      # 문자(A-E)를 choice_no (1-5)로 변환
+      choice_letter_upcase = selected_choice_letter.upcase
+      choice_no = choice_letter_upcase.ord - 64  # A=1, B=2, C=3, D=4, E=5
+      selected_choice = ItemChoice.find_by(choice_no: choice_no, item_id: response.item_id)
     else
       return render json: { success: false, error: "선택지 정보를 입력하세요" }, status: :bad_request
     end
