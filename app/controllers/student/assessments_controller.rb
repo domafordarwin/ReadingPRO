@@ -40,7 +40,17 @@ class Student::AssessmentsController < ApplicationController
     end
 
     @attempt_items = @attempt.attempt_items.includes(:item).order(created_at: :asc)
+
+    unless @attempt_items.any?
+      redirect_to student_diagnostics_path, alert: "문항이 없는 진단입니다."
+      return
+    end
+
     @responses = @attempt.responses.includes(:item, :selected_choice).index_by(&:item_id)
+  rescue StandardError => e
+    Rails.logger.error("Assessment show error: #{e.class} - #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to student_diagnostics_path, alert: "진단을 로드할 수 없습니다: #{e.message}"
   end
 
   def submit_response
