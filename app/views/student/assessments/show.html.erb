@@ -429,7 +429,7 @@
     document.getElementById('question-container').innerHTML = html;
     document.getElementById('prev-button').disabled = index === 0;
     document.getElementById('next-button').innerHTML = index === attemptItems.length - 1 ? '제출 →' : '다음 →';
-    document.getElementById('next-button').onclick = index === attemptItems.length - 1 ? 'openSubmitModal()' : 'nextQuestion()';
+    document.getElementById('next-button').onclick = index === attemptItems.length - 1 ? openSubmitModal : nextQuestion;
     document.getElementById('question-counter').textContent = currentIndex + 1;
 
     updateProgressBar();
