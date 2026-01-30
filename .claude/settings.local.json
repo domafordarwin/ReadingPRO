@@ -48,7 +48,8 @@
       "Bash(curl:*)",
       "Bash(railway status:*)",
       "Bash(bin/rails db:migrate:down:*)",
-      "Bash(bin/rails db:schema:dump:*)"
+      "Bash(bin/rails db:schema:dump:*)",
+      "Bash(bin\\\\rails server:*)"
     ]
   }
 }

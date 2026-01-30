@@ -47,22 +47,17 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @current_page = "feedback"
 
     # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
-    responses = @student.attempts
-      .joins(:responses)
-      .joins("INNER JOIN items ON responses.item_id = items.id")
+    @responses = Response
+      .joins(:item)
+      .where(attempt_id: @student.attempts.pluck(:id))
       .where("items.item_type = ?", Item.item_types[:mcq])
       .includes(
-        responses: [
-          { item: { item_choices: :choice_score } },
-          :response_feedbacks,
-          :feedback_prompts,
-          { feedback_prompt_histories: :feedback_prompt }
-        ]
+        item: { item_choices: :choice_score },
+        :response_feedbacks,
+        :feedback_prompts,
+        :attempt
       )
-      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
-      .sort_by(&:created_at)
-
-    @responses = responses.uniq { |r| r.id }
+      .order(:created_at)
 
     # 전체 프롬프트 템플릿 로드 (드롭다운용)
     @prompt_templates = FeedbackPrompt.templates

@@ -126,23 +126,24 @@ class FeedbackAiService
   end
 
   def refine_comprehensive_feedback(responses, user_prompt)
-    basic_feedback = generate_comprehensive_feedback(responses)
     summary = build_comprehensive_summary(responses)
 
+    # 사용자 프롬프트를 핵심 지침으로 하는 피드백 생성
     refinement_prompt = <<~PROMPT
-      다음은 학생의 18개 문항 시험에 대한 기본 종합 피드백입니다:
+      학생이 객관식 18개 문항을 풀었습니다. 다음 정보와 교사의 지침을 바탕으로 종합 피드백을 작성해주세요.
 
       [학생 성과 요약]
       #{summary}
 
-      [기본 피드백]
-      #{basic_feedback}
-
-      [교사 요청사항]
+      [교사 지침 (우선순위 높음)]
       #{user_prompt}
 
-      위의 요청사항을 반영하여 더 구체적이고 도움이 되는 종합 피드백으로 정제해주세요.
-      학생의 동기부여를 높이기 위해 친절하고 격려적인 톤을 유지하세요.
+      [작성 가이드]
+      - 교사 지침을 최우선으로 반영하여 작성해주세요
+      - 학생의 강점과 개선 영역을 구체적으로 언급하세요
+      - 향후 학습 방향에 대한 조언을 제시하세요
+      - 격려적이고 건설적인 톤을 유지하세요
+      - 한글로 500-800자 사이의 길이로 작성해주세요
     PROMPT
 
     begin
@@ -162,7 +163,8 @@ class FeedbackAiService
       message.content[0].text
     rescue StandardError => e
       Rails.logger.error("AI Comprehensive Feedback Refinement Error: #{e.message}")
-      "#{basic_feedback}\n\n[교사 추가 의견]\n#{user_prompt}"
+      # Fallback: 요약 정보와 사용자 지침을 함께 반환
+      "#{summary}\n\n[교사 지침]\n#{user_prompt}"
     end
   end
 
