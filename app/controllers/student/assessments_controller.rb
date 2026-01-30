@@ -28,8 +28,9 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_response
-    response = @attempt.responses.find_or_create_by(item_id: params[:item_id]) do |r|
-      r.attempt = @attempt
+    attempt = @student.attempts.find(params[:attempt_id])
+    response = attempt.responses.find_or_create_by(item_id: params[:item_id]) do |r|
+      r.attempt = attempt
     end
 
     if params[:item_type] == "mcq"
@@ -42,17 +43,18 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_attempt
-    @attempt.update!(status: :completed, submitted_at: Time.current)
+    attempt = @student.attempts.find(params[:attempt_id])
+    attempt.update!(status: :completed, submitted_at: Time.current)
 
     # Score all MCQ responses
-    mcq_responses = @attempt.responses.joins(:item).where(items: { item_type: :mcq })
+    mcq_responses = attempt.responses.joins(:item).where(items: { item_type: :mcq })
     mcq_responses.each do |response|
       ScoreResponseService.call(response.id)
     end
 
     # TODO: Auto-generate feedback for responses
 
-    render json: { success: true, redirect_url: student_show_attempt_path(@attempt.id) }
+    render json: { success: true, redirect_url: student_show_attempt_path(attempt.id) }
   end
 
   private
