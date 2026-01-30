@@ -56,18 +56,29 @@ class Student::AssessmentsController < ApplicationController
 
     # Prepare JSON data safely in controller
     @attempt_items_json = @attempt_items.map do |ai|
-      {
-        id: ai.id,
-        item: {
-          id: ai.item.id,
-          item_type: ai.item.item_type,
-          prompt: ai.item.prompt,
-          stimulus_id: ai.item.stimulus_id,
-          stimulus: ai.item.stimulus ? { body: ai.item.stimulus.body } : nil,
-          item_choices: ai.item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content } }
+      begin
+        item_choices = []
+        if ai.item && ai.item.item_choices.present?
+          item_choices = ai.item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content } }
+        end
+
+        {
+          id: ai.id,
+          item: {
+            id: ai.item&.id,
+            item_type: ai.item&.item_type,
+            prompt: ai.item&.prompt,
+            stimulus_id: ai.item&.stimulus_id,
+            stimulus: (ai.item&.stimulus ? { body: ai.item.stimulus.body } : nil),
+            item_choices: item_choices
+          }
         }
-      }
+      rescue StandardError => e
+        Rails.logger.error("Error preparing item #{ai.id}: #{e.message}")
+        raise
+      end
     end
+
     @responses_json = @responses.transform_values do |resp|
       {
         item_id: resp.item_id,
