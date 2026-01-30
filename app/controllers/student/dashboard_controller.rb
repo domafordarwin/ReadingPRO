@@ -17,22 +17,29 @@ class Student::DashboardController < ApplicationController
       return
     end
 
-    # 모든 활성화된 형식 조회
-    @available_forms = Form.where(status: :active)
-      .includes(:items)
-      .order(created_at: :desc)
+    begin
+      # 모든 활성화된 형식 조회
+      @available_forms = Form.where(status: :active)
+        .includes(:items)
+        .order(created_at: :desc)
 
-    # 현재 학생의 진행 중인 시도 조회
-    @in_progress_attempts = @student.attempts
-      .where(status: :in_progress)
-      .includes(:form)
-      .order(updated_at: :desc)
+      # 현재 학생의 진행 중인 시도 조회
+      @in_progress_attempts = @student.attempts
+        .where(status: :in_progress)
+        .includes(:form)
+        .order(updated_at: :desc)
 
-    # 현재 학생의 완료된 시도 조회
-    @completed_attempts = @student.attempts
-      .where(status: :completed)
-      .includes(:form, :report)
-      .order(created_at: :desc)
+      # 현재 학생의 완료된 시도 조회
+      @completed_attempts = @student.attempts
+        .where(status: :completed)
+        .includes(:form, :report)
+        .order(created_at: :desc)
+    rescue StandardError => e
+      Rails.logger.error("Diagnostics error: #{e.message}\n#{e.backtrace.join("\n")}")
+      @available_forms = []
+      @in_progress_attempts = []
+      @completed_attempts = []
+    end
   end
 
   def reports
