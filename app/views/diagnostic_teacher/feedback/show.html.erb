@@ -47,18 +47,58 @@
       </span>
     </h2>
 
-    <!-- 정답과 학생답 요약 -->
+    <!-- 정답과 학생답 요약 (테이블 형식) -->
     <% if @responses.any? %>
-      <div style="margin-bottom: 16px; padding: 12px; background: #f1f5f9; border-radius: 6px;">
-        <div style="font-size: 12px; color: #475569; margin-bottom: 8px;"><strong>문항별 정답/학생답:</strong></div>
-        <% @responses.each_with_index do |response, index| %>
-          <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
-          <div style="display: inline-block; margin-right: 16px; margin-bottom: 8px; font-size: 11px;">
-            <span style="font-weight: 600; color: #0f172a;">문항 <%= index + 1 %>:</span>
-            <span style="color: #0284c7;">정답 <%= correct_choice&.choice_letter %></span>
-            <span style="color: #6b7280;">→ 학생 <%= response.selected_choice&.choice_letter || '미응답' %></span>
-          </div>
-        <% end %>
+      <div style="margin-bottom: 16px; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <tbody>
+            <!-- 문항번호 행 -->
+            <tr>
+              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; width: 60px;">문항</th>
+              <% @responses.each_with_index do |response, index| %>
+                <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; min-width: 50px;">
+                  <%= index + 1 %>
+                </th>
+              <% end %>
+            </tr>
+
+            <!-- 정답 행 (읽기만) -->
+            <tr>
+              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">정답</th>
+              <% @responses.each_with_index do |response, index| %>
+                <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f0f9ff; color: #0284c7; font-weight: 600;">
+                  <%= correct_choice&.choice_letter %>
+                </td>
+              <% end %>
+            </tr>
+
+            <!-- 학생답 행 (읽기만) -->
+            <tr>
+              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">학생답</th>
+              <% @responses.each_with_index do |response, index| %>
+                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f5f5f5; color: #475569;">
+                  <%= response.selected_choice&.choice_letter || '—' %>
+                </td>
+              <% end %>
+            </tr>
+
+            <!-- 수정답 행 (쓰기 가능) -->
+            <tr>
+              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">수정답</th>
+              <% @responses.each_with_index do |response, index| %>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">
+                  <input type="text"
+                         class="rp-edit-answer-input"
+                         data-response-id="<%= response.id %>"
+                         data-item-index="<%= index %>"
+                         maxlength="1"
+                         style="width: 40px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace;">
+                </td>
+              <% end %>
+            </tr>
+          </tbody>
+        </table>
       </div>
     <% end %>
 
@@ -75,153 +115,6 @@
             <% else %>
               <span class="rp-cell-badge rp-cell-badge--unanswered">-</span>
             <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <!-- 수평선 -->
-  <div style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>
-
-  <!-- ===== 중간: 문항별 피드백 섹션 ===== -->
-  <div style="margin-top: 32px; margin-bottom: 32px;">
-    <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-      문항별 피드백
-    </h2>
-
-    <div class="rp-item-feedback-container">
-      <% @responses.each_with_index do |response, index| %>
-        <div class="rp-item-feedback-card" data-response-id="<%= response.id %>">
-          <!-- 헤더: 문항 번호와 정답 현황 -->
-          <div class="rp-item-feedback-header">
-            <div>
-              <span class="rp-item-number">문항 <%= index + 1 %></span>
-              <% if response.selected_choice %>
-                <% is_correct = response.selected_choice.choice_score&.is_key %>
-                <span class="rp-item-status <%= is_correct ? 'rp-item-status--correct' : 'rp-item-status--incorrect' %>">
-                  <%= is_correct ? '✓ 정답' : '✗ 오답' %>
-                </span>
-              <% else %>
-                <span class="rp-item-status rp-item-status--unanswered">- 미응답</span>
-              <% end %>
-            </div>
-          </div>
-
-          <!-- 문항 정보 -->
-          <div class="rp-item-content">
-            <div style="margin-bottom: 12px;">
-              <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;"><strong>문항:</strong></div>
-              <div style="font-size: 13px; color: #1e293b; line-height: 1.5;">
-                <%= response.item.prompt %>
-              </div>
-            </div>
-
-            <!-- 답변 비교 -->
-            <div style="display: flex; gap: 16px; margin-top: 12px;">
-              <div>
-                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;"><strong>정답:</strong></div>
-                <% correct_choice = response.item.item_choices.find { |c| c.choice_score&.is_key } %>
-                <div style="font-size: 13px; color: #0284c7;">
-                  <%= correct_choice&.choice_letter %>. <%= correct_choice&.choice_text %>
-                </div>
-              </div>
-              <div>
-                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;"><strong>학생 답:</strong></div>
-                <% if response.selected_choice %>
-                  <div style="font-size: 13px; color: #475569;">
-                    <%= response.selected_choice.choice_letter %>. <%= response.selected_choice.choice_text %>
-                  </div>
-                <% else %>
-                  <div style="font-size: 13px; color: #ef4444; font-style: italic;">미응답</div>
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <!-- 피드백 섹션 -->
-          <div class="rp-item-feedback-section">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <h4 style="margin: 0; font-size: 13px; font-weight: 600; color: #0f172a;">기존 피드백</h4>
-              <% existing_feedback = response.response_feedbacks.where(source: 'teacher').last %>
-              <% if !existing_feedback %>
-                <button class="rp-btn rp-btn--primary rp-btn--sm" data-action="generate-item-feedback" data-response-id="<%= response.id %>">
-                  AI 피드백 생성
-                </button>
-              <% end %>
-            </div>
-
-            <!-- 기존 피드백 표시 -->
-            <div class="rp-item-existing-feedback" id="existing-feedback-<%= response.id %>">
-              <% if existing_feedback %>
-                <div class="rp-feedback-item rp-feedback-item--teacher">
-                  <span class="rp-badge rp-badge--success">교사</span>
-                  <p class="rp-feedback-text"><%= existing_feedback.feedback %></p>
-                  <small class="rp-feedback-meta">
-                    <%= existing_feedback.created_at.strftime("%Y-%m-%d %H:%M") %>
-                  </small>
-                </div>
-              <% else %>
-                <p style="color: #94a3b8; font-size: 13px;">등록된 피드백이 없습니다.</p>
-              <% end %>
-            </div>
-
-            <!-- AI 피드백 (생성 후 표시) -->
-            <div class="rp-item-ai-feedback" id="ai-feedback-<%= response.id %>" style="margin-top: 12px; display: none;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <h4 style="margin: 0; font-size: 13px; font-weight: 600; color: #0f172a;">AI 피드백</h4>
-              </div>
-              <div id="ai-feedback-content-<%= response.id %>" class="rp-feedback-item rp-feedback-item--ai">
-                <span class="rp-badge rp-badge--info">AI</span>
-                <p class="rp-feedback-text" id="ai-feedback-text-<%= response.id %>"></p>
-              </div>
-
-              <!-- 반영 버튼 -->
-              <div style="margin-top: 12px; display: flex; gap: 8px;">
-                <button class="rp-btn rp-btn--primary rp-btn--sm" data-action="apply-ai-feedback" data-response-id="<%= response.id %>">
-                  반영
-                </button>
-                <button class="rp-btn rp-btn--secondary rp-btn--sm" data-action="dismiss-ai-feedback" data-response-id="<%= response.id %>">
-                  취소
-                </button>
-              </div>
-            </div>
-
-            <!-- 프롬프트 정교화 (선택사항) -->
-            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
-              <button class="rp-btn rp-btn--secondary rp-btn--xs" data-action="toggle-prompt-section" data-response-id="<%= response.id %>" style="margin-bottom: 12px;">
-                ▼ 프롬프트로 정교화
-              </button>
-
-              <div class="rp-item-prompt-section" id="prompt-section-<%= response.id %>" style="display: none; background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px;">카테고리</label>
-                  <select class="rp-prompt-category-item" data-response-id="<%= response.id %>" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px;">
-                    <option value="general">일반</option>
-                    <option value="comprehension">이해력</option>
-                    <option value="explanation">설명</option>
-                    <option value="difficulty">난이도</option>
-                    <option value="strategy">전략</option>
-                  </select>
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px;">커스텀 프롬프트</label>
-                  <textarea class="rp-prompt-input-item" data-response-id="<%= response.id %>" rows="3"
-                            placeholder="예: 이 문항의 함정 요소를 설명해주세요"
-                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-family: inherit;"></textarea>
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                  <button class="rp-btn rp-btn--primary rp-btn--xs" data-action="refine-item-feedback" data-response-id="<%= response.id %>">
-                    정교화
-                  </button>
-                  <button class="rp-btn rp-btn--secondary rp-btn--xs" data-action="toggle-prompt-section" data-response-id="<%= response.id %>">
-                    닫기
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       <% end %>
@@ -855,6 +748,31 @@
     padding: 60px 20px;
     color: #94a3b8;
   }
+
+  /* ===== 수정답 입력 필드 스타일 ===== */
+  .rp-edit-answer-input {
+    width: 40px !important;
+    padding: 4px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    font-family: monospace !important;
+    font-size: 13px !important;
+    transition: all 0.2s !important;
+  }
+
+  .rp-edit-answer-input:focus {
+    outline: none !important;
+    border-color: #2f5bff !important;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1) !important;
+    background: #eff6ff !important;
+  }
+
+  .rp-edit-answer-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 </style>
 
 <script>
@@ -865,9 +783,120 @@
 
     init() {
       this.bindStudentNavigation();
-      this.bindItemFeedbackEvents();
+      this.bindEditAnswerInputs();
       this.bindComprehensiveFeedbackEvents();
       this.updateCorrectCount();
+    }
+
+    // 수정답 입력 필드 바인딩
+    bindEditAnswerInputs() {
+      document.querySelectorAll('.rp-edit-answer-input').forEach(input => {
+        input.addEventListener('change', (e) => this.handleEditAnswerChange(e));
+        input.addEventListener('keyup', (e) => {
+          // 대문자로 자동 변환
+          if (e.key !== 'Enter') return;
+          const value = e.target.value.toUpperCase().trim();
+          if (value.length > 0) {
+            e.target.value = value;
+            this.handleEditAnswerChange(e);
+          }
+        });
+      });
+    }
+
+    // 수정답 변경 처리
+    async handleEditAnswerChange(e) {
+      const input = e.target;
+      const responseId = input.dataset.responseId;
+      const itemIndex = input.dataset.itemIndex;
+      const newAnswer = input.value.toUpperCase().trim();
+
+      if (!newAnswer) {
+        input.style.borderColor = '#cbd5e1';
+        return;
+      }
+
+      // 유효한 선택지인지 검증 (A-E)
+      if (!/^[A-E]$/.test(newAnswer)) {
+        input.style.borderColor = '#ef4444';
+        input.style.backgroundColor = '#fee2e2';
+        this.showToast('A-E 중 하나의 선택지를 입력하세요', 'error');
+        setTimeout(() => {
+          input.style.borderColor = '#cbd5e1';
+          input.style.backgroundColor = 'white';
+        }, 2000);
+        return;
+      }
+
+      input.disabled = true;
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/update_answer`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({
+            selected_choice_letter: newAnswer
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 테이블의 학생답 셀 업데이트
+          const table = input.closest('table');
+          if (table) {
+            const rows = table.querySelectorAll('tbody tr');
+            // 학생답 행은 3번째 row (0: 문항번호, 1: 정답, 2: 학생답, 3: 수정답)
+            const studentAnswerRow = rows[2];
+            if (studentAnswerRow) {
+              const cells = studentAnswerRow.querySelectorAll('td');
+              // itemIndex + 1 (첫 번째 셀은 행 제목)
+              const studentAnswerCell = cells[itemIndex];
+              if (studentAnswerCell) {
+                studentAnswerCell.textContent = newAnswer;
+              }
+            }
+          }
+
+          // 답변 그리드의 배지 업데이트
+          const answerCell = document.querySelector(`.rp-answer-cell[data-response-id="${responseId}"]`);
+          if (answerCell) {
+            const badge = answerCell.querySelector('.rp-cell-badge');
+            if (badge) {
+              if (data.is_correct) {
+                badge.textContent = '✓';
+                badge.className = 'rp-cell-badge rp-cell-badge--correct';
+              } else {
+                badge.textContent = '✗';
+                badge.className = 'rp-cell-badge rp-cell-badge--incorrect';
+              }
+            }
+          }
+
+          // 정답 개수 업데이트
+          this.updateCorrectCount();
+
+          input.style.borderColor = '#22c55e';
+          input.style.backgroundColor = '#f0fdf4';
+          this.showToast('답변이 수정되었습니다', 'success');
+
+          setTimeout(() => {
+            input.style.borderColor = '#cbd5e1';
+            input.style.backgroundColor = 'white';
+          }, 2000);
+        } else {
+          input.style.borderColor = '#ef4444';
+          this.showToast(data.error || '답변 수정 실패', 'error');
+        }
+      } catch (error) {
+        input.style.borderColor = '#ef4444';
+        this.showToast('네트워크 오류', 'error');
+      } finally {
+        input.disabled = false;
+      }
     }
 
     // 학생 탐색 네비게이션 바인딩

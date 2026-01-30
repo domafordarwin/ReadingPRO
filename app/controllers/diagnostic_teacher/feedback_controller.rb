@@ -161,16 +161,28 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def update_answer
     # 학생의 정답 수정
     response = Response.find(params[:response_id])
-    selected_choice_id = params[:selected_choice_id]
 
-    # 선택지가 같은 항목에 속하는지 검증
-    selected_choice = ItemChoice.find_by(id: selected_choice_id, item_id: response.item_id)
+    # selected_choice_id 또는 selected_choice_letter 받기
+    selected_choice_id = params[:selected_choice_id]
+    selected_choice_letter = params[:selected_choice_letter]
+
+    # 선택지 찾기
+    if selected_choice_id.present?
+      # ID로 찾기
+      selected_choice = ItemChoice.find_by(id: selected_choice_id, item_id: response.item_id)
+    elsif selected_choice_letter.present?
+      # 문자(A-E)로 찾기
+      selected_choice = ItemChoice.find_by(choice_letter: selected_choice_letter.upcase, item_id: response.item_id)
+    else
+      return render json: { success: false, error: "선택지 정보를 입력하세요" }, status: :bad_request
+    end
+
     unless selected_choice
       return render json: { success: false, error: "유효하지 않은 선택지입니다" }, status: :bad_request
     end
 
     # 응답 업데이트
-    response.update!(selected_choice_id: selected_choice_id)
+    response.update!(selected_choice_id: selected_choice.id)
 
     # 점수 재계산
     ScoreResponseService.call(response.id)
