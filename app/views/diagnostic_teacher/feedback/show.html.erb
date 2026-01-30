@@ -537,8 +537,18 @@
 
       generateConstructedFeedback(responseId) {
         const constructedTab = document.querySelector('.rp-tab-pane[data-tab="constructed"]');
+        if (!constructedTab) {
+          this.showToast('❌ 탭을 찾을 수 없습니다', 'error');
+          return;
+        }
+
         const btn = constructedTab.querySelector('.rp-generate-constructed-feedback');
         const feedbackDisplay = constructedTab.querySelector('.rp-feedback-display');
+
+        if (!btn || !feedbackDisplay) {
+          this.showToast('❌ UI 요소를 찾을 수 없습니다', 'error');
+          return;
+        }
 
         btn.disabled = true;
         btn.textContent = '생성 중...';
@@ -548,11 +558,23 @@
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-Token': this.getCSRFToken()
-          }
+          },
+          timeout: 30000
         })
-        .then(r => r.json())
+        .then(r => {
+          // HTTP 에러 상태 확인
+          if (!r.ok) {
+            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+          }
+          return r.json();
+        })
         .then(data => {
-          if (data.success) {
+          // JSON 응답 검증
+          if (!data || typeof data !== 'object') {
+            throw new Error('유효하지 않은 응답 형식');
+          }
+
+          if (data.success === true && data.feedback) {
             // 피드백 표시 업데이트
             feedbackDisplay.innerHTML = `
               <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
@@ -566,13 +588,30 @@
             this.showToast('✅ AI 피드백이 생성되었습니다', 'success');
             btn.textContent = 'AI 피드백 재생성';
           } else {
-            this.showToast('❌ ' + (data.error || '피드백 생성 실패'), 'error');
+            const errorMsg = data.error || '피드백 생성 실패';
+            this.showToast('❌ ' + errorMsg, 'error');
             btn.textContent = 'AI 피드백 생성';
+            console.warn('[generateConstructedFeedback] Response error:', data);
           }
         })
         .catch(err => {
-          this.showToast('❌ 오류 발생', 'error');
-          console.error(err);
+          console.error('[generateConstructedFeedback] Error:', err);
+
+          // 에러 메시지 구성
+          let errorMsg = '오류 발생';
+          if (err.message.includes('HTTP 500')) {
+            errorMsg = '서버 오류 발생. 관리자에게 문의하세요.';
+          } else if (err.message.includes('HTTP 404')) {
+            errorMsg = '페이지를 찾을 수 없습니다.';
+          } else if (err.message.includes('HTTP')) {
+            errorMsg = err.message;
+          } else if (err.message.includes('JSON')) {
+            errorMsg = '서버에서 유효한 응답을 받지 못했습니다.';
+          } else if (err.message.includes('fetch')) {
+            errorMsg = '네트워크 연결을 확인하세요.';
+          }
+
+          this.showToast('❌ ' + errorMsg, 'error');
           btn.textContent = 'AI 피드백 생성';
         })
         .finally(() => {

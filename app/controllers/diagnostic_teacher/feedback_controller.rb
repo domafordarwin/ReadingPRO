@@ -250,7 +250,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         return render json: {
           success: false,
           error: "문항 또는 채점 정보가 없습니다"
-        }, status: :bad_request
+        }
       end
 
       # ReadingReportService를 통해 피드백 생성
@@ -258,11 +258,18 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       feedback_text = service.generate_constructed_response_feedback(response)
 
       # 피드백 생성 실패 확인
-      if feedback_text.blank? || feedback_text.include?("[API 오류]")
+      if feedback_text.blank?
         return render json: {
           success: false,
-          error: feedback_text || "피드백 생성에 실패했습니다"
-        }, status: :unprocessable_entity
+          error: "피드백 생성에 실패했습니다"
+        }
+      end
+
+      if feedback_text.include?("[에러]") || feedback_text.include?("[API 오류]")
+        return render json: {
+          success: false,
+          error: feedback_text
+        }
       end
 
       # ResponseFeedback 저장
@@ -278,19 +285,20 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         source: 'ai',
         created_at: response_feedback.created_at.strftime("%Y-%m-%d %H:%M")
       }
-    rescue ActiveRecord::RecordNotFound
+    rescue ActiveRecord::RecordNotFound => e
+      Rails.logger.warn("[generate_constructed_feedback] RecordNotFound: #{e.message}")
       render json: {
         success: false,
         error: "응답을 찾을 수 없습니다"
-      }, status: :not_found
+      }
     rescue StandardError => e
-      Rails.logger.error("[generate_constructed_feedback] Error: #{e.class} - #{e.message}")
-      Rails.logger.error("[generate_constructed_feedback] Backtrace: #{e.backtrace.first(5).join("\n")}")
+      Rails.logger.error("[generate_constructed_feedback] #{e.class} - #{e.message}")
+      Rails.logger.error("[generate_constructed_feedback] Backtrace: #{e.backtrace.first(3).join("\n")}")
 
       render json: {
         success: false,
-        error: "피드백 생성 중 오류가 발생했습니다"
-      }, status: :internal_server_error
+        error: "처리 중 오류가 발생했습니다: #{e.message}"
+      }
     end
   end
 
