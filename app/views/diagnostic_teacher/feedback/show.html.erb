@@ -186,6 +186,42 @@
                 </button>
               </div>
             </div>
+
+            <!-- 프롬프트 정교화 (선택사항) -->
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+              <button class="rp-btn rp-btn--secondary rp-btn--xs" data-action="toggle-prompt-section" data-response-id="<%= response.id %>" style="margin-bottom: 12px;">
+                ▼ 프롬프트로 정교화
+              </button>
+
+              <div class="rp-item-prompt-section" id="prompt-section-<%= response.id %>" style="display: none; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px;">카테고리</label>
+                  <select class="rp-prompt-category-item" data-response-id="<%= response.id %>" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px;">
+                    <option value="general">일반</option>
+                    <option value="comprehension">이해력</option>
+                    <option value="explanation">설명</option>
+                    <option value="difficulty">난이도</option>
+                    <option value="strategy">전략</option>
+                  </select>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px;">커스텀 프롬프트</label>
+                  <textarea class="rp-prompt-input-item" data-response-id="<%= response.id %>" rows="3"
+                            placeholder="예: 이 문항의 함정 요소를 설명해주세요"
+                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; font-family: inherit;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                  <button class="rp-btn rp-btn--primary rp-btn--xs" data-action="refine-item-feedback" data-response-id="<%= response.id %>">
+                    정교화
+                  </button>
+                  <button class="rp-btn rp-btn--secondary rp-btn--xs" data-action="toggle-prompt-section" data-response-id="<%= response.id %>">
+                    닫기
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       <% end %>
@@ -763,6 +799,18 @@
     margin-top: 8px;
   }
 
+  .rp-item-prompt-section {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-btn--xs {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
   .rp-loading-overlay {
     position: fixed;
     top: 0;
@@ -874,6 +922,25 @@
           this.dismissAIFeedback(responseId);
         });
       });
+
+      // 프롬프트 섹션 토글
+      document.querySelectorAll('[data-action="toggle-prompt-section"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const responseId = e.target.dataset.responseId;
+          const section = document.getElementById(`prompt-section-${responseId}`);
+          const isHidden = section.style.display === 'none';
+          section.style.display = isHidden ? 'block' : 'none';
+          e.target.textContent = isHidden ? '▲ 프롬프트로 정교화' : '▼ 프롬프트로 정교화';
+        });
+      });
+
+      // 정교화 버튼
+      document.querySelectorAll('[data-action="refine-item-feedback"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const responseId = e.target.dataset.responseId;
+          this.refineItemFeedback(responseId);
+        });
+      });
     }
 
     // AI 피드백 생성
@@ -981,6 +1048,61 @@
       const generateBtn = document.querySelector(`[data-action="generate-item-feedback"][data-response-id="${responseId}"]`);
       if (generateBtn) {
         generateBtn.style.display = 'inline-block';
+      }
+    }
+
+    // 프롬프트로 문항 피드백 정교화
+    async refineItemFeedback(responseId) {
+      const btn = document.querySelector(`[data-action="refine-item-feedback"][data-response-id="${responseId}"]`);
+      const category = document.querySelector(`.rp-prompt-category-item[data-response-id="${responseId}"]`).value;
+      const promptText = document.querySelector(`.rp-prompt-input-item[data-response-id="${responseId}"]`).value.trim();
+
+      if (!promptText) {
+        alert('프롬프트를 입력하세요');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '정교화 중...';
+
+      try {
+        const response = await fetch(`/diagnostic_teacher/feedbacks/${responseId}/refine`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({
+            prompt: promptText,
+            category: category,
+            save_as_template: false
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // AI 피드백 텍스트 업데이트
+          document.getElementById(`ai-feedback-text-${responseId}`).textContent = data.feedback;
+
+          // AI 피드백 섹션 표시
+          document.getElementById(`ai-feedback-${responseId}`).style.display = 'block';
+
+          // 프롬프트 섹션 숨김
+          document.getElementById(`prompt-section-${responseId}`).style.display = 'none';
+
+          // 프롬프트 입력 초기화
+          document.querySelector(`.rp-prompt-input-item[data-response-id="${responseId}"]`).value = '';
+
+          this.showToast('피드백이 정교화되었습니다', 'success');
+        } else {
+          alert(data.error || '정교화 실패');
+        }
+      } catch (error) {
+        alert('네트워크 오류');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '정교화';
       }
     }
 

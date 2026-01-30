@@ -51,12 +51,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .joins(:item)
       .where(attempt_id: @student.attempts.pluck(:id))
       .where("items.item_type = ?", Item.item_types[:mcq])
-      .includes(
-        item: { item_choices: :choice_score },
-        :response_feedbacks,
-        :feedback_prompts,
-        :attempt
-      )
+      .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
       .order(:created_at)
 
     # 전체 프롬프트 템플릿 로드 (드롭다운용)
