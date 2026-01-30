@@ -17,6 +17,10 @@ class FeedbackAiService
     new.refine_comprehensive_feedback(responses, prompt)
   end
 
+  def self.refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
+    new.refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
+  end
+
   def generate_feedback(response)
     item = response.item
     selected_choice = response.selected_choice
@@ -165,6 +169,44 @@ class FeedbackAiService
       Rails.logger.error("AI Comprehensive Feedback Refinement Error: #{e.message}")
       # Fallback: 요약 정보와 사용자 지침을 함께 반환
       "#{summary}\n\n[교사 지침]\n#{user_prompt}"
+    end
+  end
+
+  def refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
+    # 기존 피드백을 개선할 때 사용 - 이중 래핑 방지
+    refinement_prompt = <<~PROMPT
+      다음은 학생에 대해 이미 작성된 종합 피드백입니다:
+
+      [기존 종합 피드백]
+      #{existing_feedback}
+
+      [교사의 개선 요청]
+      #{custom_prompt}
+
+      위의 교사 요청을 반영하여 기존 피드백을 더 나은 버전으로 재작성해주세요.
+      기존 피드백의 장점은 유지하면서, 교사의 요청 사항을 명확히 반영하세요.
+      개선된 피드백만 작성하고, 추가 설명이나 구조 정보는 포함하지 마세요.
+    PROMPT
+
+    begin
+      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+
+      message = client.messages(
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1200,
+        messages: [
+          {
+            role: "user",
+            content: refinement_prompt
+          }
+        ]
+      )
+
+      message.content[0].text
+    rescue StandardError => e
+      Rails.logger.error("AI Feedback Refinement with Existing Error: #{e.message}")
+      # Fallback: 기존 피드백과 교사 요청을 함께 반환
+      "#{existing_feedback}\n\n[교사 피드백]\n#{custom_prompt}"
     end
   end
 
