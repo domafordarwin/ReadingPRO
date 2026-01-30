@@ -388,6 +388,9 @@
 </style>
 
 <div class="assessment-container">
+  <!-- CSRF Token (hidden) -->
+  <input type="hidden" id="csrf-token" value="<%= form_authenticity_token %>">
+
   <!-- 헤더 -->
   <div class="assessment-header">
     <div>
@@ -557,7 +560,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        'X-CSRF-Token': document.getElementById('csrf-token').value
       },
       body: JSON.stringify({
         attempt_id: <%= @attempt.id %>,
@@ -626,7 +629,7 @@
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        'X-CSRF-Token': document.getElementById('csrf-token').value
       },
       body: JSON.stringify({
         attempt_id: <%= @attempt.id %>
