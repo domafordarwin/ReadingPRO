@@ -1,0 +1,249 @@
+# ============================================================================
+# ReadingPRO 독서력 진단 Key 프롬프트 관리
+# ============================================================================
+# 이 파일은 특정 상황에서 자동으로 사용되는 전문화된 프롬프트들을 정의합니다.
+# 각 Key 프롬프트는 구체적인 피드백 생성에 즉시 사용됩니다.
+
+key_prompts:
+  # ==================== MCQ (객관식) 분석 ====================
+  mcq:
+    correct:
+      template: |
+        [객관식 문항 분석 - 정답]
+
+        평가 지표: {evaluation_indicator}
+        하위 지표: {sub_indicator}
+        문항 번호: {item_number}
+
+        학생의 정답 분석:
+        지문을 정확히 이해하고 정답을 선택하였습니다.
+
+    incorrect:
+      template: |
+        [객관식 문항 분석 - 오답]
+
+        평가 지표: {evaluation_indicator}
+        하위 지표: {sub_indicator}
+        문항 번호: {item_number}
+        선택지: {choice_number}
+
+        오답 해설: {explanation}
+
+        학생 분석:
+        이 선택지는 {choice_explanation}을 가지고 있습니다.
+        학생은 {missing_competency}에서 부족한 사고영역 때문에 이 선지를 고른 것으로 보입니다.
+        따라서 오답입니다.
+
+    no_response:
+      template: |
+        [객관식 문항 분석 - 미응답]
+
+        평가 지표: {evaluation_indicator}
+        하위 지표: {sub_indicator}
+        문항 번호: {item_number}
+
+        분석:
+        답안이 존재하지 않아 분석할 수 없습니다.
+
+  # ==================== 서술형 분석 ====================
+  essay:
+    evaluation_appropriate:
+      template: |
+        평가: 적절
+
+        분석:
+        학생의 응답은 문항의 평가 의도를 충분히 반영하고 있습니다.
+
+        장점:
+        - {advantage1}
+        - {advantage2}
+
+        종합 피드백:
+        {comprehensive_feedback}
+
+    evaluation_partial:
+      template: |
+        평가: 부족
+
+        분석:
+        학생의 응답은 일부 요소를 충족하나 추가 개선이 필요합니다.
+
+        장점:
+        - {advantage1}
+
+        개선점:
+        - {improvement1}
+        - {improvement2}
+
+        종합 피드백:
+        {comprehensive_feedback}
+
+    evaluation_insufficient:
+      template: |
+        평가: 보완 필요
+
+        분석:
+        학생의 응답은 문항의 평가 의도를 충분히 반영하지 못하고 있습니다.
+
+        부족한 점:
+        - {missing_point1}
+        - {missing_point2}
+
+        종합 피드백:
+        {comprehensive_feedback}
+
+  # ==================== 영역별 정답률 분석 ====================
+  area_analysis:
+    comprehension:
+      template: |
+        [이해력 영역 분석]
+
+        문항 현황:
+        - 전체 문항: {total_items}
+        - 정답 문항: {correct_items}개 ({correct_rate}%)
+        - 오답 문항: {incorrect_items}개 ({incorrect_rate}%)
+
+        하위 지표별 분석:
+        {sub_indicators_analysis}
+
+        종합 평가:
+        {comprehensive_assessment}
+
+    communication:
+      template: |
+        [의사소통 능력 영역 분석]
+
+        문항 현황:
+        - 전체 문항: {total_items}
+        - 정답 문항: {correct_items}개 ({correct_rate}%)
+        - 오답 문항: {incorrect_items}개 ({incorrect_rate}%)
+
+        하위 지표별 분석:
+        {sub_indicators_analysis}
+
+        종합 평가:
+        {comprehensive_assessment}
+
+    aesthetic_sensitivity:
+      template: |
+        [심미적 감수성 영역 분석]
+
+        문항 현황:
+        - 전체 문항: {total_items}
+        - 정답 문항: {correct_items}개 ({correct_rate}%)
+        - 오답 문항: {incorrect_items}개 ({incorrect_rate}%)
+
+        하위 지표별 분석:
+        {sub_indicators_analysis}
+
+        종합 평가:
+        {comprehensive_assessment}
+
+  # ==================== 독자성향 분석 ====================
+  reader_tendency:
+    type_a:
+      description: "깊이 있는 분석형 독자"
+      characteristics: |
+        - 비판적 사고가 발달한 유형
+        - 텍스트의 숨겨진 의미를 파악하는 능력 우수
+        - 다양한 해석과 관점을 고려하는 경향
+      teaching_suggestion: |
+        더욱 심화된 비판적 읽기와 철학적 사고를 격려하세요.
+        고전 문학과 논설 텍스트를 활용한 지도를 추천합니다.
+
+    type_b:
+      description: "균형잡힌 통합형 독자"
+      characteristics: |
+        - 이해력과 감수성이 조화롭게 발달
+        - 텍스트의 기본 의미와 깊이를 동시에 파악
+        - 안정적인 문해력 수준 유지
+      teaching_suggestion: |
+        현재의 균형잡힌 읽기 능력을 기반으로 특정 약점 영역을 보완하세요.
+        다양한 장르의 텍스트 경험을 통해 역량을 확장하도록 지도하세요.
+
+    type_c:
+      description: "창의적 표현형 독자"
+      characteristics: |
+        - 의사소통 능력이 우수한 유형
+        - 읽은 내용을 자신의 관점에서 재창조하는 능력
+        - 표현과 표현 방식에 관심 높음
+      teaching_suggestion: |
+        창의적 표현력을 더욱 발전시킬 수 있는 환경을 제공하세요.
+        창작 활동과 토론 중심의 수업을 활용하는 것을 추천합니다.
+
+    type_d:
+      description: "심화 학습 필요형 독자"
+      characteristics: |
+        - 전반적인 문해력 향상이 필요한 유형
+        - 기초 이해에서 어려움을 경험 가능
+        - 추가적인 지원과 격려가 필요
+      teaching_suggestion: |
+        기초부터 단계적으로 접근하는 개별화된 지도를 제공하세요.
+        학생의 관심 분야와 연계한 읽기 자료 선택이 중요합니다.
+
+  # ==================== 문해력 향상 지도 방향 ====================
+  teaching_direction:
+    comprehension:
+      template: |
+        [이해력 영역 지도 방향]
+
+        현재 수준: {current_level}
+        목표: {target_goal}
+
+        사실적 이해:
+        {factual_understanding_direction}
+
+        추론적 이해:
+        {inferential_understanding_direction}
+
+        비판적 이해:
+        {critical_understanding_direction}
+
+    communication:
+      template: |
+        [의사소통 능력 영역 지도 방향]
+
+        현재 수준: {current_level}
+        목표: {target_goal}
+
+        표현과 전달 능력:
+        {expression_delivery_direction}
+
+        사회적 상호작용:
+        {social_interaction_direction}
+
+        창의적 문제해결:
+        {creative_problem_solving_direction}
+
+    aesthetic_sensitivity:
+      template: |
+        [심미적 감수성 영역 지도 방향]
+
+        현재 수준: {current_level}
+        목표: {target_goal}
+
+        문학적 표현:
+        {literary_expression_direction}
+
+        정서적 공감:
+        {emotional_empathy_direction}
+
+        문학적 가치:
+        {literary_value_direction}
+
+# 프롬프트 조합 규칙
+composition_rules:
+  mcq_analysis:
+    correct: "key_prompts.mcq.correct.template"
+    incorrect: "key_prompts.mcq.incorrect.template"
+    no_response: "key_prompts.mcq.no_response.template"
+
+  essay_analysis:
+    appropriate: "key_prompts.essay.evaluation_appropriate.template"
+    partial: "key_prompts.essay.evaluation_partial.template"
+    insufficient: "key_prompts.essay.evaluation_insufficient.template"
+
+  area_analysis:
+    comprehension: "key_prompts.area_analysis.comprehension.template"
+    communication: "key_prompts.area_analysis.communication.template"
+    aesthetic_sensitivity: "key_prompts.area_analysis.aesthetic_sensitivity.template"
