@@ -6,10 +6,16 @@ class Student::DashboardController < ApplicationController
 
   def index
     @current_page = "dashboard"
+    @student = current_user&.student
   end
 
   def diagnostics
     @current_page = "start_diagnosis"
+
+    unless @student
+      redirect_to student_dashboard_path, alert: "학생 정보를 찾을 수 없습니다."
+      return
+    end
 
     # 모든 활성화된 형식 조회
     @available_forms = Form.where(status: :active)

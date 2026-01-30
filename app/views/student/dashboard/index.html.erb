@@ -13,13 +13,13 @@
       <h2 class="rp-card__title">새로운 진단이 배정되었습니다</h2>
       <p class="rp-card__subtitle">읽기 역량 진단 2024 하반기</p>
     </div>
-    <a href="/student/diagnostics" class="rp-btn rp-btn--primary rp-btn--lg">
+    <%= link_to student_diagnostics_path, class: "rp-btn rp-btn--primary rp-btn--lg" do %>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>
         <polygon points="10 8 16 12 10 16 10 8"></polygon>
       </svg>
       진단 시작하기
-    </a>
+    <% end %>
   </div>
 </div>
 
@@ -71,9 +71,7 @@
       </div>
     </div>
     <div class="rp-card__footer">
-      <a href="/student/reports" class="rp-btn rp-btn--secondary rp-btn--sm">
-        상세 리포트 보기
-      </a>
+      <%= link_to "상세 리포트 보기", student_reports_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
     </div>
   </div>
 
