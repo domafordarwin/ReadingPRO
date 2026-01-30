@@ -60,7 +60,9 @@
       "Bash(rails db:migrate:*)",
       "Bash(rails db:migrate:status:*)",
       "Bash(lsof:*)",
-      "WebFetch(domain:new-wave-for-reading.vercel.app)"
+      "WebFetch(domain:new-wave-for-reading.vercel.app)",
+      "Bash(dir \"c:\\\\WorkSpace\\\\Project\\\\2026_project\\\\ReadingPro_Railway\\\\app\\\\views\\\\researcher\\\\items\"\" | findstr \"edit \")",
+      "Bash(test:*)"
     ]
   }
 }
