@@ -19,7 +19,11 @@ class Student::AssessmentsController < ApplicationController
     )
 
     if @attempt.save
-      @attempt.snapshot_form_items!
+      begin
+        @attempt.snapshot_form_items!
+      rescue StandardError => e
+        Rails.logger.error("Snapshot form items failed: #{e.message}")
+      end
       redirect_to student_assessment_path(@attempt.id)
     else
       redirect_to student_diagnostics_path, alert: "진단을 시작할 수 없습니다."

@@ -14,6 +14,8 @@ class AttemptItem < ApplicationRecord
 
   # Copy form_items to attempt_items when starting an attempt
   def self.snapshot_from_form(attempt)
+    return unless attempt.form.present?
+
     attempt.form.form_items.find_each do |form_item|
       create!(
         attempt: attempt,
