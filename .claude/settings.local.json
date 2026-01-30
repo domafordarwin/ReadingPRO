@@ -58,7 +58,8 @@
       "Bash(railway logs:*)",
       "Bash(bin/rails dbconsole:*)",
       "Bash(rails db:migrate:*)",
-      "Bash(rails db:migrate:status:*)"
+      "Bash(rails db:migrate:status:*)",
+      "Bash(lsof:*)"
     ]
   }
 }
