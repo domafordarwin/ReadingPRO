@@ -6,11 +6,11 @@ module Admin
       # 검색 기능
       if params[:search].present?
         search_term = "%#{params[:search]}%"
-        @users = @users.where("name ILIKE ? OR email ILIKE ?", search_term, search_term)
+        @users = @users.where("email ILIKE ?", search_term)
       end
 
       # 역할 필터
-      if params[:role].present? && User::ROLES.include?(params[:role])
+      if params[:role].present? && User.roles.key?(params[:role])
         @users = @users.where(role: params[:role])
       end
 

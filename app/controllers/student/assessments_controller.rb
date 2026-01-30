@@ -1,30 +1,26 @@
 class Student::AssessmentsController < ApplicationController
   layout "unified_portal"
+  before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_student
   before_action :set_attempt, only: [:show]
   rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
 
   def create
-    form = Form.find_by(id: params[:form_id])
-    unless form
+    diagnostic_form = DiagnosticForm.find_by(id: params[:form_id])
+    unless diagnostic_form
       redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
       return
     end
 
-    @attempt = @student.attempts.build(
-      form: form,
+    @attempt = @student.student_attempts.build(
+      diagnostic_form: diagnostic_form,
       status: :in_progress,
       started_at: Time.current
     )
 
     if @attempt.save
-      Rails.logger.info("✅ Attempt created: ID=#{@attempt.id}, Form=#{form.id}")
-      begin
-        @attempt.snapshot_form_items!
-      rescue StandardError => e
-        Rails.logger.error("Snapshot form items failed: #{e.message}")
-      end
+      Rails.logger.info("✅ Attempt created: ID=#{@attempt.id}, DiagnosticForm=#{diagnostic_form.id}")
       redirect_to student_assessment_path(@attempt.id)
     else
       Rails.logger.error("❌ Attempt save failed: #{@attempt.errors.full_messages.join(', ')}")
@@ -38,16 +34,18 @@ class Student::AssessmentsController < ApplicationController
 
   def show
     @current_page = "assessment"
-    @form = @attempt.form
+    @diagnostic_form = @attempt.diagnostic_form
 
-    unless @form
+    unless @diagnostic_form
       redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
       return
     end
 
-    @attempt_items = @attempt.attempt_items.includes(item: [:stimulus, :item_choices]).order(created_at: :asc)
+    @diagnostic_form_items = @diagnostic_form.diagnostic_form_items
+      .includes(item: [:stimulus, :item_choices])
+      .order(:position)
 
-    unless @attempt_items.any?
+    unless @diagnostic_form_items.any?
       redirect_to student_diagnostics_path, alert: "문항이 없는 진단입니다."
       return
     end
@@ -63,14 +61,14 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_response
-    attempt = @student.attempts.find_by(id: params[:attempt_id])
+    attempt = @student.student_attempts.find_by(id: params[:attempt_id])
     unless attempt
       render json: { success: false, error: "진단을 찾을 수 없습니다." }, status: :not_found
       return
     end
 
     response = attempt.responses.find_or_create_by(item_id: params[:item_id]) do |r|
-      r.attempt = attempt
+      r.student_attempt = attempt
     end
 
     if params[:item_type] == "mcq"
@@ -83,13 +81,13 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_attempt
-    attempt = @student.attempts.find_by(id: params[:attempt_id])
+    attempt = @student.student_attempts.find_by(id: params[:attempt_id])
     unless attempt
       render json: { success: false, error: "진단을 찾을 수 없습니다." }, status: :not_found
       return
     end
 
-    attempt.update!(status: :completed, submitted_at: Time.current)
+    attempt.update!(status: :submitted, submitted_at: Time.current)
 
     # Score all MCQ responses
     mcq_responses = attempt.responses.joins(:item).where(items: { item_type: :mcq })
@@ -105,16 +103,19 @@ class Student::AssessmentsController < ApplicationController
   private
 
   def build_assessment_json
-    attempt_items_data = @attempt_items.map do |ai|
+    form_items_data = @diagnostic_form_items.map do |dfi|
+      item = dfi.item
       {
-        id: ai.id,
+        id: dfi.id,
+        position: dfi.position,
+        points: dfi.points,
         item: {
-          id: ai.item.id,
-          item_type: ai.item.item_type,
-          prompt: ai.item.prompt || "",
-          stimulus_id: ai.item.stimulus_id,
-          stimulus: ai.item.stimulus ? { body: ai.item.stimulus.body } : nil,
-          item_choices: ai.item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content || "" } }
+          id: item.id,
+          item_type: item.item_type,
+          prompt: item.prompt || "",
+          stimulus_id: item.stimulus_id,
+          stimulus: item.stimulus ? { body: item.stimulus.body } : nil,
+          item_choices: item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content || "" } }
         }
       }
     end
@@ -129,8 +130,8 @@ class Student::AssessmentsController < ApplicationController
 
     {
       attemptId: @attempt.id,
-      totalItems: @attempt_items.count,
-      attemptItems: attempt_items_data,
+      totalItems: @diagnostic_form_items.count,
+      formItems: form_items_data,
       responses: responses_data
     }.to_json
   end
@@ -141,7 +142,7 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def set_attempt
-    @attempt = @student.attempts.find_by(id: params[:id])
+    @attempt = @student.student_attempts.find_by(id: params[:id])
     unless @attempt
       redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
     end

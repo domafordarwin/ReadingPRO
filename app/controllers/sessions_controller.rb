@@ -3,9 +3,8 @@ class SessionsController < ApplicationController
   TEST_ACCOUNTS = {
     "student01" => { role: "student", label: "학생" },
     "parent01" => { role: "parent", label: "학부모" },
-    "school01" => { role: "school_admin", label: "학교 담당 교사" },
-    "diagnostic01" => { role: "diagnostic_teacher", label: "진단 담당 교사" },
-    "research01" => { role: "researcher", label: "문항 개발 연구원" },
+    "teacher01" => { role: "teacher", label: "교사" },
+    "researcher01" => { role: "researcher", label: "문항 개발 연구원" },
     "admin01" => { role: "admin", label: "관리자" }
   }.freeze
 
@@ -52,8 +51,7 @@ class SessionsController < ApplicationController
     case role
     when "student" then student_dashboard_path
     when "parent" then parent_dashboard_path
-    when "school_admin" then school_admin_dashboard_path
-    when "diagnostic_teacher" then diagnostic_teacher_dashboard_path
+    when "teacher" then teacher_dashboard_path
     when "researcher" then researcher_dashboard_path
     when "admin" then admin_system_path
     else

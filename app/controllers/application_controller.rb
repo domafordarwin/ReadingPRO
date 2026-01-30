@@ -19,7 +19,7 @@ class ApplicationController < ActionController::Base
   end
 
   def current_role
-    session[:role]
+    current_user&.role || session[:role]
   end
 
   def require_login

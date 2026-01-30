@@ -1,10 +1,11 @@
 class Researcher::ItemsController < ApplicationController
   layout "portal"
+  before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_item, only: %i[edit update move_criterion]
 
   def index
-    @items = Item.includes(:item_sample_answers, rubric: { rubric_criteria: :rubric_levels })
+    @items = Item.includes(rubric: { rubric_criteria: :rubric_levels })
                  .order(created_at: :desc)
 
     # Status filter
@@ -61,11 +62,7 @@ class Researcher::ItemsController < ApplicationController
       update_choice_scores!
     else
       @rubric = @item.rubric || @item.build_rubric
-      @rubric.title = params.dig(:rubric, :title)
       @rubric.save if @rubric.changed?
-
-      delete_sample_answers!
-      update_sample_answers!
       update_rubric_criteria!
     end
 
@@ -104,7 +101,7 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def item_params
-    params.require(:item).permit(:code, :item_type, :prompt, :explanation, :difficulty, :status, :stimulus_id, :evaluation_indicator_id, :sub_indicator_id)
+    params.require(:item).permit(:code, :item_type, :prompt, :explanation, :difficulty, :status, :stimulus_id)
   end
 
   def update_item_status!
@@ -120,49 +117,26 @@ class Researcher::ItemsController < ApplicationController
       choice = @item.item_choices.find_by(id: choice_id)
       next unless choice
 
-      score = choice.choice_score || choice.build_choice_score(score_percent: 0)
       next_score = payload[:score_percent]
-      score.score_percent = next_score.to_i if next_score.present?
-      score.save! if score.changed?
+      choice.update(is_correct: false) if next_score.present?
     end
 
     correct_choice_id = params[:correct_choice_id].to_s
     return if correct_choice_id.blank?
 
     @item.item_choices.each do |choice|
-      score = choice.choice_score || choice.build_choice_score(score_percent: 0)
-      score.is_key = choice.id.to_s == correct_choice_id
-      score.score_percent = 100 if score.is_key && score.score_percent.to_i < 100
-      score.save! if score.changed?
+      choice.update(is_correct: choice.id.to_s == correct_choice_id)
     end
-
-    correct_choice = @item.item_choices.find_by(id: correct_choice_id)
-    return unless correct_choice
-
-    meta = @item.scoring_meta || {}
-    meta["correct_answer"] = correct_choice.choice_no
-    @item.update!(scoring_meta: meta)
   end
 
+  # Sample answers functionality not supported in new schema
+  # The new schema uses Rubric-based scoring for constructed responses
   def update_sample_answers!
-    (params[:sample_answers] || {}).each do |id, answer_text|
-      answer = @item.item_sample_answers.find_by(id: id)
-      next unless answer
-
-      answer.update(answer: answer_text)
-    end
-
-    new_answer = params[:new_sample_answer].to_s.strip
-    return if new_answer.blank?
-
-    @item.item_sample_answers.create(answer: new_answer)
+    # No-op: sample answers are not part of the new schema
   end
 
   def delete_sample_answers!
-    ids = Array(params[:delete_sample_answers]).map(&:to_i).uniq
-    return if ids.empty?
-
-    @item.item_sample_answers.where(id: ids).destroy_all
+    # No-op: sample answers are not part of the new schema
   end
 
   def update_rubric_criteria!

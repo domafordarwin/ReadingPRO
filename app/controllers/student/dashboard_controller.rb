@@ -1,5 +1,6 @@
 class Student::DashboardController < ApplicationController
   layout "unified_portal"
+  before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_role
   before_action :set_student, except: [:index]
@@ -13,22 +14,22 @@ class Student::DashboardController < ApplicationController
     @current_page = "start_diagnosis"
 
     begin
-      # 모든 활성화된 형식 조회
-      @available_forms = Form.where(status: :active)
-        .includes(:items)
+      # 모든 활성화된 진단 형식 조회
+      @available_forms = DiagnosticForm.where(status: :active)
+        .includes(:diagnostic_form_items)
         .order(created_at: :desc)
 
       # 현재 학생의 진행 중인 시도 조회
       if @student
-        @in_progress_attempts = @student.attempts
+        @in_progress_attempts = @student.student_attempts
           .where(status: :in_progress)
-          .includes(:form)
+          .includes(:diagnostic_form)
           .order(updated_at: :desc)
 
         # 현재 학생의 완료된 시도 조회
-        @completed_attempts = @student.attempts
+        @completed_attempts = @student.student_attempts
           .where(status: :completed)
-          .includes(:form, :report)
+          .includes(:diagnostic_form, :attempt_report)
           .order(created_at: :desc)
       else
         @in_progress_attempts = []
@@ -46,7 +47,7 @@ class Student::DashboardController < ApplicationController
   def reports
     @current_page = "reports"
     # 현재 로그인한 학생의 모든 시험 기록 조회
-    @attempts = @student.attempts.includes(:report).order(created_at: :desc)
+    @attempts = @student.student_attempts.includes(:attempt_report).order(created_at: :desc)
 
     respond_to do |format|
       format.html
@@ -63,11 +64,11 @@ class Student::DashboardController < ApplicationController
   end
 
   def generate_report
-    @attempt = @student.attempts.find(params[:attempt_id])
+    @attempt = @student.student_attempts.find(params[:attempt_id])
 
-    if @attempt.report.nil?
+    if @attempt.attempt_report.nil?
       # 새로운 리포트 생성 (draft 상태)
-      @report = @attempt.build_report(status: 'draft', version: 1)
+      @report = @attempt.build_attempt_report(status: 'draft')
       if @report.save
         render json: { success: true, message: "리포트가 생성되었습니다.", report: format_report_json(@report) }
       else
@@ -79,53 +80,36 @@ class Student::DashboardController < ApplicationController
   end
 
   def update_report_status
-    @attempt = @student.attempts.find(params[:attempt_id])
-    @report = @attempt.report
+    @attempt = @student.student_attempts.find(params[:attempt_id])
+    @report = @attempt.attempt_report
 
     unless @report
       return render json: { success: false, message: "리포트를 찾을 수 없습니다." }, status: :not_found
     end
 
-    new_status = params[:status]
-
-    if !Report::STATUSES.include?(new_status)
-      return render json: { success: false, message: "유효하지 않은 상태입니다." }, status: :unprocessable_entity
-    end
-
-    case new_status
-    when 'generated'
-      @report.generate!
-      render json: { success: true, message: "리포트가 생성 완료되었습니다.", report: format_report_json(@report) }
-    when 'published'
-      @report.publish!
-      render json: { success: true, message: "리포트가 발행되었습니다.", report: format_report_json(@report) }
-    else
-      render json: { success: false, message: "유효하지 않은 상태 전환입니다." }, status: :unprocessable_entity
-    end
+    # AttemptReport는 생성 후 자동으로 생성되며, 상태 전환이 필요하지 않음
+    # 다만 generated_at을 설정하는 등의 작은 업데이트만 가능
+    @report.update(generated_at: Time.current) if @report.generated_at.nil?
+    render json: { success: true, message: "리포트가 준비되었습니다.", report: format_report_json(@report) }
   end
 
   def show_report
     @current_page = "reports"
-    @attempt = @student.attempts.find(params[:attempt_id])
-    @report = @attempt.report
+    @attempt = @student.student_attempts.find(params[:attempt_id])
+    @report = @attempt.attempt_report
 
     unless @report
       redirect_to student_reports_path, alert: "리포트를 찾을 수 없습니다."
       return
     end
-
-    @comprehensive_analysis = @attempt.comprehensive_analysis
-    @literacy_achievements = @attempt.literacy_achievements
-    @guidance_directions = @attempt.guidance_directions
-    @reader_tendency = @attempt.reader_tendency
   end
 
   def show_attempt
     @current_page = "reports"
-    @attempt = @student.attempts.find(params[:attempt_id])
+    @attempt = @student.student_attempts.find(params[:attempt_id])
 
     # 응답 데이터 조회
-    @responses = @attempt.responses.includes(:item, :selected_choice, :response_feedbacks).order(created_at: :asc)
+    @responses = @attempt.responses.includes(:item, :selected_choice, :feedback).order(created_at: :asc)
 
     # 객관식/서술형 분류
     @mcq_responses = @responses.select { |r| r.item.mcq? }
@@ -134,8 +118,8 @@ class Student::DashboardController < ApplicationController
 
   def latest_report
     # 최신 리포트가 있는 attempt를 찾아 직접 상세 보고서로 이동
-    latest_attempt = @student.attempts
-      .joins(:report)
+    latest_attempt = @student.student_attempts
+      .joins(:attempt_report)
       .order(created_at: :desc)
       .first
 
@@ -162,10 +146,11 @@ class Student::DashboardController < ApplicationController
       {
         id: attempt.id,
         student_id: attempt.student_id,
+        diagnostic_form_id: attempt.diagnostic_form_id,
         status: attempt.status,
         started_at: attempt.started_at,
         submitted_at: attempt.submitted_at,
-        report: attempt.report ? format_report_json(attempt.report) : nil
+        report: attempt.attempt_report ? format_report_json(attempt.attempt_report) : nil
       }
     end
   end
@@ -173,16 +158,17 @@ class Student::DashboardController < ApplicationController
   def format_report_json(report)
     {
       id: report.id,
-      attempt_id: report.attempt_id,
-      status: report.status,
-      version: report.version,
-      artifact_url: report.artifact_url,
+      student_attempt_id: report.student_attempt_id,
+      total_score: report.total_score,
+      max_score: report.max_score,
+      score_percentage: report.score_percentage,
+      performance_level: report.performance_level,
+      strengths: report.strengths,
+      weaknesses: report.weaknesses,
+      recommendations: report.recommendations,
       generated_at: report.generated_at,
       created_at: report.created_at,
-      updated_at: report.updated_at,
-      is_draft: report.draft?,
-      is_generated: report.generated?,
-      is_published: report.published?
+      updated_at: report.updated_at
     }
   end
 end

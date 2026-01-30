@@ -1,5 +1,6 @@
 class Researcher::StimuliController < ApplicationController
   layout "portal"
+  before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_stimulus, only: %i[edit update destroy]
 
