@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 class ReadingStimulus < ApplicationRecord
-  self.table_name = "stimuli"
+class ReadingStimulus < ApplicationRecord
+  belongs_to :teacher, foreign_key: 'created_by_id', optional: true
+  has_many :items, foreign_key: 'stimulus_id', dependent: :destroy
 
-  has_many :items, foreign_key: "stimulus_id", inverse_of: :stimulus
+  validates :body, presence: true
+end
 
-  validates :code, uniqueness: true, allow_nil: true
 end

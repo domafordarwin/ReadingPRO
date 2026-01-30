@@ -1,6 +1,11 @@
+# frozen_string_literal: true
+
+class Rubric < ApplicationRecord
 class Rubric < ApplicationRecord
   belongs_to :item
-  has_many :rubric_criteria, -> { order(:position) }, dependent: :destroy
+  has_many :rubric_criteria, dependent: :destroy
 
-  validates :item_id, uniqueness: true
+  validates :name, presence: true, uniqueness: { scope: :item_id }
+end
+
 end

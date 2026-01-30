@@ -63,7 +63,12 @@
       "WebFetch(domain:new-wave-for-reading.vercel.app)",
       "Bash(dir \"c:\\\\WorkSpace\\\\Project\\\\2026_project\\\\ReadingPro_Railway\\\\app\\\\views\\\\researcher\\\\items\"\" | findstr \"edit \")",
       "Bash(test:*)",
-      "Bash(ruby -c:*)"
+      "Bash(ruby -c:*)",
+      "mcp__acp__Bash",
+      "Bash(git checkout:*)",
+      "Bash(bin/rails db:create:*)",
+      "Bash(bin/rails db:reset:*)",
+      "Bash(RAILS_ENV=development bin/rails:*)"
     ]
   }
 }
