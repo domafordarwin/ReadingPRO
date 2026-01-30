@@ -49,7 +49,10 @@
       "Bash(railway status:*)",
       "Bash(bin/rails db:migrate:down:*)",
       "Bash(bin/rails db:schema:dump:*)",
-      "Bash(bin\\\\rails server:*)"
+      "Bash(bin\\\\rails server:*)",
+      "Bash(pip install:*)",
+      "Bash(python3 -m pip install:*)",
+      "Bash(python3:*)"
     ]
   }
 }
