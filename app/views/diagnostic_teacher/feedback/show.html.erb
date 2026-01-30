@@ -43,7 +43,7 @@
   <div class="rp-tabs-nav">
     <button class="rp-tab-button active" data-tab="mcq">
       객관식 문항 피드백
-      <span class="rp-tab-badge">18</span>
+      <span class="rp-tab-badge"><%= @responses.count %></span>
     </button>
     <button class="rp-tab-button" data-tab="constructed">
       서술형 문항 피드백
@@ -55,8 +55,14 @@
     </button>
   </div>
 
-  <!-- ===== TAB 1: 객관식 문항 피드백 ===== -->
-  <div class="rp-tab-pane active" data-tab="mcq">
+  <!-- ===== 탭 컨테이너: 부분뷰 렌더링 ===== -->
+  <%= render 'mcq_tab' %>
+  <%= render 'constructed_tab' %>
+  <%= render 'tendency_tab' %>
+</div>
+
+
+<!-- ===== CSS 스타일 ===== -->
     <% if @responses.any? %>
       <!-- 상단: 응답 현황 -->
       <div class="rp-overview-section">
