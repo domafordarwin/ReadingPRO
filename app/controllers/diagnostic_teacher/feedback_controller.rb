@@ -586,9 +586,15 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
 
+    # OPENAI_API_KEY 확인
+    unless ENV['OPENAI_API_KEY'].present?
+      Rails.logger.error("[optimize_prompt] OPENAI_API_KEY is not set")
+      return render json: { success: false, error: "OpenAI API 키가 설정되지 않았습니다. 관리자에게 문의하세요." }, status: :internal_server_error
+    end
+
     begin
       # OpenAI API를 호출하여 프롬프트 최적화
-      client = OpenAI::Client.new(api_key: ENV['OPENAI_API_KEY'])
+      client = OpenAI::Client.new(access_token: ENV['OPENAI_API_KEY'])
 
       optimization_prompt = <<~PROMPT
         다음은 학생의 읽기 진단 평가 피드백 생성을 위한 프롬프트입니다.

@@ -843,11 +843,23 @@
         const refineBtn = document.getElementById('refine-comprehensive-feedback');
         const applyBtn = document.getElementById('apply-custom-prompt');
 
+        console.log('[bindPromptRefinement] Looking for buttons. Refine:', !!refineBtn, 'Apply:', !!applyBtn);
+
         if (refineBtn) {
-          refineBtn.addEventListener('click', () => this.refineCustomPrompt());
+          console.log('[bindPromptRefinement] Binding click event to refine-comprehensive-feedback');
+          refineBtn.addEventListener('click', () => {
+            console.log('[refineBtn click] Event fired!');
+            this.refineCustomPrompt();
+          });
+        } else {
+          console.warn('[bindPromptRefinement] refine-comprehensive-feedback button not found!');
         }
+
         if (applyBtn) {
+          console.log('[bindPromptRefinement] Binding click event to apply-custom-prompt');
           applyBtn.addEventListener('click', () => this.applyCustomPromptToFeedback());
+        } else {
+          console.warn('[bindPromptRefinement] apply-custom-prompt button not found!');
         }
       }
 
@@ -1055,13 +1067,18 @@
                               document.querySelector('#comprehensive-category');
         const category = categorySelect ? categorySelect.value : 'general';
 
+        console.log('[refineCustomPrompt] Button clicked. Prompt:', promptText.substring(0, 50) + '...', 'Category:', category);
+
         if (!promptText) {
           alert('프롬프트를 입력하세요');
+          console.warn('[refineCustomPrompt] Prompt is empty');
           return;
         }
 
         btn.disabled = true;
         btn.textContent = '✨ 최적화 중...';
+
+        console.log('[refineCustomPrompt] Starting API call to /diagnostic_teacher/feedbacks/optimize_prompt');
 
         fetch('/diagnostic_teacher/feedbacks/optimize_prompt', {
           method: 'POST',
@@ -1074,8 +1091,12 @@
             category: category
           })
         })
-        .then(r => r.json())
+        .then(r => {
+          console.log('[refineCustomPrompt] Response status:', r.status);
+          return r.json();
+        })
         .then(data => {
+          console.log('[refineCustomPrompt] Response data:', data);
           if (data.success && data.optimized_prompt) {
             // 최적화된 프롬프트로 textarea 업데이트
             document.getElementById('comprehensive-prompt').value = data.optimized_prompt;
@@ -1083,11 +1104,12 @@
           } else {
             const errorMsg = data.error || '프롬프트 최적화 실패';
             this.showToast('❌ ' + errorMsg, 'error');
+            console.error('[refineCustomPrompt] API returned error:', data);
           }
         })
         .catch(err => {
-          console.error('[refineCustomPrompt] Error:', err);
-          this.showToast('❌ 프롬프트 최적화 중 오류가 발생했습니다', 'error');
+          console.error('[refineCustomPrompt] Network/Parse Error:', err);
+          this.showToast('❌ 프롬프트 최적화 중 오류가 발생했습니다: ' + err.message, 'error');
         })
         .finally(() => {
           btn.disabled = false;
