@@ -133,6 +133,183 @@
     overflow: hidden;
   }
 
+  /* 객관식 (MCQ) 피드백 레이아웃 */
+  .rp-comprehensive-feedback-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .rp-feedback-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-prompt-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-feedback-section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .rp-prompt-section {
+    background: #f8fafc;
+  }
+
+  .rp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .rp-section-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    flex: 1;
+  }
+
+  .rp-feedback-display {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    min-height: 200px;
+    max-height: 600px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-feedback-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .rp-prompt-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .rp-prompt-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rp-form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .rp-form-group select,
+  .rp-form-group textarea {
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .rp-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .rp-checkbox input {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .rp-button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .rp-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .rp-btn--primary {
+    background: #2f5bff;
+    color: white;
+  }
+
+  .rp-btn--primary:hover:not(:disabled) {
+    background: #1e40af;
+  }
+
+  .rp-btn--primary:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+  }
+
+  .rp-btn--secondary {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .rp-btn--secondary:hover {
+    background: #e0e0e0;
+  }
+
+  .rp-btn--success {
+    background: #10b981;
+    color: white;
+  }
+
+  .rp-btn--success:hover {
+    background: #059669;
+  }
+
+  .rp-btn--sm {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .rp-btn--xs {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
   /* 서술형 레이아웃 */
   .rp-constructed-feedback-container {
     display: grid;
@@ -142,6 +319,7 @@
   }
 
   @media (max-width: 1400px) {
+    .rp-comprehensive-feedback-container,
     .rp-constructed-feedback-container {
       grid-template-columns: 1fr;
     }
