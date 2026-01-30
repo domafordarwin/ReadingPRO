@@ -700,6 +700,105 @@
   });
 </script>
 
+<!-- ===== JavaScript: 학생 검색 및 선택 기능 ===== -->
+<script>
+  class StudentNavigation {
+    constructor() {
+      this.searchInput = document.getElementById('student-search');
+      this.selectDropdown = document.getElementById('student-select');
+      this.allStudents = this.loadStudentList();
+      this.filteredStudents = [...this.allStudents];
+
+      if (this.searchInput && this.selectDropdown) {
+        this.init();
+      }
+    }
+
+    init() {
+      // 학생 검색 입력 이벤트
+      this.searchInput.addEventListener('input', (e) => {
+        this.handleSearchInput(e.target.value);
+      });
+
+      // 학생 선택 드롭다운 이벤트
+      this.selectDropdown.addEventListener('change', (e) => {
+        this.handleStudentSelection(e.target.value);
+      });
+    }
+
+    loadStudentList() {
+      // 드롭다운의 모든 option 요소에서 학생 데이터 추출
+      const students = [];
+      this.selectDropdown.querySelectorAll('option').forEach(option => {
+        if (option.value) { // "학생 선택" 옵션 제외
+          students.push({
+            id: option.value,
+            name: option.textContent.trim()
+          });
+        }
+      });
+      return students;
+    }
+
+    handleSearchInput(searchText) {
+      const query = searchText.toLowerCase().trim();
+
+      if (query === '') {
+        // 검색어 없으면 모든 학생 표시
+        this.filteredStudents = [...this.allStudents];
+        this.updateDropdown();
+      } else {
+        // 검색어로 필터링 (이름에 검색어 포함)
+        this.filteredStudents = this.allStudents.filter(student =>
+          student.name.toLowerCase().includes(query)
+        );
+        this.updateDropdown();
+
+        // 검색 결과가 1개면 자동 선택
+        if (this.filteredStudents.length === 1) {
+          setTimeout(() => {
+            this.selectDropdown.value = this.filteredStudents[0].id;
+            this.handleStudentSelection(this.filteredStudents[0].id);
+          }, 300);
+        }
+      }
+    }
+
+    updateDropdown() {
+      // 드롭다운 옵션 업데이트
+      const currentSelected = this.selectDropdown.value;
+      this.selectDropdown.innerHTML = '<option value="">학생 선택</option>';
+
+      this.filteredStudents.forEach(student => {
+        const option = document.createElement('option');
+        option.value = student.id;
+        option.textContent = student.name;
+        this.selectDropdown.appendChild(option);
+      });
+
+      // 이전 선택값 복원 (필터 후에도 선택값 유지)
+      if (currentSelected && this.filteredStudents.some(s => s.id === currentSelected)) {
+        this.selectDropdown.value = currentSelected;
+      }
+    }
+
+    handleStudentSelection(studentId) {
+      if (!studentId) {
+        return; // "학생 선택" 옵션 선택 시 아무것도 안 함
+      }
+
+      // 선택된 학생의 피드백 페이지로 이동
+      const feedbackUrl = `/diagnostic_teacher/feedbacks/${studentId}`;
+      window.location.href = feedbackUrl;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const studentNav = new StudentNavigation();
+    window.__studentNav = studentNav;
+  });
+</script>
+
 <% if @responses.any? %>
   <!-- 기존 JavaScript 코드: 피드백 생성 및 편집 기능 -->
   <script>
