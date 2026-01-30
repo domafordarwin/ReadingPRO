@@ -112,81 +112,85 @@
   <!-- 수평선 -->
   <div style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>
 
-  <!-- ===== 하단: 통합 피드백 섹션 ===== -->
+  <!-- ===== 하단: 통합 피드백 섹션 (좌우 분할) ===== -->
   <div style="margin-top: 32px;">
     <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
       종합 분석 및 피드백
     </h2>
 
-    <div class="rp-comprehensive-feedback" data-student-id="<%= @student.id %>">
-      <!-- 피드백 섹션 -->
-      <div class="rp-feedback-section">
-        <div class="rp-section-header">
-          <h4>18개 문항 종합 피드백</h4>
-          <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback">
-            AI 종합 피드백 생성
-          </button>
-        </div>
+    <div class="rp-comprehensive-feedback-container" data-student-id="<%= @student.id %>">
+      <!-- 왼쪽: 피드백 영역 -->
+      <div class="rp-feedback-column">
+        <div class="rp-feedback-section">
+          <div class="rp-section-header">
+            <h4>18개 문항 종합 피드백</h4>
+            <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback">
+              AI 종합 피드백 생성
+            </button>
+          </div>
 
-        <!-- 피드백 표시 -->
-        <div class="rp-feedback-display" id="comprehensive-feedback-display">
-          <% if @comprehensive_feedback.present? %>
-            <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
-              <%= simple_format(@comprehensive_feedback) %>
+          <!-- 피드백 표시 -->
+          <div class="rp-feedback-display" id="comprehensive-feedback-display">
+            <% if @comprehensive_feedback.present? %>
+              <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
+                <%= simple_format(@comprehensive_feedback) %>
+              </div>
+            <% else %>
+              <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 오른쪽의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
+            <% end %>
+          </div>
+
+          <!-- 피드백 액션 버튼 -->
+          <div class="rp-feedback-actions" id="comprehensive-feedback-actions" style="display: none; margin-top: 12px; display: flex; gap: 8px;">
+            <button class="rp-btn rp-btn--secondary rp-btn--sm" id="edit-comprehensive-feedback">수정</button>
+            <button class="rp-btn rp-btn--success rp-btn--sm" id="save-feedback-display">저장</button>
+          </div>
+
+          <!-- 피드백 편집 -->
+          <div class="rp-feedback-edit" style="display: none;">
+            <textarea class="rp-feedback-textarea" id="comprehensive-feedback-textarea" rows="10" placeholder="종합 피드백을 입력하세요..."></textarea>
+            <div class="rp-edit-actions">
+              <button class="rp-btn rp-btn--primary rp-btn--sm" id="save-comprehensive-feedback">저장</button>
+              <button class="rp-btn rp-btn--secondary rp-btn--sm" id="cancel-comprehensive-feedback">취소</button>
             </div>
-          <% else %>
-            <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 위의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
-          <% end %>
-        </div>
-
-        <!-- 피드백 액션 버튼 -->
-        <div class="rp-feedback-actions" id="comprehensive-feedback-actions" style="display: none; margin-top: 12px; display: flex; gap: 8px;">
-          <button class="rp-btn rp-btn--secondary rp-btn--sm" id="edit-comprehensive-feedback">수정</button>
-          <button class="rp-btn rp-btn--success rp-btn--sm" id="save-feedback-display">저장</button>
-        </div>
-
-        <!-- 피드백 편집 -->
-        <div class="rp-feedback-edit" style="display: none;">
-          <textarea class="rp-feedback-textarea" id="comprehensive-feedback-textarea" rows="8" placeholder="종합 피드백을 입력하세요..."></textarea>
-          <div class="rp-edit-actions">
-            <button class="rp-btn rp-btn--primary rp-btn--sm" id="save-comprehensive-feedback">저장</button>
-            <button class="rp-btn rp-btn--secondary rp-btn--sm" id="cancel-comprehensive-feedback">취소</button>
           </div>
         </div>
       </div>
 
-      <!-- 프롬프트 정교화 섹션 -->
-      <div class="rp-feedback-section rp-prompt-section">
-        <h4>프롬프트로 피드백 정교화</h4>
+      <!-- 오른쪽: 프롬프트 관리 영역 -->
+      <div class="rp-prompt-column">
+        <div class="rp-feedback-section rp-prompt-section">
+          <h4>프롬프트로 피드백 정교화</h4>
 
-        <div class="rp-prompt-controls">
-          <div class="rp-form-group">
-            <label for="comprehensive-category">카테고리</label>
-            <select id="comprehensive-category" class="rp-prompt-category">
-              <option value="general">일반</option>
-              <option value="comprehension">이해력</option>
-              <option value="explanation">설명</option>
-              <option value="difficulty">난이도</option>
-              <option value="strategy">전략</option>
-            </select>
+          <div class="rp-prompt-controls">
+            <div class="rp-form-group">
+              <label for="comprehensive-category">카테고리</label>
+              <select id="comprehensive-category" class="rp-prompt-category">
+                <option value="general">일반</option>
+                <option value="comprehension">이해력</option>
+                <option value="explanation">설명</option>
+                <option value="difficulty">난이도</option>
+                <option value="strategy">전략</option>
+              </select>
+            </div>
+
+            <div class="rp-form-group">
+              <label for="comprehensive-prompt">피드백 개선 요청</label>
+              <textarea id="comprehensive-prompt" class="rp-prompt-input" rows="6"
+                        placeholder="예: 학생의 약점 분석과 개선 방안을 포함한 피드백을 만들어주세요"></textarea>
+            </div>
+
+            <div class="rp-form-group">
+              <label class="rp-checkbox">
+                <input type="checkbox" id="comprehensive-save-template">
+                <span>템플릿으로 저장</span>
+              </label>
+            </div>
+
+            <button class="rp-btn rp-btn--primary" id="refine-comprehensive-feedback" style="width: 100%;">
+              프롬프트로 정교화
+            </button>
           </div>
-
-          <div class="rp-form-group">
-            <label for="comprehensive-prompt">피드백 개선 요청</label>
-            <textarea id="comprehensive-prompt" class="rp-prompt-input" rows="4"
-                      placeholder="예: 학생의 약점 분석과 개선 방안을 포함한 피드백을 만들어주세요"></textarea>
-          </div>
-
-          <div class="rp-form-group">
-            <label class="rp-checkbox">
-              <input type="checkbox" id="comprehensive-save-template">
-              <span>템플릿으로 저장</span>
-            </label>
-          </div>
-
-          <button class="rp-btn rp-btn--primary" id="refine-comprehensive-feedback">
-            프롬프트로 정교화
-          </button>
         </div>
       </div>
     </div>
@@ -541,10 +545,146 @@
     background: #f8fafc;
   }
 
-  .rp-prompt-controls {
-    padding: 12px;
+  /* ===== 좌우 분할 레이아웃 ===== */
+  .rp-comprehensive-feedback-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .rp-feedback-column {
     background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .rp-prompt-column {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .rp-feedback-column .rp-feedback-section {
+    border-bottom: none;
+    padding: 20px;
+  }
+
+  .rp-prompt-column .rp-feedback-section {
+    border-bottom: none;
+    padding: 20px;
+  }
+
+  .rp-prompt-column .rp-prompt-section {
+    background: white;
+  }
+
+  .rp-prompt-controls {
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+  }
+
+  /* 반응형 디자인: 화면이 작으면 세로 배치 */
+  @media (max-width: 1400px) {
+    .rp-comprehensive-feedback-container {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  /* 피드백 영역 스타일 */
+  .rp-feedback-column .rp-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .rp-feedback-column .rp-section-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .rp-feedback-column .rp-section-header .rp-btn {
+    white-space: nowrap;
+  }
+
+  .rp-feedback-display {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
+    padding: 16px;
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+
+  /* 프롬프트 영역 스타일 */
+  .rp-prompt-column h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .rp-form-group {
+    margin-bottom: 16px;
+  }
+
+  .rp-form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+
+  .rp-prompt-category,
+  .rp-prompt-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+
+  .rp-prompt-input {
+    padding: 10px;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .rp-prompt-input:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+
+  .rp-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+    cursor: pointer;
+    gap: 6px;
+  }
+
+  .rp-checkbox input {
+    cursor: pointer;
   }
 
   .rp-form-group {
@@ -1407,7 +1547,7 @@
     // 종합 피드백 생성
     async generateComprehensiveFeedback() {
       const btn = document.getElementById('generate-comprehensive-feedback');
-      const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+      const studentId = document.querySelector('.rp-comprehensive-feedback-container').dataset.studentId;
 
       // 커스텀 프롬프트 확인
       const customPromptInput = document.getElementById('comprehensive-prompt');
@@ -1490,8 +1630,8 @@
     }
 
     toggleFeedbackEdit() {
-      const displayArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display');
-      const editArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-edit');
+      const displayArea = document.querySelector('.rp-feedback-column .rp-feedback-display');
+      const editArea = document.querySelector('.rp-feedback-column .rp-feedback-edit');
 
       if (displayArea && editArea) {
         const isDisplaying = displayArea.style.display !== 'none';
@@ -1508,8 +1648,8 @@
     }
 
     cancelFeedbackEdit() {
-      const displayArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display');
-      const editArea = document.querySelector('.rp-comprehensive-feedback .rp-feedback-edit');
+      const displayArea = document.querySelector('.rp-feedback-column .rp-feedback-display');
+      const editArea = document.querySelector('.rp-feedback-column .rp-feedback-edit');
 
       if (displayArea && editArea) {
         displayArea.style.display = 'block';
@@ -1534,7 +1674,7 @@
       }
 
       try {
-        const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+        const studentId = document.querySelector('.rp-comprehensive-feedback-container').dataset.studentId;
         console.log('[Save Feedback] Student ID:', studentId);
         console.log('[Save Feedback] Feedback Text:', feedbackText);
 
@@ -1598,7 +1738,7 @@
       btn.textContent = '정교화 중...';
 
       try {
-        const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
+        const studentId = document.querySelector('.rp-comprehensive-feedback-container').dataset.studentId;
         const response = await fetch(`/diagnostic_teacher/feedbacks/${studentId}/refine_comprehensive`, {
           method: 'POST',
           headers: {
@@ -1696,7 +1836,7 @@
     window.__feedbackPage = feedbackPage;
 
     // 종합 피드백 컨테이너에도 참조 추가
-    const comprehensiveContainer = document.querySelector('.rp-comprehensive-feedback');
+    const comprehensiveContainer = document.querySelector('.rp-comprehensive-feedback-container');
     if (comprehensiveContainer) {
       comprehensiveContainer.__feedbackPage = feedbackPage;
     }
