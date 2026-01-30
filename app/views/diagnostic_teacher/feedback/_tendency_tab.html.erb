@@ -71,16 +71,16 @@
         </div>
 
         <div class="rp-tendency-type-characteristics" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-          <h4 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #0f172a;">유형별 특성</h4>
+          <h4 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #0f172a;">독자 유형</h4>
           <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #475569;">
-            <%= @reader_tendency&.characteristics || "성향 분석 진행 중입니다." %>
+            <%= @reader_tendency&.reader_type_description || "독자 유형 분석 중입니다." %>
           </p>
         </div>
 
         <div class="rp-tendency-display-content" style="padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; min-height: 200px; max-height: 400px; overflow-y: auto;">
-          <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #0f172a;">독서 동기</h4>
+          <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #0f172a;">흥미도 분석</h4>
           <div class="rp-content-text" style="font-size: 12px; line-height: 1.7; color: #475569; white-space: pre-wrap;">
-            <%= @reader_tendency&.reading_motivation || "데이터 분석 중..." %>
+            <%= @reader_tendency&.interest_analysis || "흥미도 분석 데이터 수집 중..." %>
           </div>
         </div>
 

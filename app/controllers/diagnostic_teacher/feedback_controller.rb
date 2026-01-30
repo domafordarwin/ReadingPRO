@@ -101,48 +101,48 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # Diagnosis items 데이터 준비
       @diagnosis_items = {
         motivation: {
-          title: "독서 동기",
+          title: "흥미도 분석",
           icon: "🎯",
-          content: @reader_tendency&.reading_motivation || "데이터 수집 중..."
+          content: @reader_tendency&.interest_analysis || "분석 데이터 수집 중..."
         },
         attitude: {
-          title: "독서 태도",
+          title: "독자 유형",
           icon: "📖",
-          content: @reader_tendency&.reading_attitude || "데이터 수집 중..."
+          content: @reader_tendency&.reader_type_description || "유형 분석 중..."
         },
         social: {
-          title: "사회적 요인",
+          title: "가정 지원도",
           icon: "👥",
-          content: @reader_tendency&.social_factors || "데이터 수집 중..."
+          content: @reader_tendency&.home_support_analysis || "분석 데이터 수집 중..."
         },
         risk: {
-          title: "위험 요인",
+          title: "자기주도성",
           icon: "⚠️",
-          content: @reader_tendency&.risk_factors || "없음"
+          content: @reader_tendency&.self_directed_analysis || "분석 데이터 수집 중..."
         }
       }
 
       # Recommendation items 데이터 준비
       @recommendation_items = {
         interest: {
-          title: "흥미 유발 전략",
+          title: "흥미 분석",
           icon: "💡",
-          content: @reader_tendency&.interest_strategy || "개인화 전략 개발 중..."
+          content: @reader_tendency&.interest_analysis || "개인화 분석 개발 중..."
         },
         autonomy: {
-          title: "자기주도성 전략",
+          title: "자기주도성 분석",
           icon: "🚀",
-          content: @reader_tendency&.autonomy_strategy || "개인화 전략 개발 중..."
+          content: @reader_tendency&.self_directed_analysis || "개인화 분석 개발 중..."
         },
         family: {
-          title: "가정 연계지도 방향",
+          title: "가정 지원 분석",
           icon: "👨‍👩‍👧",
-          content: @reader_tendency&.family_guidance || "부모 연계 방안 개발 중..."
+          content: @reader_tendency&.home_support_analysis || "가정 연계 방안 개발 중..."
         },
         caution: {
-          title: "지도시 유의점",
+          title: "진단 점수 요약",
           icon: "📌",
-          content: @reader_tendency&.caution_points || "개별 맞춤 지도 예정"
+          content: @reader_tendency.present? ? "흥미도: #{@reader_tendency&.reading_interest_score}점 | 자기주도성: #{@reader_tendency&.self_directed_score}점 | 가정지원: #{@reader_tendency&.home_support_score}점" : "진단 데이터 수집 중..."
         }
       }
 

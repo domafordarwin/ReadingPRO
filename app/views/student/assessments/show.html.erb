@@ -459,8 +459,8 @@
 </div>
 
 <script>
-  const attemptItems = <%= @attempt_items.to_json(only: [:id], include: { item: { only: [:id, :item_type, :prompt, :stimulus_id], include: { stimulus: { only: [:body] }, item_choices: { only: [:id, :choice_no, :content] } } } }).html_safe %>;
-  const responses = <%= @responses.to_json(only: [:item_id, :selected_choice_id, :answer_text]).html_safe %>;
+  const attemptItems = <%= j(@attempt_items.to_json(only: [:id], include: { item: { only: [:id, :item_type, :prompt, :stimulus_id], include: { stimulus: { only: [:body] }, item_choices: { only: [:id, :choice_no, :content] } } } })) %>;
+  const responses = <%= j(@responses.to_json(only: [:item_id, :selected_choice_id, :answer_text])) %>;
   let currentIndex = 0;
 
   // 초기 렌더링
