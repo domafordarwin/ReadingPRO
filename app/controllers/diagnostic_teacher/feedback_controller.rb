@@ -175,7 +175,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     elsif selected_choice_no.present?
       # 숫자(1-5)로 직접 찾기
       choice_no = selected_choice_no.to_i
-      Rails.logger.info("[update_answer] Looking for choice_no=#{choice_no.inspect} (class: #{choice_no.class}), item_id=#{response.item_id}")
+      puts "DEBUG: selected_choice_no=#{selected_choice_no.inspect}, choice_no=#{choice_no.inspect}, item_id=#{response.item_id}"
+      Rails.logger.info("[update_answer] selected_choice_no=#{selected_choice_no.inspect}, choice_no=#{choice_no} (#{choice_no.class}), item_id=#{response.item_id}")
+
+      # Item의 모든 선택지 확인
+      all_choices = ItemChoice.where(item_id: response.item_id)
+      Rails.logger.info("[update_answer] All ItemChoices: #{all_choices.map { |c| "#{c.choice_no}(id:#{c.id})" }.join(', ')}")
+
       selected_choice = ItemChoice.find_by(choice_no: choice_no, item_id: response.item_id)
       Rails.logger.info("[update_answer] Found: #{selected_choice.inspect}")
     else
@@ -183,7 +189,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     end
 
     unless selected_choice
-      Rails.logger.error("[update_answer] No ItemChoice found for choice_no=#{choice_no}, item_id=#{response.item_id}")
+      Rails.logger.error("[update_answer] ❌ NO MATCH | choice_no=#{choice_no.inspect}, item_id=#{response.item_id}, raw_selected_choice_no=#{selected_choice_no.inspect}")
       return render json: { success: false, error: "유효하지 않은 선택지입니다" }, status: :bad_request
     end
 
