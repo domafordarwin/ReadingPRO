@@ -1,7 +1,7 @@
 class FeedbackPromptHistory < ApplicationRecord
   belongs_to :feedback_prompt
-  belongs_to :user
-  belongs_to :response
+  belongs_to :user, optional: true
+  belongs_to :response, optional: true
 
   validates :prompt_result, presence: true
 
