@@ -19,6 +19,7 @@ class Student::AssessmentsController < ApplicationController
     )
 
     if @attempt.save
+      Rails.logger.info("✅ Attempt created: ID=#{@attempt.id}, Form=#{form.id}")
       begin
         @attempt.snapshot_form_items!
       rescue StandardError => e
@@ -26,8 +27,13 @@ class Student::AssessmentsController < ApplicationController
       end
       redirect_to student_assessment_path(@attempt.id)
     else
-      redirect_to student_diagnostics_path, alert: "진단을 시작할 수 없습니다."
+      Rails.logger.error("❌ Attempt save failed: #{@attempt.errors.full_messages.join(', ')}")
+      redirect_to student_diagnostics_path, alert: "진단을 시작할 수 없습니다: #{@attempt.errors.full_messages.join(', ')}"
     end
+  rescue StandardError => e
+    Rails.logger.error("Create action error: #{e.class} - #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    redirect_to student_diagnostics_path, alert: "진단 시작 중 오류: #{e.message}"
   end
 
   def show
