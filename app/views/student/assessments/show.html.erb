@@ -410,14 +410,14 @@
     const itemIdStr = String(itemId);
     if (itemType === 'mcq') {
       responses[itemIdStr] = { selected_choice_id: parseInt(value) };
-      fetch('<%= student_assessments_submit_response_path %>', {
+      fetch('<%= student_submit_response_path %>', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
         body: JSON.stringify({ attempt_id: attemptId, item_id: itemId, item_type: itemType, selected_choice_id: parseInt(value) })
       }).catch(err => console.error('Error:', err));
     } else {
       responses[itemIdStr] = { answer_text: value };
-      fetch('<%= student_assessments_submit_response_path %>', {
+      fetch('<%= student_submit_response_path %>', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
         body: JSON.stringify({ attempt_id: attemptId, item_id: itemId, item_type: itemType, answer_text: value })
@@ -446,7 +446,7 @@
   }
 
   function confirmSubmit() {
-    fetch('<%= student_assessments_submit_attempt_path %>', {
+    fetch('<%= student_submit_attempt_path %>', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.getElementById('csrf-token').value },
       body: JSON.stringify({ attempt_id: attemptId })
