@@ -570,8 +570,40 @@
 </div>
 
 <script>
-  const attemptItems = <%= @attempt_items_json.to_json.html_safe %>;
-  const responses = <%= @responses_json.to_json.html_safe %>;
+  // Build attempt items from server data
+  const attemptItems = [
+    <% @attempt_items.each do |ai| %>
+      {
+        id: <%= ai.id %>,
+        item: {
+          id: <%= ai.item&.id %>,
+          item_type: '<%= ai.item&.item_type %>',
+          prompt: '<%= (ai.item&.prompt || '').gsub("'", "\\'") %>',
+          stimulus_id: <%= ai.item&.stimulus_id %>,
+          stimulus: <%= ai.item&.stimulus ? "{body: '#{ai.item.stimulus.body.gsub("'", "\\'")}'}" : 'null' %>,
+          item_choices: [
+            <% if ai.item&.item_choices %>
+              <% ai.item.item_choices.each do |ic| %>
+                { id: <%= ic.id %>, choice_no: '<%= ic.choice_no %>', content: '<%= (ic.content || '').gsub("'", "\\'") %>' },
+              <% end %>
+            <% end %>
+          ]
+        }
+      },
+    <% end %>
+  ];
+
+  // Build responses from server data
+  const responses = {
+    <% @responses.each do |item_id, resp| %>
+      <%= item_id %>: {
+        item_id: <%= resp.item_id %>,
+        selected_choice_id: <%= resp.selected_choice_id %>,
+        answer_text: '<%= (resp.answer_text || '').gsub("'", "\\'") %>'
+      },
+    <% end %>
+  };
+
   const timeLimitMinutes = <%= @attempt.time_limit_minutes.present? ? @attempt.time_limit_minutes : 'null' %>;
   const attemptStartedAt = new Date('<%= @attempt.created_at.iso8601 %>');
 

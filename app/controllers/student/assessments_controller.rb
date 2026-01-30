@@ -53,43 +53,10 @@ class Student::AssessmentsController < ApplicationController
     end
 
     @responses = @attempt.responses.includes(:item, :selected_choice).index_by(&:item_id)
-
-    # Prepare JSON data safely in controller
-    @attempt_items_json = @attempt_items.map do |ai|
-      begin
-        item_choices = []
-        if ai.item && ai.item.item_choices.present?
-          item_choices = ai.item.item_choices.map { |ic| { id: ic.id, choice_no: ic.choice_no, content: ic.content } }
-        end
-
-        {
-          id: ai.id,
-          item: {
-            id: ai.item&.id,
-            item_type: ai.item&.item_type,
-            prompt: ai.item&.prompt,
-            stimulus_id: ai.item&.stimulus_id,
-            stimulus: (ai.item&.stimulus ? { body: ai.item.stimulus.body } : nil),
-            item_choices: item_choices
-          }
-        }
-      rescue StandardError => e
-        Rails.logger.error("Error preparing item #{ai.id}: #{e.message}")
-        raise
-      end
-    end
-
-    @responses_json = @responses.transform_values do |resp|
-      {
-        item_id: resp.item_id,
-        selected_choice_id: resp.selected_choice_id,
-        answer_text: resp.answer_text
-      }
-    end
   rescue StandardError => e
     Rails.logger.error("Assessment show error: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace.join("\n"))
-    redirect_to student_diagnostics_path, alert: "진단을 로드할 수 없습니다: #{e.message}"
+    redirect_to student_diagnostics_path, alert: "진단을 로드할 수 없습니다"
   end
 
   def submit_response
