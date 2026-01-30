@@ -46,6 +46,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def show
     @current_page = "feedback"
 
+    # 최신 Attempt 로드
+    @latest_attempt = @student.attempts.order(:created_at).last
+    return unless @latest_attempt
+
     # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
     @responses = Response
       .joins(:item)
@@ -54,9 +58,71 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
       .order(:created_at)
 
+    # 학생의 서술형 응답들 (constructed responses)
+    @constructed_responses = Response
+      .joins(:item)
+      .where(attempt_id: @student.attempts.pluck(:id))
+      .where("items.item_type = ?", Item.item_types[:constructed])
+      .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :attempt,
+                { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
+      .order(:created_at)
+
+    # 서술형 응답을 item_id로 그룹화
+    @constructed_by_item = @constructed_responses.index_by(&:item_id)
+
     # 최신 Attempt의 종합 피드백 로드
-    latest_attempt = @student.attempts.order(:created_at).last
-    @comprehensive_feedback = latest_attempt&.comprehensive_feedback
+    @comprehensive_feedback = @latest_attempt&.comprehensive_feedback
+
+    # 독자 성향 데이터 로드
+    @reader_tendency = @latest_attempt&.reader_tendency
+
+    # Diagnosis items 데이터 준비
+    @diagnosis_items = {
+      motivation: {
+        title: "독서 동기",
+        icon: "🎯",
+        content: @reader_tendency&.reading_motivation || "데이터 수집 중..."
+      },
+      attitude: {
+        title: "독서 태도",
+        icon: "📖",
+        content: @reader_tendency&.reading_attitude || "데이터 수집 중..."
+      },
+      social: {
+        title: "사회적 요인",
+        icon: "👥",
+        content: @reader_tendency&.social_factors || "데이터 수집 중..."
+      },
+      risk: {
+        title: "위험 요인",
+        icon: "⚠️",
+        content: @reader_tendency&.risk_factors || "없음"
+      }
+    }
+
+    # Recommendation items 데이터 준비
+    @recommendation_items = {
+      interest: {
+        title: "흥미 유발 전략",
+        icon: "💡",
+        content: @reader_tendency&.interest_strategy || "개인화 전략 개발 중..."
+      },
+      autonomy: {
+        title: "자기주도성 전략",
+        icon: "🚀",
+        content: @reader_tendency&.autonomy_strategy || "개인화 전략 개발 중..."
+      },
+      family: {
+        title: "가정 연계지도 방향",
+        icon: "👨‍👩‍👧",
+        content: @reader_tendency&.family_guidance || "부모 연계 방안 개발 중..."
+      },
+      caution: {
+        title: "지도시 유의점",
+        icon: "📌",
+        content: @reader_tendency&.caution_points || "개별 맞춤 지도 예정"
+      }
+    }
 
     # 전체 프롬프트 템플릿 로드 (드롭다운용)
     @prompt_templates = FeedbackPrompt.templates
