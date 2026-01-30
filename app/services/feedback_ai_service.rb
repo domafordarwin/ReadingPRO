@@ -187,17 +187,19 @@ class FeedbackAiService
   def refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
     # 기존 피드백을 개선할 때 사용 - 이중 래핑 방지
     refinement_prompt = <<~PROMPT
-      다음은 학생에 대해 이미 작성된 종합 피드백입니다:
+      다음은 학생의 종합 피드백입니다:
 
-      [기존 종합 피드백]
       #{existing_feedback}
 
-      [교사의 개선 요청]
+      위의 피드백을 다음 요청에 따라 개선해주세요:
+
       #{custom_prompt}
 
-      위의 교사 요청을 반영하여 기존 피드백을 더 나은 버전으로 재작성해주세요.
-      기존 피드백의 장점은 유지하면서, 교사의 요청 사항을 명확히 반영하세요.
-      개선된 피드백만 작성하고, 추가 설명이나 구조 정보는 포함하지 마세요.
+      요청사항:
+      - 기존 피드백의 구조와 내용은 유지하면서 개선하세요
+      - 교사의 요청을 명확히 반영하세요
+      - 개선된 피드백만 작성하세요 (설명이나 구조 정보는 포함하지 마세요)
+      - 한글로 작성하세요
     PROMPT
 
     begin
