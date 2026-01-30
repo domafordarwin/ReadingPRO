@@ -29,6 +29,12 @@ class Student::AssessmentsController < ApplicationController
   def show
     @current_page = "assessment"
     @form = @attempt.form
+
+    unless @form
+      redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
+      return
+    end
+
     @attempt_items = @attempt.attempt_items.includes(:item).order(created_at: :asc)
     @responses = @attempt.responses.includes(:item, :selected_choice).index_by(&:item_id)
   end
