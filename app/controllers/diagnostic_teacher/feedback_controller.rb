@@ -242,12 +242,28 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def generate_constructed_feedback
     # 서술형 응답에 대한 AI 피드백 생성
-    response = Response.find(params[:response_id])
-
     begin
+      response = Response.find(params[:response_id])
+
+      # Response 유효성 확인
+      unless response.item && response.response_rubric_scores.any?
+        return render json: {
+          success: false,
+          error: "문항 또는 채점 정보가 없습니다"
+        }, status: :bad_request
+      end
+
       # ReadingReportService를 통해 피드백 생성
-      service = ReadingReportService.new(response.attempt.student)
+      service = ReadingReportService.new
       feedback_text = service.generate_constructed_response_feedback(response)
+
+      # 피드백 생성 실패 확인
+      if feedback_text.blank? || feedback_text.include?("[API 오류]")
+        return render json: {
+          success: false,
+          error: feedback_text || "피드백 생성에 실패했습니다"
+        }, status: :unprocessable_entity
+      end
 
       # ResponseFeedback 저장
       response_feedback = response.response_feedbacks.create!(
@@ -262,12 +278,19 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         source: 'ai',
         created_at: response_feedback.created_at.strftime("%Y-%m-%d %H:%M")
       }
-    rescue => e
-      Rails.logger.error("[generate_constructed_feedback] Error: #{e.message}")
+    rescue ActiveRecord::RecordNotFound
       render json: {
         success: false,
-        error: "피드백 생성 중 오류가 발생했습니다: #{e.message}"
-      }, status: :unprocessable_entity
+        error: "응답을 찾을 수 없습니다"
+      }, status: :not_found
+    rescue StandardError => e
+      Rails.logger.error("[generate_constructed_feedback] Error: #{e.class} - #{e.message}")
+      Rails.logger.error("[generate_constructed_feedback] Backtrace: #{e.backtrace.first(5).join("\n")}")
+
+      render json: {
+        success: false,
+        error: "피드백 생성 중 오류가 발생했습니다"
+      }, status: :internal_server_error
     end
   end
 
