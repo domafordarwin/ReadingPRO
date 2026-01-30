@@ -238,6 +238,50 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @prompts = @prompts.page(params[:page]).per(20)
   end
 
+  # 피드백 프롬프트 - 프롬프트 생성
+  def generate_prompt
+    return render json: { success: false, error: "API 키가 설정되지 않았습니다" }, status: 400 unless ENV['OPENAI_API_KEY'].present?
+
+    category = params[:category]
+    description = params[:description]
+
+    result = FeedbackPromptGeneratorService.generate(
+      category: category,
+      description: description,
+      current_user: current_user
+    )
+
+    if result[:success]
+      render json: result
+    else
+      render json: { success: false, error: result[:error] }, status: 400
+    end
+  rescue => e
+    Rails.logger.error("프롬프트 생성 오류: #{e.class} - #{e.message}")
+    render json: { success: false, error: "서버 오류: #{e.message}" }, status: 500
+  end
+
+  # 피드백 프롬프트 - 템플릿으로 저장
+  def save_prompt_template
+    prompt_text = params[:prompt_text]
+    category = params[:category]
+
+    return render json: { success: false, error: "프롬프트 텍스트가 비어있습니다" }, status: 400 if prompt_text.blank?
+    return render json: { success: false, error: "카테고리가 지정되지 않았습니다" }, status: 400 if category.blank?
+
+    service = FeedbackPromptGeneratorService.new(category, nil, current_user)
+    result = service.save_as_template(prompt_text)
+
+    if result[:success]
+      render json: { success: true, message: result[:message], prompt: result[:prompt] }
+    else
+      render json: { success: false, error: result[:error] }, status: 400
+    end
+  rescue => e
+    Rails.logger.error("템플릿 저장 오류: #{e.class} - #{e.message}")
+    render json: { success: false, error: "서버 오류: #{e.message}" }, status: 500
+  end
+
   # 공지사항 및 상담 - 공지사항 관리
   def notices
     @current_page = "notices"

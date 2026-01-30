@@ -59,7 +59,8 @@
       "Bash(bin/rails dbconsole:*)",
       "Bash(rails db:migrate:*)",
       "Bash(rails db:migrate:status:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "WebFetch(domain:new-wave-for-reading.vercel.app)"
     ]
   }
 }

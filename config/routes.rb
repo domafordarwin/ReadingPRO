@@ -110,6 +110,8 @@ Rails.application.routes.draw do
     # 진단 분석
     get "diagnostics/status", to: "dashboard#diagnostics_status", as: "diagnostics_status"
     get "feedback_prompts", to: "dashboard#feedback_prompts", as: "feedback_prompts"
+    post "feedback_prompts/generate", to: "dashboard#generate_prompt", as: "generate_feedback_prompt"
+    post "feedback_prompts/save", to: "dashboard#save_prompt_template", as: "save_feedback_prompt_template"
     get "feedbacks", to: "feedback#index", as: "feedbacks"
     get "feedbacks/:student_id", to: "feedback#show", as: "feedback"
     post "feedbacks/:response_id/generate", to: "feedback#generate_feedback", as: "feedback_generate"

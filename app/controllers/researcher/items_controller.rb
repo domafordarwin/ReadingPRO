@@ -7,15 +7,23 @@ class Researcher::ItemsController < ApplicationController
     @items = Item.includes(:item_sample_answers, rubric: { rubric_criteria: :rubric_levels })
                  .order(created_at: :desc)
 
+    # Status filter
+    if Item.statuses.key?(params[:status].to_s)
+      @items = @items.where(status: params[:status])
+    end
+
+    # Keyword search
     query = params[:q].to_s.strip
     if query.present?
       @items = @items.where("items.code LIKE :q OR items.prompt LIKE :q", q: "%#{query}%")
     end
 
+    # Item type filter
     if Item.item_types.key?(params[:item_type].to_s)
       @items = @items.where(item_type: params[:item_type])
     end
 
+    # Rubric filter
     case params[:rubric]
     when "with"
       @items = @items.joins(:rubric)
