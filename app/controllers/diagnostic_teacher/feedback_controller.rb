@@ -47,19 +47,114 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def show
     @current_page = "feedback"
 
-    # 학생 탐색 네비게이션용 (attempt가 없어도 필요)
-    students = Student.order(:name).all
-    @all_students = students.map { |s| { id: s.id, name: s.name } }
+    begin
+      # 학생 탐색 네비게이션용 (attempt가 없어도 필요)
+      students = Student.order(:name).all
+      @all_students = students.map { |s| { id: s.id, name: s.name } }
 
-    current_index = students.find_index { |s| s.id == @student.id }
-    @prev_student = students[current_index - 1] if current_index && current_index > 0
-    @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
+      current_index = students.find_index { |s| s.id == @student.id }
+      @prev_student = students[current_index - 1] if current_index && current_index > 0
+      @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
 
-    # 최신 Attempt 로드
-    @latest_attempt = @student.attempts.order(:created_at).last
+      # 최신 Attempt 로드
+      @latest_attempt = @student.attempts.order(:created_at).last
 
-    # Attempt가 없으면 초기화 후 반환
-    unless @latest_attempt
+      # Attempt가 없으면 초기화 후 반환
+      unless @latest_attempt
+        @responses = []
+        @constructed_responses = []
+        @constructed_by_item = {}
+        @comprehensive_feedback = nil
+        @reader_tendency = nil
+        @diagnosis_items = {}
+        @recommendation_items = {}
+        @prompt_templates = []
+        return
+      end
+
+      # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
+      @responses = Response
+        .joins(:item)
+        .where(attempt_id: @student.attempts.pluck(:id))
+        .where("items.item_type = ?", Item.item_types[:mcq])
+        .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
+        .order(:created_at)
+
+      # 학생의 서술형 응답들 (constructed responses)
+      @constructed_responses = Response
+        .joins(:item)
+        .where(attempt_id: @student.attempts.pluck(:id))
+        .where("items.item_type = ?", Item.item_types[:constructed])
+        .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :attempt,
+                  { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
+        .order(:created_at)
+
+      # 서술형 응답을 item_id로 그룹화
+      @constructed_by_item = @constructed_responses.index_by(&:item_id)
+
+      # 최신 Attempt의 종합 피드백 로드
+      @comprehensive_feedback = @latest_attempt&.comprehensive_feedback
+
+      # 독자 성향 데이터 로드
+      @reader_tendency = @latest_attempt&.reader_tendency
+
+      # Diagnosis items 데이터 준비
+      @diagnosis_items = {
+        motivation: {
+          title: "독서 동기",
+          icon: "🎯",
+          content: @reader_tendency&.reading_motivation || "데이터 수집 중..."
+        },
+        attitude: {
+          title: "독서 태도",
+          icon: "📖",
+          content: @reader_tendency&.reading_attitude || "데이터 수집 중..."
+        },
+        social: {
+          title: "사회적 요인",
+          icon: "👥",
+          content: @reader_tendency&.social_factors || "데이터 수집 중..."
+        },
+        risk: {
+          title: "위험 요인",
+          icon: "⚠️",
+          content: @reader_tendency&.risk_factors || "없음"
+        }
+      }
+
+      # Recommendation items 데이터 준비
+      @recommendation_items = {
+        interest: {
+          title: "흥미 유발 전략",
+          icon: "💡",
+          content: @reader_tendency&.interest_strategy || "개인화 전략 개발 중..."
+        },
+        autonomy: {
+          title: "자기주도성 전략",
+          icon: "🚀",
+          content: @reader_tendency&.autonomy_strategy || "개인화 전략 개발 중..."
+        },
+        family: {
+          title: "가정 연계지도 방향",
+          icon: "👨‍👩‍👧",
+          content: @reader_tendency&.family_guidance || "부모 연계 방안 개발 중..."
+        },
+        caution: {
+          title: "지도시 유의점",
+          icon: "📌",
+          content: @reader_tendency&.caution_points || "개별 맞춤 지도 예정"
+        }
+      }
+
+      # 전체 프롬프트 템플릿 로드 (드롭다운용)
+      @prompt_templates = FeedbackPrompt.templates
+        .order(:category)
+        .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
+    rescue => e
+      Rails.logger.error("[FeedbackController#show] Error: #{e.class} - #{e.message}")
+      Rails.logger.error("[FeedbackController#show] Backtrace: #{e.backtrace.first(5).join("\n")}")
+
+      # 초기화로 fallback (safe mode)
       @responses = []
       @constructed_responses = []
       @constructed_by_item = {}
@@ -68,87 +163,12 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       @diagnosis_items = {}
       @recommendation_items = {}
       @prompt_templates = []
-      return
+      @all_students = []
+      @prev_student = nil
+      @next_student = nil
+
+      flash.now[:alert] = "데이터 로드 중 오류가 발생했습니다: #{e.message}"
     end
-
-    # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
-    @responses = Response
-      .joins(:item)
-      .where(attempt_id: @student.attempts.pluck(:id))
-      .where("items.item_type = ?", Item.item_types[:mcq])
-      .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
-      .order(:created_at)
-
-    # 학생의 서술형 응답들 (constructed responses)
-    @constructed_responses = Response
-      .joins(:item)
-      .where(attempt_id: @student.attempts.pluck(:id))
-      .where("items.item_type = ?", Item.item_types[:constructed])
-      .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :attempt,
-                { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
-      .order(:created_at)
-
-    # 서술형 응답을 item_id로 그룹화
-    @constructed_by_item = @constructed_responses.index_by(&:item_id)
-
-    # 최신 Attempt의 종합 피드백 로드
-    @comprehensive_feedback = @latest_attempt&.comprehensive_feedback
-
-    # 독자 성향 데이터 로드
-    @reader_tendency = @latest_attempt&.reader_tendency
-
-    # Diagnosis items 데이터 준비
-    @diagnosis_items = {
-      motivation: {
-        title: "독서 동기",
-        icon: "🎯",
-        content: @reader_tendency&.reading_motivation || "데이터 수집 중..."
-      },
-      attitude: {
-        title: "독서 태도",
-        icon: "📖",
-        content: @reader_tendency&.reading_attitude || "데이터 수집 중..."
-      },
-      social: {
-        title: "사회적 요인",
-        icon: "👥",
-        content: @reader_tendency&.social_factors || "데이터 수집 중..."
-      },
-      risk: {
-        title: "위험 요인",
-        icon: "⚠️",
-        content: @reader_tendency&.risk_factors || "없음"
-      }
-    }
-
-    # Recommendation items 데이터 준비
-    @recommendation_items = {
-      interest: {
-        title: "흥미 유발 전략",
-        icon: "💡",
-        content: @reader_tendency&.interest_strategy || "개인화 전략 개발 중..."
-      },
-      autonomy: {
-        title: "자기주도성 전략",
-        icon: "🚀",
-        content: @reader_tendency&.autonomy_strategy || "개인화 전략 개발 중..."
-      },
-      family: {
-        title: "가정 연계지도 방향",
-        icon: "👨‍👩‍👧",
-        content: @reader_tendency&.family_guidance || "부모 연계 방안 개발 중..."
-      },
-      caution: {
-        title: "지도시 유의점",
-        icon: "📌",
-        content: @reader_tendency&.caution_points || "개별 맞춤 지도 예정"
-      }
-    }
-
-    # 전체 프롬프트 템플릿 로드 (드롭다운용)
-    @prompt_templates = FeedbackPrompt.templates
-      .order(:category)
-      .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
   end
 
   def generate_feedback
