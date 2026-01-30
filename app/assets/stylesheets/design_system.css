@@ -684,6 +684,16 @@
   border-color: var(--rp-danger);
 }
 
+.rp-btn--success {
+  background: var(--rp-success);
+  color: white;
+  border-color: var(--rp-success);
+}
+
+.rp-btn--success:hover {
+  opacity: 0.9;
+}
+
 .rp-btn--lg {
   padding: var(--rp-space-4) var(--rp-space-6);
   font-size: var(--rp-font-size-md);

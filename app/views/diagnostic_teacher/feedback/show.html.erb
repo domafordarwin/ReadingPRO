@@ -101,24 +101,6 @@
         </table>
       </div>
     <% end %>
-
-    <div class="rp-answer-grid">
-      <% @responses.each_with_index do |response, index| %>
-        <div class="rp-answer-cell" data-response-id="<%= response.id %>">
-          <div class="rp-answer-cell-number"><%= index + 1 %></div>
-          <div class="rp-answer-cell-status">
-            <% if response.selected_choice %>
-              <% is_correct = response.selected_choice.choice_score&.is_key %>
-              <span class="rp-cell-badge <%= is_correct ? 'rp-cell-badge--correct' : 'rp-cell-badge--incorrect' %>">
-                <%= is_correct ? '✓' : '✗' %>
-              </span>
-            <% else %>
-              <span class="rp-cell-badge rp-cell-badge--unanswered">-</span>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
   </div>
 
   <!-- 수평선 -->
@@ -143,6 +125,12 @@
         <!-- 피드백 표시 -->
         <div class="rp-feedback-display" id="comprehensive-feedback-display">
           <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 위의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
+        </div>
+
+        <!-- 피드백 액션 버튼 -->
+        <div class="rp-feedback-actions" id="comprehensive-feedback-actions" style="display: none; margin-top: 12px; display: flex; gap: 8px;">
+          <button class="rp-btn rp-btn--secondary rp-btn--sm" id="edit-comprehensive-feedback">수정</button>
+          <button class="rp-btn rp-btn--success rp-btn--sm" id="save-feedback-display">저장</button>
         </div>
 
         <!-- 피드백 편집 -->
@@ -1153,7 +1141,26 @@
         });
       }
 
-      // 저장/취소 버튼
+      // 피드백 액션 버튼 (표시된 피드백 위의 수정/저장 버튼)
+      const editBtn = document.getElementById('edit-comprehensive-feedback');
+      const saveFeedbackBtn = document.getElementById('save-feedback-display');
+
+      if (editBtn) {
+        editBtn.addEventListener('click', () => this.toggleFeedbackEdit());
+      }
+
+      if (saveFeedbackBtn) {
+        saveFeedbackBtn.addEventListener('click', () => {
+          // 현재 표시된 피드백 텍스트를 가져와서 저장
+          const feedbackText = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display .rp-feedback-text')?.textContent || '';
+          if (feedbackText) {
+            document.getElementById('comprehensive-feedback-textarea').value = feedbackText;
+            this.saveComprehensiveFeedback();
+          }
+        });
+      }
+
+      // 저장/취소 버튼 (편집 모드)
       const saveBtn = document.getElementById('save-comprehensive-feedback');
       const cancelBtn = document.getElementById('cancel-comprehensive-feedback');
       const refineBtn = document.getElementById('refine-comprehensive-feedback');
@@ -1369,22 +1376,36 @@
       const btn = document.getElementById('generate-comprehensive-feedback');
       const studentId = document.querySelector('.rp-comprehensive-feedback').dataset.studentId;
 
+      // 커스텀 프롬프트 확인
+      const customPromptInput = document.getElementById('comprehensive-prompt');
+      const customPrompt = customPromptInput?.value.trim() || null;
+
       btn.disabled = true;
       btn.textContent = 'AI 생성 중...';
 
       try {
+        const requestBody = {};
+
+        // 커스텀 프롬프트가 있으면 포함
+        if (customPrompt) {
+          requestBody.prompt = customPrompt;
+          requestBody.category = document.getElementById('comprehensive-category').value;
+        }
+
         const response = await fetch(`/diagnostic_teacher/feedbacks/${studentId}/generate_comprehensive`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-Token': this.getCSRFToken()
-          }
+          },
+          body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
 
         if (data.success) {
           const displayArea = document.getElementById('comprehensive-feedback-display');
+          const actionsArea = document.getElementById('comprehensive-feedback-actions');
           const now = new Date().toLocaleString('ko-KR', {
             year: 'numeric', month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
@@ -1395,13 +1416,21 @@
               <span class="rp-badge rp-badge--info">AI 종합</span>
               <p class="rp-feedback-text">${data.feedback}</p>
               <small class="rp-feedback-meta">${now}</small>
-              <button class="rp-btn-edit-small" onclick="this.closest('.rp-comprehensive-feedback').__feedbackPage.toggleFeedbackEdit()">수정</button>
             </div>
           `;
 
+          // 액션 버튼 표시
+          if (actionsArea) {
+            actionsArea.style.display = 'flex';
+          }
+
           btn.textContent = '재생성';
           this.showToast('AI 종합 피드백이 생성되었습니다', 'success');
-          window.__feedbackPage = this; // 전역 참조
+
+          // 커스텀 프롬프트 사용했으면 초기화
+          if (customPrompt) {
+            customPromptInput.value = '';
+          }
         } else {
           alert(data.error || 'AI 생성 실패');
         }
