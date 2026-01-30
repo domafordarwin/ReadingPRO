@@ -1,300 +1,338 @@
 <% content_for :page_title, "진단 응시" %>
 
 <style>
-  .assessment-container {
+  /* ========================================
+     Assessment Page - rp-* Design System
+     ======================================== */
+
+  .rp-assessment {
     max-width: 900px;
     margin: 0 auto;
     padding: 24px;
   }
 
-  .assessment-header {
+  /* Header Section */
+  .rp-assessment__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rp-border);
+  }
+
+  .rp-assessment__title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--rp-text-title);
+    margin: 0;
+  }
+
+  .rp-assessment__subtitle {
+    font-size: 13px;
+    color: var(--rp-text-muted);
+    margin: 0;
+  }
+
+  /* Progress Bar */
+  .rp-progress {
+    margin-bottom: 32px;
+    background: white;
+    border: 1px solid var(--rp-border);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .rp-progress__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 12px;
+    gap: 16px;
   }
 
-  .assessment-title {
-    font-size: 20px;
+  .rp-progress__label {
+    font-size: 12px;
     font-weight: 600;
-    color: #333;
+    color: var(--rp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
   }
 
-  .assessment-timer {
+  .rp-progress__percentage {
     font-size: 14px;
-    color: #666;
-    font-weight: 500;
+    font-weight: 700;
+    color: var(--rp-primary);
   }
 
-  .progress-section {
-    margin-bottom: 24px;
-  }
-
-  .progress-label {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 8px;
-  }
-
-  .progress-bar {
+  .rp-progress__bar {
     width: 100%;
     height: 8px;
-    background: #f0f0f0;
+    background: var(--rp-bg-subtle);
     border-radius: 4px;
     overflow: hidden;
   }
 
-  .progress-fill {
+  .rp-progress__fill {
     height: 100%;
-    background: #667eea;
+    background: linear-gradient(90deg, var(--rp-primary) 0%, var(--rp-primary) 100%);
     width: 0%;
     transition: width 0.3s ease;
   }
 
-  .question-section {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
+  .rp-progress__timer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rp-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .stimulus-section {
-    background: #f8fafc;
-    border-left: 4px solid #0284c7;
+  .rp-progress__timer-label {
+    font-size: 12px;
+    color: var(--rp-text-muted);
+    font-weight: 600;
+  }
+
+  .rp-progress__timer-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Monaco', 'Courier New', monospace;
+    color: var(--rp-text-title);
+  }
+
+  .rp-progress__timer-value.warning {
+    color: var(--rp-warning);
+  }
+
+  .rp-progress__timer-value.danger {
+    color: var(--rp-danger);
+  }
+
+  /* Question Section Card */
+  .rp-question-section {
+    background: white;
+    border: 1px solid var(--rp-border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Stimulus (Reading Passage) */
+  .rp-stimulus {
+    background: var(--rp-bg-subtle);
+    border-left: 4px solid var(--rp-primary);
+    border-radius: 8px;
     padding: 16px;
     margin-bottom: 24px;
-    border-radius: 4px;
   }
 
-  .stimulus-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #0284c7;
+  .rp-stimulus__label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--rp-primary);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .stimulus-text {
+  .rp-stimulus__text {
     font-size: 13px;
-    line-height: 1.7;
-    color: #333;
+    line-height: 1.8;
+    color: var(--rp-text-body);
     white-space: pre-wrap;
+    word-break: break-word;
   }
 
-  .question-number {
-    font-size: 13px;
-    color: #999;
+  /* Question Content */
+  .rp-question__number {
+    font-size: 12px;
     font-weight: 600;
+    color: var(--rp-text-muted);
     margin-bottom: 8px;
+    text-transform: uppercase;
   }
 
-  .question-prompt {
-    font-size: 15px;
+  .rp-question__prompt {
+    font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--rp-text-title);
     line-height: 1.6;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
 
-  /* MCQ Options */
-  .options-container {
+  /* MCQ Options Container */
+  .rp-options {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
 
-  .option {
+  .rp-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
     padding: 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    border: 2px solid var(--rp-border);
+    border-radius: 8px;
+    background: white;
     cursor: pointer;
     transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: white;
   }
 
-  .option:hover {
-    border-color: #667eea;
-    background: #f8f9ff;
+  .rp-option:hover {
+    border-color: var(--rp-primary);
+    background: var(--rp-bg-subtle);
   }
 
-  .option.selected {
-    border-color: #667eea;
-    background: #f0f5ff;
+  .rp-option--selected {
+    border-color: var(--rp-primary);
+    background: rgba(47, 91, 255, 0.04);
   }
 
-  .option input[type="radio"] {
+  .rp-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0 0;
     cursor: pointer;
-    width: 18px;
-    height: 18px;
-    margin: 0;
+    flex-shrink: 0;
   }
 
-  .option-label {
-    font-weight: 600;
-    color: #333;
-    cursor: pointer;
-    flex: 1;
+  .rp-option__content {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    flex: 1;
   }
 
-  .option-text {
+  .rp-option__label {
+    font-weight: 600;
+    color: var(--rp-text-title);
+    cursor: pointer;
+  }
+
+  .rp-option__text {
     font-size: 13px;
-    color: #666;
+    color: var(--rp-text-body);
     line-height: 1.5;
   }
 
   /* Constructed Response */
-  .textarea-container {
+  .rp-textarea-wrapper {
     position: relative;
   }
 
-  .answer-textarea {
+  .rp-textarea {
     width: 100%;
     min-height: 200px;
     padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    border: 2px solid var(--rp-border);
+    border-radius: 8px;
+    font-family: inherit;
     font-size: 13px;
     line-height: 1.6;
+    color: var(--rp-text-body);
     resize: vertical;
+    transition: all 0.2s ease;
   }
 
-  .answer-textarea:focus {
+  .rp-textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
   }
 
-  .char-count {
+  .rp-textarea__counter {
     font-size: 12px;
-    color: #999;
+    color: var(--rp-text-muted);
     margin-top: 8px;
     text-align: right;
   }
 
-  /* Navigation */
-  .navigation-section {
+  /* Navigation Section */
+  .rp-navigation {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 32px;
-    padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
+    padding-top: 24px;
+    border-top: 1px solid var(--rp-border);
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
-  .nav-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
+  .rp-navigation__counter {
     font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    color: var(--rp-text-muted);
+    font-weight: 500;
   }
 
-  .nav-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .rp-navigation__buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
   }
 
-  .btn-previous {
-    background: #f0f0f0;
-    color: #333;
+  /* Question Navigation Grid */
+  .rp-question-nav {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rp-border);
   }
 
-  .btn-previous:hover:not(:disabled) {
-    background: #e0e0e0;
-  }
-
-  .btn-next {
-    background: #667eea;
-    color: white;
-  }
-
-  .btn-next:hover:not(:disabled) {
-    background: #764ba2;
-  }
-
-  .btn-submit {
-    background: #10b981;
-    color: white;
-    padding: 12px 32px;
-  }
-
-  .btn-submit:hover:not(:disabled) {
-    background: #059669;
-  }
-
-  .nav-info {
-    color: #999;
-    font-size: 13px;
-  }
-
-  /* Question Navigation */
-  .question-nav {
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .question-nav-title {
+  .rp-question-nav__label {
     font-size: 12px;
-    font-weight: 600;
-    color: #999;
-    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--rp-text-muted);
+    margin-bottom: 16px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .question-items {
+  .rp-question-nav__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
     gap: 8px;
   }
 
-  .question-item {
+  .rp-question-nav__item {
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
+    border: 2px solid var(--rp-border);
+    border-radius: 8px;
+    background: white;
     font-size: 12px;
     font-weight: 600;
-    color: #666;
+    color: var(--rp-text-body);
+    cursor: pointer;
     transition: all 0.2s ease;
-    background: white;
   }
 
-  .question-item:hover {
-    border-color: #667eea;
-    background: #f8f9ff;
+  .rp-question-nav__item:hover {
+    border-color: var(--rp-primary);
+    background: var(--rp-bg-subtle);
   }
 
-  .question-item.current {
-    background: #667eea;
+  .rp-question-nav__item--current {
+    background: var(--rp-primary);
     color: white;
-    border-color: #667eea;
+    border-color: var(--rp-primary);
   }
 
-  .question-item.answered {
-    border-color: #10b981;
-    background: #ecfdf5;
-    color: #059669;
+  .rp-question-nav__item--answered {
+    border-color: var(--rp-success);
+    background: rgba(34, 197, 94, 0.05);
+    color: var(--rp-success);
   }
 
-  .modal-overlay {
+  /* Modal Overlay */
+  .rp-modal--assessment {
     display: none;
     position: fixed;
     top: 0;
@@ -307,133 +345,206 @@
     justify-content: center;
   }
 
-  .modal-overlay.show {
+  .rp-modal--assessment.show {
     display: flex;
   }
 
-  .modal-content {
+  .rp-modal--assessment__content {
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 32px;
-    max-width: 400px;
+    max-width: 420px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     text-align: center;
   }
 
-  .modal-title {
+  .rp-modal--assessment__title {
     font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 16px;
+    font-weight: 700;
+    color: var(--rp-text-title);
+    margin: 0 0 16px 0;
   }
 
-  .modal-message {
+  .rp-modal--assessment__message {
     font-size: 14px;
-    color: #666;
-    margin-bottom: 24px;
+    color: var(--rp-text-body);
+    margin-bottom: 28px;
     line-height: 1.6;
   }
 
-  .modal-buttons {
+  .rp-modal--assessment__buttons {
     display: flex;
     gap: 12px;
   }
 
-  .modal-button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .rp-assessment {
+      padding: 20px;
+    }
 
-  .btn-cancel {
-    background: #f0f0f0;
-    color: #333;
-  }
-
-  .btn-cancel:hover {
-    background: #e0e0e0;
-  }
-
-  .btn-confirm {
-    background: #667eea;
-    color: white;
-  }
-
-  .btn-confirm:hover {
-    background: #764ba2;
+    .rp-question-section {
+      padding: 24px;
+    }
   }
 
   @media (max-width: 768px) {
-    .assessment-container {
-      padding: 12px;
+    .rp-assessment {
+      padding: 16px;
     }
 
-    .assessment-header {
-      flex-direction: column;
-      align-items: flex-start;
+    .rp-assessment__header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+
+    .rp-assessment__title {
+      font-size: 20px;
+    }
+
+    .rp-progress {
+      margin-bottom: 24px;
+    }
+
+    .rp-question-section {
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .rp-question__prompt {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .rp-stimulus {
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .rp-stimulus__text {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .rp-navigation {
       gap: 12px;
     }
 
-    .question-items {
-      grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+    .rp-navigation__buttons {
+      width: 100%;
+      gap: 8px;
     }
 
-    .question-section {
+    .rp-question-nav__grid {
+      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    }
+
+    .rp-modal--assessment__content {
+      padding: 24px;
+      margin: 16px;
+      max-width: calc(100% - 32px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .rp-assessment {
+      padding: 12px;
+    }
+
+    .rp-assessment__title {
+      font-size: 18px;
+    }
+
+    .rp-question-section {
       padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .rp-question__prompt {
+      font-size: 14px;
+    }
+
+    .rp-options {
+      gap: 10px;
+    }
+
+    .rp-option {
+      padding: 12px;
+    }
+
+    .rp-navigation {
+      flex-direction: column;
+      align-items: stretch;
+      margin-top: 24px;
+    }
+
+    .rp-navigation__buttons {
+      width: 100%;
+    }
+
+    .rp-navigation__buttons .rp-btn {
+      flex: 1;
+    }
+
+    .rp-question-nav__grid {
+      grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
     }
   }
 </style>
 
-<div class="assessment-container">
+<div class="rp-assessment">
   <!-- CSRF Token (hidden) -->
   <input type="hidden" id="csrf-token" value="<%= form_authenticity_token %>">
 
-  <!-- 헤더 -->
-  <div class="assessment-header">
-    <div>
-      <h1 class="assessment-title"><%= @form.title %></h1>
-      <div style="font-size: 13px; color: #999; margin-top: 4px;">
-        <%= @attempt_items.count %>개 문항
+  <!-- Header -->
+  <div class="rp-assessment__header">
+    <h1 class="rp-assessment__title"><%= @form.title %></h1>
+    <p class="rp-assessment__subtitle"><%= @attempt_items.count %>개 문항</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="rp-progress">
+    <div class="rp-progress__header">
+      <p class="rp-progress__label">진행률</p>
+      <div class="rp-progress__percentage"><span id="progress-percentage">0</span>%</div>
+    </div>
+    <div class="rp-progress__bar">
+      <div class="rp-progress__fill" id="progress-fill"></div>
+    </div>
+    <% if @attempt.time_limit_minutes.present? %>
+      <div class="rp-progress__timer">
+        <span class="rp-progress__timer-label">남은 시간</span>
+        <div class="rp-progress__timer-value" id="timer-display">--:--</div>
       </div>
-    </div>
+    <% end %>
   </div>
 
-  <!-- 진행 상황 바 -->
-  <div class="progress-section">
-    <div class="progress-label" id="progress-text">1 / <%= @attempt_items.count %></div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
+  <!-- Question Content Card -->
+  <div id="question-container" class="rp-question-section">
+    <!-- Dynamically rendered by JavaScript -->
   </div>
 
-  <!-- 문항 콘텐츠 -->
-  <div id="question-container" class="question-section">
-    <!-- 지문 표시 (JavaScript로 동적 렌더링) -->
-    <!-- 문항 표시 (JavaScript로 동적 렌더링) -->
-  </div>
-
-  <!-- 하단 네비게이션 -->
-  <div class="navigation-section">
-    <button class="nav-button btn-previous" id="prev-button" onclick="previousQuestion()">
+  <!-- Navigation -->
+  <div class="rp-navigation">
+    <button class="rp-btn rp-btn--secondary" id="prev-button" onclick="previousQuestion()">
       ← 이전
     </button>
-    <div class="nav-info">
+    <div class="rp-navigation__counter">
       <span id="question-counter">1</span> / <span id="total-counter"><%= @attempt_items.count %></span>
     </div>
-    <button class="nav-button btn-next" id="next-button" onclick="nextQuestion()">
-      다음 →
-    </button>
+    <div class="rp-navigation__buttons">
+      <button class="rp-btn rp-btn--primary" id="next-button" onclick="nextQuestion()">
+        다음 →
+      </button>
+    </div>
   </div>
 
-  <!-- 문항 네비게이션 -->
-  <div class="question-nav">
-    <div class="question-nav-title">문항 선택</div>
-    <div class="question-items" id="question-nav-items">
+  <!-- Question Navigation Grid -->
+  <div class="rp-question-nav">
+    <div class="rp-question-nav__label">문항 선택</div>
+    <div class="rp-question-nav__grid" id="question-nav-items">
       <% @attempt_items.each_with_index do |attempt_item, index| %>
-        <button class="question-item<%= ' current' if index == 0 %>"
+        <button class="rp-question-nav__item<%= ' rp-question-nav__item--current' if index == 0 %>"
                 data-index="<%= index %>"
                 onclick="goToQuestion(<%= index %>)">
           <%= index + 1 %>
@@ -443,17 +554,17 @@
   </div>
 </div>
 
-<!-- 제출 확인 모달 -->
-<div class="modal-overlay" id="submit-modal">
-  <div class="modal-content">
-    <div class="modal-title">진단 제출</div>
-    <div class="modal-message">
+<!-- Submit Confirmation Modal -->
+<div class="rp-modal--assessment" id="submit-modal">
+  <div class="rp-modal--assessment__content">
+    <h2 class="rp-modal--assessment__title">진단 제출</h2>
+    <p class="rp-modal--assessment__message">
       진단을 제출하시겠습니까?<br>
       제출 후에는 답변을 수정할 수 없습니다.
-    </div>
-    <div class="modal-buttons">
-      <button class="modal-button btn-cancel" onclick="closeSubmitModal()">취소</button>
-      <button class="modal-button btn-confirm" onclick="confirmSubmit()">제출</button>
+    </p>
+    <div class="rp-modal--assessment__buttons">
+      <button class="rp-btn rp-btn--secondary" onclick="closeSubmitModal()">취소</button>
+      <button class="rp-btn rp-btn--primary" onclick="confirmSubmit()">제출</button>
     </div>
   </div>
 </div>
@@ -461,12 +572,21 @@
 <script>
   const attemptItems = <%= j(@attempt_items.to_json(only: [:id], include: { item: { only: [:id, :item_type, :prompt, :stimulus_id], include: { stimulus: { only: [:body] }, item_choices: { only: [:id, :choice_no, :content] } } } })) %>;
   const responses = <%= j(@responses.to_json(only: [:item_id, :selected_choice_id, :answer_text])) %>;
-  let currentIndex = 0;
+  const timeLimitMinutes = <%= @attempt.time_limit_minutes.present? ? @attempt.time_limit_minutes : 'null' %>;
+  const attemptStartedAt = new Date('<%= @attempt.created_at.iso8601 %>');
 
-  // 초기 렌더링
+  let currentIndex = 0;
+  let timerInterval = null;
+
+  // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     renderQuestion(0);
     updateProgressBar();
+
+    // Start timer if time limit exists
+    if (timeLimitMinutes) {
+      startTimer();
+    }
   });
 
   function renderQuestion(index) {
@@ -479,35 +599,35 @@
 
     let html = '';
 
-    // 지문 표시
+    // Render stimulus (reading passage)
     if (item.stimulus && item.stimulus.body) {
       html += `
-        <div class="stimulus-section">
-          <div class="stimulus-title">지문</div>
-          <div class="stimulus-text">${escapeHtml(item.stimulus.body)}</div>
+        <div class="rp-stimulus">
+          <div class="rp-stimulus__label">지문</div>
+          <div class="rp-stimulus__text">${escapeHtml(item.stimulus.body)}</div>
         </div>
       `;
     }
 
-    // 문항 번호 및 내용
-    html += `<div class="question-number">문항 ${index + 1}</div>`;
-    html += `<div class="question-prompt">${escapeHtml(item.prompt)}</div>`;
+    // Render question number and prompt
+    html += `<div class="rp-question__number">문항 ${index + 1}</div>`;
+    html += `<div class="rp-question__prompt">${escapeHtml(item.prompt)}</div>`;
 
-    // 답변 입력 영역
+    // Render answer input area
     if (item.item_type === 'mcq') {
-      html += '<div class="options-container">';
+      html += '<div class="rp-options">';
       item.item_choices.forEach(choice => {
         const isSelected = response.selected_choice_id === choice.id;
         html += `
-          <label class="option${isSelected ? ' selected' : ''}">
+          <label class="rp-option${isSelected ? ' rp-option--selected' : ''}">
             <input type="radio"
                    name="answer"
                    value="${choice.id}"
                    ${isSelected ? 'checked' : ''}
                    onchange="saveResponse(${item.id}, 'mcq', this.value)">
-            <span class="option-label">
-              <strong>${choice.choice_no}.</strong>
-              <span class="option-text">${escapeHtml(choice.content)}</span>
+            <span class="rp-option__content">
+              <span class="rp-option__label">${choice.choice_no}.</span>
+              <span class="rp-option__text">${escapeHtml(choice.content)}</span>
             </span>
           </label>
         `;
@@ -516,26 +636,26 @@
     } else if (item.item_type === 'constructed') {
       const answerText = response.answer_text || '';
       html += `
-        <div class="textarea-container">
-          <textarea class="answer-textarea"
+        <div class="rp-textarea-wrapper">
+          <textarea class="rp-textarea"
                     placeholder="여기에 답변을 입력하세요..."
                     onchange="saveResponse(${item.id}, 'constructed', this.value)"
                     onkeyup="updateCharCount(this)">${escapeHtml(answerText)}</textarea>
-          <div class="char-count"><span id="char-count">0</span> / 1000자</div>
+          <div class="rp-textarea__counter"><span id="char-count">0</span> / 1000자</div>
         </div>
       `;
     }
 
     document.getElementById('question-container').innerHTML = html;
 
-    // 버튼 상태 업데이트
+    // Update button states
     document.getElementById('prev-button').disabled = index === 0;
     document.getElementById('next-button').innerHTML = index === attemptItems.length - 1 ? '제출 →' : '다음 →';
     document.getElementById('next-button').onclick = index === attemptItems.length - 1 ? 'openSubmitModal()' : 'nextQuestion()';
 
-    // 문항 네비게이션 업데이트
-    document.querySelectorAll('.question-item').forEach((el, i) => {
-      el.classList.toggle('current', i === index);
+    // Update question navigation
+    document.querySelectorAll('.rp-question-nav__item').forEach((el, i) => {
+      el.classList.toggle('rp-question-nav__item--current', i === index);
     });
 
     updateProgressBar();
@@ -547,15 +667,15 @@
       const selectedId = parseInt(value);
       responses[itemId] = { selected_choice_id: selectedId, answer_text: null };
 
-      // 라디오 버튼 선택 처리
+      // Update MCQ option selection
       document.querySelectorAll('input[name="answer"]').forEach(input => {
-        input.parentElement.classList.toggle('selected', input.checked);
+        input.parentElement.classList.toggle('rp-option--selected', input.checked);
       });
     } else {
       responses[itemId] = { answer_text: value, selected_choice_id: null };
     }
 
-    // 서버에 저장 (비동기)
+    // Save to server (async)
     fetch('<%= student_assessments_submit_response_path %>', {
       method: 'POST',
       headers: {
@@ -571,19 +691,19 @@
       })
     }).catch(err => console.error('Save failed:', err));
 
-    // 문항 체크 표시 업데이트
+    // Update question item status
     updateQuestionItemStatus(attemptItems.findIndex(a => a.item.id === itemId));
   }
 
   function updateQuestionItemStatus(index) {
     const item = attemptItems[index].item;
     const response = responses[item.id];
-    const el = document.querySelectorAll('.question-item')[index];
+    const el = document.querySelectorAll('.rp-question-nav__item')[index];
     if (!el) return;
 
     const isAnswered = (item.item_type === 'mcq' && response?.selected_choice_id) ||
                        (item.item_type === 'constructed' && response?.answer_text);
-    el.classList.toggle('answered', isAnswered);
+    el.classList.toggle('rp-question-nav__item--answered', isAnswered);
   }
 
   function nextQuestion() {
@@ -605,10 +725,62 @@
   function updateProgressBar() {
     const progress = ((currentIndex + 1) / attemptItems.length) * 100;
     document.getElementById('progress-fill').style.width = progress + '%';
+    document.getElementById('progress-percentage').textContent = Math.round(progress);
   }
 
   function updateQuestionCounter() {
     document.getElementById('question-counter').textContent = currentIndex + 1;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    const updateTimer = () => {
+      const now = new Date();
+      const elapsedMs = now - attemptStartedAt;
+      const totalMs = timeLimitMinutes * 60 * 1000;
+      const remainingMs = Math.max(0, totalMs - elapsedMs);
+
+      const minutes = Math.floor(remainingMs / (60 * 1000));
+      const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000);
+
+      const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      const timerElement = document.getElementById('timer-display');
+
+      if (timerElement) {
+        timerElement.textContent = display;
+
+        // Change color based on time remaining
+        if (remainingMs === 0) {
+          // Time's up - auto submit
+          timerElement.className = 'rp-progress__timer-value danger';
+          clearInterval(timerInterval);
+          confirmSubmit();
+        } else if (remainingMs < 5 * 60 * 1000) {
+          // Less than 5 minutes - danger
+          timerElement.className = 'rp-progress__timer-value danger';
+        } else if (remainingMs < 10 * 60 * 1000) {
+          // Less than 10 minutes - warning
+          timerElement.className = 'rp-progress__timer-value warning';
+        } else {
+          // Normal
+          timerElement.className = 'rp-progress__timer-value';
+        }
+      }
+    };
+
+    // Update immediately
+    updateTimer();
+
+    // Update every second
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
   }
 
   function updateCharCount(textarea) {
@@ -625,6 +797,8 @@
   }
 
   function confirmSubmit() {
+    stopTimer();
+
     fetch('<%= student_assessments_submit_attempt_path %>', {
       method: 'POST',
       headers: {
