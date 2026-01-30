@@ -8,47 +8,314 @@
   <%= render "student/shared/nav", current: :diagnostics %>
 <% end %>
 
-<section class="portal-grid">
-  <div class="portal-stat">
-    <div class="portal-stat-label">진행 중</div>
-    <div class="portal-stat-value">1건</div>
-  </div>
-  <div class="portal-stat">
-    <div class="portal-stat-label">예정</div>
-    <div class="portal-stat-value">2건</div>
-  </div>
-  <div class="portal-stat">
-    <div class="portal-stat-label">완료</div>
-    <div class="portal-stat-value">6건</div>
-  </div>
-</section>
+<style>
+  .assessment-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
 
-<section class="portal-card" style="margin-top: 18px;">
-  <h2 class="portal-card-title">진단 일정</h2>
-  <table class="portal-table">
-    <thead>
-      <tr>
-        <th>진단명</th>
-        <th>상태</th>
-        <th>기간</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>독서력 종합 진단</td>
-        <td><span class="portal-chip">진행 중</span></td>
-        <td>2026-02-02 ~ 2026-02-05</td>
-      </tr>
-      <tr>
-        <td>읽기 성향 진단</td>
-        <td><span class="portal-chip">예정</span></td>
-        <td>2026-02-10 ~ 2026-02-12</td>
-      </tr>
-      <tr>
-        <td>감상문 피드백 진단</td>
-        <td><span class="portal-chip">예정</span></td>
-        <td>2026-02-17 ~ 2026-02-20</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
+  .assessment-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .assessment-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .assessment-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .assessment-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+  }
+
+  .assessment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+  }
+
+  .assessment-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+  }
+
+  .assessment-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-available {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .badge-inprogress {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .badge-completed {
+    background: #d1ecf1;
+    color: #0c5460;
+  }
+
+  .assessment-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .info-label {
+    color: #999;
+    font-size: 11px;
+  }
+
+  .info-value {
+    color: #333;
+    font-weight: 500;
+  }
+
+  .assessment-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .btn-small {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #764ba2;
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary:hover {
+    background: #e0e0e0;
+  }
+
+  .empty-state {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #999;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .assessment-list {
+      grid-template-columns: 1fr;
+    }
+
+    .assessment-stats {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
+
+<!-- 통계 섹션 -->
+<div class="assessment-header">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600;">진단 현황 요약</h2>
+  <div class="assessment-stats">
+    <div class="stat-card">
+      <div class="stat-number"><%= @in_progress_attempts.count %></div>
+      <div class="stat-label">진행 중</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number"><%= @completed_attempts.count %></div>
+      <div class="stat-label">완료됨</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number"><%= @available_forms.count %></div>
+      <div class="stat-label">이용 가능</div>
+    </div>
+  </div>
+</div>
+
+<!-- 진행 중인 진단 -->
+<% if @in_progress_attempts.any? %>
+  <h3 class="section-title">📍 진행 중인 진단</h3>
+  <div class="assessment-list">
+    <% @in_progress_attempts.each do |attempt| %>
+      <div class="assessment-card">
+        <div class="assessment-card-header">
+          <div class="assessment-title"><%= attempt.form.title %></div>
+          <span class="assessment-badge badge-inprogress">진행 중</span>
+        </div>
+
+        <div class="assessment-info">
+          <div class="info-item">
+            <div class="info-label">시작 시간</div>
+            <div class="info-value"><%= attempt.started_at&.strftime("%m월 %d일 %H:%M") %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">총 문항</div>
+            <div class="info-value"><%= attempt.attempt_items.count %>개</div>
+          </div>
+        </div>
+
+        <div class="assessment-actions">
+          <%= link_to "계속하기", student_assessment_path(attempt.id), class: "btn-small btn-primary", style: "text-decoration: none;" %>
+          <%= link_to "취소", "#", class: "btn-small btn-secondary", style: "text-decoration: none;" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- 이용 가능한 진단 -->
+<% if @available_forms.any? %>
+  <h3 class="section-title">📝 이용 가능한 진단</h3>
+  <div class="assessment-list">
+    <% @available_forms.each do |form| %>
+      <div class="assessment-card">
+        <div class="assessment-card-header">
+          <div class="assessment-title"><%= form.title %></div>
+          <span class="assessment-badge badge-available">준비됨</span>
+        </div>
+
+        <div class="assessment-info">
+          <div class="info-item">
+            <div class="info-label">문항 수</div>
+            <div class="info-value"><%= form.items.count %>개</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">예상 시간</div>
+            <div class="info-value"><%= (form.items.count * 2.5).to_i %>분</div>
+          </div>
+        </div>
+
+        <div class="assessment-actions">
+          <%= link_to "시작하기", student_assessments_path(form_id: form.id), method: :post, class: "btn-small btn-primary", style: "text-decoration: none;" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- 완료된 진단 -->
+<% if @completed_attempts.any? %>
+  <h3 class="section-title">✅ 완료된 진단</h3>
+  <div class="assessment-list">
+    <% @completed_attempts.each do |attempt| %>
+      <div class="assessment-card">
+        <div class="assessment-card-header">
+          <div class="assessment-title"><%= attempt.form.title %></div>
+          <span class="assessment-badge badge-completed">완료됨</span>
+        </div>
+
+        <div class="assessment-info">
+          <div class="info-item">
+            <div class="info-label">완료 날짜</div>
+            <div class="info-value"><%= attempt.submitted_at&.strftime("%m월 %d일") %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">보고서</div>
+            <div class="info-value"><%= attempt.report&.status&.upcase || "없음" %></div>
+          </div>
+        </div>
+
+        <div class="assessment-actions">
+          <%= link_to "결과보기", student_show_attempt_path(attempt.id), class: "btn-small btn-secondary", style: "text-decoration: none;" %>
+          <% if attempt.report %>
+            <%= link_to "보고서", student_show_report_path(attempt.id), class: "btn-small btn-secondary", style: "text-decoration: none;" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- 비어있음 상태 -->
+<% if @available_forms.none? && @in_progress_attempts.none? && @completed_attempts.none? %>
+  <div class="empty-state">
+    <div class="empty-state-icon">📭</div>
+    <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">이용 가능한 진단이 없습니다</p>
+    <p style="margin: 0; font-size: 13px;">교사가 진단을 설정할 때까지 잠시 기다려주세요.</p>
+  </div>
+<% end %>
