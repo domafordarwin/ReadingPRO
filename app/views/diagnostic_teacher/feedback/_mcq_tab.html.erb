@@ -1,14 +1,18 @@
 <div class="rp-tab-pane active" data-tab="mcq">
-  <% if @responses.any? %>
-    <!-- 상단: 응답 현황 -->
-    <div class="rp-overview-section">
-      <h2 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-        객관식 응답 현황
-        <span style="font-size: 13px; font-weight: 400; color: #64748b; margin-left: 8px;">
-          (<span id="correct-count">0</span>/18 정답)
-        </span>
-      </h2>
+  <!-- 상단: 응답 현황 -->
+  <div class="rp-overview-section">
+    <h2 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
+      객관식 응답 현황
+      <span style="font-size: 13px; font-weight: 400; color: #64748b; margin-left: 8px;">
+        <% if @responses.any? %>
+          (<span id="correct-count">0</span>/<%= @responses.count %> 정답)
+        <% else %>
+          (0/0 정답)
+        <% end %>
+      </span>
+    </h2>
 
+    <% if @responses.any? %>
       <!-- 정답과 학생답 요약 테이블 -->
       <div style="margin-bottom: 16px; overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
@@ -67,8 +71,14 @@
           </tbody>
         </table>
       </div>
-    </div>
+    <% else %>
+      <div style="padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; color: #64748b;">
+        <p style="margin: 0; font-size: 14px;">객관식 응답 데이터가 없습니다.</p>
+      </div>
+    <% end %>
+  </div>
 
+    <% if @responses.any? %>
     <!-- 수평선 -->
     <div style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>
 
@@ -83,8 +93,8 @@
         <div class="rp-feedback-column">
           <div class="rp-feedback-section">
             <div class="rp-section-header">
-              <h4>18개 문항 종합 피드백</h4>
-              <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback">
+              <h4><%= @responses.count %>개 문항 종합 피드백</h4>
+              <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback"<% unless @responses.any? %> disabled<% end %>>
                 AI 종합 피드백 생성
               </button>
             </div>
@@ -161,9 +171,5 @@
         </div>
       </div>
     </div>
-  <% else %>
-    <div class="rp-empty-state">
-      <p>이 학생의 객관식 문항 응답이 없습니다.</p>
-    </div>
-  <% end %>
+    <% end %>
 </div>

@@ -14,9 +14,11 @@ class Item < ApplicationRecord
 
   enum :item_type, { mcq: "mcq", constructed: "constructed" }
   enum :status, { draft: "draft", active: "active", retired: "retired" }
+  enum :difficulty, { very_low: "very_low", low: "low", medium: "medium", high: "high", very_high: "very_high" }
 
   validates :code, presence: true, uniqueness: true
   validates :item_type, presence: true, inclusion: { in: item_types.keys }
   validates :status, presence: true, inclusion: { in: statuses.keys }
+  validates :difficulty, presence: true, inclusion: { in: difficulties.keys }
   validates :prompt, presence: true
 end
