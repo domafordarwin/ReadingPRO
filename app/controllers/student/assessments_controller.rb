@@ -3,9 +3,15 @@ class Student::AssessmentsController < ApplicationController
   before_action -> { require_role("student") }
   before_action :set_student
   before_action :set_attempt, only: [:show]
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
 
   def create
-    form = Form.find(params[:form_id])
+    form = Form.find_by(id: params[:form_id])
+    unless form
+      redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
+      return
+    end
+
     @attempt = @student.attempts.build(
       form: form,
       status: :in_progress,
@@ -28,7 +34,12 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_response
-    attempt = @student.attempts.find(params[:attempt_id])
+    attempt = @student.attempts.find_by(id: params[:attempt_id])
+    unless attempt
+      render json: { success: false, error: "진단을 찾을 수 없습니다." }, status: :not_found
+      return
+    end
+
     response = attempt.responses.find_or_create_by(item_id: params[:item_id]) do |r|
       r.attempt = attempt
     end
@@ -43,7 +54,12 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def submit_attempt
-    attempt = @student.attempts.find(params[:attempt_id])
+    attempt = @student.attempts.find_by(id: params[:attempt_id])
+    unless attempt
+      render json: { success: false, error: "진단을 찾을 수 없습니다." }, status: :not_found
+      return
+    end
+
     attempt.update!(status: :completed, submitted_at: Time.current)
 
     # Score all MCQ responses
@@ -65,6 +81,13 @@ class Student::AssessmentsController < ApplicationController
   end
 
   def set_attempt
-    @attempt = @student.attempts.find(params[:id])
+    @attempt = @student.attempts.find_by(id: params[:id])
+    unless @attempt
+      redirect_to student_diagnostics_path, alert: "진단을 찾을 수 없습니다."
+    end
+  end
+
+  def handle_not_found
+    redirect_to student_diagnostics_path, alert: "요청한 리소스를 찾을 수 없습니다."
   end
 end
