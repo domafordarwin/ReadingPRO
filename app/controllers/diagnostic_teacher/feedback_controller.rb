@@ -531,7 +531,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   end
 
   def set_student
-    @student = Student.find(params[:student_id])
+    @student = Student.find_by(id: params[:student_id])
+    unless @student
+      redirect_to diagnostic_teacher_feedbacks_path, alert: "학생을 찾을 수 없습니다."
+    end
   end
 
   def set_response
