@@ -638,7 +638,18 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       end
     rescue StandardError => e
       Rails.logger.error("[optimize_prompt] Error: #{e.class} - #{e.message}")
-      render json: { success: false, error: "프롬프트 최적화 중 오류가 발생했습니다" }, status: :unprocessable_entity
+      Rails.logger.error("[optimize_prompt] Backtrace: #{e.backtrace.first(10).join("\n")}")
+
+      error_message = case e.class.name
+                      when 'Faraday::ClientError', 'Faraday::ServerError'
+                        "OpenAI API 연결 오류: #{e.message}"
+                      when 'OpenAI::APIError'
+                        "OpenAI API 오류: #{e.message}"
+                      else
+                        "프롬프트 최적화 중 오류: #{e.message}"
+                      end
+
+      render json: { success: false, error: error_message }, status: :unprocessable_entity
     end
   end
 
