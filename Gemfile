@@ -46,8 +46,11 @@ gem "kaminari"
 # PDF parsing for importing test items
 gem "pdf-reader"
 
-# Anthropic Claude API
-gem "anthropic"
+# OpenAI API (GPT models)
+gem "ruby-openai"
+
+# Anthropic Claude API (optional - keep for fallback if needed)
+# gem "anthropic"
 
 group :development, :test do
   # Load environment variables from .env file

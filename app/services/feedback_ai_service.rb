@@ -28,20 +28,23 @@ class FeedbackAiService
     prompt_text = build_feedback_prompt(item, selected_choice, response)
 
     begin
-      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
-      message = client.messages(
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 500,
-        messages: [
-          {
-            role: "user",
-            content: prompt_text
-          }
-        ]
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: prompt_text
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
+        }
       )
 
-      message.content[0].text
+      response.dig("choices", 0, "message", "content")
     rescue StandardError => e
       Rails.logger.error("AI Feedback Generation Error: #{e.message}")
       fallback_feedback(item, selected_choice)
@@ -72,20 +75,23 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
-      message = client.messages(
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 800,
-        messages: [
-          {
-            role: "user",
-            content: refinement_prompt
-          }
-        ]
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: refinement_prompt
+            }
+          ],
+          max_tokens: 800,
+          temperature: 0.7
+        }
       )
 
-      message.content[0].text
+      response.dig("choices", 0, "message", "content")
     rescue StandardError => e
       Rails.logger.error("AI Feedback Refinement Error: #{e.message}")
       "#{basic_feedback}\n\n[교사 추가 의견]\n#{user_prompt}"
@@ -96,7 +102,7 @@ class FeedbackAiService
     summary = build_comprehensive_summary(responses)
 
     begin
-      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
       prompt_text = <<~PROMPT
         학생이 객관식 18개 문항을 풀었습니다. 다음 정보를 바탕으로 학생의 전체 성능을 분석하고 종합 피드백을 작성해주세요.
@@ -111,18 +117,21 @@ class FeedbackAiService
         4. 격려적이고 건설적인 톤을 유지해주세요. (한글, 500-800자)
       PROMPT
 
-      message = client.messages(
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1000,
-        messages: [
-          {
-            role: "user",
-            content: prompt_text
-          }
-        ]
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: prompt_text
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7
+        }
       )
 
-      message.content[0].text
+      response.dig("choices", 0, "message", "content")
     rescue StandardError => e
       Rails.logger.error("AI Comprehensive Feedback Generation Error: #{e.message}")
       fallback_comprehensive_feedback(responses)
@@ -151,20 +160,23 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
-      message = client.messages(
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1200,
-        messages: [
-          {
-            role: "user",
-            content: refinement_prompt
-          }
-        ]
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: refinement_prompt
+            }
+          ],
+          max_tokens: 1200,
+          temperature: 0.7
+        }
       )
 
-      message.content[0].text
+      response.dig("choices", 0, "message", "content")
     rescue StandardError => e
       Rails.logger.error("AI Comprehensive Feedback Refinement Error: #{e.message}")
       # Fallback: 요약 정보와 사용자 지침을 함께 반환
@@ -189,20 +201,23 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = Anthropic::Client.new(api_key: ENV["ANTHROPIC_API_KEY"])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
-      message = client.messages(
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1200,
-        messages: [
-          {
-            role: "user",
-            content: refinement_prompt
-          }
-        ]
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: refinement_prompt
+            }
+          ],
+          max_tokens: 1200,
+          temperature: 0.7
+        }
       )
 
-      message.content[0].text
+      response.dig("choices", 0, "message", "content")
     rescue StandardError => e
       Rails.logger.error("AI Feedback Refinement with Existing Error: #{e.message}")
       # Fallback: 기존 피드백과 교사 요청을 함께 반환
@@ -216,80 +231,54 @@ class FeedbackAiService
     total = responses.length
     correct = responses.count { |r| r.selected_choice&.choice_score&.is_key }
     incorrect = total - correct
-    correct_percentage = total > 0 ? ((correct.to_f / total) * 100).round(1) : 0
-
-    by_difficulty = responses.group_by { |r| r.item.difficulty || '미지정' }
-      .transform_values do |items|
-        correct_count = items.count { |r| r.selected_choice&.choice_score&.is_key }
-        "#{correct_count}/#{items.length}"
-      end
+    correct_rate = total.zero? ? 0 : (correct.to_f / total * 100).round(1)
 
     summary = "- 총 문항: #{total}개\n"
-    summary += "- 정답: #{correct}개 (#{correct_percentage}%)\n"
-    summary += "- 오답: #{incorrect}개\n"
-    summary += "\n[난이도별 정답률]\n"
-    by_difficulty.each do |difficulty, count|
-      summary += "- #{difficulty}: #{count}\n"
+    summary += "- 정답: #{correct}개 (#{correct_rate}%)\n"
+    summary += "- 오답: #{incorrect}개\n\n"
+
+    # 난이도별 정답률
+    summary += "[난이도별 정답률]\n"
+    difficulty_stats = responses.group_by { |r| r.item.difficulty || '미지정' }
+    difficulty_stats.each do |difficulty, responses_by_difficulty|
+      correct_count = responses_by_difficulty.count { |r| r.selected_choice&.choice_score&.is_key }
+      total_count = responses_by_difficulty.length
+      summary += "- #{difficulty}: #{correct_count}/#{total_count}\n"
     end
 
     summary
   end
 
-  def fallback_comprehensive_feedback(responses)
-    summary = build_comprehensive_summary(responses)
-    "다음은 학생의 시험 결과 요약입니다:\n\n#{summary}\n\n자세한 분석을 위해 각 문항별 피드백을 참고해주세요."
-  end
-
   def build_feedback_prompt(item, selected_choice, response)
     correct_choice = item.item_choices.find(&:correct?)
-    is_correct = selected_choice&.correct?
 
-    prompt = <<~PROMPT
-      다음 시험 문항에 대해 학생의 답변을 분석하고 피드백을 생성해주세요.
+    <<~PROMPT
+      다음은 객관식 문항과 학생의 답변입니다. 학생의 답변을 분석하여 구체적이고 도움이 되는 피드백을 작성해주세요.
 
       [문항 정보]
-      - 난이도: #{item.difficulty || '미지정'}
-      - 유형: 객관식
+      문항: #{item.prompt}
+      정답: #{correct_choice&.choice_text || '정답 없음'} (선택지 #{correct_choice&.choice_no})
 
-      [문항 내용]
-      #{item.prompt}
+      [학생의 답변]
+      학생답: #{selected_choice&.choice_text || '답변 없음'} (선택지 #{selected_choice&.choice_no || 'N/A'})
+      정답 여부: #{response.is_correct? ? '정답' : '오답'}
 
-      [선택지]
-      #{item.item_choices.map { |c| "#{c.choice_letter}. #{c.choice_text}" }.join("\n")}
-
-      [학생 응답]
-      #{selected_choice&.choice_text || '응답 없음'}
-
-      [정답]
-      #{correct_choice&.choice_text}
-
-      [문항 해설]
-      #{item.explanation || '해설 없음'}
-
-      [요청사항]
-      1. 학생이 정답을 #{is_correct ? '정확히 선택했는지' : '틀렸는지'} 먼저 평가해주세요.
-      2. 그 이유를 간단명료하게 설명해주세요. (한글, 3-5문장)
-      3. 학생이 더 나은 답변을 위해 개선할 수 있는 부분을 제시해주세요.
-      4. 격려적이고 긍정적인 톤을 유지해주세요.
+      [피드백 작성 요청]
+      - 학생의 답변을 분석해주세요
+      - 왜 그 답을 선택했는지에 대한 추측적 분석을 제시해주세요
+      - 올바른 답과 그 이유를 명확히 설명해주세요
+      - 학생이 이해할 수 있도록 친절하고 격려적인 톤으로 작성해주세요
+      - 한글로 100-150자 정도의 길이로 작성해주세요
     PROMPT
-
-    prompt
   end
 
   def fallback_feedback(item, selected_choice)
     correct_choice = item.item_choices.find(&:correct?)
-    is_correct = selected_choice&.correct?
+    "정답은 '#{correct_choice&.choice_text}' 입니다. 문항을 다시 읽어보고 답을 재검토해보세요."
+  end
 
-    feedback = "이 문항은 #{item.prompt.truncate(50)}에 관한 문제입니다.\n\n"
-
-    if is_correct
-      feedback += "✓ 정답입니다! 좋은 선택입니다."
-    else
-      feedback += "✗ 틀린 답변입니다.\n"
-      feedback += "정답: #{correct_choice&.choice_text}\n"
-      feedback += "해설: #{item.explanation&.truncate(200) || '해설 없음'}"
-    end
-
-    feedback
+  def fallback_comprehensive_feedback(responses)
+    summary = build_comprehensive_summary(responses)
+    "#{summary}\n\n학생의 강점과 개선 영역을 파악하고, 향후 학습 계획을 수립하는 것이 중요합니다."
   end
 end
