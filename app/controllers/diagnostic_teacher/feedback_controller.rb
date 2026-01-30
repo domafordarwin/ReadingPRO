@@ -273,13 +273,9 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def generate_comprehensive
     # 전체 18개 문항 기반 종합 피드백 생성
     student = Student.find(params[:student_id])
-    responses = student.attempts
-      .joins(:responses)
-      .joins("INNER JOIN items ON responses.item_id = items.id")
-      .where("items.item_type = ?", Item.item_types[:mcq])
-      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
-      .sort_by(&:created_at)
-      .uniq { |r| r.id }
+    responses = student.attempts.flat_map do |attempt|
+      attempt.responses.select { |r| r.item&.mcq? }
+    end.sort_by(&:created_at)
 
     # 종합 피드백 생성
     custom_prompt = params[:prompt]
@@ -341,13 +337,9 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     end
 
     # 종합 피드백 정교화
-    responses = student.attempts
-      .joins(:responses)
-      .joins("INNER JOIN items ON responses.item_id = items.id")
-      .where("items.item_type = ?", Item.item_types[:mcq])
-      .flat_map { |attempt| attempt.responses.select { |r| r.item&.mcq? } }
-      .sort_by(&:created_at)
-      .uniq { |r| r.id }
+    responses = student.attempts.flat_map do |attempt|
+      attempt.responses.select { |r| r.item&.mcq? }
+    end.sort_by(&:created_at)
 
     refined_feedback = FeedbackAiService.refine_comprehensive_feedback(responses, prompt)
 
