@@ -1153,11 +1153,14 @@
 
       if (saveFeedbackBtn) {
         saveFeedbackBtn.addEventListener('click', () => {
+          console.log('[Save Button Clicked] currentComprehensiveFeedback:', this.currentComprehensiveFeedback);
           // 저장된 피드백 텍스트를 사용하여 저장
           if (this.currentComprehensiveFeedback) {
+            console.log('[Save Button] Setting textarea value and calling save');
             document.getElementById('comprehensive-feedback-textarea').value = this.currentComprehensiveFeedback;
             this.saveComprehensiveFeedback();
           } else {
+            console.warn('[Save Button] No feedback to save');
             alert('저장할 피드백이 없습니다');
           }
         });
@@ -1416,6 +1419,7 @@
 
           // 피드백 텍스트 저장
           this.currentComprehensiveFeedback = data.feedback;
+          console.log('[Generate Feedback] currentComprehensiveFeedback set:', this.currentComprehensiveFeedback.substring(0, 50) + '...');
 
           displayArea.innerHTML = `
             <div class="rp-feedback-item rp-feedback-item--ai">
@@ -1580,6 +1584,7 @@
 
           // 피드백 텍스트 저장
           this.currentComprehensiveFeedback = data.feedback;
+          console.log('[Refine Feedback] currentComprehensiveFeedback set:', this.currentComprehensiveFeedback.substring(0, 50) + '...');
 
           displayArea.innerHTML = `
             <div class="rp-feedback-item rp-feedback-item--teacher">
