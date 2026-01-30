@@ -12,34 +12,10 @@ class Student::DashboardController < ApplicationController
   def diagnostics
     @current_page = "start_diagnosis"
 
-    unless @student
-      redirect_to student_dashboard_path, alert: "학생 정보를 찾을 수 없습니다."
-      return
-    end
-
-    begin
-      # 모든 활성화된 형식 조회
-      @available_forms = Form.where(status: :active)
-        .includes(:items)
-        .order(created_at: :desc)
-
-      # 현재 학생의 진행 중인 시도 조회
-      @in_progress_attempts = @student.attempts
-        .where(status: :in_progress)
-        .includes(:form)
-        .order(updated_at: :desc)
-
-      # 현재 학생의 완료된 시도 조회
-      @completed_attempts = @student.attempts
-        .where(status: :completed)
-        .includes(:form, :report)
-        .order(created_at: :desc)
-    rescue StandardError => e
-      Rails.logger.error("Diagnostics error: #{e.message}\n#{e.backtrace.join("\n")}")
-      @available_forms = []
-      @in_progress_attempts = []
-      @completed_attempts = []
-    end
+    # 임시로 빈 배열로 설정
+    @available_forms = []
+    @in_progress_attempts = []
+    @completed_attempts = []
   end
 
   def reports
