@@ -7,7 +7,7 @@ class DiagnosticForm < ApplicationRecord
   has_many :items, through: :diagnostic_form_items
   has_many :student_attempts, dependent: :destroy
 
-  enum status: { draft: 'draft', active: 'active', archived: 'archived' }
+  enum :status, { draft: 'draft', active: 'active', archived: 'archived' }
 
   validates :name, presence: true
 end

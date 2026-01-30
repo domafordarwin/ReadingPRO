@@ -9,9 +9,9 @@ class Item < ApplicationRecord
   has_many :diagnostic_form_items, dependent: :destroy
   has_many :responses, dependent: :destroy
 
-  enum item_type: { mcq: 'mcq', constructed: 'constructed' }
-  enum difficulty: { easy: 'easy', medium: 'medium', hard: 'hard' }
-  enum status: { draft: 'draft', active: 'active', archived: 'archived' }
+  enum :item_type, { mcq: 'mcq', constructed: 'constructed' }
+  enum :difficulty, { easy: 'easy', medium: 'medium', hard: 'hard' }
+  enum :status, { draft: 'draft', active: 'active', archived: 'archived' }
 
   validates :code, presence: true, uniqueness: true
   validates :item_type, presence: true

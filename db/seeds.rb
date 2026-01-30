@@ -1,53 +1,181 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+# frozen_string_literal: true
 
-puts "Seeding evaluation indicators..."
+puts "Seeding ReadingPRO database..."
 
-# 평가 지표 (대분류)
-indicators = [
-  { name: "이해력", description: "글의 내용을 정확히 파악하고 추론하는 능력" },
-  { name: "의사소통능력", description: "글을 통해 생각을 표현하고 다른 사람과 상호 작용하는 능력" },
-  { name: "심미적감수성", description: "문학 작품 등을 감상하며 아름다움이나 의미를 느끼고 공감하는 능력" }
-]
+# Create Admin User
+admin_user = User.find_or_create_by!(email: 'admin@readingpro.com') do |user|
+  user.password = 'Admin@123456'
+  user.password_confirmation = 'Admin@123456'
+  user.role = :admin
+end
 
-indicators.each do |attrs|
-  EvaluationIndicator.find_or_create_by!(name: attrs[:name]) do |indicator|
-    indicator.description = attrs[:description]
+# Create Researcher User (Teacher role)
+researcher_user = User.find_or_create_by!(email: 'researcher@shinmyung.edu') do |user|
+  user.password = 'Researcher@123456'
+  user.password_confirmation = 'Researcher@123456'
+  user.role = :teacher
+end
+
+# Create Schools
+school = School.find_or_create_by!(name: '신명중학교') do |s|
+  s.region = '경기도'
+  s.district = '용인시'
+end
+
+# Create Teacher record
+teacher = Teacher.find_or_create_by!(user: researcher_user) do |t|
+  t.school = school
+  t.name = '연구원'
+  t.department = 'Research'
+  t.position = 'Researcher'
+end
+
+puts "Creating sample reading stimuli..."
+
+# Create Sample Reading Stimuli
+10.times do |i|
+  ReadingStimulus.find_or_create_by!(title: "샘플 지문 #{i + 1}") do |stimulus|
+    stimulus.body = "이것은 샘플 읽기 지문입니다. 이 지문은 학생들의 독해 능력을 평가하기 위해 설계되었습니다. " * 3
+    stimulus.source = "교과서 #{i + 1}"
+    stimulus.word_count = 250
+    stimulus.reading_level = ['easy', 'medium', 'hard'].sample
+    stimulus.created_by = teacher
   end
 end
 
-puts "Seeding sub indicators..."
+puts "Creating sample items..."
 
-# 하위 지표
-sub_indicators_data = {
-  "이해력" => [
-    { name: "사실적이해", description: "글에 명시된 정보를 있는 그대로 이해" },
-    { name: "추론적이해", description: "글에 나타나지 않은 내용을 근거를 통해 추론" },
-    { name: "비판적이해", description: "글의 내용 및 논리를 평가하고 판단" }
-  ],
-  "의사소통능력" => [
-    { name: "표현과전달능력", description: "자신의 이해 내용을 말이나 글로 정확히 표현" },
-    { name: "사회적상호작용", description: "읽은 내용을 바탕으로 타인과 소통하고 협력" },
-    { name: "창의적문제해결", description: "텍스트의 내용을 응용하거나 새로운 해결책을 찾는 능력" }
-  ],
-  "심미적감수성" => [
-    { name: "문학적표현", description: "작가의 표현 기법과 언어의 아름다움에 대한 이해" },
-    { name: "정서적공감", description: "등장인물의 감정이나 심리에 공감하는 능력" },
-    { name: "문학적가치", description: "작품이 담고 있는 주제의식이나 교훈을 파악하는 능력" }
-  ]
-}
+# Create Sample Items (Questions)
+stimuli = ReadingStimulus.all
+20.times do |i|
+  item = Item.find_or_create_by!(code: "ITEM_#{i + 1:03d}") do |it|
+    it.item_type = i % 2 == 0 ? :mcq : :constructed
+    it.difficulty = ['easy', 'medium', 'hard'].sample
+    it.category = ['어휘', '문법', '읽기', '추론'].sample
+    it.tags = ['기본', '심화'].sample(rand(1..2))
+    it.prompt = "문제 #{i + 1}: 위 지문에서 다음 질문에 답하세요."
+    it.explanation = "해설: 이것은 문제 #{i + 1}의 설명입니다."
+    it.stimulus = stimuli.sample
+    it.status = :active
+    it.created_by = teacher
+  end
 
-sub_indicators_data.each do |indicator_name, subs|
-  indicator = EvaluationIndicator.find_by!(name: indicator_name)
-  subs.each do |attrs|
-    SubIndicator.find_or_create_by!(evaluation_indicator: indicator, name: attrs[:name]) do |sub|
-      sub.description = attrs[:description]
+  # Add choices for MCQ items
+  if item.mcq? && item.item_choices.empty?
+    4.times do |j|
+      ItemChoice.create!(
+        item: item,
+        choice_no: j + 1,
+        content: "선택지 #{j + 1}",
+        is_correct: j == 0
+      )
+    end
+  end
+
+  # Add rubric for constructed response items
+  if item.constructed? && item.rubric.nil?
+    rubric = Rubric.create!(
+      item: item,
+      name: "채점 기준 #{i + 1}",
+      description: "구성형 응답의 채점 기준"
+    )
+
+    # Add criteria
+    criterion = RubricCriterion.create!(
+      rubric: rubric,
+      criterion_name: "내용",
+      description: "답변의 정확성과 완전성",
+      max_score: 4
+    )
+
+    # Add levels (0-4)
+    (0..4).each do |level|
+      RubricLevel.find_or_create_by!(rubric_criterion: criterion, level: level) do |rl|
+        rl.score = level
+        rl.description = "레벨 #{level}"
+      end
     end
   end
 end
 
-puts "Seeding reader types..."
+puts "Creating diagnostic form..."
+
+# Create Diagnostic Form
+diagnostic_form = DiagnosticForm.find_or_create_by!(name: '2025 중등 읽기 진단') do |df|
+  df.description = '중학교 학생의 읽기 능력을 진단하는 평가'
+  df.item_count = 15
+  df.time_limit_minutes = 60
+  df.difficulty_distribution = { easy: 3, medium: 5, hard: 2 }
+  df.status = :active
+  df.created_by = teacher
+end
+
+# Assign items to diagnostic form
+if diagnostic_form.diagnostic_form_items.empty?
+  Item.limit(15).each_with_index do |item, index|
+    DiagnosticFormItem.create!(
+      diagnostic_form: diagnostic_form,
+      item: item,
+      position: index + 1,
+      points: 1
+    )
+  end
+end
+
+puts "Creating sample students..."
+
+# Create Sample Students
+5.times do |i|
+  student_user = User.find_or_create_by!(email: "student_#{i + 1}@shinmyung.edu") do |user|
+    user.password = 'Student@123456'
+    user.password_confirmation = 'Student@123456'
+    user.role = :student
+  end
+
+  student = Student.find_or_create_by!(user: student_user) do |s|
+    s.school = school
+    s.student_number = "2024#{i + 1:03d}"
+    s.name = "학생_#{i + 1}"
+    s.grade = 2
+    s.class_name = 'A'
+  end
+
+  # Create student portfolio
+  StudentPortfolio.find_or_create_by!(student: student) do |sp|
+    sp.total_attempts = 0
+    sp.total_score = 0
+    sp.average_score = 0
+  end
+end
+
+# Create School Portfolio
+SchoolPortfolio.find_or_create_by!(school: school) do |sp|
+  sp.total_students = 5
+  sp.total_attempts = 0
+  sp.average_score = 0
+end
+
+puts "Creating announcements..."
+
+# Create Sample Announcements
+3.times do |i|
+  Announcement.find_or_create_by!(title: "공지사항 #{i + 1}") do |ann|
+    ann.content = "이것은 공지사항 #{i + 1}입니다."
+    ann.priority = ['low', 'medium', 'high'].sample
+    ann.published_by = teacher
+    ann.published_at = Time.current
+  end
+end
+
+puts ""
+puts "=== Seed Data Created Successfully ==="
+puts "✅ Admin User: admin@readingpro.com"
+puts "✅ Teacher (Researcher): researcher@shinmyung.edu"
+puts "✅ School: 신명중학교"
+puts "✅ Sample Items: 20"
+puts "✅ Diagnostic Form: 2025 중등 읽기 진단 (15 items)"
+puts "✅ Sample Students: 5"
+puts "✅ Announcements: 3"
 
 # 독자 유형
 reader_types = [

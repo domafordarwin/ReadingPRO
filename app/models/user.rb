@@ -3,7 +3,7 @@
 class User < ApplicationRecord
   has_secure_password
 
-  enum role: { student: 'student', teacher: 'teacher', researcher: 'researcher', admin: 'admin', parent: 'parent' }
+  enum :role, { student: 'student', teacher: 'teacher', researcher: 'researcher', admin: 'admin', parent: 'parent' }
 
   has_one :student, dependent: :destroy
   has_one :teacher, dependent: :destroy

@@ -7,7 +7,7 @@ class StudentAttempt < ApplicationRecord
   has_many :responses, dependent: :destroy
   has_one :attempt_report, dependent: :destroy
 
-  enum status: { in_progress: 'in_progress', completed: 'completed', submitted: 'submitted' }
+  enum :status, { in_progress: 'in_progress', completed: 'completed', submitted: 'submitted' }
 
   validates :started_at, presence: true
 end
