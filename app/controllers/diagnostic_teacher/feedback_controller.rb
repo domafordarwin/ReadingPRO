@@ -30,7 +30,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @search_query = params[:search].to_s.strip
     if @search_query.present?
       student_responses_map.select! do |student_id, _responses|
-        Student.find(student_id).name.downcase.include?(@search_query.downcase)
+        student = Student.find_by(id: student_id)
+        student&.name&.downcase&.include?(@search_query.downcase)
       end
     end
 
@@ -220,7 +221,11 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   end
 
   def prompt_histories
-    @response = Response.find(params[:response_id])
+    @response = Response.find_by(id: params[:response_id])
+    unless @response
+      return render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
+    end
+
     @histories = @response.feedback_prompt_histories.recent
 
     render json: {
@@ -233,11 +238,19 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         }
       }
     }
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   def load_prompt_history
-    history = FeedbackPromptHistory.find(params[:history_id])
+    history = FeedbackPromptHistory.find_by(id: params[:history_id])
+    unless history
+      return render json: { success: false, error: "이력을 찾을 수 없습니다" }, status: :not_found
+    end
+
     render json: { prompt: history.feedback_prompt.prompt_text }
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   def generate_constructed_feedback
@@ -304,7 +317,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def update_answer
     # 학생의 정답 수정
-    response = Response.find(params[:response_id])
+    response = Response.find_by(id: params[:response_id])
+    unless response
+      return render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
+    end
 
     # selected_choice_id 또는 selected_choice_no 받기
     selected_choice_id = params[:selected_choice_id]
@@ -358,7 +374,11 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def update_feedback
     # 피드백 편집 (교사 피드백 생성/업데이트)
-    response = Response.find(params[:response_id])
+    response = Response.find_by(id: params[:response_id])
+    unless response
+      return render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
+    end
+
     feedback_text = params[:feedback]
 
     return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
@@ -382,7 +402,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def generate_all_feedbacks
     # 전체 피드백 일괄 생성
-    student = Student.find(params[:student_id])
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
 
     # AI 피드백이 없는 응답만 필터링
     responses = student.attempts.flat_map(&:responses)
@@ -412,8 +435,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       total: responses.count,
       errors: errors
     }
-  rescue ActiveRecord::RecordNotFound
-    render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   def prompt_templates
@@ -427,7 +450,11 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def generate_comprehensive
     # 전체 18개 문항 기반 종합 피드백 생성
-    student = Student.find(params[:student_id])
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
     responses = student.attempts.flat_map do |attempt|
       attempt.responses.select { |r| r.item&.mcq? }
     end.sort_by(&:created_at)
@@ -468,7 +495,11 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
   def save_comprehensive
     # 종합 피드백 저장
-    student = Student.find(params[:student_id])
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
     feedback_text = params[:feedback]
 
     return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
@@ -480,13 +511,17 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     end
 
     render json: { success: true, feedback: feedback_text, message: "피드백이 저장되었습니다" }
-  rescue ActiveRecord::RecordNotFound
-    render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
   def refine_comprehensive
     # 사용자 정의 프롬프트로 종합 피드백 정교화
-    student = Student.find(params[:student_id])
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
     prompt = params[:prompt]
 
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
@@ -534,11 +569,16 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @student = Student.find_by(id: params[:student_id])
     unless @student
       redirect_to diagnostic_teacher_feedbacks_path, alert: "학생을 찾을 수 없습니다."
+      return
     end
   end
 
   def set_response
-    @response = Response.find(params[:response_id])
+    @response = Response.find_by(id: params[:response_id])
+    unless @response
+      render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
+      return
+    end
   end
 
   def generate_ai_feedback(response)
