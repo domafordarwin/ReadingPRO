@@ -570,8 +570,8 @@
 </div>
 
 <script>
-  const attemptItems = <%= j(@attempt_items.to_json(only: [:id], include: { item: { only: [:id, :item_type, :prompt, :stimulus_id], include: { stimulus: { only: [:body] }, item_choices: { only: [:id, :choice_no, :content] } } } })) %>;
-  const responses = <%= j(@responses.to_json(only: [:item_id, :selected_choice_id, :answer_text])) %>;
+  const attemptItems = <%= @attempt_items_json.to_json.html_safe %>;
+  const responses = <%= @responses_json.to_json.html_safe %>;
   const timeLimitMinutes = <%= @attempt.time_limit_minutes.present? ? @attempt.time_limit_minutes : 'null' %>;
   const attemptStartedAt = new Date('<%= @attempt.created_at.iso8601 %>');
 
