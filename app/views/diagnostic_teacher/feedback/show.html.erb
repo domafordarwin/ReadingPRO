@@ -50,13 +50,13 @@
     <!-- 정답과 학생답 요약 (테이블 형식) -->
     <% if @responses.any? %>
       <div style="margin-bottom: 16px; overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <table style="border-collapse: collapse; font-size: 12px; table-layout: fixed;">
           <tbody>
             <!-- 문항번호 행 -->
             <tr>
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; width: 60px;">문항</th>
               <% @responses.each_with_index do |response, index| %>
-                <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; min-width: 50px;">
+                <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; width: 50px;">
                   <%= index + 1 %>
                 </th>
               <% end %>
@@ -87,14 +87,14 @@
             <tr>
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">수정답</th>
               <% @responses.each_with_index do |response, index| %>
-                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; width: 50px;">
                   <input type="number"
                          class="rp-edit-answer-input"
                          data-response-id="<%= response.id %>"
                          data-item-index="<%= index %>"
                          min="1"
                          max="5"
-                         style="width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace;">
+                         style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace; box-sizing: border-box;">
                 </td>
               <% end %>
             </tr>
@@ -767,6 +767,7 @@
 <script>
   class FeedbackPage {
     constructor() {
+      this.currentComprehensiveFeedback = null;
       this.init();
     }
 
@@ -1152,11 +1153,12 @@
 
       if (saveFeedbackBtn) {
         saveFeedbackBtn.addEventListener('click', () => {
-          // 현재 표시된 피드백 텍스트를 가져와서 저장
-          const feedbackText = document.querySelector('.rp-comprehensive-feedback .rp-feedback-display .rp-feedback-text')?.textContent || '';
-          if (feedbackText) {
-            document.getElementById('comprehensive-feedback-textarea').value = feedbackText;
+          // 저장된 피드백 텍스트를 사용하여 저장
+          if (this.currentComprehensiveFeedback) {
+            document.getElementById('comprehensive-feedback-textarea').value = this.currentComprehensiveFeedback;
             this.saveComprehensiveFeedback();
+          } else {
+            alert('저장할 피드백이 없습니다');
           }
         });
       }
@@ -1412,6 +1414,9 @@
             hour: '2-digit', minute: '2-digit'
           });
 
+          // 피드백 텍스트 저장
+          this.currentComprehensiveFeedback = data.feedback;
+
           displayArea.innerHTML = `
             <div class="rp-feedback-item rp-feedback-item--ai">
               <span class="rp-badge rp-badge--info">AI 종합</span>
@@ -1559,6 +1564,9 @@
             year: 'numeric', month: '2-digit', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
           });
+
+          // 피드백 텍스트 저장
+          this.currentComprehensiveFeedback = data.feedback;
 
           displayArea.innerHTML = `
             <div class="rp-feedback-item rp-feedback-item--teacher">
