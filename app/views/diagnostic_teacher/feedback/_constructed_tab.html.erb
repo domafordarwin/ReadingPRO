@@ -42,13 +42,13 @@
                 <%= criterion.name %>
               </div>
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
-                <% criterion.rubric_levels.sort_by(&:point).each do |level| %>
+                <% criterion.rubric_levels.sort_by(&:level_score).each do |level| %>
                   <div style="padding: 6px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-size: 11px;">
                     <div style="font-weight: 600; color: #2f5bff;">
-                      <%= level.point %>점
+                      <%= level.level_score %>점
                     </div>
                     <div style="color: #64748b; margin-top: 2px; line-height: 1.3;">
-                      <%= truncate(level.description, length: 30) %>
+                      <%= truncate(level.descriptor, length: 30) %>
                     </div>
                   </div>
                 <% end %>
@@ -90,7 +90,7 @@
                         <%= score.rubric_criterion.name %>
                       </div>
                       <div style="font-size: 12px; font-weight: 700; color: #2f5bff;">
-                        <%= score.level %> / <%= score.rubric_criterion.rubric_levels.maximum(:point) %>
+                        <%= score.level %> / <%= score.rubric_criterion.rubric_levels.maximum(:level_score) %>
                       </div>
                     </div>
                   <% end %>

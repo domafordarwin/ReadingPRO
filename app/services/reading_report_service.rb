@@ -162,7 +162,7 @@ class ReadingReportService
 
       total_score = rubric_scores.sum(&:level)
       max_score = rubric_scores.sum { |score|
-        max_point = score.rubric_criterion&.rubric_levels&.maximum(:point)
+        max_point = score.rubric_criterion&.rubric_levels&.maximum(:level_score)
         max_point || 0
       }
 
