@@ -56,7 +56,9 @@
       "Bash(dir \"C:\\\\WorkSpace\\\\Project\\\\2026_project\\\\ReadingPro_Railway\\\\raw_Data\\\\신명중 워드\" /b)",
       "Bash(pkill:*)",
       "Bash(railway logs:*)",
-      "Bash(bin/rails dbconsole:*)"
+      "Bash(bin/rails dbconsole:*)",
+      "Bash(rails db:migrate:*)",
+      "Bash(rails db:migrate:status:*)"
     ]
   }
 }
