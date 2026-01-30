@@ -54,7 +54,8 @@
       "Bash(python3 -m pip install:*)",
       "Bash(python3:*)",
       "Bash(dir \"C:\\\\WorkSpace\\\\Project\\\\2026_project\\\\ReadingPro_Railway\\\\raw_Data\\\\신명중 워드\" /b)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(railway logs:*)"
     ]
   }
 }

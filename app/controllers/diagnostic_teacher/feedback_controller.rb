@@ -240,6 +240,37 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: { prompt: history.feedback_prompt.prompt_text }
   end
 
+  def generate_constructed_feedback
+    # 서술형 응답에 대한 AI 피드백 생성
+    response = Response.find(params[:response_id])
+
+    begin
+      # ReadingReportService를 통해 피드백 생성
+      service = ReadingReportService.new(response.attempt.student)
+      feedback_text = service.generate_constructed_response_feedback(response)
+
+      # ResponseFeedback 저장
+      response_feedback = response.response_feedbacks.create!(
+        feedback: feedback_text,
+        source: 'ai',
+        created_by: current_user
+      )
+
+      render json: {
+        success: true,
+        feedback: feedback_text,
+        source: 'ai',
+        created_at: response_feedback.created_at.strftime("%Y-%m-%d %H:%M")
+      }
+    rescue => e
+      Rails.logger.error("[generate_constructed_feedback] Error: #{e.message}")
+      render json: {
+        success: false,
+        error: "피드백 생성 중 오류가 발생했습니다: #{e.message}"
+      }, status: :unprocessable_entity
+    end
+  end
+
   def update_answer
     # 학생의 정답 수정
     response = Response.find(params[:response_id])

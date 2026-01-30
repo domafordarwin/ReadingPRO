@@ -283,12 +283,14 @@
     constructor() {
       this.currentTab = 'mcq';
       this.currentNestedTab = { tendency: 'diagnosis' };
+      this.currentConstructedResponse = null;
       this.init();
     }
 
     init() {
       this.bindMainTabButtons();
       this.bindNestedTabButtons();
+      this.bindAnswerTabButtons();
     }
 
     bindMainTabButtons() {
@@ -307,6 +309,15 @@
           const parentTab = parentPane.dataset.tab;
           const nestedTabName = btn.dataset.nestedTab;
           this.showNestedTab(parentTab, nestedTabName);
+        });
+      });
+    }
+
+    bindAnswerTabButtons() {
+      document.querySelectorAll('.rp-answer-tab-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const responseId = btn.dataset.answerId;
+          this.showAnswerTab(responseId);
         });
       });
     }
@@ -357,6 +368,50 @@
 
       this.currentNestedTab[parentTab] = nestedTabName;
     }
+
+    showAnswerTab(responseId) {
+      const constructedTab = document.querySelector('.rp-tab-pane[data-tab="constructed"]');
+      if (!constructedTab) return;
+
+      // 모든 답변 콘텐츠 pane 숨기기
+      constructedTab.querySelectorAll('.rp-answer-content-pane').forEach(pane => {
+        pane.style.display = 'none';
+        pane.classList.remove('active');
+      });
+
+      // 모든 탭 버튼 비활성화
+      constructedTab.querySelectorAll('.rp-answer-tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // 선택된 콘텐츠 표시
+      const selectedPane = constructedTab.querySelector(`.rp-answer-content-pane[data-answer-id="${responseId}"]`);
+      if (selectedPane) {
+        selectedPane.style.display = 'block';
+        selectedPane.classList.add('active');
+      }
+
+      // 선택된 탭 버튼 활성화
+      const selectedBtn = constructedTab.querySelector(`.rp-answer-tab-button[data-answer-id="${responseId}"]`);
+      if (selectedBtn) {
+        selectedBtn.classList.add('active');
+      }
+
+      // 피드백 섹션 업데이트
+      this.updateConstructedFeedbackSection(responseId);
+      this.currentConstructedResponse = responseId;
+    }
+
+    updateConstructedFeedbackSection(responseId) {
+      const constructedTab = document.querySelector('.rp-tab-pane[data-tab="constructed"]');
+      if (!constructedTab) return;
+
+      // 피드백 생성 버튼 업데이트
+      const feedbackBtn = constructedTab.querySelector('.rp-generate-constructed-feedback');
+      if (feedbackBtn) {
+        feedbackBtn.dataset.responseId = responseId;
+      }
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -379,6 +434,7 @@
         this.bindComprehensiveFeedbackEdit();
         this.bindPromptRefinement();
         this.bindCorrectCount();
+        this.bindConstructedFeedbackGeneration();
       }
 
       bindComprehensiveGeneration() {
@@ -414,6 +470,15 @@
         if (applyBtn) {
           applyBtn.addEventListener('click', () => this.applyCustomPromptToFeedback());
         }
+      }
+
+      bindConstructedFeedbackGeneration() {
+        document.querySelectorAll('.rp-generate-constructed-feedback').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const responseId = e.target.dataset.responseId;
+            this.generateConstructedFeedback(responseId);
+          });
+        });
       }
 
       bindCorrectCount() {
@@ -458,6 +523,51 @@
         .catch(err => {
           this.showToast('오류 발생', 'error');
           console.error(err);
+        })
+        .finally(() => {
+          btn.disabled = false;
+        });
+      }
+
+      generateConstructedFeedback(responseId) {
+        const constructedTab = document.querySelector('.rp-tab-pane[data-tab="constructed"]');
+        const btn = constructedTab.querySelector('.rp-generate-constructed-feedback');
+        const feedbackDisplay = constructedTab.querySelector('.rp-feedback-display');
+
+        btn.disabled = true;
+        btn.textContent = '생성 중...';
+
+        fetch(`/diagnostic_teacher/feedbacks/${responseId}/generate_constructed`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          }
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            // 피드백 표시 업데이트
+            feedbackDisplay.innerHTML = `
+              <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
+                ${this.escapeHtml(data.feedback)}
+              </div>
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+                ✓ AI 피드백 • ${new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </div>
+            `;
+
+            this.showToast('✅ AI 피드백이 생성되었습니다', 'success');
+            btn.textContent = 'AI 피드백 재생성';
+          } else {
+            this.showToast('❌ ' + (data.error || '피드백 생성 실패'), 'error');
+            btn.textContent = 'AI 피드백 생성';
+          }
+        })
+        .catch(err => {
+          this.showToast('❌ 오류 발생', 'error');
+          console.error(err);
+          btn.textContent = 'AI 피드백 생성';
         })
         .finally(() => {
           btn.disabled = false;

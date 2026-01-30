@@ -64,40 +64,42 @@
         <div class="rp-constructed-answers-section">
           <div class="rp-constructed-answer-tabs">
             <% @constructed_responses.each_with_index do |response, idx| %>
-              <button class="rp-answer-tab-button <%= 'active' if idx == 0 %>" data-answer-id="<%= response.id %>">
+              <button class="rp-answer-tab-button <%= 'active' if idx == 0 %>" data-answer-id="<%= response.id %>" data-response-index="<%= idx %>">
                 문항 <%= idx + 1 %>
               </button>
             <% end %>
           </div>
 
           <div class="rp-answer-display-area" style="padding: 16px;">
-            <% @constructed_responses.first&.tap do |response| %>
-              <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #0f172a;">학생 답변</h4>
+            <% @constructed_responses.each_with_index do |response, idx| %>
+              <div class="rp-answer-content-pane <%= 'active' if idx == 0 %>" data-answer-id="<%= response.id %>" style="<%= 'display: none;' unless idx == 0 %>">
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #0f172a;">학생 답변</h4>
 
-              <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
-                <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap; min-height: 60px;">
-                  <%= response.answer_text || "(답변 없음)" %>
-                </div>
-              </div>
-
-              <h4 style="margin: 12px 0 8px 0; font-size: 13px; font-weight: 600; color: #0f172a;">채점 결과</h4>
-
-              <div class="rp-rubric-scores-display" style="background: #f0f9ff; padding: 12px; border-radius: 8px; border-left: 3px solid #0ea5e9;">
-                <% response.response_rubric_scores.each do |score| %>
-                  <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0f2fe;">
-                    <div style="font-size: 12px; color: #1e293b; font-weight: 600;">
-                      <%= score.rubric_criterion.name %>
-                    </div>
-                    <div style="font-size: 12px; font-weight: 700; color: #2f5bff;">
-                      <%= score.level %> / <%= score.rubric_criterion.rubric_levels.maximum(:point) %>
-                    </div>
+                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+                  <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap; min-height: 60px;">
+                    <%= response.answer_text || "(답변 없음)" %>
                   </div>
-                <% end %>
+                </div>
 
-                <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 0; margin-top: 8px; font-weight: 700; border-top: 2px solid #0ea5e9;">
-                  <div style="font-size: 13px; color: #0f172a;">총점</div>
-                  <div style="font-size: 14px; color: #2f5bff;">
-                    <%= response.response_rubric_scores.sum(&:level) %> 점
+                <h4 style="margin: 12px 0 8px 0; font-size: 13px; font-weight: 600; color: #0f172a;">채점 결과</h4>
+
+                <div class="rp-rubric-scores-display" style="background: #f0f9ff; padding: 12px; border-radius: 8px; border-left: 3px solid #0ea5e9;">
+                  <% response.response_rubric_scores.each do |score| %>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0f2fe;">
+                      <div style="font-size: 12px; color: #1e293b; font-weight: 600;">
+                        <%= score.rubric_criterion.name %>
+                      </div>
+                      <div style="font-size: 12px; font-weight: 700; color: #2f5bff;">
+                        <%= score.level %> / <%= score.rubric_criterion.rubric_levels.maximum(:point) %>
+                      </div>
+                    </div>
+                  <% end %>
+
+                  <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 0; margin-top: 8px; font-weight: 700; border-top: 2px solid #0ea5e9;">
+                    <div style="font-size: 13px; color: #0f172a;">총점</div>
+                    <div style="font-size: 14px; color: #2f5bff;">
+                      <%= response.response_rubric_scores.sum(&:level) %> 점
+                    </div>
                   </div>
                 </div>
               </div>
@@ -110,13 +112,23 @@
           <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #0f172a;">피드백</h3>
 
           <div class="rp-feedback-display" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; min-height: 100px; overflow-y: auto;">
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-              피드백이 아직 생성되지 않았습니다. 버튼을 클릭하여 생성하세요.
-            </p>
+            <% first_feedback = @constructed_responses.first&.response_feedbacks&.first %>
+            <% if first_feedback %>
+              <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
+                <%= simple_format(first_feedback.feedback) %>
+              </div>
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+                <%= first_feedback.source == 'ai' ? '✓ AI 피드백' : '✓ 교사 피드백' %> • <%= first_feedback.created_at&.strftime("%Y-%m-%d %H:%M") %>
+              </div>
+            <% else %>
+              <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                피드백이 아직 생성되지 않았습니다. 버튼을 클릭하여 생성하세요.
+              </p>
+            <% end %>
           </div>
 
           <div style="display: flex; gap: 8px;">
-            <button class="rp-btn rp-btn--primary" style="flex: 1; font-size: 12px;">
+            <button class="rp-btn rp-btn--primary rp-generate-constructed-feedback" data-response-id="<%= @constructed_responses.first.id %>" style="flex: 1; font-size: 12px;">
               AI 피드백 생성
             </button>
           </div>

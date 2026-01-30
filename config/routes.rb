@@ -104,6 +104,7 @@ Rails.application.routes.draw do
     get "feedbacks", to: "feedback#index", as: "feedbacks"
     get "feedbacks/:student_id", to: "feedback#show", as: "feedback"
     post "feedbacks/:response_id/generate", to: "feedback#generate_feedback", as: "feedback_generate"
+    post "feedbacks/:response_id/generate_constructed", to: "feedback#generate_constructed_feedback", as: "feedback_generate_constructed"
     post "feedbacks/:response_id/refine", to: "feedback#refine_feedback", as: "feedback_refine"
     patch "feedbacks/:response_id/update_answer", to: "feedback#update_answer", as: "feedback_update_answer"
     patch "feedbacks/:response_id/update_feedback", to: "feedback#update_feedback", as: "feedback_update_feedback"

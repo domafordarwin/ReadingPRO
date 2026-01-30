@@ -142,6 +142,47 @@ class ReadingReportService
     @prompt_loader.get_section(section_name.to_sym)
   end
 
+  # 서술형 응답(Response 객체)에 대한 피드백 생성
+  def generate_constructed_response_feedback(response)
+    # Response 객체에서 필요한 정보 추출
+    item = response.item
+    student_answer = response.answer_text || "(답변 없음)"
+    rubric_scores = response.response_rubric_scores
+
+    # 루브릭 점수 요약
+    score_summary = rubric_scores.map { |score|
+      "#{score.rubric_criterion.name}: #{score.level}점"
+    }.join(", ")
+
+    total_score = rubric_scores.sum(&:level)
+    max_score = rubric_scores.sum { |score| score.rubric_criterion.rubric_levels.maximum(:point) }
+
+    # 프롬프트 생성
+    prompt = <<~PROMPT
+      다음 서술형 문항에 대한 학생의 답변을 분석하여 교육적 피드백을 작성해주세요.
+
+      【문항】
+      #{item.prompt}
+
+      【학생 답변】
+      #{student_answer}
+
+      【채점 결과】
+      #{score_summary}
+      총점: #{total_score}/#{max_score}
+
+      【피드백 작성 지침】
+      1. 학생의 답변의 장점을 먼저 인정해주세요
+      2. 개선이 필요한 부분을 구체적으로 지적해주세요
+      3. 학생이 할 수 있는 구체적인 개선 방향을 제시해주세요
+      4. 격려하고 긍정적인 톤을 유지해주세요
+
+      【피드백】
+    PROMPT
+
+    call_openai_api(prompt)
+  end
+
   private
 
   def call_openai_api(prompt)
