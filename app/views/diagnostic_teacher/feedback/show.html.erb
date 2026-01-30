@@ -1437,36 +1437,47 @@
         const data = await response.json();
 
         if (data.success) {
-          const displayArea = document.getElementById('comprehensive-feedback-display');
-          const actionsArea = document.getElementById('comprehensive-feedback-actions');
-          const now = new Date().toLocaleString('ko-KR', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-          });
-
           // 피드백 텍스트 저장
           this.currentComprehensiveFeedback = data.feedback;
           console.log('[Generate Feedback] currentComprehensiveFeedback set:', this.currentComprehensiveFeedback.substring(0, 50) + '...');
 
-          displayArea.innerHTML = `
-            <div class="rp-feedback-item rp-feedback-item--ai">
-              <span class="rp-badge rp-badge--info">AI 종합</span>
-              <p class="rp-feedback-text">${data.feedback}</p>
-              <small class="rp-feedback-meta">${now}</small>
-            </div>
-          `;
+          // 자동 저장되었으면 페이지 새로고침으로 UI 완전히 갱신
+          if (data.saved) {
+            this.showToast('✅ 피드백이 생성되고 저장되었습니다!', 'success');
 
-          // 액션 버튼 표시
-          if (actionsArea) {
-            actionsArea.style.display = 'flex';
-          }
+            // 1.5초 후 페이지 새로고침 (사용자가 메시지 읽을 시간 제공)
+            setTimeout(() => {
+              location.reload();
+            }, 1500);
+          } else {
+            // 자동 저장 안 된 경우 (기존 동작)
+            const displayArea = document.getElementById('comprehensive-feedback-display');
+            const actionsArea = document.getElementById('comprehensive-feedback-actions');
+            const now = new Date().toLocaleString('ko-KR', {
+              year: 'numeric', month: '2-digit', day: '2-digit',
+              hour: '2-digit', minute: '2-digit'
+            });
 
-          btn.textContent = '재생성';
-          this.showToast('AI 종합 피드백이 생성되었습니다', 'success');
+            displayArea.innerHTML = `
+              <div class="rp-feedback-item rp-feedback-item--ai">
+                <span class="rp-badge rp-badge--info">AI 종합</span>
+                <p class="rp-feedback-text">${data.feedback}</p>
+                <small class="rp-feedback-meta">${now}</small>
+              </div>
+            `;
 
-          // 커스텀 프롬프트 사용했으면 초기화
-          if (customPrompt) {
-            customPromptInput.value = '';
+            // 액션 버튼 표시
+            if (actionsArea) {
+              actionsArea.style.display = 'flex';
+            }
+
+            btn.textContent = '재생성';
+            this.showToast('AI 종합 피드백이 생성되었습니다', 'success');
+
+            // 커스텀 프롬프트 사용했으면 초기화
+            if (customPrompt) {
+              customPromptInput.value = '';
+            }
           }
         } else {
           alert(data.error || 'AI 생성 실패');

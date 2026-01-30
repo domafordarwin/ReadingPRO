@@ -292,17 +292,37 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       attempt.responses.select { |r| r.item&.mcq? }
     end.sort_by(&:created_at)
 
+    # 기존 종합 피드백 로드
+    latest_attempt = student.attempts.order(:created_at).last
+    existing_feedback = latest_attempt&.comprehensive_feedback
+
     # 종합 피드백 생성
     custom_prompt = params[:prompt]
-    if custom_prompt.present?
-      # 커스텀 프롬프트 사용
+
+    if custom_prompt.present? && existing_feedback.present?
+      # 기존 피드백 + 커스텀 프롬프트로 정교화
+      combined_context = "기존 피드백:\n#{existing_feedback}\n\n" +
+                        "추가 정보:\n#{custom_prompt}"
+      feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, combined_context)
+    elsif custom_prompt.present?
+      # 커스텀 프롬프트만 사용
       feedback_text = FeedbackAiService.refine_comprehensive_feedback(responses, custom_prompt)
     else
       # 기본 피드백 생성
       feedback_text = FeedbackAiService.generate_comprehensive_feedback(responses)
     end
 
-    render json: { success: true, feedback: feedback_text }
+    # 자동 저장
+    if latest_attempt && feedback_text.present?
+      latest_attempt.update!(comprehensive_feedback: feedback_text)
+    end
+
+    render json: {
+      success: true,
+      feedback: feedback_text,
+      message: "피드백이 생성되고 자동으로 저장되었습니다.",
+      saved: true
+    }
   rescue => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
