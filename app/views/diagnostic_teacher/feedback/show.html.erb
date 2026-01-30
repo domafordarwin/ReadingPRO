@@ -1,18 +1,22 @@
 <% content_for :page_title, "학생 피드백" %>
 
-<div class="rp-page-header">
-  <!-- 학생 탐색 네비게이션 -->
-  <div class="rp-student-nav">
-    <div style="display: flex; align-items: center; gap: 8px;">
+<div class="rp-page-header rp-page-header--modern">
+  <!-- 왼쪽: 페이지 제목 -->
+  <div class="rp-page-header__left">
+    <h1 class="rp-page-header__title"><%= @student.name %>의 피드백 생성하기</h1>
+    <p class="rp-page-header__subtitle"><%= @responses.count %>개 문항 종합 분석</p>
+  </div>
+
+  <!-- 오른쪽: 학생 탐색 네비게이션 -->
+  <div class="rp-page-header__right">
+    <div class="rp-student-nav rp-student-nav--inline">
       <%= link_to "← 목록", diagnostic_teacher_feedbacks_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
       <% if @prev_student %>
         <%= link_to "< 이전", diagnostic_teacher_feedback_path(@prev_student[:id]), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
       <% else %>
         <button class="rp-btn rp-btn--secondary rp-btn--sm" disabled style="opacity: 0.5;">< 이전</button>
       <% end %>
-    </div>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
       <input type="text" id="student-search" class="rp-student-search" placeholder="학생 검색..." />
       <select id="student-select" class="rp-student-select">
         <option value="">학생 선택</option>
@@ -22,9 +26,7 @@
           </option>
         <% end %>
       </select>
-    </div>
 
-    <div style="display: flex; align-items: center; gap: 8px;">
       <% if @next_student %>
         <%= link_to "다음 >", diagnostic_teacher_feedback_path(@next_student[:id]), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
       <% else %>
@@ -32,10 +34,6 @@
       <% end %>
     </div>
   </div>
-
-  <!-- 페이지 제목: 변경됨 -->
-  <h1 class="rp-page-header__title"><%= @student.name %>의 피드백 생성하기</h1>
-  <p class="rp-page-header__subtitle"><%= @responses.count %>개 문항 종합 분석</p>
 </div>
 
 <!-- ===== 3개 탭 네비게이션 ===== -->
@@ -63,6 +61,89 @@
 
 <!-- ===== CSS 스타일 ===== -->
 <style>
+  /* 페이지 헤더 */
+  .rp-page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .rp-page-header--modern {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  .rp-page-header__left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rp-page-header__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .rp-page-header__subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .rp-page-header__right {
+    display: flex;
+    align-items: center;
+  }
+
+  .rp-student-nav--inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .rp-student-search {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 150px;
+  }
+
+  .rp-student-select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 120px;
+    background: white;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1200px) {
+    .rp-page-header--modern {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .rp-page-header__right {
+      width: 100%;
+    }
+
+    .rp-student-nav--inline {
+      flex-wrap: wrap;
+    }
+  }
+
   /* 탭 네비게이션 */
   .rp-tabs-nav {
     display: flex;
