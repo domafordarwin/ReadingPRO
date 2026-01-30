@@ -166,6 +166,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     selected_choice_id = params[:selected_choice_id]
     selected_choice_no = params[:selected_choice_no]
 
+    Rails.logger.info("[update_answer] response_id=#{params[:response_id]}, selected_choice_no=#{selected_choice_no}, item_id=#{response.item_id}")
+
     # 선택지 찾기
     if selected_choice_id.present?
       # ID로 찾기
@@ -173,12 +175,15 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     elsif selected_choice_no.present?
       # 숫자(1-5)로 직접 찾기
       choice_no = selected_choice_no.to_i
+      Rails.logger.info("[update_answer] Looking for choice_no=#{choice_no.inspect} (class: #{choice_no.class}), item_id=#{response.item_id}")
       selected_choice = ItemChoice.find_by(choice_no: choice_no, item_id: response.item_id)
+      Rails.logger.info("[update_answer] Found: #{selected_choice.inspect}")
     else
       return render json: { success: false, error: "선택지 정보를 입력하세요" }, status: :bad_request
     end
 
     unless selected_choice
+      Rails.logger.error("[update_answer] No ItemChoice found for choice_no=#{choice_no}, item_id=#{response.item_id}")
       return render json: { success: false, error: "유효하지 않은 선택지입니다" }, status: :bad_request
     end
 

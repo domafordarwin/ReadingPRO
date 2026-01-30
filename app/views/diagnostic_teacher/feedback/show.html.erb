@@ -87,14 +87,19 @@
             <tr>
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">수정답</th>
               <% @responses.each_with_index do |response, index| %>
-                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">
-                  <input type="number"
-                         class="rp-edit-answer-input"
-                         data-response-id="<%= response.id %>"
-                         data-item-index="<%= index %>"
-                         min="1"
-                         max="5"
-                         style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace; box-sizing: border-box;">
+                <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;">
+                  <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                    <input type="number"
+                           class="rp-edit-answer-input"
+                           data-response-id="<%= response.id %>"
+                           data-item-index="<%= index %>"
+                           min="1"
+                           max="5"
+                           style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace; box-sizing: border-box;">
+                    <button class="rp-btn rp-btn--primary rp-btn--xs"
+                            data-response-id="<%= response.id %>"
+                            style="font-size: 11px; padding: 2px 6px; min-width: 40px;">저장</button>
+                  </div>
                 </td>
               <% end %>
             </tr>
@@ -780,17 +785,22 @@
 
     // 수정답 입력 필드 바인딩
     bindEditAnswerInputs() {
+      // 입력 필드 바인딩
       document.querySelectorAll('.rp-edit-answer-input').forEach(input => {
         input.addEventListener('change', (e) => this.handleEditAnswerChange(e));
         input.addEventListener('keyup', (e) => {
-          // 대문자로 자동 변환
           if (e.key !== 'Enter') return;
-          const value = e.target.value.toUpperCase().trim();
-          if (value.length > 0) {
-            e.target.value = value;
-            this.handleEditAnswerChange(e);
-          }
+          const button = input.nextElementSibling;
+          if (button) button.click();
         });
+      });
+
+      // 저장 버튼 바인딩
+      document.querySelectorAll('.rp-edit-answer-input').forEach(input => {
+        const button = input.nextElementSibling;
+        if (button && button.classList.contains('rp-btn--primary')) {
+          button.addEventListener('click', () => this.handleEditAnswerChange({ target: input }));
+        }
       });
     }
 

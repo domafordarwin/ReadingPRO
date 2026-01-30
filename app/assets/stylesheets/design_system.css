@@ -704,6 +704,11 @@
   font-size: var(--rp-font-size-xs);
 }
 
+.rp-btn--xs {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
 .rp-btn--full {
   width: 100%;
 }
