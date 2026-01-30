@@ -1051,6 +1051,9 @@
       refineCustomPrompt() {
         const btn = document.getElementById('refine-comprehensive-feedback');
         const promptText = document.getElementById('comprehensive-prompt').value.trim();
+        const categorySelect = document.querySelector('select[name="category"]') ||
+                              document.querySelector('#comprehensive-category');
+        const category = categorySelect ? categorySelect.value : 'general';
 
         if (!promptText) {
           alert('프롬프트를 입력하세요');
@@ -1058,11 +1061,38 @@
         }
 
         btn.disabled = true;
-        btn.textContent = '최적화 중...';
+        btn.textContent = '✨ 최적화 중...';
 
-        this.showToast('✨ 프롬프트가 준비되었습니다. 아래 버튼으로 피드백을 생성하세요.', 'success');
-        btn.textContent = '프롬프트 최적화';
-        btn.disabled = false;
+        fetch('/diagnostic_teacher/feedbacks/optimize_prompt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': this.getCSRFToken()
+          },
+          body: JSON.stringify({
+            prompt: promptText,
+            category: category
+          })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.optimized_prompt) {
+            // 최적화된 프롬프트로 textarea 업데이트
+            document.getElementById('comprehensive-prompt').value = data.optimized_prompt;
+            this.showToast('✨ 프롬프트가 최적화되었습니다! 아래 버튼으로 피드백을 생성하세요.', 'success');
+          } else {
+            const errorMsg = data.error || '프롬프트 최적화 실패';
+            this.showToast('❌ ' + errorMsg, 'error');
+          }
+        })
+        .catch(err => {
+          console.error('[refineCustomPrompt] Error:', err);
+          this.showToast('❌ 프롬프트 최적화 중 오류가 발생했습니다', 'error');
+        })
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = '프롬프트 최적화';
+        });
       }
 
       async applyCustomPromptToFeedback() {

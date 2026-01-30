@@ -124,6 +124,7 @@ Rails.application.routes.draw do
     post "feedbacks/:student_id/generate_comprehensive", to: "feedback#generate_comprehensive", as: "feedback_generate_comprehensive"
     post "feedbacks/:student_id/save_comprehensive", to: "feedback#save_comprehensive", as: "feedback_save_comprehensive"
     post "feedbacks/:student_id/refine_comprehensive", to: "feedback#refine_comprehensive", as: "feedback_refine_comprehensive"
+    post "feedbacks/optimize_prompt", to: "feedback#optimize_prompt", as: "feedback_optimize_prompt"
 
     # 공지사항 및 상담 관리
     get "notices", to: "dashboard#notices", as: "notices"

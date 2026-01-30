@@ -579,6 +579,63 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
+  def optimize_prompt
+    # OpenAI API를 사용하여 프롬프트 최적화
+    prompt = params[:prompt]
+    category = params[:category] || 'general'
+
+    return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
+
+    begin
+      # OpenAI API를 호출하여 프롬프트 최적화
+      client = OpenAI::Client.new(api_key: ENV['OPENAI_API_KEY'])
+
+      optimization_prompt = <<~PROMPT
+        다음은 학생의 읽기 진단 평가 피드백 생성을 위한 프롬프트입니다.
+        이 프롬프트를 더욱 명확하고 효과적으로 개선해주세요.
+
+        카테고리: #{category}
+        기존 프롬프트: #{prompt}
+
+        요청사항:
+        1. 프롬프트를 더 구체적이고 명확하게 작성하세요
+        2. 학생 피드백의 질을 높일 수 있는 지침을 추가하세요
+        3. 불필요한 부분은 제거하세요
+        4. 한글로 작성하되, 전문적인 톤을 유지하세요
+        5. 개선된 프롬프트만 반환하세요 (설명은 제외)
+      PROMPT
+
+      response = client.chat(
+        parameters: {
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "당신은 교육용 AI 프롬프트 최적화 전문가입니다. 사용자가 제공한 프롬프트를 명확하고 효과적으로 개선합니다."
+            },
+            {
+              role: "user",
+              content: optimization_prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500
+        }
+      )
+
+      optimized_prompt = response.dig("choices", 0, "message", "content")&.strip
+
+      if optimized_prompt.present?
+        render json: { success: true, optimized_prompt: optimized_prompt }
+      else
+        render json: { success: false, error: "프롬프트 최적화 실패" }, status: :unprocessable_entity
+      end
+    rescue StandardError => e
+      Rails.logger.error("[optimize_prompt] Error: #{e.class} - #{e.message}")
+      render json: { success: false, error: "프롬프트 최적화 중 오류가 발생했습니다" }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_role
