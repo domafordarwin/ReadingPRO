@@ -1,10 +1,16 @@
 <% content_for :page_title, "학생 피드백" %>
 
+<% if flash[:alert] %>
+  <div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px;">
+    ⚠️ <%= flash[:alert] %>
+  </div>
+<% end %>
+
 <div class="rp-page-header rp-page-header--modern">
   <!-- 왼쪽: 페이지 제목 -->
   <div class="rp-page-header__left">
-    <h1 class="rp-page-header__title"><%= @student.name %>의 피드백 생성하기</h1>
-    <p class="rp-page-header__subtitle"><%= @responses.count %>개 문항 종합 분석</p>
+    <h1 class="rp-page-header__title"><%= @student&.name || "(학생 정보 없음)" %>의 피드백 생성하기</h1>
+    <p class="rp-page-header__subtitle"><%= @responses&.count || 0 %>개 문항 종합 분석</p>
   </div>
 
   <!-- 오른쪽: 학생 탐색 네비게이션 -->
@@ -20,10 +26,12 @@
       <input type="text" id="student-search" class="rp-student-search" placeholder="학생 검색..." />
       <select id="student-select" class="rp-student-select">
         <option value="">학생 선택</option>
-        <% @all_students.each do |student| %>
-          <option value="<%= student[:id] %>" <%= 'selected' if student[:id] == @student.id %>>
-            <%= student[:name] %>
-          </option>
+        <% if @all_students.present? %>
+          <% @all_students.each do |student| %>
+            <option value="<%= student[:id] %>" <%= 'selected' if student[:id] == @student&.id %>>
+              <%= student[:name] %>
+            </option>
+          <% end %>
         <% end %>
       </select>
 
@@ -41,11 +49,11 @@
   <div class="rp-tabs-nav">
     <button class="rp-tab-button active" data-tab="mcq">
       객관식 문항 피드백
-      <span class="rp-tab-badge"><%= @responses.count %></span>
+      <span class="rp-tab-badge"><%= @responses&.count || 0 %></span>
     </button>
     <button class="rp-tab-button" data-tab="constructed">
       서술형 문항 피드백
-      <span class="rp-tab-badge"><%= @constructed_responses.count %></span>
+      <span class="rp-tab-badge"><%= @constructed_responses&.count || 0 %></span>
     </button>
     <button class="rp-tab-button" data-tab="tendency">
       독자 성향 피드백
@@ -54,9 +62,16 @@
   </div>
 
   <!-- ===== 탭 컨테이너: 부분뷰 렌더링 ===== -->
-  <%= render 'mcq_tab' %>
-  <%= render 'constructed_tab' %>
-  <%= render 'tendency_tab' %>
+  <% begin %>
+    <%= render 'mcq_tab' %>
+    <%= render 'constructed_tab' %>
+    <%= render 'tendency_tab' %>
+  <% rescue => e %>
+    <div style="padding: 40px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; color: #dc2626;">
+      <p style="margin: 0; font-size: 14px; font-weight: 600;">피드백 데이터 로드 중 오류가 발생했습니다</p>
+      <p style="margin: 8px 0 0 0; font-size: 12px; color: #7f1d1d;"><%= e.message %></p>
+    </div>
+  <% end %>
 </div>
 
 <!-- ===== CSS 스타일 ===== -->
