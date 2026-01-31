@@ -8,6 +8,5 @@ class Response < ApplicationRecord
   has_many :response_rubric_scores, dependent: :destroy
 
   validates :item_id, uniqueness: { scope: :student_attempt_id }
-end
 
 end

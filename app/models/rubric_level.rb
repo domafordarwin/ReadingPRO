@@ -5,6 +5,5 @@ class RubricLevel < ApplicationRecord
 
   validates :level, presence: true, uniqueness: { scope: :rubric_criterion_id }
   validates :score, presence: true
-end
 
 end

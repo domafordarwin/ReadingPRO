@@ -9,6 +9,5 @@ class DiagnosticForm < ApplicationRecord
   enum :status, { draft: 'draft', active: 'active', archived: 'archived' }
 
   validates :name, presence: true
-end
 
 end

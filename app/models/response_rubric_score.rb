@@ -7,6 +7,5 @@ class ResponseRubricScore < ApplicationRecord
 
   validates :level_score, inclusion: { in: 0..4 }, presence: true
   validates :rubric_criterion_id, uniqueness: { scope: :response_id }
-end
 
 end

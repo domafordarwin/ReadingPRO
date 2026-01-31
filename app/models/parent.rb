@@ -4,6 +4,5 @@ class Parent < ApplicationRecord
   belongs_to :user
 
   validates :name, presence: true
-end
 
 end

@@ -5,6 +5,5 @@ class Rubric < ApplicationRecord
   has_many :rubric_criteria, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :item_id }
-end
 
 end

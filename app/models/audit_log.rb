@@ -5,6 +5,5 @@ class AuditLog < ApplicationRecord
 
   validates :action, presence: true
   validates :resource_type, presence: true
-end
 
 end

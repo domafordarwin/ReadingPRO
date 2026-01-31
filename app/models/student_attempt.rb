@@ -9,6 +9,5 @@ class StudentAttempt < ApplicationRecord
   enum :status, { in_progress: 'in_progress', completed: 'completed', submitted: 'submitted' }
 
   validates :started_at, presence: true
-end
 
 end

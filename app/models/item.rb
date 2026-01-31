@@ -15,6 +15,5 @@ class Item < ApplicationRecord
   validates :code, presence: true, uniqueness: true
   validates :item_type, presence: true
   validates :prompt, presence: true
-end
 
 end
