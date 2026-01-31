@@ -1,6 +1,27 @@
 # Auto-load seed data on first boot or when Users table is empty
-if User.count == 0
-  puts "Loading seed data..."
-  load Rails.root.join('db/seeds.rb')
-  puts "✅ Seed data loaded successfully"
+Rails.application.config.after_initialize do
+  if defined?(User) && User.table_exists?
+    if User.count == 0
+      puts "\n" + "="*50
+      puts "🌱 Loading seed data on first boot..."
+      puts "="*50
+      begin
+        load Rails.root.join('db/seeds.rb')
+        puts "✅ Seed data loaded successfully"
+        puts "📧 Test accounts created:"
+        puts "   - admin@readingpro.kr"
+        puts "   - teacher@shinmyung.edu"
+        puts "   - researcher@readingpro.kr"
+        puts "   - student_54@shinmyung.edu"
+        puts "   - parent_54@shinmyung.edu"
+        puts "🔑 Password: ReadingPro$12#"
+        puts "="*50 + "\n"
+      rescue => e
+        puts "❌ Error loading seed data: #{e.message}"
+        puts e.backtrace.first(5)
+      end
+    else
+      puts "✅ Users already exist (#{User.count} users). Skipping seed."
+    end
+  end
 end
