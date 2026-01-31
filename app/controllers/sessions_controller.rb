@@ -17,6 +17,17 @@ class SessionsController < ApplicationController
     login_id = params[:username].to_s.strip
     password = params[:password].to_s
 
+    # Auto-load seed data if users table is empty (first boot)
+    if User.count == 0 && User.table_exists?
+      Rails.logger.info "🌱 Auto-loading seed data on first login attempt..."
+      begin
+        load Rails.root.join('db/seeds.rb')
+        Rails.logger.info "✅ Seed data loaded successfully"
+      rescue => e
+        Rails.logger.error "❌ Error loading seed data: #{e.message}"
+      end
+    end
+
     # Try database authentication first (email-based)
     user = User.find_by(email: login_id)
     if user&.authenticate(password)
