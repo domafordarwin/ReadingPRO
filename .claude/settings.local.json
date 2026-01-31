@@ -68,7 +68,12 @@
       "Bash(git checkout:*)",
       "Bash(bin/rails db:create:*)",
       "Bash(bin/rails db:reset:*)",
-      "Bash(RAILS_ENV=development bin/rails:*)"
+      "Bash(RAILS_ENV=development bin/rails:*)",
+      "Bash(if [ -f config/master.key ])",
+      "Bash(then echo \"✅ 존재함\")",
+      "Bash(else echo \"❌ 파일 없음\")",
+      "Bash(fi)",
+      "Bash(if [ -f config/credentials.yml.enc ])"
     ]
   }
 }
