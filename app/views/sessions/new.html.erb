@@ -22,7 +22,7 @@
       <div class="login-notice"><%= flash[:notice] %></div>
     <% end %>
 
-    <form action="<%= login_path %>" method="post" class="login-form-new" data-turbo="false">
+    <form action="<%= login_path %>" method="post" class="login-form-new" data-turbo="false" onsubmit="return true;">
       <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
       <!-- User Type Dropdown -->
       <div class="login-field-group">
@@ -397,6 +397,14 @@
 </style>
 
 <script>
+  // Prevent Turbo from intercepting the login form
+  document.addEventListener('turbo:submit', (e) => {
+    if (e.target.classList.contains('login-form-new')) {
+      e.preventDefault();
+      e.target.submit();
+    }
+  }, true);
+
   function updatePlaceholder(userType) {
     const emailInput = document.getElementById('email');
     const typeTexts = {
