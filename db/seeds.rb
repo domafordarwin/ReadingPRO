@@ -23,8 +23,8 @@ school = School.find_or_create_by!(name: '신명중학교') do |s|
 end
 
 # Create Teacher record
-teacher = Teacher.find_or_create_by!(user: researcher_user) do |t|
-  t.school = school
+teacher = Teacher.find_or_create_by!(user_id: researcher_user.id) do |t|
+  t.school_id = school.id
   t.name = '연구원'
   t.department = 'Research'
   t.position = 'Researcher'
@@ -39,7 +39,7 @@ puts "Creating sample reading stimuli..."
     stimulus.source = "교과서 #{i + 1}"
     stimulus.word_count = 250
     stimulus.reading_level = ['easy', 'medium', 'hard'].sample
-    stimulus.created_by = teacher
+    stimulus.created_by_id = teacher.id
   end
 end
 
@@ -48,16 +48,16 @@ puts "Creating sample items..."
 # Create Sample Items (Questions)
 stimuli = ReadingStimulus.all
 20.times do |i|
-  item = Item.find_or_create_by!(code: "ITEM_#{i + 1:03d}") do |it|
+  item = Item.find_or_create_by!(code: "ITEM_#{format('%03d', i + 1)}") do |it|
     it.item_type = i % 2 == 0 ? :mcq : :constructed
     it.difficulty = ['easy', 'medium', 'hard'].sample
     it.category = ['어휘', '문법', '읽기', '추론'].sample
     it.tags = ['기본', '심화'].sample(rand(1..2))
     it.prompt = "문제 #{i + 1}: 위 지문에서 다음 질문에 답하세요."
     it.explanation = "해설: 이것은 문제 #{i + 1}의 설명입니다."
-    it.stimulus = stimuli.sample
+    it.stimulus_id = stimuli.sample.id
     it.status = :active
-    it.created_by = teacher
+    it.created_by_id = teacher.id
   end
 
   # Add choices for MCQ items
@@ -132,16 +132,16 @@ puts "Creating sample students..."
     user.role = :student
   end
 
-  student = Student.find_or_create_by!(user: student_user) do |s|
-    s.school = school
-    s.student_number = "2024#{i + 1:03d}"
+  student = Student.find_or_create_by!(user_id: student_user.id) do |s|
+    s.school_id = school.id
+    s.student_number = "2024#{format('%03d', i + 1)}"
     s.name = "학생_#{i + 1}"
     s.grade = 2
     s.class_name = 'A'
   end
 
   # Create student portfolio
-  StudentPortfolio.find_or_create_by!(student: student) do |sp|
+  StudentPortfolio.find_or_create_by!(student_id: student.id) do |sp|
     sp.total_attempts = 0
     sp.total_score = 0
     sp.average_score = 0

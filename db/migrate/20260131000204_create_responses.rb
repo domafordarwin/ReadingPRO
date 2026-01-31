@@ -10,7 +10,7 @@ class CreateResponses < ActiveRecord::Migration[8.1]
       t.boolean :is_correct
       t.decimal :auto_score, precision: 10, scale: 2
       t.decimal :manual_score, precision: 10, scale: 2
-      t.references :feedback, foreign_key: true
+      t.bigint :feedback_id  # Will add foreign_key in later migration
       t.timestamps
     end
 
