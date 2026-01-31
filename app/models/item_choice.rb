@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class ItemChoice < ApplicationRecord
-class ItemChoice < ApplicationRecord
   belongs_to :item
   has_many :responses, foreign_key: 'selected_choice_id', dependent: :destroy
 

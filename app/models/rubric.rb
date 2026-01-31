@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Rubric < ApplicationRecord
-class Rubric < ApplicationRecord
   belongs_to :item
   has_many :rubric_criteria, dependent: :destroy
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Response < ApplicationRecord
-class Response < ApplicationRecord
   belongs_to :student_attempt
   belongs_to :item
   belongs_to :selected_choice, class_name: 'ItemChoice', optional: true

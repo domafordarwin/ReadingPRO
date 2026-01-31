@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Item < ApplicationRecord
-class Item < ApplicationRecord
   belongs_to :stimulus, class_name: 'ReadingStimulus', foreign_key: 'stimulus_id', optional: true
   belongs_to :teacher, foreign_key: 'created_by_id', optional: true
   has_one :rubric, dependent: :destroy

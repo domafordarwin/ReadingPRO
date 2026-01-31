@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Teacher < ApplicationRecord
-class Teacher < ApplicationRecord
   belongs_to :user
   belongs_to :school
   has_many :items, foreign_key: 'created_by_id', dependent: :destroy
@@ -12,6 +11,4 @@ class Teacher < ApplicationRecord
   has_many :announcements, foreign_key: 'published_by_id', dependent: :destroy
 
   validates :name, presence: true
-end
-
 end

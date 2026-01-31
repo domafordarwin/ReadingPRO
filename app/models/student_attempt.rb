@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class StudentAttempt < ApplicationRecord
-class StudentAttempt < ApplicationRecord
   belongs_to :student
   belongs_to :diagnostic_form
   has_many :responses, dependent: :destroy

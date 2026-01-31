@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class ResponseRubricScore < ApplicationRecord
-class ResponseRubricScore < ApplicationRecord
   belongs_to :response
   belongs_to :rubric_criterion
   belongs_to :teacher, foreign_key: 'created_by_id', optional: true

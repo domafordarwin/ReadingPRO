@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class DiagnosticFormItem < ApplicationRecord
-class DiagnosticFormItem < ApplicationRecord
   belongs_to :diagnostic_form
   belongs_to :item
 
