@@ -25,3 +25,10 @@ raw_Data/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Claude Code & bkit (로컬 설정, 생성된 문서)
+.claude/
+.claude-code/
+.bkit/
+docs/.bkit-memory.json
+.claude.local.json
