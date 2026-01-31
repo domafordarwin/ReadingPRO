@@ -351,3 +351,44 @@ bundle lock --add-platform ruby
 1. 진단담당교사 상담 신청 관리 페이지 (승인/거절)
 2. 알림 시스템 (상담 신청/승인 알림)
 3. 상담 통계 대시보드
+
+---
+
+## 🐛 주요 버그 수정 기록
+
+### Turbo AJAX 로그인 폼 424 에러 해결 (2026-01-31)
+
+**문제:**
+- 로그인 폼 제출 시 `turbo.es2017-umd.js:696 POST /login 422 Unprocessable Content` 에러 발생
+- Rails 8.1의 Turbo가 자동으로 폼을 AJAX 요청으로 변환
+- 422 상태 코드 응답 시 폼 에러 메시지가 제대로 표시되지 않음
+
+**근본 원인:**
+- Turbo의 `FormSubmitObserver`가 모든 폼 제출을 AJAX로 자동 변환
+- `data-turbo="false"` 속성만으로는 Turbo 8.0.0에서 충분하지 않음
+- 표준 HTML 폼 제출이 필요한데 Turbo가 인터셉트
+
+**해결방법:**
+1. 폼에 `data-turbo="false"` 속성 추가
+2. 폼에 `onsubmit="return true;"` 속성 추가
+3. JavaScript 캡처 페이즈 리스너로 폼 제출 감지
+4. MutationObserver로 폼 속성 확인
+
+**수정된 파일:**
+- `app/views/sessions/new.html.erb`
+
+**관련 커밋:**
+- `8c8d2e7` - 초기 수정: data-turbo 속성 추가
+- `1e1a207` - 강화된 수정: 이벤트 리스너 추가
+- `bcec5b0` - 최종 수정: MutationObserver 및 캡처 페이즈 리스너
+
+**예상 동작:**
+- 잘못된 자격증명 입력 → 422 응답 + 에러 메시지 표시 ✅
+- 올바른 자격증명 입력 → 대시보드로 리다이렉트 ✅
+- 테스트 계정 버튼 클릭 → 자동 폼 제출 ✅
+
+**핵심 교훈:**
+- Rails 8.1 + Turbo 환경에서 표준 폼 제출이 필요한 경우:
+  - `data-turbo="false"` + `onsubmit="return true;"` 조합 사용
+  - JavaScript 캡처 페이즈 리스너로 Turbo 인터셉션 방지
+  - 422 상태는 정상 응답 - 폼 재렌더링되어야 함
