@@ -148,6 +148,40 @@ puts "Creating sample students..."
   end
 end
 
+# Create student_54 (for testing)
+student_54_user = User.find_or_create_by!(email: "student_54@shinmyung.edu") do |user|
+  user.password = 'ReadingPro$12#'
+  user.password_confirmation = 'ReadingPro$12#'
+  user.role = :student
+  user.name = "소수환"
+end
+
+student_54 = Student.find_or_create_by!(user_id: student_54_user.id) do |s|
+  s.school_id = school.id
+  s.student_number = "2024054"
+  s.name = "소수환"
+  s.grade = 2
+  s.class_name = 'A'
+end
+
+StudentPortfolio.find_or_create_by!(student_id: student_54.id) do |sp|
+  sp.total_attempts = 0
+  sp.total_score = 0
+  sp.average_score = 0
+end
+
+# Create parent_54 (for testing)
+parent_54_user = User.find_or_create_by!(email: "parent_54@shinmyung.edu") do |user|
+  user.password = 'ReadingPro$12#'
+  user.password_confirmation = 'ReadingPro$12#'
+  user.role = :parent
+  user.name = "소수환 부모"
+end
+
+Parent.find_or_create_by!(user_id: parent_54_user.id) do |p|
+  p.relationship = "부모"
+end
+
 # Create School Portfolio
 SchoolPortfolio.find_or_create_by!(school: school) do |sp|
   sp.total_students = 5
