@@ -75,10 +75,10 @@
     <button class="rp-user-name-btn">
       <% if current_user&.student %>
         <%= current_user.student.name %>
-      <% elsif current_user&.parent? %>
-        <%= current_user.name || current_user.email || '사용자' %>
+      <% elsif current_user&.parent %>
+        <%= current_user.parent.name || current_user.email || '사용자' %>
       <% else %>
-        <%= current_user&.name || current_user&.email || '사용자' %>
+        <%= current_user&.email || '사용자' %>
       <% end %>
     </button>
 
