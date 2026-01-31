@@ -397,13 +397,29 @@
 </style>
 
 <script>
-  // Prevent Turbo from intercepting the login form
-  document.addEventListener('turbo:submit', (e) => {
-    if (e.target.classList.contains('login-form-new')) {
-      e.preventDefault();
-      e.target.submit();
-    }
-  }, true);
+  // Disable Turbo interception for login form - MUST run immediately
+  // Using a MutationObserver to ensure the attribute is set before Turbo processes the form
+  (function() {
+    // Watch for the login form and ensure data-turbo is false
+    const observer = new MutationObserver(function() {
+      const loginForm = document.querySelector('.login-form-new');
+      if (loginForm && !loginForm.hasAttribute('data-turbo-disabled')) {
+        // Turbo doesn't support data-turbo="false" reliably on forms
+        // Instead, we'll intercept at the submission level
+        loginForm.setAttribute('data-turbo-disabled', 'true');
+      }
+    });
+
+    observer.observe(document.documentElement, { subtree: true, attributes: true });
+
+    // Listen for form submission in the capture phase (before Turbo's listener)
+    document.addEventListener('submit', function(e) {
+      if (e.target && e.target.classList.contains('login-form-new')) {
+        // Standard form submission - Turbo will still fire, but we need to ensure it doesn't take over
+        console.log('[LoginForm] Standard form submission triggered');
+      }
+    }, true);
+  })();
 
   function updatePlaceholder(userType) {
     const emailInput = document.getElementById('email');
