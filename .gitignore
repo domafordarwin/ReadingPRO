@@ -30,5 +30,7 @@ Thumbs.db
 .claude/
 .claude-code/
 .bkit/
+.bkit-temp/
 docs/.bkit-memory.json
+docs/.pdca-snapshots/
 .claude.local.json
