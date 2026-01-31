@@ -22,7 +22,7 @@
       <div class="login-notice"><%= flash[:notice] %></div>
     <% end %>
 
-    <form action="<%= login_path %>" method="post" class="login-form-new">
+    <form action="<%= login_path %>" method="post" class="login-form-new" data-turbo="false">
       <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
       <!-- User Type Dropdown -->
       <div class="login-field-group">
@@ -429,7 +429,11 @@
         userTypeSelect.value = button.dataset.usertype || 'student';
         passwordInput.value = 'ReadingPro$12#';
         updatePlaceholder(userTypeSelect.value);
-        emailInput.focus();
+
+        // Auto-submit the form after populating test credentials
+        setTimeout(() => {
+          document.querySelector('.login-form-new').submit();
+        }, 50);
       });
     });
   });
