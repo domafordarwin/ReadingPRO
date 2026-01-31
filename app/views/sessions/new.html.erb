@@ -22,7 +22,8 @@
       <div class="login-notice"><%= flash[:notice] %></div>
     <% end %>
 
-    <%= form_with url: login_path, method: :post, class: "login-form-new", local: true do %>
+    <form action="<%= login_path %>" method="post" class="login-form-new">
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
       <!-- User Type Dropdown -->
       <div class="login-field-group">
         <label class="login-field-label" for="user_type">사용자 유형</label>
@@ -57,7 +58,7 @@
 
       <!-- Login Button -->
       <button type="submit" class="login-button-new">로그인</button>
-    <% end %>
+    </form>
 
     <!-- Help Links -->
     <div class="login-help-links">
