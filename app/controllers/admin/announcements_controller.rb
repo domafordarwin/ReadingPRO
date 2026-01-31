@@ -42,8 +42,14 @@ module Admin
     end
 
     def toggle_active
-      @announcement.update(active: !@announcement.active)
-      flash[:notice] = "알림 상태가 변경되었습니다."
+      # Publish/unpublish announcement by setting published_at
+      if @announcement.published_at.present?
+        @announcement.update(published_at: nil)
+        flash[:notice] = "알림이 비공개되었습니다."
+      else
+        @announcement.update(published_at: Time.current)
+        flash[:notice] = "알림이 공개되었습니다."
+      end
       redirect_to admin_announcements_path
     end
 
@@ -55,11 +61,10 @@ module Admin
 
     def announcement_params
       params.require(:announcement).permit(
+        :title,
         :content,
-        :link_url,
-        :link_text,
-        :active,
-        :display_order
+        :priority,
+        :published_at
       )
     end
   end

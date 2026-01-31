@@ -283,26 +283,13 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   end
 
   # 공지사항 및 상담 - 공지사항 관리
+  # TODO: Notice 모델이 새로운 스키마에서 제거되었습니다. Announcement 모델 사용으로 변경 필요
   def notices
     @current_page = "notices"
     @page_title = "공지사항 관리"
-
-    # 진단담당교사 대상 공지사항
-    @notices = Notice.for_role("teacher").active.includes(:created_by).recent
-
-    # 검색 기능
+    @notices = [] # Notice 모델이 존재하지 않음
     @search_query = params[:search].to_s.strip
-    if @search_query.present?
-      search_term = "%#{@search_query}%"
-      @notices = @notices.where("title ILIKE ? OR content ILIKE ?", search_term, search_term)
-    end
-
-    # 상태 필터
     @status_filter = params[:status].to_s.strip
-    case @status_filter
-    when "important"
-      @notices = @notices.important
-    end
   end
 
   private
