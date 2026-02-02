@@ -6,6 +6,9 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Require custom middleware
+require_relative "../app/middleware/performance_monitor_middleware"
+
 module ReadingProRailway
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -23,5 +26,9 @@ module ReadingProRailway
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Phase 3.5.2: Performance monitoring middleware
+    # Automatically captures request metrics for production monitoring
+    config.middleware.use PerformanceMonitorMiddleware
   end
 end
