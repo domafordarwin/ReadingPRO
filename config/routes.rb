@@ -190,6 +190,11 @@ Rails.application.routes.draw do
       end
       resources :sub_indicators, only: [:index, :show, :update, :destroy]
       resources :items, only: [:index, :show, :create, :update, :destroy]
+      resources :stimuli, only: [:index, :show, :create, :update, :destroy]
+      resources :rubrics, only: [:index, :show, :create, :update, :destroy]
+      resources :diagnostic_forms, only: [:index, :show, :create, :update, :destroy]
+      resources :student_attempts, only: [:index, :show, :create, :update, :destroy]
+      resources :responses, only: [:index, :show, :create, :update, :destroy]
     end
 
     # Phase 3.5.3: Web Vitals metrics collection endpoint

@@ -6,6 +6,8 @@ class DiagnosticForm < ApplicationRecord
   has_many :items, through: :diagnostic_form_items
   has_many :student_attempts, dependent: :destroy
 
+  accepts_nested_attributes_for :diagnostic_form_items, allow_destroy: true
+
   enum :status, { draft: 'draft', active: 'active', archived: 'archived' }
 
   validates :name, presence: true
