@@ -14,7 +14,7 @@
   <%= javascript_importmap_tags %>
   <%= yield :head %>
 </head>
-<body class="rp-body">
+<body class="rp-body" data-controller="web-vitals" data-web-vitals-endpoint-value="/api/metrics/web_vitals">
   <div class="rp-layout rp-layout--with-header">
     <!-- Header -->
     <%= render "shared/unified_header",

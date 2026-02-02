@@ -191,6 +191,11 @@ Rails.application.routes.draw do
       resources :sub_indicators, only: [:index, :show, :update, :destroy]
       resources :items, only: [:index, :show, :create, :update, :destroy]
     end
+
+    # Phase 3.5.3: Web Vitals metrics collection endpoint
+    namespace :metrics do
+      post 'web_vitals', to: 'web_vitals#create'
+    end
   end
 
   # Defines the root path route ("/")
