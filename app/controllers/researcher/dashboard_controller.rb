@@ -4,6 +4,9 @@ class Researcher::DashboardController < ApplicationController
   before_action -> { require_role("researcher") }
   before_action :set_role
 
+  # Phase 3.4.3: Make cache helpers available in views
+  helper :cache
+
   def index
     @current_page = "item_bank"
     redirect_to researcher_item_bank_path
