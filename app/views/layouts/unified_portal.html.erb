@@ -15,6 +15,12 @@
   <%= yield :head %>
 </head>
 <body class="rp-body" data-controller="web-vitals" data-web-vitals-endpoint-value="/api/metrics/web_vitals">
+  <!-- Icon Sprite (include once, hidden from view) -->
+  <%= render "shared/icon_sprite" %>
+
+  <!-- Toast Notification Container -->
+  <%= render "shared/toast_container" %>
+
   <div class="rp-layout rp-layout--with-header">
     <!-- Header -->
     <%= render "shared/unified_header",

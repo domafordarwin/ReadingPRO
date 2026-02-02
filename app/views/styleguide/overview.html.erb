@@ -1,0 +1,160 @@
+<div class="rp-styleguide__content-header">
+  <h1>Design System Overview</h1>
+  <p class="rp-styleguide__description">
+    ReadingPRO Design System provides a comprehensive set of components, patterns, and guidelines
+    for building consistent, accessible, and beautiful user interfaces.
+  </p>
+</div>
+
+<section class="rp-styleguide__section">
+  <h2>Philosophy</h2>
+  <p>
+    Our design system follows <strong>Korean Neo-Minimalism</strong> principles, emphasizing:
+  </p>
+  <ul>
+    <li><strong>Clarity</strong> - Information hierarchy with clean typography</li>
+    <li><strong>Efficiency</strong> - Minimal cognitive load for all users</li>
+    <li><strong>Subtlety</strong> - Soft colors and gentle interactions</li>
+    <li><strong>Accessibility</strong> - WCAG 2.1 AA compliance from the ground up</li>
+  </ul>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Getting Started</h2>
+
+  <h3>Using Components</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary">Primary Button</button>
+      <button class="rp-btn rp-btn--secondary">Secondary Button</button>
+      <button class="rp-btn rp-btn--ghost">Ghost Button</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary"&gt;Primary Button&lt;/button&gt;
+&lt;button class="rp-btn rp-btn--secondary"&gt;Secondary Button&lt;/button&gt;
+&lt;button class="rp-btn rp-btn--ghost"&gt;Ghost Button&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Icon System</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <%= icon('home') %>
+      <%= icon('search') %>
+      <%= icon('settings') %>
+      <%= icon('user') %>
+      <%= icon('check', css_class: 'rp-icon--success') %>
+      <%= icon('alert', css_class: 'rp-icon--warning') %>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;%= icon('home') %&gt;
+&lt;%= icon('check', css_class: 'rp-icon--success') %&gt;
+&lt;%= icon_button('delete', label: 'Delete') %&gt;</pre></div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Key Features</h2>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--rp-space-6); margin-top: var(--rp-space-4);">
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">📊 Comprehensive Components</h3>
+        <p>25+ pre-built components ready for production use.</p>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">🎨 Design Tokens</h3>
+        <p>50+ carefully crafted design tokens for colors, spacing, and typography.</p>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">♿ Accessible</h3>
+        <p>WCAG 2.1 AA compliant with keyboard navigation and screen reader support.</p>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">📱 Responsive</h3>
+        <p>Mobile-first design that works seamlessly on all devices.</p>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">🎯 Icon Library</h3>
+        <p>25+ SVG icons optimized for web, all included in a single sprite.</p>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-card__body">
+        <h3 style="margin-top: 0;">⚡ Performance</h3>
+        <p>Optimized CSS and minimal JavaScript for fast loading times.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Component Categories</h2>
+
+  <div class="rp-grid rp-grid--2col">
+    <div>
+      <h3>Interaction</h3>
+      <ul>
+        <li><%= link_to "Buttons", styleguide_component_path("buttons") %></li>
+        <li><%= link_to "Forms", styleguide_component_path("forms") %></li>
+        <li><%= link_to "Modals", styleguide_component_path("modals") %></li>
+        <li><%= link_to "Tooltips", styleguide_component_path("tooltips") %></li>
+        <li><%= link_to "Toasts", styleguide_component_path("toasts") %></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Display</h3>
+      <ul>
+        <li><%= link_to "Colors", styleguide_component_path("colors") %></li>
+        <li><%= link_to "Typography", styleguide_component_path("typography") %></li>
+        <li><%= link_to "Icons", styleguide_component_path("icons") %></li>
+        <li><%= link_to "Cards", styleguide_component_path("cards") %></li>
+        <li><%= link_to "Badges", styleguide_component_path("badges") %></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Layout</h3>
+      <ul>
+        <li><%= link_to "Spacing", styleguide_component_path("spacing") %></li>
+        <li><%= link_to "Navigation", styleguide_component_path("navigation") %></li>
+        <li><%= link_to "Tables", styleguide_component_path("tables") %></li>
+        <li><%= link_to "Shadows", styleguide_component_path("shadows") %></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Patterns</h3>
+      <ul>
+        <li><%= link_to "States", styleguide_component_path("states") %></li>
+        <li><%= link_to "Forms", styleguide_component_path("forms") %></li>
+        <li>Loading States</li>
+        <li>Empty States</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Documentation</h2>
+  <p>
+    For detailed information about the design system, please refer to the documentation files:
+  </p>
+  <ul>
+    <li><strong>DESIGN_SYSTEM.md</strong> - Complete design system reference</li>
+    <li><strong>COMPONENT_GUIDE.md</strong> - Component usage patterns and examples</li>
+    <li><strong>ACCESSIBILITY.md</strong> - Accessibility guidelines and WCAG compliance</li>
+    <li><strong>ICON_LIBRARY.md</strong> - Icon system documentation</li>
+  </ul>
+</section>

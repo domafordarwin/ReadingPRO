@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>ReadingPRO Design System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <link rel="icon" href="/icon.png" type="image/png">
+  <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "design_system", "data-turbo-track": "reload" %>
+
+  <style>
+    /* Styleguide specific styles */
+    .rp-styleguide {
+      display: flex;
+      min-height: 100vh;
+      background: var(--rp-bg-subtle);
+    }
+
+    .rp-styleguide__sidebar {
+      width: 250px;
+      background: white;
+      padding: var(--rp-space-6);
+      border-right: 1px solid var(--rp-border);
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .rp-styleguide__title {
+      font-size: var(--rp-font-size-2xl);
+      font-weight: 600;
+      color: var(--rp-text-title);
+      margin-bottom: var(--rp-space-6);
+    }
+
+    .rp-styleguide__nav {
+      display: flex;
+      flex-direction: column;
+      gap: var(--rp-space-1);
+    }
+
+    .rp-styleguide__nav-item {
+      display: block;
+      padding: var(--rp-space-2) var(--rp-space-3);
+      color: var(--rp-text-body);
+      text-decoration: none;
+      border-radius: var(--rp-radius-sm);
+      font-size: var(--rp-font-size-sm);
+      transition: background-color var(--rp-transition-fast);
+    }
+
+    .rp-styleguide__nav-item:hover {
+      background: var(--rp-primary-softer);
+      color: var(--rp-primary);
+    }
+
+    .rp-styleguide__nav-item--active {
+      background: var(--rp-primary-soft);
+      color: var(--rp-primary);
+      font-weight: 600;
+    }
+
+    .rp-styleguide__content {
+      flex: 1;
+      padding: var(--rp-space-8);
+      overflow-y: auto;
+    }
+
+    .rp-styleguide__content-header {
+      margin-bottom: var(--rp-space-8);
+    }
+
+    .rp-styleguide__content h1 {
+      font-size: var(--rp-font-size-4xl);
+      color: var(--rp-text-title);
+      margin-bottom: var(--rp-space-2);
+    }
+
+    .rp-styleguide__description {
+      font-size: var(--rp-font-size-base);
+      color: var(--rp-text-body);
+      margin-bottom: var(--rp-space-4);
+    }
+
+    .rp-styleguide__section {
+      margin-bottom: var(--rp-space-12);
+    }
+
+    .rp-styleguide__section h2 {
+      font-size: var(--rp-font-size-2xl);
+      color: var(--rp-text-title);
+      margin-bottom: var(--rp-space-4);
+      border-bottom: 2px solid var(--rp-border);
+      padding-bottom: var(--rp-space-3);
+    }
+
+    .rp-styleguide__section h3 {
+      font-size: var(--rp-font-size-lg);
+      color: var(--rp-text-title);
+      margin-top: var(--rp-space-6);
+      margin-bottom: var(--rp-space-3);
+    }
+
+    .rp-styleguide__example {
+      margin-bottom: var(--rp-space-8);
+      border: 1px solid var(--rp-border);
+      border-radius: var(--rp-radius-md);
+      overflow: hidden;
+      background: white;
+    }
+
+    .rp-styleguide__preview {
+      padding: var(--rp-space-6);
+      border-bottom: 1px solid var(--rp-border);
+      background: white;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--rp-space-4);
+      align-items: center;
+    }
+
+    .rp-styleguide__code {
+      padding: var(--rp-space-4);
+      background: var(--rp-bg-subtle);
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: var(--rp-font-size-sm);
+      overflow-x: auto;
+      color: var(--rp-text-body);
+      line-height: 1.5;
+    }
+
+    .rp-styleguide__code pre {
+      margin: 0;
+    }
+
+    .rp-styleguide__color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--rp-space-4);
+      margin-bottom: var(--rp-space-6);
+    }
+
+    .rp-styleguide__color-item {
+      border: 1px solid var(--rp-border);
+      border-radius: var(--rp-radius-md);
+      overflow: hidden;
+    }
+
+    .rp-styleguide__color-swatch {
+      width: 100%;
+      height: 100px;
+    }
+
+    .rp-styleguide__color-info {
+      padding: var(--rp-space-3);
+      background: white;
+      font-size: var(--rp-font-size-sm);
+    }
+
+    .rp-styleguide__color-name {
+      font-weight: 600;
+      color: var(--rp-text-title);
+    }
+
+    .rp-styleguide__color-value {
+      color: var(--rp-text-muted);
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .rp-styleguide {
+        flex-direction: column;
+      }
+
+      .rp-styleguide__sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--rp-border);
+        padding: var(--rp-space-4);
+      }
+
+      .rp-styleguide__nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--rp-space-2);
+      }
+
+      .rp-styleguide__nav-item {
+        padding: var(--rp-space-2) var(--rp-space-3);
+      }
+    }
+  </style>
+
+  <%= javascript_importmap_tags %>
+</head>
+
+<body class="rp-body">
+  <!-- Icon Sprite -->
+  <%= render "shared/icon_sprite" %>
+
+  <div class="rp-styleguide">
+    <!-- Sidebar Navigation -->
+    <aside class="rp-styleguide__sidebar">
+      <h1 class="rp-styleguide__title">
+        ReadingPRO<br>
+        <small style="font-size: 0.6em; color: var(--rp-text-muted);">Design System</small>
+      </h1>
+
+      <nav class="rp-styleguide__nav">
+        <%= link_to "Overview", styleguide_path,
+            class: "rp-styleguide__nav-item #{current_page?(styleguide_path) ? 'rp-styleguide__nav-item--active' : ''}" %>
+
+        <% @categories&.each do |category| %>
+          <%= link_to category[:name],
+              styleguide_component_path(category[:path]),
+              class: "rp-styleguide__nav-item #{current_page?(styleguide_component_path(category[:path])) ? 'rp-styleguide__nav-item--active' : ''}" %>
+        <% end %>
+      </nav>
+
+      <div style="margin-top: var(--rp-space-8); padding-top: var(--rp-space-6); border-top: 1px solid var(--rp-border); font-size: var(--rp-font-size-sm); color: var(--rp-text-muted);">
+        <p style="margin: 0 0 var(--rp-space-2) 0;">📚 Documentation</p>
+        <ul style="margin: 0; padding: 0; list-style: none;">
+          <li>
+            <%= link_to "Design System",
+                "https://github.com/readingpro/docs/blob/main/DESIGN_SYSTEM.md",
+                target: "_blank",
+                rel: "noreferrer",
+                class: "rp-styleguide__nav-item",
+                style: "padding: var(--rp-space-1) 0; font-size: 12px;" %>
+          </li>
+          <li>
+            <%= link_to "Component Guide",
+                "https://github.com/readingpro/docs/blob/main/COMPONENT_GUIDE.md",
+                target: "_blank",
+                rel: "noreferrer",
+                class: "rp-styleguide__nav-item",
+                style: "padding: var(--rp-space-1) 0; font-size: 12px;" %>
+          </li>
+          <li>
+            <%= link_to "Accessibility",
+                "https://github.com/readingpro/docs/blob/main/ACCESSIBILITY.md",
+                target: "_blank",
+                rel: "noreferrer",
+                class: "rp-styleguide__nav-item",
+                style: "padding: var(--rp-space-1) 0; font-size: 12px;" %>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="rp-styleguide__content">
+      <%= yield %>
+    </main>
+  </div>
+</body>
+</html>

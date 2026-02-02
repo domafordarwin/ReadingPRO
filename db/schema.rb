@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -238,12 +238,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_130000) do
     t.decimal "auto_score", precision: 10, scale: 2
     t.datetime "created_at", null: false
     t.bigint "feedback_id"
+    t.boolean "flagged_for_review", default: false, null: false
     t.boolean "is_correct"
     t.bigint "item_id", null: false
     t.decimal "manual_score", precision: 10, scale: 2
     t.bigint "selected_choice_id"
     t.bigint "student_attempt_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["flagged_for_review"], name: "index_responses_on_flagged_for_review"
     t.index ["item_id"], name: "index_responses_on_item_id"
     t.index ["selected_choice_id"], name: "index_responses_on_selected_choice_id"
     t.index ["student_attempt_id", "item_id"], name: "index_responses_on_student_attempt_id_and_item_id", unique: true

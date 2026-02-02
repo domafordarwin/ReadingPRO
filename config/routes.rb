@@ -12,7 +12,10 @@ Rails.application.routes.draw do
   # hwpx file viewer
   get "/internal/hwpx_ping", to: "internal#hwpx_ping"
 
-  
+  # Phase 5.4: Style Guide (authenticated only)
+  get '/styleguide', to: 'styleguide#index', as: 'styleguide'
+  get '/styleguide/:id', to: 'styleguide#show', as: 'styleguide_component'
+
   namespace :admin do
     root to: "system#show"
     get "system", to: "system#show"
@@ -45,6 +48,14 @@ Rails.application.routes.draw do
       collection do
         post :submit_response
         post :submit_attempt
+      end
+    end
+
+    # Phase 6: Student Results & Responses
+    resources :results, only: [:show]
+    resources :responses, only: [] do
+      member do
+        patch :toggle_flag
       end
     end
 

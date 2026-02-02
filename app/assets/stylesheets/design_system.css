@@ -9,6 +9,9 @@
    1. Design Tokens
    ============================================ */
 :root {
+  /* Light theme (default) */
+  color-scheme: light;
+
   /* Colors - Core */
   --rp-bg: #FFFFFF;
   --rp-bg-subtle: #F8FAFC;
@@ -2024,4 +2027,596 @@
 .admin-muted {
   color: var(--rp-text-muted);
   font-style: italic;
+}
+
+/* ============================================
+   Icon System
+   ============================================ */
+
+/* Base icon styles */
+.rp-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke: currentColor;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* Icon size modifiers */
+.rp-icon--sm {
+  width: 16px;
+  height: 16px;
+}
+
+.rp-icon--md {
+  width: 24px;
+  height: 24px;
+}
+
+.rp-icon--lg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Icon color variants (use with CSS color utilities) */
+.rp-icon--primary {
+  color: var(--rp-primary);
+}
+
+.rp-icon--success {
+  color: var(--rp-success);
+}
+
+.rp-icon--warning {
+  color: var(--rp-warning);
+}
+
+.rp-icon--danger {
+  color: var(--rp-danger);
+}
+
+.rp-icon--info {
+  color: var(--rp-info);
+}
+
+.rp-icon--muted {
+  color: var(--rp-text-muted);
+}
+
+/* Icon with text alignment */
+.rp-icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+}
+
+/* Icon animations */
+@keyframes rp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.rp-icon--spinning {
+  animation: rp-spin 1s linear infinite;
+}
+
+@keyframes rp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.rp-icon--pulsing {
+  animation: rp-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Form Validation States
+   ============================================ */
+
+/* Error state */
+.rp-form-group--error .rp-label {
+  color: var(--rp-danger);
+}
+
+.rp-form-group--error .rp-input,
+.rp-form-group--error .rp-select,
+.rp-form-group--error .rp-textarea {
+  border-color: var(--rp-danger);
+  background-color: var(--rp-danger-soft);
+}
+
+.rp-form-group--error .rp-input:focus,
+.rp-form-group--error .rp-select:focus,
+.rp-form-group--error .rp-textarea:focus {
+  border-color: var(--rp-danger);
+  box-shadow: 0 0 0 3px var(--rp-danger-soft);
+}
+
+.rp-form-error {
+  display: block;
+  color: var(--rp-danger);
+  font-size: var(--rp-font-size-sm);
+  margin-top: var(--rp-space-2);
+  font-weight: 500;
+}
+
+/* Success state */
+.rp-form-group--success .rp-label {
+  color: var(--rp-success);
+}
+
+.rp-form-group--success .rp-input,
+.rp-form-group--success .rp-select,
+.rp-form-group--success .rp-textarea {
+  border-color: var(--rp-success);
+  background-color: var(--rp-success-soft);
+}
+
+.rp-form-group--success .rp-input:focus,
+.rp-form-group--success .rp-select:focus,
+.rp-form-group--success .rp-textarea:focus {
+  border-color: var(--rp-success);
+  box-shadow: 0 0 0 3px var(--rp-success-soft);
+}
+
+.rp-form-success {
+  display: block;
+  color: var(--rp-success);
+  font-size: var(--rp-font-size-sm);
+  margin-top: var(--rp-space-2);
+  font-weight: 500;
+}
+
+/* Form hint text */
+.rp-form-hint {
+  display: block;
+  color: var(--rp-text-muted);
+  font-size: var(--rp-font-size-sm);
+  margin-top: var(--rp-space-1);
+}
+
+/* ============================================
+   Modal Dialog Component
+   ============================================ */
+
+.rp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--rp-transition-normal);
+}
+
+.rp-modal-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rp-modal {
+  background: var(--rp-surface);
+  border-radius: var(--rp-radius-lg);
+  box-shadow: var(--rp-shadow-xl);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform var(--rp-transition-normal);
+}
+
+.rp-modal-overlay--visible .rp-modal {
+  transform: scale(1);
+}
+
+.rp-modal__header {
+  padding: var(--rp-space-6);
+  border-bottom: 1px solid var(--rp-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rp-modal__header h2 {
+  margin: 0;
+  font-size: var(--rp-font-size-2xl);
+  color: var(--rp-text-title);
+}
+
+.rp-modal__body {
+  padding: var(--rp-space-6);
+}
+
+.rp-modal__footer {
+  padding: var(--rp-space-6);
+  border-top: 1px solid var(--rp-border);
+  display: flex;
+  gap: var(--rp-space-3);
+  justify-content: flex-end;
+}
+
+.rp-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--rp-text-muted);
+  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rp-radius-sm);
+  transition: background-color var(--rp-transition-fast);
+}
+
+.rp-modal__close:hover {
+  background-color: var(--rp-bg-subtle);
+  color: var(--rp-text-title);
+}
+
+/* ============================================
+   Tooltip Component
+   ============================================ */
+
+.rp-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.rp-tooltip__trigger {
+  cursor: help;
+  border-bottom: 1px dotted var(--rp-text-muted);
+}
+
+.rp-tooltip__content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: var(--rp-text-title);
+  color: white;
+  padding: var(--rp-space-2) var(--rp-space-3);
+  border-radius: var(--rp-radius-sm);
+  font-size: var(--rp-font-size-sm);
+  white-space: nowrap;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--rp-transition-fast);
+}
+
+.rp-tooltip__content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--rp-text-title);
+}
+
+.rp-tooltip:hover .rp-tooltip__content,
+.rp-tooltip:focus-within .rp-tooltip__content {
+  opacity: 1;
+}
+
+/* Tooltip variants */
+.rp-tooltip__content--dark {
+  background: var(--rp-text-title);
+  color: white;
+}
+
+.rp-tooltip__content--dark::after {
+  border-top-color: var(--rp-text-title);
+}
+
+.rp-tooltip__content--light {
+  background: white;
+  color: var(--rp-text-title);
+  border: 1px solid var(--rp-border);
+}
+
+.rp-tooltip__content--light::after {
+  border-top-color: white;
+}
+
+/* Top position (default) */
+.rp-tooltip__content--top {
+  bottom: 100%;
+  top: auto;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.rp-tooltip__content--top::after {
+  top: 100%;
+  bottom: auto;
+}
+
+/* Bottom position */
+.rp-tooltip__content--bottom {
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%) translateY(8px);
+}
+
+.rp-tooltip__content--bottom::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--rp-text-title);
+}
+
+/* ============================================
+   Toast Notification Component
+   ============================================ */
+
+.rp-toast-container {
+  position: fixed;
+  top: var(--rp-space-4);
+  right: var(--rp-space-4);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+  pointer-events: none;
+}
+
+.rp-toast {
+  background: white;
+  border-radius: var(--rp-radius-lg);
+  box-shadow: var(--rp-shadow-lg);
+  padding: var(--rp-space-4);
+  min-width: 300px;
+  max-width: 400px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rp-space-3);
+  animation: rp-toast-slide-in 0.3s ease var(--rp-transition-normal);
+  pointer-events: auto;
+}
+
+@keyframes rp-toast-slide-in {
+  from {
+    transform: translateX(calc(100% + 24px));
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.rp-toast--exit {
+  animation: rp-toast-slide-out 0.3s ease forwards;
+}
+
+@keyframes rp-toast-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(100% + 24px));
+    opacity: 0;
+  }
+}
+
+/* Toast variants */
+.rp-toast--success {
+  border-left: 4px solid var(--rp-success);
+}
+
+.rp-toast--warning {
+  border-left: 4px solid var(--rp-warning);
+}
+
+.rp-toast--danger {
+  border-left: 4px solid var(--rp-danger);
+}
+
+.rp-toast--info {
+  border-left: 4px solid var(--rp-info);
+}
+
+.rp-toast__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.rp-toast__success .rp-toast__icon {
+  color: var(--rp-success);
+}
+
+.rp-toast__warning .rp-toast__icon {
+  color: var(--rp-warning);
+}
+
+.rp-toast__danger .rp-toast__icon {
+  color: var(--rp-danger);
+}
+
+.rp-toast__info .rp-toast__icon {
+  color: var(--rp-info);
+}
+
+.rp-toast__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-1);
+}
+
+.rp-toast__title {
+  font-weight: 600;
+  color: var(--rp-text-title);
+  font-size: var(--rp-font-size-base);
+}
+
+.rp-toast__message {
+  color: var(--rp-text-body);
+  font-size: var(--rp-font-size-sm);
+}
+
+.rp-toast__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--rp-text-muted);
+  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rp-radius-sm);
+  transition: background-color var(--rp-transition-fast);
+}
+
+.rp-toast__close:hover {
+  background-color: var(--rp-bg-subtle);
+  color: var(--rp-text-title);
+}
+
+/* Progress bar for auto-dismiss */
+.rp-toast__progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rp-primary), transparent);
+  border-radius: 0 0 var(--rp-radius-lg) 0;
+  animation: rp-toast-progress 3s linear forwards;
+}
+
+@keyframes rp-toast-progress {
+  from { width: 100%; }
+  to { width: 0; }
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .rp-toast {
+    min-width: auto;
+    width: calc(100vw - var(--rp-space-4) * 2);
+  }
+
+  .rp-modal {
+    width: calc(100vw - var(--rp-space-4) * 2);
+  }
+
+  .rp-tooltip__content {
+    white-space: normal;
+    max-width: 200px;
+  }
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+
+/* System preference: Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    /* Colors - Core */
+    --rp-bg: #0F172A;
+    --rp-bg-subtle: #1E293B;
+    --rp-surface: #1E293B;
+    --rp-border: #334155;
+    --rp-border-strong: #475569;
+
+    /* Colors - Text */
+    --rp-text-title: #F1F5F9;
+    --rp-text-body: #CBD5E1;
+    --rp-text-muted: #64748B;
+
+    /* Colors - Status (adjusted for dark) */
+    --rp-success: #4ADE80;
+    --rp-success-soft: #1F4D38;
+    --rp-warning: #FBBF24;
+    --rp-warning-soft: #4D3D1C;
+    --rp-danger: #F87171;
+    --rp-danger-soft: #4D2626;
+    --rp-info: #38BDF8;
+    --rp-info-soft: #1E3A4D;
+
+    /* Brand color (slightly brighter in dark mode) */
+    --rp-primary: #60A5FA;
+    --rp-primary-hover: #93C5FD;
+    --rp-primary-soft: #1E3A8A;
+    --rp-primary-softer: #0F172A;
+  }
+}
+
+/* Manual dark mode toggle via data attribute */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --rp-bg: #0F172A;
+  --rp-bg-subtle: #1E293B;
+  --rp-surface: #1E293B;
+  --rp-border: #334155;
+  --rp-border-strong: #475569;
+  --rp-text-title: #F1F5F9;
+  --rp-text-body: #CBD5E1;
+  --rp-text-muted: #64748B;
+  --rp-success: #4ADE80;
+  --rp-success-soft: #1F4D38;
+  --rp-warning: #FBBF24;
+  --rp-warning-soft: #4D3D1C;
+  --rp-danger: #F87171;
+  --rp-danger-soft: #4D2626;
+  --rp-info: #38BDF8;
+  --rp-info-soft: #1E3A4D;
+  --rp-primary: #60A5FA;
+  --rp-primary-hover: #93C5FD;
+  --rp-primary-soft: #1E3A8A;
+  --rp-primary-softer: #0F172A;
+}
+
+/* Light mode override (for forcing light theme) */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  --rp-bg: #FFFFFF;
+  --rp-bg-subtle: #F8FAFC;
+  --rp-surface: #FFFFFF;
+  --rp-border: #E2E8F0;
+  --rp-border-strong: #CBD5E1;
+  --rp-text-title: #0F172A;
+  --rp-text-body: #475569;
+  --rp-text-muted: #94A3B8;
+  --rp-success: #22C55E;
+  --rp-success-soft: #DCFCE7;
+  --rp-warning: #F59E0B;
+  --rp-warning-soft: #FEF3C7;
+  --rp-danger: #EF4444;
+  --rp-danger-soft: #FEE2E2;
+  --rp-info: #0EA5E9;
+  --rp-info-soft: #E0F2FE;
+  --rp-primary: #2F5BFF;
+  --rp-primary-hover: #1E4AE8;
+  --rp-primary-soft: #EEF2FF;
+  --rp-primary-softer: #F5F8FF;
+}
+
+/* Smooth transition for theme switching */
+html {
+  transition: background-color var(--rp-transition-normal),
+              color var(--rp-transition-normal);
 }

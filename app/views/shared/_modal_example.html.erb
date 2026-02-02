@@ -1,0 +1,44 @@
+<%# Modal Component Example
+
+    Usage in a view:
+    <%= render "shared/modal_example", id: "confirm-delete", title: "Delete Item?" %>
+
+    To open from a button:
+    <button data-action="click->modal#open"
+            data-modal-target="trigger"
+            data-modal-id="confirm-delete">
+      Delete
+    </button>
+%>
+
+<div class="rp-modal-overlay"
+     data-controller="modal"
+     data-modal-target="overlay"
+     data-action="click->modal#closeOnBackdropClick">
+  <div class="rp-modal" data-modal-target="dialog">
+    <!-- Header -->
+    <div class="rp-modal__header">
+      <h2><%= yield(:title) || "Confirm Action" %></h2>
+      <button class="rp-modal__close"
+              data-action="click->modal#close"
+              aria-label="Close">
+        ×
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="rp-modal__body">
+      <%= yield %>
+    </div>
+
+    <!-- Footer -->
+    <div class="rp-modal__footer">
+      <button class="rp-btn rp-btn--secondary" data-action="click->modal#close">
+        Cancel
+      </button>
+      <button class="rp-btn rp-btn--primary" data-action="click->modal#close">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<%# Toast Notification Container
+
+    Include once in your layout:
+    <%= render "shared/toast_container" %>
+
+    Usage in controllers/views:
+    Rails redirect_to with notice/alert (auto-rendered):
+      redirect_to @item, notice: "Item saved successfully"
+      redirect_to @item, alert: "An error occurred"
+
+    Or JavaScript API:
+    <script>
+      window.Toast.success("Changes saved!")
+      window.Toast.warning("Be careful!")
+      window.Toast.error("Something went wrong")
+      window.Toast.info("Did you know...")
+    </script>
+%>
+
+<div id="toast-container"
+     class="rp-toast-container"
+     data-controller="toast"
+     data-toast-target="container"
+     aria-live="polite"
+     aria-atomic="false">
+</div>
+
+<!-- Screen reader announcer for dismissals -->
+<div id="toast-announcer"
+     class="sr-only"
+     aria-live="polite"
+     aria-atomic="true">
+</div>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

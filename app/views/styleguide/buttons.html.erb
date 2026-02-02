@@ -1,0 +1,186 @@
+<div class="rp-styleguide__content-header">
+  <h1>Buttons</h1>
+  <p class="rp-styleguide__description">
+    Buttons are interactive elements that trigger actions. ReadingPRO provides multiple variants
+    for different use cases and importance levels.
+  </p>
+</div>
+
+<section class="rp-styleguide__section">
+  <h2>Button Variants</h2>
+
+  <h3>Primary Button</h3>
+  <p>Use for main call-to-action. Only one primary button per page.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary">Primary Action</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary"&gt;Primary Action&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Secondary Button</h3>
+  <p>Use for alternative actions or cancel buttons.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--secondary">Secondary Action</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--secondary"&gt;Secondary Action&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Ghost Button</h3>
+  <p>Use for tertiary actions or when space is limited.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--ghost">Ghost Action</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--ghost"&gt;Ghost Action&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Success Button</h3>
+  <p>Use for positive actions or confirmations.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--success">Approve</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--success"&gt;Approve&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Danger Button</h3>
+  <p>Use for destructive actions that cannot be undone.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--danger">Delete</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--danger"&gt;Delete&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Disabled Button</h3>
+  <p>Use to indicate an action is currently unavailable.</p>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary" disabled>Disabled</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary" disabled&gt;Disabled&lt;/button&gt;</pre></div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Button Sizes</h2>
+
+  <h3>Small Button</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary rp-btn--sm">Small</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary rp-btn--sm"&gt;Small&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Normal Button (Default)</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary">Normal</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary"&gt;Normal&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Large Button</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary rp-btn--lg">Large</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary rp-btn--lg"&gt;Large&lt;/button&gt;</pre></div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Button with Icon</h2>
+
+  <h3>Icon with Text</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--primary">
+        <%= icon('check', size: 16, aria_hidden: true) %>
+        <span>Submit</span>
+      </button>
+      <button class="rp-btn rp-btn--secondary">
+        <%= icon('download', size: 16, aria_hidden: true) %>
+        <span>Export</span>
+      </button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--primary"&gt;
+  &lt;svg class="rp-icon" aria-hidden="true"&gt;...&lt;/svg&gt;
+  &lt;span&gt;Submit&lt;/span&gt;
+&lt;/button&gt;</pre></div>
+  </div>
+
+  <h3>Icon Only</h3>
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview">
+      <button class="rp-btn rp-btn--ghost" aria-label="Delete">
+        <%= icon('delete', size: 20, aria_hidden: true) %>
+      </button>
+      <button class="rp-btn rp-btn--ghost" aria-label="Edit">
+        <%= icon('edit', size: 20, aria_hidden: true) %>
+      </button>
+      <button class="rp-btn rp-btn--ghost" aria-label="Settings">
+        <%= icon('settings', size: 20, aria_hidden: true) %>
+      </button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;button class="rp-btn rp-btn--ghost" aria-label="Delete"&gt;
+  &lt;svg class="rp-icon"&gt;...&lt;/svg&gt;
+&lt;/button&gt;</pre></div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Button Groups</h2>
+
+  <div class="rp-styleguide__example">
+    <div class="rp-styleguide__preview" style="gap: var(--rp-space-3);">
+      <button class="rp-btn rp-btn--primary">Save</button>
+      <button class="rp-btn rp-btn--secondary">Cancel</button>
+    </div>
+    <div class="rp-styleguide__code"><pre>&lt;div class="rp-button-group"&gt;
+  &lt;button class="rp-btn rp-btn--primary"&gt;Save&lt;/button&gt;
+  &lt;button class="rp-btn rp-btn--secondary"&gt;Cancel&lt;/button&gt;
+&lt;/div&gt;</pre></div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Best Practices</h2>
+
+  <div class="rp-card rp-card--highlight" style="margin-bottom: var(--rp-space-4);">
+    <div class="rp-card__body">
+      <h3 style="margin-top: 0;">✅ Do</h3>
+      <ul>
+        <li>Use primary button for the main action</li>
+        <li>Use descriptive text ("Save Changes" not "OK")</li>
+        <li>Disable buttons for invalid states instead of hiding them</li>
+        <li>Add aria-label to icon-only buttons</li>
+        <li>Use appropriate color for button intent</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rp-card rp-card--highlight rp-card--danger" style="margin-bottom: var(--rp-space-4);">
+    <div class="rp-card__body">
+      <h3 style="margin-top: 0;">❌ Don't</h3>
+      <ul>
+        <li>Use all caps text (CSS handles this)</li>
+        <li>Mix primary and secondary buttons randomly</li>
+        <li>Use danger color for non-destructive actions</li>
+        <li>Create button-like links (use &lt;a&gt; tags)</li>
+        <li>Disable buttons without explanation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="rp-styleguide__section">
+  <h2>Accessibility</h2>
+  <p>
+    All buttons are fully accessible with keyboard navigation, focus indicators, and screen reader support.
+    Always ensure button text is descriptive and labels are provided for icon-only buttons.
+  </p>
+</section>
