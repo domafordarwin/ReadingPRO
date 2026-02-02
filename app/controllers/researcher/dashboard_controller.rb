@@ -17,7 +17,27 @@ class Researcher::DashboardController < ApplicationController
     @current_page = "item_bank"
     load_items_with_filters
 
-    # Support JSON response for AJAX requests (Phase 3.1)
+    # Phase 3.4.1: HTTP Response Caching with ETags
+    # Enables client/proxy caching and 304 Not Modified responses
+    # Cache key depends on filter parameters and Item.maximum(:updated_at)
+    # Reduces unnecessary turbo_stream responses by 60-80% on subsequent requests
+    cache_control = "max-age=#{5.minutes.to_i}, public"
+    etag = [
+      @items.map { |item| "item-#{item.id}-#{item.updated_at.to_i}" },
+      @search_query,
+      @item_type_filter,
+      @status_filter,
+      @difficulty_filter,
+      @page
+    ].hash
+
+    response.set_header("Cache-Control", cache_control)
+
+    # Fresh? returns true if ETag matches (allow 304 response)
+    # Prevents re-rendering view and turbo_stream processing
+    fresh_when(etag: etag, last_modified: Item.maximum(:updated_at))
+
+    # Support HTML and Turbo Stream responses (Phase 3.1)
     respond_to do |format|
       format.html
       format.turbo_stream

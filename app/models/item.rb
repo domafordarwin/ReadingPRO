@@ -15,6 +15,11 @@ class Item < ApplicationRecord
   has_many :diagnostic_form_items, dependent: :destroy
   has_many :responses, dependent: :destroy
 
+  # Phase 3.4.1: Cache invalidation hooks
+  # Invalidates HTTP caches whenever Item is created/updated/destroyed
+  after_save :invalidate_item_caches
+  after_destroy :invalidate_item_caches
+
   # Enums
   enum :item_type, { mcq: 'mcq', constructed: 'constructed' }
   enum :difficulty, { easy: 'easy', medium: 'medium', hard: 'hard' }
@@ -57,5 +62,12 @@ class Item < ApplicationRecord
     if sub_indicator_id.present? && evaluation_indicator_id.blank?
       errors.add(:evaluation_indicator_id, 'must be provided when sub_indicator is set')
     end
+  end
+
+  # Phase 3.4.1: Invalidate HTTP response caches
+  # Called after_save and after_destroy to clear ETags
+  # This forces fresh_when in dashboard_controller to re-render
+  def invalidate_item_caches
+    CacheWarmerService.invalidate_item_caches
   end
 end
