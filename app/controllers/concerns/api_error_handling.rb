@@ -16,6 +16,19 @@ module ApiErrorHandling
 
   def handle_error(exception)
     Rails.logger.error("API Error: #{exception.message}\n#{exception.backtrace.first(5).join("\n")}")
+
+    # Phase 3.6: Capture API errors to Sentry with context
+    if defined?(Sentry)
+      Sentry.capture_exception(
+        exception,
+        level: 'error',
+        extra: {
+          endpoint: "#{request.method} #{request.path}",
+          params: request.params.except(:controller, :action, :format)
+        }
+      )
+    end
+
     render_error({ code: 'SERVER_ERROR', message: 'Internal server error' }, :internal_server_error)
   end
 

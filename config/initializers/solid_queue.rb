@@ -17,11 +17,22 @@ Rails.application.config.after_initialize do
   if defined?(SolidQueue)
     Rails.logger.info '[SolidQueue] Initialized for background job processing'
 
-    # Error handling
+    # Phase 3.6: Error handling with Sentry integration
     SolidQueue.on_thread_error do |exception|
       Rails.logger.error(
         "[SolidQueue] Thread error: #{exception.class} - #{exception.message}\n#{exception.backtrace.first(5).join("\n")}"
       )
+
+      # Capture to Sentry
+      if defined?(Sentry)
+        Sentry.capture_exception(
+          exception,
+          level: 'error',
+          extra: {
+            source: 'SolidQueue'
+          }
+        )
+      end
     end
   end
 end
