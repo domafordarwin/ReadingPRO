@@ -18,7 +18,17 @@ class Researcher::DashboardController < ApplicationController
 
   def item_bank
     @current_page = "item_bank"
+
+    # Phase 3.4.4: Query instrumentation for performance tracking
+    # Measures total query time for item filtering and pagination
+    start_time = Time.current
     load_items_with_filters
+    query_time = ((Time.current - start_time) * 1000).round(2)
+
+    # Log query performance for monitoring
+    if Rails.env.development?
+      Rails.logger.info "[Item Bank Query] #{query_time}ms | Items: #{@items.count} | Cursor: #{@cursor}"
+    end
 
     # Phase 3.4.1: HTTP Response Caching with ETags
     # Enables client/proxy caching and 304 Not Modified responses
