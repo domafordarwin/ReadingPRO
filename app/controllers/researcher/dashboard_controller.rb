@@ -106,54 +106,81 @@ class Researcher::DashboardController < ApplicationController
     @item_type_filter = params[:item_type].to_s.strip
     @status_filter = params[:status].to_s.strip
     @difficulty_filter = params[:difficulty].to_s.strip
+    @cursor = params[:cursor]
+    @direction = params[:direction].presence || "forward"
 
-    # Phase 3.1: Optimized base query with eager loading
-    # Includes all necessary associations to prevent N+1 queries
-    @items = Item.includes(:stimulus, :evaluation_indicator, :sub_indicator, rubric: { rubric_criteria: :rubric_levels })
+    # Phase 3.1: Optimized base query WITHOUT eager loading initially
+    # We'll apply eager loading after keyset pagination for better performance
+    @items_relation = Item.all
 
     # 검색 (using indexed fields)
     if @search_query.present?
-      @items = @items.where("items.code ILIKE :q OR items.prompt ILIKE :q", q: "%#{@search_query}%")
+      @items_relation = @items_relation.where("items.code ILIKE :q OR items.prompt ILIKE :q", q: "%#{@search_query}%")
     end
 
     # item_type 필터 (using composite index)
     if @item_type_filter.present? && Item.item_types.key?(@item_type_filter)
-      @items = @items.where(item_type: @item_type_filter)
+      @items_relation = @items_relation.where(item_type: @item_type_filter)
     end
 
     # status 필터 (using composite index)
     if @status_filter.present? && Item.statuses.key?(@status_filter)
-      @items = @items.where(status: @status_filter)
+      @items_relation = @items_relation.where(status: @status_filter)
     end
 
     # difficulty 필터 (using composite index)
     if @difficulty_filter.present?
-      @items = @items.where(difficulty: @difficulty_filter)
+      @items_relation = @items_relation.where(difficulty: @difficulty_filter)
     end
 
     # 정렬 (using idx_items_created_at_id index)
-    @items = @items.order(created_at: :desc, id: :desc)
+    @items_relation = @items_relation.order(created_at: :desc, id: :desc)
 
-    # Phase 3.1: Optimized pagination
-    # Cache total count for first page only (expensive operation)
-    @page = [params[:page].to_i, 1].max
+    # Phase 3.4.2: Keyset-based pagination (O(1) performance)
+    # Replaces expensive offset-based pagination
+    # Benefits: No OFFSET scanning, consistent ordering, ideal for real-time data
     @per_page = 25
+    paginator = KeysetPaginationService.new(@items_relation, per_page: @per_page)
+    page_result = paginator.fetch_page(cursor: @cursor, direction: @direction)
 
-    # For first page, get accurate count; for later pages, use estimate
-    if @page == 1
-      @total_count = @items.count
+    # Apply eager loading AFTER keyset pagination (on the fetched IDs)
+    # This is more efficient than eager loading the entire relation
+    item_ids = page_result[:items].map(&:id)
+    @items = Item.includes(:stimulus, :evaluation_indicator, :sub_indicator, rubric: { rubric_criteria: :rubric_levels })
+                 .where(id: item_ids)
+                 .order(created_at: :desc, id: :desc)
+                 .to_a
+
+    @next_cursor = page_result[:next_cursor]
+    @prev_cursor = page_result[:prev_cursor]
+    @has_next = page_result[:has_next]
+    @has_prev = page_result[:has_prev]
+
+    # For backward compatibility with view templates that expect @page/@total_pages
+    # These are approximate values for UI display only
+    @page = @cursor.present? ? "..." : 1
+    @total_pages = @has_next ? "..." : 1
+
+    # Get exact total count only for first page (for stats display)
+    # For other pages, use a cached or estimated value
+    if @cursor.blank?
+      @total_count = @items_relation.count
+      Rails.cache.write("items_total_count_#{filter_cache_key}", @total_count, expires_in: 1.hour)
     else
-      # Use estimate for performance (can be slightly inaccurate)
-      @total_count = @items.limit(10000).count
+      @total_count = Rails.cache.read("items_total_count_#{filter_cache_key}") || @items_relation.count
     end
-
-    @total_pages = (@total_count.to_f / @per_page).ceil
-    @items = @items.offset((@page - 1) * @per_page).limit(@per_page)
 
     # 필터링 옵션 (cached in memory)
     @available_item_types = Item.item_types.keys
     @available_statuses = Item.statuses.keys
     @available_difficulties = ['상', '중', '하']
+  end
+
+  private
+
+  # Generate cache key for current filter combination
+  def filter_cache_key
+    [@search_query, @item_type_filter, @status_filter, @difficulty_filter].join(":")
   end
 
   def load_forms_with_filters

@@ -88,6 +88,32 @@
     border-color: #667eea;
   }
 
+  /* Phase 3.4.2: Cursor-based pagination styling */
+  .pagination-btn {
+    padding: 10px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .pagination-btn:hover {
+    background: #764ba2;
+  }
+
+  .pagination-disabled {
+    padding: 10px 16px;
+    background: #f0f0f0;
+    color: #ccc;
+    border-radius: 4px;
+    cursor: not-allowed;
+    font-weight: 600;
+  }
+
   .portal-table tbody tr {
     cursor: pointer;
     transition: background 0.2s;
