@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_003952) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -136,14 +136,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_000003) do
     t.jsonb "tags", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_items_on_category"
+    t.index ["code"], name: "idx_items_code_search"
     t.index ["code"], name: "index_items_on_code", unique: true
+    t.index ["created_at", "id"], name: "idx_items_created_at_id"
     t.index ["created_by_id"], name: "index_items_on_created_by_id"
     t.index ["difficulty"], name: "index_items_on_difficulty"
+    t.index ["evaluation_indicator_id", "status", "difficulty"], name: "idx_items_indicator_status_difficulty"
     t.index ["evaluation_indicator_id", "sub_indicator_id"], name: "index_items_on_evaluation_indicator_id_and_sub_indicator_id"
     t.index ["evaluation_indicator_id"], name: "index_items_on_evaluation_indicator_id"
     t.index ["item_type"], name: "index_items_on_item_type"
+    t.index ["status", "difficulty"], name: "idx_items_status_difficulty"
     t.index ["status"], name: "index_items_on_status"
     t.index ["stimulus_id"], name: "index_items_on_stimulus_id"
+    t.index ["sub_indicator_id", "status"], name: "idx_items_sub_indicator_status"
     t.index ["sub_indicator_id"], name: "index_items_on_sub_indicator_id"
   end
 
@@ -162,11 +167,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_000003) do
     t.text "body", null: false
     t.datetime "created_at", null: false
     t.bigint "created_by_id"
+    t.integer "items_count", default: 0
     t.string "reading_level"
     t.string "source"
     t.string "title"
     t.datetime "updated_at", null: false
     t.integer "word_count"
+    t.index ["created_at"], name: "idx_reading_stimuli_created_at"
     t.index ["created_by_id"], name: "index_reading_stimuli_on_created_by_id"
     t.index ["reading_level"], name: "index_reading_stimuli_on_reading_level"
   end

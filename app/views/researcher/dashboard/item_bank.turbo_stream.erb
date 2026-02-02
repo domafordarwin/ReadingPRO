@@ -1,0 +1,18 @@
+<!-- Phase 3.1: Turbo Stream responses for item bank search/filter updates -->
+<!-- This template is rendered when format.turbo_stream is requested -->
+<!-- It updates the page without full reload -->
+
+<turbo-stream action="replace" target="items-table">
+  <template>
+    <%= render "items_table" %>
+  </template>
+</turbo-stream>
+
+<turbo-stream action="replace" target="stats">
+  <template>
+    <div class="stats-row">
+      <span>전체: <strong><%= @total_count %></strong>건</span>
+      <span>페이지: <strong><%= @page %> / <%= @total_pages %></strong></span>
+    </div>
+  </template>
+</turbo-stream>

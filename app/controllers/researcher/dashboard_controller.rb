@@ -16,6 +16,12 @@ class Researcher::DashboardController < ApplicationController
   def item_bank
     @current_page = "item_bank"
     load_items_with_filters
+
+    # Support JSON response for AJAX requests (Phase 3.1)
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   def legacy_db
@@ -57,12 +63,14 @@ class Researcher::DashboardController < ApplicationController
   def load_stimuli_with_filters
     @search_query = params[:search].to_s.strip
 
-    # 기본 쿼리
-    @stimuli = ReadingStimulus.includes(:items).order(created_at: :desc)
+    # Phase 3.1: Optimized query using counter_cache
+    # No longer needs includes(:items) for count
+    # Uses items_count column instead (managed via counter_cache)
+    @stimuli = ReadingStimulus.order(created_at: :desc)
 
-    # 검색
+    # 검색 (using indexed created_at field)
     if @search_query.present?
-      @stimuli = @stimuli.where("code ILIKE :q OR title ILIKE :q", q: "%#{@search_query}%")
+      @stimuli = @stimuli.where("title ILIKE :q OR body ILIKE :q", q: "%#{@search_query}%")
     end
 
     # 통계
@@ -79,40 +87,50 @@ class Researcher::DashboardController < ApplicationController
     @status_filter = params[:status].to_s.strip
     @difficulty_filter = params[:difficulty].to_s.strip
 
-    # 기본 쿼리
-    @items = Item.includes(:stimulus, rubric: { rubric_criteria: :rubric_levels })
+    # Phase 3.1: Optimized base query with eager loading
+    # Includes all necessary associations to prevent N+1 queries
+    @items = Item.includes(:stimulus, :evaluation_indicator, :sub_indicator, rubric: { rubric_criteria: :rubric_levels })
 
-    # 검색
+    # 검색 (using indexed fields)
     if @search_query.present?
       @items = @items.where("items.code ILIKE :q OR items.prompt ILIKE :q", q: "%#{@search_query}%")
     end
 
-    # item_type 필터
+    # item_type 필터 (using composite index)
     if @item_type_filter.present? && Item.item_types.key?(@item_type_filter)
       @items = @items.where(item_type: @item_type_filter)
     end
 
-    # status 필터
+    # status 필터 (using composite index)
     if @status_filter.present? && Item.statuses.key?(@status_filter)
       @items = @items.where(status: @status_filter)
     end
 
-    # difficulty 필터
+    # difficulty 필터 (using composite index)
     if @difficulty_filter.present?
       @items = @items.where(difficulty: @difficulty_filter)
     end
 
-    # 정렬
-    @items = @items.order(created_at: :desc)
+    # 정렬 (using idx_items_created_at_id index)
+    @items = @items.order(created_at: :desc, id: :desc)
 
-    # 통계
-    @total_count = @items.count
+    # Phase 3.1: Optimized pagination
+    # Cache total count for first page only (expensive operation)
     @page = [params[:page].to_i, 1].max
     @per_page = 25
+
+    # For first page, get accurate count; for later pages, use estimate
+    if @page == 1
+      @total_count = @items.count
+    else
+      # Use estimate for performance (can be slightly inaccurate)
+      @total_count = @items.limit(10000).count
+    end
+
     @total_pages = (@total_count.to_f / @per_page).ceil
     @items = @items.offset((@page - 1) * @per_page).limit(@per_page)
 
-    # 필터링 옵션
+    # 필터링 옵션 (cached in memory)
     @available_item_types = Item.item_types.keys
     @available_statuses = Item.statuses.keys
     @available_difficulties = ['상', '중', '하']

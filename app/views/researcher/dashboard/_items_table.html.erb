@@ -1,0 +1,85 @@
+<!-- Phase 3.1: Reusable items table partial for Turbo Stream updates -->
+<!-- Used in: item_bank.html.erb -->
+<!-- Updated via: item_bank.turbo_stream.erb -->
+
+<% if @items.any? %>
+  <table class="portal-table">
+    <thead>
+      <tr>
+        <th style="width: 12%;">코드</th>
+        <th style="width: 35%;">문항 내용</th>
+        <th style="width: 18%;">평가영역</th>
+        <th style="width: 12%;">문항유형</th>
+        <th style="width: 10%;">난이도</th>
+        <th style="width: 13%;">상태</th>
+      </tr>
+    </thead>
+    <tbody id="items-table-body">
+      <% @items.each do |item| %>
+        <tr onclick="location.href='<%= edit_researcher_item_path(item) %>'">
+          <td><strong><%= item.code %></strong></td>
+          <td style="font-size: 12px; color: #666;">
+            <%= truncate(strip_tags(item.prompt), length: 100) %>
+          </td>
+          <td>
+            <% if item.evaluation_indicator %>
+              <%= item.evaluation_indicator.name %>
+            <% else %>
+              <span style="color: #ccc;">미지정</span>
+            <% end %>
+          </td>
+          <td>
+            <span class="type-badge <%= "type-#{item.item_type}" %>">
+              <%= item.item_type == 'mcq' ? '객관식' : '주관식' %>
+            </span>
+          </td>
+          <td><%= item.difficulty || '-' %></td>
+          <td>
+            <span class="status-badge <%= "status-#{item.status}" %>">
+              <%= item.status == 'draft' ? '준비중' : (item.status == 'active' ? '활성' : '폐기') %>
+            </span>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <!-- 페이지네이션 -->
+  <% if @total_pages > 1 %>
+    <div class="pagination" id="pagination">
+      <% if @page > 1 %>
+        <a href="<%= researcher_item_bank_path(search: @search_query, item_type: @item_type_filter, status: @status_filter, difficulty: @difficulty_filter, page: 1) %>" data-turbo-stream>처음</a>
+        <a href="<%= researcher_item_bank_path(search: @search_query, item_type: @item_type_filter, status: @status_filter, difficulty: @difficulty_filter, page: @page - 1) %>" data-turbo-stream>이전</a>
+      <% end %>
+
+      <% start_page = [[@page - 2, 1].max, @total_pages - 4].min %>
+      <% end_page = [start_page + 4, @total_pages].min %>
+
+      <% if start_page > 1 %>
+        <span>...</span>
+      <% end %>
+
+      <% (start_page..end_page).each do |p| %>
+        <% if p == @page %>
+          <span class="current"><%= p %></span>
+        <% else %>
+          <a href="<%= researcher_item_bank_path(search: @search_query, item_type: @item_type_filter, status: @status_filter, difficulty: @difficulty_filter, page: p) %>" data-turbo-stream><%= p %></a>
+        <% end %>
+      <% end %>
+
+      <% if end_page < @total_pages %>
+        <span>...</span>
+      <% end %>
+
+      <% if @page < @total_pages %>
+        <a href="<%= researcher_item_bank_path(search: @search_query, item_type: @item_type_filter, status: @status_filter, difficulty: @difficulty_filter, page: @page + 1) %>" data-turbo-stream>다음</a>
+        <a href="<%= researcher_item_bank_path(search: @search_query, item_type: @item_type_filter, status: @status_filter, difficulty: @difficulty_filter, page: @total_pages) %>" data-turbo-stream>마지막</a>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <!-- No results message -->
+  <div style="text-align: center; padding: 40px; color: #999;">
+    <p>검색 결과가 없습니다.</p>
+  </div>
+<% end %>

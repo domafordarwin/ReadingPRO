@@ -2,7 +2,7 @@
 
 class Item < ApplicationRecord
   # Associations - Assessment Content
-  belongs_to :stimulus, class_name: 'ReadingStimulus', foreign_key: 'stimulus_id', optional: true
+  belongs_to :stimulus, class_name: 'ReadingStimulus', foreign_key: 'stimulus_id', optional: true, counter_cache: :items_count
   belongs_to :teacher, foreign_key: 'created_by_id', optional: true
 
   # Associations - Learning Standards (NEW)
