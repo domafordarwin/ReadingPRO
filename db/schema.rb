@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -107,6 +107,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_120000) do
     t.index ["created_by_id"], name: "index_feedbacks_on_created_by_id"
     t.index ["feedback_type"], name: "index_feedbacks_on_feedback_type"
     t.index ["response_id"], name: "index_feedbacks_on_response_id"
+  end
+
+  create_table "hourly_performance_aggregates", force: :cascade do |t|
+    t.boolean "alert_sent", default: false
+    t.float "avg_value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "hour", null: false
+    t.float "max_value"
+    t.string "metric_type", null: false
+    t.float "min_value"
+    t.float "p50_value"
+    t.float "p95_value"
+    t.float "p99_value"
+    t.integer "sample_count", null: false
+    t.datetime "updated_at", null: false
+    t.index ["hour"], name: "index_hourly_performance_aggregates_on_hour"
+    t.index ["metric_type", "alert_sent"], name: "idx_on_metric_type_alert_sent_4acd541997"
+    t.index ["metric_type", "hour"], name: "index_hourly_agg_type_hour", unique: true
+    t.index ["metric_type"], name: "index_hourly_performance_aggregates_on_metric_type"
   end
 
   create_table "item_choices", force: :cascade do |t|
