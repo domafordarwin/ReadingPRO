@@ -170,10 +170,10 @@ class Researcher::DashboardController < ApplicationController
       @total_count = Rails.cache.read("items_total_count_#{filter_cache_key}") || @items_relation.count
     end
 
-    # 필터링 옵션 (cached in memory)
-    @available_item_types = Item.item_types.keys
-    @available_statuses = Item.statuses.keys
-    @available_difficulties = ['상', '중', '하']
+    # 필터링 옵션 (Phase 3.4.1: Use CacheWarmerService for consistent caching)
+    @available_item_types = CacheWarmerService.get_item_types
+    @available_statuses = CacheWarmerService.get_item_statuses
+    @available_difficulties = CacheWarmerService.get_item_difficulties
   end
 
   private
