@@ -1,27 +1,183 @@
 <header class="admin-header">
   <div>
-    <h1 class="admin-title">시스템 유지</h1>
-    <p class="admin-subtitle">운영 상태와 유지관리 작업을 확인합니다.</p>
+    <h1 class="admin-title">시스템 성능 모니터링</h1>
+    <p class="admin-subtitle">실시간 성능 지표 및 사용자 경험 메트릭</p>
   </div>
 </header>
 
-<section class="admin-grid">
-  <div class="admin-stat">
-    <div class="admin-stat-label">서비스 상태</div>
-    <div class="admin-stat-value">정상</div>
-  </div>
-  <div class="admin-stat">
-    <div class="admin-stat-label">최근 배포</div>
-    <div class="admin-stat-value">2026-01-27</div>
-  </div>
-  <div class="admin-stat">
-    <div class="admin-stat-label">백업 상태</div>
-    <div class="admin-stat-value">정상</div>
+<!-- Phase 3.5.4: Real-time Performance Metrics -->
+<section class="admin-section">
+  <h2>📊 실시간 성능 지표 (최근 5분)</h2>
+  <p class="admin-description">서버 성능 및 쿼리 효율성</p>
+
+  <div class="admin-grid">
+    <!-- Page Load Time -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">평균 페이지 로드 시간</div>
+      <div class="admin-stat-value <%= status_class(@current_metrics[:avg_page_load], 500, 1000) %>">
+        <%= @current_metrics[:avg_page_load] %>ms
+      </div>
+      <div class="admin-stat-meta">
+        P95: <%= recent_percentile_metric('page_load', 95, 5.minutes) %>ms
+      </div>
+    </div>
+
+    <!-- Query Time -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">평균 쿼리 시간</div>
+      <div class="admin-stat-value <%= status_class(@current_metrics[:avg_query_time], 100, 200) %>">
+        <%= @current_metrics[:avg_query_time] %>ms
+      </div>
+    </div>
+
+    <!-- Cache Hit Rate -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">캐시 히트율</div>
+      <div class="admin-stat-value <%= cache_status_class(@current_metrics[:cache_hit_rate]) %>">
+        <%= number_to_percentage(@current_metrics[:cache_hit_rate], precision: 1) %>
+      </div>
+    </div>
+
+    <!-- Metric Samples -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">수집된 샘플</div>
+      <div class="admin-stat-value">
+        <%= @metric_counts[:page_load_samples] %>
+      </div>
+      <div class="admin-stat-meta">
+        최근 1시간
+      </div>
+    </div>
   </div>
 </section>
 
 <div class="admin-divider"></div>
 
+<!-- Phase 3.5.3: Web Vitals Summary -->
+<section class="admin-section">
+  <h2>🌐 Web Vitals (사용자 경험 지표)</h2>
+  <p class="admin-description">실제 사용자 브라우저에서 수집된 메트릭 (최근 1시간)</p>
+
+  <div class="admin-grid">
+    <!-- FCP -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">FCP (First Contentful Paint)</div>
+      <div class="admin-stat-value <%= status_class(@web_vitals[:fcp_avg], 700, 1200) %>">
+        <%= @web_vitals[:fcp_avg] %>ms
+      </div>
+      <div class="admin-stat-meta">좋음: ≤700ms</div>
+    </div>
+
+    <!-- LCP -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">LCP (Largest Contentful Paint)</div>
+      <div class="admin-stat-value <%= status_class(@web_vitals[:lcp_avg], 900, 1500) %>">
+        <%= @web_vitals[:lcp_avg] %>ms
+      </div>
+      <div class="admin-stat-meta">좋음: ≤900ms</div>
+    </div>
+
+    <!-- CLS -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">CLS (Cumulative Layout Shift)</div>
+      <div class="admin-stat-value <%= cls_status_class(@web_vitals[:cls_avg]) %>">
+        <%= @web_vitals[:cls_avg].round(3) %>
+      </div>
+      <div class="admin-stat-meta">좋음: ≤0.1</div>
+    </div>
+
+    <!-- INP -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">INP (Interaction to Next Paint)</div>
+      <div class="admin-stat-value <%= status_class(@web_vitals[:inp_avg], 200, 500) %>">
+        <%= @web_vitals[:inp_avg] %>ms
+      </div>
+      <div class="admin-stat-meta">좋음: ≤200ms</div>
+    </div>
+
+    <!-- TTFB -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">TTFB (Time to First Byte)</div>
+      <div class="admin-stat-value <%= status_class(@web_vitals[:ttfb_avg], 300, 600) %>">
+        <%= @web_vitals[:ttfb_avg] %>ms
+      </div>
+      <div class="admin-stat-meta">좋음: ≤300ms</div>
+    </div>
+
+    <!-- Sample Count -->
+    <div class="admin-stat">
+      <div class="admin-stat-label">Web Vitals 샘플</div>
+      <div class="admin-stat-value">
+        <%= @metric_counts[:web_vitals_samples] %>
+      </div>
+      <div class="admin-stat-meta">최근 1시간</div>
+    </div>
+  </div>
+</section>
+
+<div class="admin-divider"></div>
+
+<!-- Hourly Trends -->
+<section class="admin-section">
+  <h2>📈 24시간 추이</h2>
+  <p class="admin-description">시간별 성능 변화</p>
+
+  <div class="admin-trends">
+    <% @metric_trends.each do |metric_type, trend_data| %>
+      <div class="admin-trend-card">
+        <h3><%= metric_type.to_s.upcase %> 추이</h3>
+        <div class="admin-trend-data">
+          <% if trend_data.empty? %>
+            <p class="admin-muted">데이터 없음</p>
+          <% else %>
+            <% trend_data.each do |hour, avg_value| %>
+              <div class="admin-trend-item">
+                <span class="admin-trend-time"><%= hour %></span>
+                <span class="admin-trend-value"><%= avg_value.round(2) %></span>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<div class="admin-divider"></div>
+
+<!-- System Status -->
+<section class="admin-section">
+  <h2>⚙️ 시스템 상태</h2>
+
+  <div class="admin-grid">
+    <div class="admin-stat">
+      <div class="admin-stat-label">총 수집 메트릭 (24h)</div>
+      <div class="admin-stat-value">
+        <%= @metric_counts[:total_metrics_24h] %>
+      </div>
+    </div>
+
+    <div class="admin-stat">
+      <div class="admin-stat-label">모니터링 상태</div>
+      <div class="admin-stat-value status-green">활성</div>
+    </div>
+
+    <div class="admin-stat">
+      <div class="admin-stat-label">마지막 업데이트</div>
+      <div class="admin-stat-value">
+        <% if @metric_counts[:total_metrics_24h] > 0 %>
+          방금
+        <% else %>
+          데이터 대기 중
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="admin-divider"></div>
+
+<!-- Maintenance -->
 <section class="admin-grid">
   <div class="admin-card">
     <h2>유지관리 작업</h2>
@@ -32,7 +188,17 @@
     </div>
   </div>
   <div class="admin-card">
-    <h2>시스템 알림</h2>
-    <p class="admin-muted">현재 처리 중인 알림이 없습니다.</p>
+    <h2>성능 알림</h2>
+    <% if @current_metrics[:avg_page_load] > 1000 %>
+      <div class="admin-alert alert-warning">
+        ⚠️ 평균 페이지 로드 시간이 높습니다 (<%= @current_metrics[:avg_page_load] %>ms)
+      </div>
+    <% elsif @current_metrics[:avg_query_time] > 200 %>
+      <div class="admin-alert alert-warning">
+        ⚠️ 평균 쿼리 시간이 높습니다 (<%= @current_metrics[:avg_query_time] %>ms)
+      </div>
+    <% else %>
+      <p class="admin-muted">✅ 모든 지표가 정상입니다</p>
+    <% end %>
   </div>
 </section>

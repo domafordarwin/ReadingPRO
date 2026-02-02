@@ -1791,3 +1791,237 @@
     max-width: calc(100% - 32px);
   }
 }
+
+/* ============================================
+   Admin Dashboard - Phase 3.5.4
+   ============================================ */
+
+.admin-header {
+  margin-bottom: var(--rp-space-8);
+}
+
+.admin-title {
+  font-size: var(--rp-font-size-3xl);
+  font-weight: 700;
+  color: var(--rp-text-title);
+  margin: 0 0 var(--rp-space-2);
+}
+
+.admin-subtitle {
+  font-size: var(--rp-font-size-base);
+  color: var(--rp-text-muted);
+  margin: 0;
+}
+
+.admin-description {
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-muted);
+  margin: var(--rp-space-2) 0 var(--rp-space-4);
+}
+
+.admin-section {
+  margin-bottom: var(--rp-space-10);
+}
+
+.admin-section h2 {
+  font-size: var(--rp-font-size-xl);
+  font-weight: 600;
+  color: var(--rp-text-title);
+  margin: 0 0 var(--rp-space-4);
+}
+
+/* Grid Layout */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--rp-space-4);
+  margin-bottom: var(--rp-space-4);
+}
+
+/* Status Cards */
+.admin-stat {
+  background: var(--rp-bg-subtle);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-4);
+  transition: all var(--rp-transition-fast);
+}
+
+.admin-stat:hover {
+  border-color: var(--rp-border-strong);
+  box-shadow: var(--rp-shadow-sm);
+}
+
+.admin-stat-label {
+  font-size: var(--rp-font-size-sm);
+  font-weight: 500;
+  color: var(--rp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--rp-space-2);
+}
+
+.admin-stat-value {
+  font-size: var(--rp-font-size-2xl);
+  font-weight: 700;
+  color: var(--rp-text-title);
+  margin-bottom: var(--rp-space-1);
+  padding: var(--rp-space-2);
+  border-radius: var(--rp-radius-md);
+}
+
+.admin-stat-meta {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+}
+
+/* Status Color Classes */
+.status-green {
+  color: var(--rp-success);
+  background: var(--rp-success-soft);
+}
+
+.status-yellow {
+  color: #D97706;
+  background: var(--rp-warning-soft);
+}
+
+.status-red {
+  color: var(--rp-danger);
+  background: var(--rp-danger-soft);
+}
+
+/* Cards */
+.admin-card {
+  background: var(--rp-bg-subtle);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-6);
+  transition: all var(--rp-transition-fast);
+}
+
+.admin-card:hover {
+  border-color: var(--rp-border-strong);
+  box-shadow: var(--rp-shadow-sm);
+}
+
+.admin-card h2 {
+  font-size: var(--rp-font-size-lg);
+  font-weight: 600;
+  color: var(--rp-text-title);
+  margin: 0 0 var(--rp-space-4);
+}
+
+/* Buttons */
+.admin-button {
+  padding: var(--rp-space-2) var(--rp-space-4);
+  background: var(--rp-primary);
+  color: white;
+  border: none;
+  border-radius: var(--rp-radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--rp-transition-fast);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+}
+
+.admin-button:hover {
+  background: var(--rp-primary-hover);
+}
+
+.admin-button.secondary {
+  background: transparent;
+  color: var(--rp-primary);
+  border: 1px solid var(--rp-primary);
+}
+
+.admin-button.secondary:hover {
+  background: var(--rp-primary-soft);
+}
+
+.admin-actions {
+  display: flex;
+  gap: var(--rp-space-2);
+  flex-wrap: wrap;
+}
+
+/* Divider */
+.admin-divider {
+  height: 1px;
+  background: var(--rp-border);
+  margin: var(--rp-space-8) 0;
+}
+
+/* Trends Display */
+.admin-trends {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--rp-space-4);
+}
+
+.admin-trend-card {
+  background: var(--rp-bg-subtle);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-4);
+}
+
+.admin-trend-card h3 {
+  font-size: var(--rp-font-size-base);
+  font-weight: 600;
+  color: var(--rp-text-title);
+  margin: 0 0 var(--rp-space-3);
+}
+
+.admin-trend-data {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-2);
+}
+
+.admin-trend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--rp-space-2);
+  background: var(--rp-surface);
+  border-radius: var(--rp-radius-md);
+  font-size: var(--rp-font-size-sm);
+}
+
+.admin-trend-time {
+  font-weight: 500;
+  color: var(--rp-text-muted);
+}
+
+.admin-trend-value {
+  font-weight: 600;
+  color: var(--rp-text-title);
+}
+
+/* Alerts */
+.admin-alert {
+  padding: var(--rp-space-3);
+  border-radius: var(--rp-radius-md);
+  margin-bottom: var(--rp-space-2);
+  font-size: var(--rp-font-size-sm);
+}
+
+.alert-warning {
+  background: var(--rp-warning-soft);
+  color: #92400E;
+  border: 1px solid var(--rp-warning);
+}
+
+.alert-danger {
+  background: var(--rp-danger-soft);
+  color: #7F1D1D;
+  border: 1px solid var(--rp-danger);
+}
+
+/* Utilities */
+.admin-muted {
+  color: var(--rp-text-muted);
+  font-style: italic;
+}
