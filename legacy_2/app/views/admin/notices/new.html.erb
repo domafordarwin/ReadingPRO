@@ -1,0 +1,14 @@
+<% content_for :page_title, "새 공지사항 작성" %>
+
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title">새 공지사항 작성</h1>
+    <p class="rp-page-subtitle">역할별로 표시될 공지사항을 작성합니다</p>
+  </div>
+</div>
+
+<div class="rp-card">
+  <div class="rp-card__body">
+    <%= render "form", notice: @notice %>
+  </div>
+</div>

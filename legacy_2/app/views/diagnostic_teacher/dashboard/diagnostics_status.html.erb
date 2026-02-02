@@ -1,0 +1,252 @@
+<% content_for :page_title, "응시/채점 현황" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">응시/채점 현황</h1>
+  <p class="rp-page-header__subtitle">학생들의 진단 응시 및 채점 현황을 확인합니다</p>
+</div>
+
+<!-- 통계 카드 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 응시</div>
+    <div class="rp-stat-value"><%= @total_attempts %></div>
+    <p class="rp-stat-desc">진행 중 및 완료</p>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">진행 중</div>
+    <div class="rp-stat-value rp-stat-value--warning"><%= @in_progress_count %></div>
+    <p class="rp-stat-desc">미제출</p>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">완료</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @completed_count %></div>
+    <p class="rp-stat-desc">제출 완료</p>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">채점 대기</div>
+    <div class="rp-stat-value rp-stat-value--primary"><%= @pending_scoring_count %></div>
+    <p class="rp-stat-desc">채점 필요</p>
+  </div>
+</div>
+
+<!-- 학생별 응시 현황 -->
+<div class="rp-attempts-section">
+  <h2 class="rp-section-title">학생별 응시 현황</h2>
+
+  <% if @attempts.any? %>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>학생명</th>
+          <th>응시 시작</th>
+          <th>제출 시간</th>
+          <th>상태</th>
+          <th>응답 수</th>
+          <th>채점</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @attempts.each do |attempt| %>
+          <tr>
+            <td><strong><%= attempt.student&.name || "(미지정)" %></strong></td>
+            <td><%= attempt.started_at&.strftime("%Y-%m-%d %H:%M") || "-" %></td>
+            <td><%= attempt.submitted_at&.strftime("%Y-%m-%d %H:%M") || "-" %></td>
+            <td>
+              <% case attempt.status %>
+                <% when "in_progress" %>
+                  <span class="rp-badge rp-badge--warning">진행 중</span>
+                <% when "completed" %>
+                  <span class="rp-badge rp-badge--success">완료</span>
+              <% end %>
+            </td>
+            <td><%= attempt.responses.count %></td>
+            <td>
+              <% scored = attempt.responses.select { |r| r.selected_choice&.correct? || r.response_rubric_scores.any? }.count %>
+              <% total = attempt.responses.count %>
+              <span class="rp-progress-text"><%= scored %> / <%= total %></span>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+      <p>응시 기록이 없습니다.</p>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  .rp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .rp-stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .rp-stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .rp-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+
+  .rp-stat-value--success {
+    color: #10b981;
+  }
+
+  .rp-stat-value--warning {
+    color: #f59e0b;
+  }
+
+  .rp-stat-value--primary {
+    color: #2f5bff;
+  }
+
+  .rp-stat-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .rp-attempts-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .rp-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 20px 0;
+  }
+
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rp-table thead {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .rp-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .rp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #475569;
+  }
+
+  .rp-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .rp-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .rp-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .rp-badge--warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .rp-badge--primary {
+    background: #dbeafe;
+    color: #1e3a8a;
+  }
+
+  .rp-progress-text {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .rp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .rp-empty-state svg {
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .rp-empty-state p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .rp-page-header {
+    margin-bottom: 24px;
+  }
+
+  .rp-page-header__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-page-header__subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+  }
+</style>

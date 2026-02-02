@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -84,6 +84,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
     t.index ["status"], name: "index_diagnostic_forms_on_status"
   end
 
+  create_table "evaluation_indicators", force: :cascade do |t|
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "level", default: 1
+    t.text "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_evaluation_indicators_on_code", unique: true
+    t.index ["level"], name: "index_evaluation_indicators_on_level"
+  end
+
   create_table "feedbacks", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -115,20 +126,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
     t.datetime "created_at", null: false
     t.bigint "created_by_id"
     t.string "difficulty", default: "medium", null: false
+    t.bigint "evaluation_indicator_id"
     t.text "explanation"
     t.string "item_type", null: false
     t.text "prompt", null: false
     t.string "status", default: "draft", null: false
     t.bigint "stimulus_id"
+    t.bigint "sub_indicator_id"
     t.jsonb "tags", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_items_on_category"
     t.index ["code"], name: "index_items_on_code", unique: true
     t.index ["created_by_id"], name: "index_items_on_created_by_id"
     t.index ["difficulty"], name: "index_items_on_difficulty"
+    t.index ["evaluation_indicator_id", "sub_indicator_id"], name: "index_items_on_evaluation_indicator_id_and_sub_indicator_id"
+    t.index ["evaluation_indicator_id"], name: "index_items_on_evaluation_indicator_id"
     t.index ["item_type"], name: "index_items_on_item_type"
     t.index ["status"], name: "index_items_on_status"
     t.index ["stimulus_id"], name: "index_items_on_stimulus_id"
+    t.index ["sub_indicator_id"], name: "index_items_on_sub_indicator_id"
   end
 
   create_table "parents", force: :cascade do |t|
@@ -282,6 +298,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
     t.index ["user_id"], name: "index_students_on_user_id"
   end
 
+  create_table "sub_indicators", force: :cascade do |t|
+    t.string "code"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.bigint "evaluation_indicator_id", null: false
+    t.text "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_sub_indicators_on_code"
+    t.index ["evaluation_indicator_id", "code"], name: "index_sub_indicators_on_evaluation_indicator_id_and_code", unique: true
+    t.index ["evaluation_indicator_id"], name: "index_sub_indicators_on_evaluation_indicator_id"
+  end
+
   create_table "teachers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "department"
@@ -314,7 +342,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
   add_foreign_key "feedbacks", "responses"
   add_foreign_key "feedbacks", "teachers", column: "created_by_id"
   add_foreign_key "item_choices", "items"
+  add_foreign_key "items", "evaluation_indicators"
   add_foreign_key "items", "reading_stimuli", column: "stimulus_id"
+  add_foreign_key "items", "sub_indicators"
   add_foreign_key "items", "teachers", column: "created_by_id"
   add_foreign_key "parents", "users"
   add_foreign_key "reading_stimuli", "teachers", column: "created_by_id"
@@ -333,6 +363,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_31_000502) do
   add_foreign_key "student_portfolios", "students"
   add_foreign_key "students", "schools"
   add_foreign_key "students", "users"
+  add_foreign_key "sub_indicators", "evaluation_indicators", on_delete: :cascade
   add_foreign_key "teachers", "schools"
   add_foreign_key "teachers", "users"
 end

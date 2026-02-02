@@ -1,0 +1,241 @@
+<% content_for :portal_title do %>
+  문항 제작
+<% end %>
+<% content_for :portal_subtitle do %>
+  새 문항을 등록하거나 수정합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :item_create %>
+<% end %>
+
+<style>
+  .form-section {
+    margin-bottom: 32px;
+  }
+
+  .form-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #667eea;
+    color: #333;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-row.full {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row.two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="password"],
+  .form-group input[type="email"],
+  .form-group input[type="number"],
+  .form-group select,
+  .form-group textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .help-text {
+    font-size: 12px;
+    color: #999;
+    margin-top: 6px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #764ba2;
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary:hover {
+    background: #e0e0e0;
+  }
+
+  .required {
+    color: #e74c3c;
+    margin-left: 4px;
+  }
+</style>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">문항 새로 등록</h2>
+
+  <form action="<%= researcher_items_path %>" method="post" class="portal-form">
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+    <!-- 기본 정보 -->
+    <div class="form-section">
+      <h3 class="form-section-title">기본 정보</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>문항 코드 <span class="required">*</span></label>
+          <input type="text" name="item[code]" placeholder="예: RP-E-001" required>
+          <span class="help-text">고유한 문항 코드를 입력하세요</span>
+        </div>
+
+        <div class="form-group">
+          <label>문항 유형 <span class="required">*</span></label>
+          <select name="item[item_type]" required>
+            <option value="">선택하세요</option>
+            <option value="mcq">객관식 (MCQ)</option>
+            <option value="constructed">주관식 (Constructed)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>난이도</label>
+          <select name="item[difficulty]">
+            <option value="">선택하세요</option>
+            <option value="상">상</option>
+            <option value="중">중</option>
+            <option value="하">하</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 평가 지표 -->
+    <div class="form-section">
+      <h3 class="form-section-title">평가 지표</h3>
+
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label>평가 영역 <span class="required">*</span></label>
+          <select name="item[evaluation_indicator_id]" required>
+            <option value="">선택하세요</option>
+            <% @evaluation_indicators.each do |indicator| %>
+              <option value="<%= indicator.id %>"><%= indicator.name %></option>
+            <% end %>
+          </select>
+          <span class="help-text">문항이 평가하는 영역을 선택하세요</span>
+        </div>
+
+        <div class="form-group">
+          <label>세부 지표</label>
+          <select name="item[sub_indicator_id]">
+            <option value="">선택하세요</option>
+            <% @sub_indicators.each do |sub_indicator| %>
+              <option value="<%= sub_indicator.id %>"><%= sub_indicator.name %></option>
+            <% end %>
+          </select>
+          <span class="help-text">해당되는 세부 지표를 선택하세요</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 문항 내용 -->
+    <div class="form-section">
+      <h3 class="form-section-title">문항 내용</h3>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>문항 내용 (Prompt) <span class="required">*</span></label>
+          <textarea name="item[prompt]" placeholder="문항 내용을 입력하세요" required></textarea>
+          <span class="help-text">학생에게 제시될 문항 내용을 입력하세요</span>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div class="form-group">
+          <label>해설</label>
+          <textarea name="item[explanation]" placeholder="문항에 대한 해설을 입력하세요 (선택사항)"></textarea>
+          <span class="help-text">정답과 관련된 해설을 입력하세요</span>
+        </div>
+      </div>
+
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label>관련 지문</label>
+          <select name="item[stimulus_id]">
+            <option value="">선택하세요</option>
+            <% @reading_stimuli.each do |stimulus| %>
+              <option value="<%= stimulus.id %>"><%= stimulus.code %> - <%= truncate(stimulus.title, length: 40) %></option>
+            <% end %>
+          </select>
+          <span class="help-text">문항과 관련된 지문을 선택하세요</span>
+        </div>
+
+        <div class="form-group">
+          <label>초기 상태</label>
+          <select name="item[status]">
+            <option value="draft" selected>준비중 (Draft)</option>
+            <option value="active">활성 (Active)</option>
+          </select>
+          <span class="help-text">문항의 초기 상태를 설정하세요</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="button-group">
+      <button type="submit" class="btn btn-primary">문항 등록</button>
+      <button type="reset" class="btn btn-secondary">초기화</button>
+      <a href="<%= researcher_item_bank_path %>" class="btn btn-secondary" style="text-decoration: none; text-align: center;">취소</a>
+    </div>
+  </form>
+</section>

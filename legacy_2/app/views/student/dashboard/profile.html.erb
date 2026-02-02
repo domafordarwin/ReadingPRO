@@ -1,0 +1,43 @@
+<% content_for :portal_title do %>
+  개인 정보 수정하기
+<% end %>
+<% content_for :portal_subtitle do %>
+  계정 정보를 최신 상태로 유지하세요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "student/shared/nav", current: :profile %>
+<% end %>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">기본 정보</h2>
+  <form class="portal-form">
+    <label>
+      이름
+      <input type="text" value="김민준">
+    </label>
+    <label>
+      학교
+      <input type="text" value="리딩중학교">
+    </label>
+    <label>
+      학년
+      <select>
+        <option selected>2학년</option>
+        <option>1학년</option>
+        <option>3학년</option>
+      </select>
+    </label>
+    <label>
+      연락처
+      <input type="text" value="010-1234-5678">
+    </label>
+    <label>
+      읽기 목표
+      <textarea rows="3">주 2권 독서, 요약문 작성</textarea>
+    </label>
+    <div class="portal-cta">
+      <button type="button" class="portal-button">저장하기</button>
+      <button type="button" class="portal-button secondary">취소</button>
+    </div>
+  </form>
+</section>

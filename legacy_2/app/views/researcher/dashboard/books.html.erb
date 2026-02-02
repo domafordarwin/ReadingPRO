@@ -1,0 +1,283 @@
+<% content_for :portal_title do %>
+  도서 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  도서 등록 현황을 확인하고 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :books %>
+<% end %>
+
+<style>
+  .books-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .books-stat {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .books-stat__label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .books-stat__value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .books-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+
+  .books-table thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+  }
+
+  .books-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+  }
+
+  .books-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease;
+  }
+
+  .books-table tbody tr:hover {
+    background: #f8f9fa;
+  }
+
+  .books-table td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .books-table__title {
+    font-weight: 600;
+  }
+
+  .books-table__author {
+    color: #666;
+    font-size: 13px;
+  }
+
+  .books-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .books-status--registered {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .books-status--review {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .books-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .books-action-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #667eea;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .books-action-btn:hover {
+    color: #764ba2;
+  }
+
+  @media (max-width: 768px) {
+    .books-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .books-table {
+      font-size: 12px;
+    }
+
+    .books-table th,
+    .books-table td {
+      padding: 8px 12px;
+    }
+  }
+</style>
+
+<!-- 도서 검색 및 필터 -->
+<style>
+  .books-filter {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .books-filter__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .books-filter__item label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .books-filter__item input,
+  .books-filter__item select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+  }
+</style>
+
+<%= form_with url: researcher_books_path, method: :get, local: true, class: "books-filter" do |f| %>
+  <div class="books-filter__item">
+    <%= f.text_field :search, placeholder: "도서 검색 (ISBN/제목/저자)", value: @search_query, style: "min-width: 250px;" %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :genre, options_for_select(Book::GENRES.map { |g| [Book::GENRE_LABELS[g], g] }, @genre_filter), { include_blank: "장르 선택" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :level, options_for_select(Book::READING_LEVELS.map { |l| [Book::READING_LEVEL_LABELS[l], l] }, @level_filter), { include_blank: "읽기 수준" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.select :status, options_for_select(Book::STATUSES.map { |s| [Book::STATUS_LABELS[s], s] }, @status_filter), { include_blank: "상태 선택" } %>
+  </div>
+  <div class="books-filter__item">
+    <%= f.submit "검색", class: "btn-primary" %>
+  </div>
+<% end %>
+
+<!-- 도서 통계 -->
+<div class="books-stats">
+  <div class="books-stat">
+    <div class="books-stat__label">등록된 도서</div>
+    <div class="books-stat__value"><%= @total_count %></div>
+  </div>
+  <div class="books-stat">
+    <div class="books-stat__label">사용 가능</div>
+    <div class="books-stat__value"><%= @available_count %></div>
+  </div>
+  <div class="books-stat">
+    <div class="books-stat__label">현재 페이지</div>
+    <div class="books-stat__value"><%= @page %> / <%= @total_pages %></div>
+  </div>
+</div>
+
+<!-- 도서 목록 -->
+<section class="portal-card">
+  <h2 class="portal-card-title">도서 목록</h2>
+
+  <% if @books.any? %>
+    <table class="books-table">
+      <thead>
+        <tr>
+          <th style="width: 25%;">도서명</th>
+          <th style="width: 15%;">저자</th>
+          <th style="width: 15%;">ISBN</th>
+          <th style="width: 15%;">수준</th>
+          <th style="width: 15%;">상태</th>
+          <th style="width: 15%;">작업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @books.each do |book| %>
+          <tr>
+            <td>
+              <div class="books-table__title"><%= book.title %></div>
+              <div class="books-table__author"><%= book.genre_label %> / <%= book.publication_year %></div>
+            </td>
+            <td><%= book.author.presence || '-' %></td>
+            <td><%= book.isbn %></td>
+            <td><%= book.reading_level_label %></td>
+            <td>
+              <% if book.status == 'available' %>
+                <span class="books-status books-status--registered"><%= book.status_label %></span>
+              <% elsif book.status == 'unavailable' %>
+                <span class="books-status books-status--review"><%= book.status_label %></span>
+              <% else %>
+                <span class="books-status"><%= book.status_label %></span>
+              <% end %>
+            </td>
+            <td>
+              <div class="books-actions">
+                <a href="#" class="books-action-btn">편집</a>
+                <a href="#" class="books-action-btn">삭제</a>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <!-- 페이지네이션 -->
+    <div class="passages-pagination" style="margin-top: 24px;">
+      <% if @page > 1 %>
+        <%= link_to "← 이전", researcher_books_path(page: @page - 1, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+      <% else %>
+        <span class="disabled">← 이전</span>
+      <% end %>
+
+      <% (1..@total_pages).each do |page_num| %>
+        <% if page_num == @page %>
+          <span class="active"><%= page_num %></span>
+        <% else %>
+          <%= link_to page_num, researcher_books_path(page: page_num, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+        <% end %>
+      <% end %>
+
+      <% if @page < @total_pages %>
+        <%= link_to "다음 →", researcher_books_path(page: @page + 1, search: @search_query, genre: @genre_filter, level: @level_filter, status: @status_filter) %>
+      <% else %>
+        <span class="disabled">다음 →</span>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="passages-empty">
+      <div class="passages-empty__icon">📚</div>
+      <div class="passages-empty__message">도서가 없습니다</div>
+      <div class="passages-empty__submessage">
+        <% if @search_query.present? || @genre_filter.present? || @level_filter.present? || @status_filter.present? %>
+          검색 조건에 맞는 도서가 없습니다.
+        <% else %>
+          새로운 도서를 추가해주세요.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</section>

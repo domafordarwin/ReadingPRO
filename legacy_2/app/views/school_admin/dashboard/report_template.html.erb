@@ -1,0 +1,335 @@
+<% content_for :page_title do %>
+  보고서 양식
+<% end %>
+
+<%
+  assessment = @assessment
+  data_label = assessment.present? ? "실데이터" : "데이터 없음"
+  report_title = assessment&.report_title.presence || "보고서 양식"
+  school_name = assessment&.school&.name || "학교 미지정"
+  assessment_date = assessment&.assessment_date
+  assessment_date_label = assessment_date ? assessment_date.strftime("%Y-%m-%d") : "—"
+  assessment_version = assessment&.assessment_version || "—"
+  total_students = assessment&.total_students
+  total_mcq = assessment&.total_mcq_questions
+  total_essay = assessment&.total_essay_questions
+  purpose = assessment&.assessment_purpose.presence || "—"
+  overview = assessment&.assessment_overview.presence || "—"
+  fmt_rate = ->(value) { value.present? ? "#{value}%" : "—" }
+  fmt_count = ->(value) { value.present? ? value : "—" }
+
+  literacy_stats = assessment&.school_literacy_stats || []
+  sub_stats = assessment&.school_sub_indicator_stats || []
+  reader_dist = assessment&.school_reader_type_distributions || []
+  reader_recs = assessment.present? ? assessment.school_reader_type_recommendations
+                                             .sort_by { |rec| [rec.type_code.to_s, rec.priority.to_i] }
+                                             .group_by(&:type_code) : {}
+  mcq_analyses = assessment.present? ? assessment.school_mcq_analyses.sort_by(&:question_number).first(6) : []
+  essay_analyses = assessment.present? ? assessment.school_essay_analyses.sort_by(&:question_number).first(4) : []
+  comprehensive = assessment&.school_comprehensive_analysis
+  guidance_list = assessment.present? ? assessment.school_guidance_directions.sort_by { |g| g.priority.to_i } : []
+  improvement_list = assessment.present? ? assessment.school_improvement_areas.sort_by { |g| g.priority.to_i } : []
+%>
+
+<div class="report-template">
+  <section class="portal-card report-hero">
+    <div>
+      <span class="report-pill"><%= data_label %></span>
+      <h2 class="report-title"><%= report_title %></h2>
+      <p class="report-subtitle"><%= school_name %> · <%= assessment_date_label %> · <%= assessment_version %></p>
+    </div>
+    <div class="report-meta">
+      <div>
+        <span class="report-meta-label">참여 학생</span>
+        <strong><%= total_students.present? ? "#{total_students}명" : "—" %></strong>
+      </div>
+      <div>
+        <span class="report-meta-label">문항 구성</span>
+        <strong>객관식 <%= fmt_count.call(total_mcq) %> · 서술형 <%= fmt_count.call(total_essay) %></strong>
+      </div>
+    </div>
+  </section>
+
+  <% unless assessment.present? %>
+    <section class="portal-card report-section">
+      <h3 class="portal-card-title">데이터 없음</h3>
+      <p class="portal-muted">SchoolAssessment 데이터가 없습니다. 가장 최신 진단 데이터를 입력하면 보고서가 자동으로 채워집니다.</p>
+    </section>
+  <% end %>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">진단 목적 및 개요</h3>
+    <div class="report-grid">
+      <div>
+        <h4>평가 목적</h4>
+        <p class="portal-muted"><%= purpose %></p>
+      </div>
+      <div>
+        <h4>평가 개요</h4>
+        <p class="portal-muted"><%= overview %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">종합 요약</h3>
+    <div class="report-grid">
+      <div>
+        <h4>Overall Summary</h4>
+        <p class="portal-muted"><%= comprehensive&.overall_summary.presence || "—" %></p>
+      </div>
+      <div>
+        <h4>강점/보완</h4>
+        <p class="portal-muted"><%= comprehensive&.strengths.presence || "—" %></p>
+        <p class="portal-muted"><%= comprehensive&.weaknesses.presence || "—" %></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">영역별 문해력 통계</h3>
+    <table class="portal-table report-table">
+      <thead>
+        <tr>
+          <th>영역</th>
+          <th>문항수</th>
+          <th>평균 정답률</th>
+          <th>최고</th>
+          <th>최저</th>
+          <th>표준편차</th>
+          <th>요약</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if literacy_stats.any? %>
+          <% literacy_stats.each do |stat| %>
+            <tr>
+              <td><%= stat.evaluation_indicator&.name || "지표" %></td>
+              <td><%= fmt_count.call(stat.total_questions) %></td>
+              <td><%= fmt_rate.call(stat.average_accuracy_rate) %></td>
+              <td><%= fmt_rate.call(stat.highest_accuracy_rate) %></td>
+              <td><%= fmt_rate.call(stat.lowest_accuracy_rate) %></td>
+              <td><%= fmt_rate.call(stat.std_deviation) %></td>
+              <td><%= stat.analysis_summary.presence || "-" %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="7" class="portal-muted">데이터가 없습니다.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">하위 지표별 분석</h3>
+    <table class="portal-table report-table">
+      <thead>
+        <tr>
+          <th>상위 지표</th>
+          <th>하위 지표</th>
+          <th>평균 정답률</th>
+          <th>요약</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if sub_stats.any? %>
+          <% sub_stats.each do |stat| %>
+            <tr>
+              <td><%= stat.evaluation_indicator&.name || "지표" %></td>
+              <td><%= stat.sub_indicator&.name || "하위 지표" %></td>
+              <td><%= fmt_rate.call(stat.average_accuracy_rate) %></td>
+              <td><%= stat.analysis_summary.presence || "-" %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="4" class="portal-muted">데이터가 없습니다.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">독자 유형 분포</h3>
+    <div class="report-grid">
+      <% if reader_dist.any? %>
+        <% reader_dist.each do |dist| %>
+          <div class="report-card">
+            <div class="report-card__header">
+              <span class="report-pill">유형 <%= dist.type_code %></span>
+              <strong><%= fmt_rate.call(dist.percentage) %></strong>
+            </div>
+            <p class="portal-muted"><%= dist.type_description.presence || "유형 설명" %></p>
+            <p class="portal-muted">학생 수: <%= fmt_count.call(dist.student_count) %>명</p>
+            <p class="portal-muted"><%= dist.characteristics.presence || "-" %></p>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="report-card">
+          <p class="portal-muted">데이터가 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">독자 유형별 맞춤 제언</h3>
+    <div class="report-grid">
+      <% if reader_recs.any? %>
+        <% reader_recs.each do |type_code, recs| %>
+          <div class="report-card">
+            <h4>유형 <%= type_code %></h4>
+            <ul class="report-list">
+              <% recs.each do |rec| %>
+                <li>
+                  <strong><%= rec.category.presence || "가이드" %></strong>
+                  <span class="portal-muted"><%= rec.content.presence || "-" %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="report-card">
+          <p class="portal-muted">데이터가 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">문항별 분석 (객관식)</h3>
+    <table class="portal-table report-table">
+      <thead>
+        <tr>
+          <th>문항</th>
+          <th>정답률</th>
+          <th>정답</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if mcq_analyses.any? %>
+          <% mcq_analyses.each do |mcq| %>
+            <tr>
+              <td><%= mcq.question_number %></td>
+              <td><%= fmt_rate.call(mcq.accuracy_rate) %></td>
+              <td><%= mcq.correct_answer || "-" %></td>
+              <td><%= mcq.analysis_comment.presence || "-" %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="4" class="portal-muted">데이터가 없습니다.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">문항별 분석 (서술형)</h3>
+    <table class="portal-table report-table">
+      <thead>
+        <tr>
+          <th>문항</th>
+          <th>응답률</th>
+          <th>우수</th>
+          <th>보완</th>
+          <th>미흡</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if essay_analyses.any? %>
+          <% essay_analyses.each do |essay| %>
+            <tr>
+              <td><%= essay.question_number %></td>
+              <td><%= fmt_rate.call(essay.response_rate) %></td>
+              <td><%= fmt_rate.call(essay.excellent_rate) %></td>
+              <td><%= fmt_rate.call(essay.needs_improvement_rate) %></td>
+              <td><%= fmt_rate.call(essay.insufficient_rate) %></td>
+              <td><%= essay.analysis_comment.presence || "-" %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="6" class="portal-muted">데이터가 없습니다.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">지도 방향</h3>
+    <div class="report-grid">
+      <% if guidance_list.any? %>
+        <% guidance_list.each do |guide| %>
+          <div class="report-card">
+            <strong><%= guide.guidance_title.presence || "지도 방향" %></strong>
+            <p class="portal-muted"><%= guide.guidance_content.presence || "-" %></p>
+            <p class="portal-muted">실행 제안: <%= guide.implementation_suggestions.presence || "-" %></p>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="report-card">
+          <p class="portal-muted">데이터가 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">개선 과제</h3>
+    <div class="report-grid">
+      <% if improvement_list.any? %>
+        <% improvement_list.each do |area| %>
+          <div class="report-card">
+            <strong><%= area.area_name.presence || "개선 항목" %></strong>
+            <p class="portal-muted">현재: <%= area.current_status.presence || "-" %></p>
+            <p class="portal-muted">목표: <%= area.target_status.presence || "-" %></p>
+            <p class="portal-muted">액션: <%= area.action_items.presence || "-" %></p>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="report-card">
+          <p class="portal-muted">데이터가 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="portal-card report-section">
+    <h3 class="portal-card-title">데이터 구성 (DB 구조)</h3>
+    <div class="report-grid">
+      <div class="report-card">
+        <strong>school_assessments</strong>
+        <p class="portal-muted">보고서 헤더, 목적/개요, 학생/문항 수</p>
+      </div>
+      <div class="report-card">
+        <strong>school_literacy_stats / school_sub_indicator_stats</strong>
+        <p class="portal-muted">영역/하위 지표 정답률 및 요약</p>
+      </div>
+      <div class="report-card">
+        <strong>school_reader_type_distributions / recommendations</strong>
+        <p class="portal-muted">독자 유형 분포와 교육 제언</p>
+      </div>
+      <div class="report-card">
+        <strong>school_mcq_analyses / school_essay_analyses</strong>
+        <p class="portal-muted">문항별 정답률, 응답률, 코멘트</p>
+      </div>
+      <div class="report-card">
+        <strong>school_comprehensive_analyses</strong>
+        <p class="portal-muted">종합 요약 및 영역별 분석</p>
+      </div>
+      <div class="report-card">
+        <strong>school_guidance_directions / school_improvement_areas</strong>
+        <p class="portal-muted">지도 방향 및 개선 과제</p>
+      </div>
+    </div>
+  </section>
+</div>

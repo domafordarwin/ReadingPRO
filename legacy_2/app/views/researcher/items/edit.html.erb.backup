@@ -1,0 +1,860 @@
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :items %>
+<% end %>
+
+<% meta = @item.scoring_meta || {} %>
+<% stimulus = @item.stimulus %>
+<% project_name = meta["project"] || meta["category_main"] || "프로젝트 미지정" %>
+<% grade_band = meta["grade_band"] || "학년군 미지정" %>
+<% difficulty_label = @item.difficulty || "미지정" %>
+<% item_type_label = @item.item_type == "mcq" ? "MCQ" : "서술형" %>
+<% status_label = case @item.status
+                when "draft" then "Draft"
+                when "active" then "Published"
+                when "retired" then "Retired"
+                else "Draft"
+                end %>
+<% status_class = case @item.status
+                 when "draft" then "rp-badge--warning"
+                 when "active" then "rp-badge--success"
+                 when "retired" then "rp-badge--danger"
+                 else "rp-badge--warning"
+                 end %>
+<% choices = @choices || @item.item_choices.includes(:choice_score).order(:choice_no) %>
+<% correct_choice = choices.find { |choice| choice.choice_score&.is_key } %>
+<% score_points = meta["points"] || meta["score"] || meta["total_score"] %>
+<% review_status = meta["review_status"] || "미검수" %>
+<% proximity_ready = choices.any? { |choice| choice.choice_score && choice.choice_score.score_percent.to_i > 0 && !choice.choice_score.is_key } %>
+<% rubric_levels_count = @criteria.present? ? @criteria.flat_map(&:rubric_levels).map(&:level_score).uniq.size : 0 %>
+<% tag_count = Array(meta["wrong_answer_tags"] || meta["tags"] || meta["error_tags"]).size %>
+
+<% content_for :portal_header do %>
+  <div class="rp-header-wrapper">
+    <header class="rp-header">
+      <div class="rp-header__left">
+        <button type="button" class="rp-icon-button" aria-label="메뉴 열기">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </button>
+        <div class="rp-header__logo">
+          <span class="rp-header__logo-text">ReadingPRO Administrator</span>
+        </div>
+      </div>
+      <div class="rp-header__title">정답/채점 기준 설정</div>
+      <div class="rp-header__right">
+        <a class="rp-link" href="#">가이드</a>
+        <button type="button" class="rp-icon-button" aria-label="알림">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4a5 5 0 0 0-5 5v2.4c0 .7-.3 1.3-.8 1.8L4.5 15h15l-1.7-1.8a2.5 2.5 0 0 1-.8-1.8V9a5 5 0 0 0-5-5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            <path d="M9.5 18a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+        <div class="rp-avatar" aria-label="관리자 프로필">KA</div>
+      </div>
+    </header>
+    <div class="rp-header-divider"></div>
+    <div class="rp-header-subbar">
+      <div class="rp-header-subbar__left">
+        <a class="rp-back-link" href="<%= researcher_items_path %>">
+          <span aria-hidden="true">&lt;</span>
+          문항 목록으로
+        </a>
+        <div class="rp-breadcrumb">
+          <%= project_name %> <span class="rp-breadcrumb__sep">&gt;</span> <%= stimulus&.title || "지문" %>
+          <span class="rp-breadcrumb__sep">&gt;</span> 문항 <span class="rp-breadcrumb__sep">&gt;</span> 정답/채점
+        </div>
+      </div>
+      <div class="rp-header-subbar__right">
+        <span class="rp-badge">문항 코드 <strong><%= @item.code %></strong></span>
+        <span class="rp-badge rp-badge--pill rp-badge--info"><%= item_type_label %></span>
+        <span class="rp-badge rp-badge--pill <%= status_class %>"><%= status_label %></span>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="rp-main" data-default-state="<%= @item.mcq? ? "mcq-default" : "essay-rubric" %>" data-ai-correct="<%= meta["correct_answer"] %>">
+  <div class="rp-main__container">
+    <!-- Page Header -->
+    <div class="rp-page-header" style="margin-bottom: 24px;">
+      <h1 class="rp-page-header__title">문항 편집: <%= @item.code %></h1>
+      <p class="rp-page-header__subtitle">정답/채점 기준을 설정하세요</p>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="rp-tabs" role="tablist" aria-label="문항 편집 모드">
+      <button type="button" class="rp-tab rp-tab--active" data-state="mcq-default" role="tab">MCQ 정답</button>
+      <button type="button" class="rp-tab" data-state="mcq-proximity" role="tab">MCQ 근접점수</button>
+      <button type="button" class="rp-tab" data-state="essay-rubric" role="tab">서술형 루브릭</button>
+    </div>
+
+    <!-- MCQ Default Mode -->
+    <section class="rp-frame" data-state="mcq-default">
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+
+          <!-- LEFT COLUMN -->
+          <div class="rp-col-left">
+            <!-- Item Info Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 정보</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-info-grid">
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">프로젝트</span>
+                    <span class="rp-info-value"><%= project_name %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">학년군</span>
+                    <span class="rp-info-value"><%= grade_band %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">난이도</span>
+                    <span class="rp-info-value"><%= difficulty_label %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">지문</span>
+                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item Content Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 내용</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-stimulus-section">
+                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
+                  <div class="rp-stimulus-text">
+                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
+                  </div>
+                </div>
+
+                <div class="rp-prompt-section">
+                  <h4 class="rp-label">문항 프롬프트</h4>
+                  <div class="rp-prompt-text">
+                    <%= simple_format(@item.prompt) %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MCQ Choices -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">선택지</h3>
+              </div>
+              <div class="rp-card__body">
+                <% choices.each do |choice| %>
+                  <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+                  <% choice_score = choice.choice_score %>
+                  <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice_score&.is_key %>">
+                    <%= radio_button_tag "correct_choice_id", choice.id, choice_score&.is_key, class: "rp-radio" %>
+                    <div class="rp-choice-content">
+                      <span class="rp-choice-label"><%= option_letter %></span>
+                      <span class="rp-choice-text"><%= choice.content %></span>
+                      <% if choice_score&.is_key %>
+                        <span class="rp-badge rp-badge--success">정답 100%</span>
+                      <% elsif choice_score&.score_percent.to_i > 0 %>
+                        <span class="rp-badge rp-badge--warning">근접 <%= choice_score.score_percent %>%</span>
+                      <% else %>
+                        <span class="rp-badge">미설정</span>
+                      <% end %>
+                    </div>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Tags/Memo -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">관련 정보</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-tag-list">
+                  <span class="rp-tag">대분류: <%= meta["category_main"] || "미지정" %></span>
+                  <span class="rp-tag">소분류: <%= meta["category_sub"] || "미지정" %></span>
+                  <span class="rp-tag">출제 의도: <%= meta["intent"] || "미지정" %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER COLUMN -->
+          <div class="rp-col-center">
+            <div class="rp-card rp-card--highlight">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
+                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">정답 타당성 검토</h4>
+                  <p>정답 타당성: 보기 C가 지문 근거와 가장 직접적으로 연결됩니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>정답 후보를 검토하고 확정하세요.</li>
+                    <li>근거 문장을 정답 설명에 반영하세요.</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-correct">제안 적용</button>
+                </div>
+
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
+                  <p>보기 B도 부분 정답으로 해석될 수 있어 표현을 수정하세요.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>보기 B의 조건을 명확히 한정하세요.</li>
+                    <li>보기 D를 다른 관점으로 변경하세요.</li>
+                  </ul>
+                </div>
+
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">배점/근접점수 제안</h4>
+                  <p>MCQ 근접점수는 아직 설정되지 않았습니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>근접점수 분포를 확인하고 입력하세요.</li>
+                    <li>교육청 기준에 맞게 총점을 조정하세요.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="rp-col-right">
+            <!-- Summary Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">설정 요약</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-summary-grid">
+                  <div class="rp-summary-item">
+                    <span class="rp-label">문항 유형</span>
+                    <span class="rp-value"><%= item_type_label %></span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">정답 설정</span>
+                    <span class="rp-badge rp-badge--pill <%= correct_choice ? 'rp-badge--success' : 'rp-badge--danger' %>">
+                      <%= correct_choice ? "완료" : "미완료" %>
+                    </span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">배점</span>
+                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">마지막 저장</span>
+                    <span class="rp-value"><%= @item.updated_at.strftime("%Y-%m-%d %H:%M") %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checklist Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">필수 점검</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-checklist">
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if correct_choice %>>
+                    <span>정답 지정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <span>배점 입력 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if proximity_ready %>>
+                    <span>근접점수 설정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox">
+                    <span>미리보기 확인 완료</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="rp-card rp-card__footer">
+              <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
+              <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </section>
+
+    <!-- MCQ Proximity Mode -->
+    <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+
+          <!-- LEFT COLUMN -->
+          <div class="rp-col-left">
+            <!-- Item Info Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 정보</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-info-grid">
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">프로젝트</span>
+                    <span class="rp-info-value"><%= project_name %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">학년군</span>
+                    <span class="rp-info-value"><%= grade_band %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">난이도</span>
+                    <span class="rp-info-value"><%= difficulty_label %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">지문</span>
+                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item Content Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 내용</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-stimulus-section">
+                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
+                  <div class="rp-stimulus-text">
+                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
+                  </div>
+                </div>
+
+                <div class="rp-prompt-section">
+                  <h4 class="rp-label">문항 프롬프트</h4>
+                  <div class="rp-prompt-text">
+                    <%= simple_format(@item.prompt) %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Score Setting -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">선택지별 점수 설정</h3>
+                <span class="rp-badge rp-badge--info">0-100%</span>
+              </div>
+              <div class="rp-card__body">
+                <% choices.each do |choice| %>
+                  <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+                  <% choice_score = choice.choice_score %>
+                  <div class="rp-score-row">
+                    <span class="rp-choice-label"><%= option_letter %></span>
+                    <div class="rp-choice-text"><%= choice.content %></div>
+                    <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
+                                         choice_score&.score_percent || 0,
+                                         min: 0, max: 100, step: 5,
+                                         class: "rp-input rp-input--score" %>
+                    <span class="rp-score-unit">%</span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER COLUMN -->
+          <div class="rp-col-center">
+            <div class="rp-card rp-card--highlight">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
+                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">정답 타당성 검토</h4>
+                  <p>정답 타당성: 보기 C가 지문 근거와 가장 직접적으로 연결됩니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>정답 후보를 검토하고 확정하세요.</li>
+                    <li>정답 설명을 구체화하세요.</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-correct">제안 적용</button>
+                </div>
+
+                <div class="rp-ai-suggestion rp-ai-suggestion--highlight">
+                  <h4 class="rp-ai-suggestion__title">근접점수 제안</h4>
+                  <p>AI가 근접점수 분포를 계산했습니다. 기본 배점 기준입니다.</p>
+                  <div class="rp-score-table">
+                    <% choices.each do |choice| %>
+                      <div>
+                        <span class="rp-label">보기 <%= choice.choice_no %></span>
+                        <strong><%= choice.choice_score&.score_percent || 0 %>%</strong>
+                      </div>
+                    <% end %>
+                  </div>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>근접점수를 입력하고 저장하세요.</li>
+                    <li>시험 운영 정책과 맞는지 확인하세요.</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-proximity">제안 적용</button>
+                </div>
+
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
+                  <p>보기 B와 D가 모두 정답 가능성이 있어 표현을 수정하세요.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>보기 B를 단일 조건으로 변경하세요.</li>
+                    <li>보기 D에 반례 조건을 추가하세요.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="rp-col-right">
+            <!-- Summary Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">설정 요약</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-summary-grid">
+                  <div class="rp-summary-item">
+                    <span class="rp-label">문항 유형</span>
+                    <span class="rp-value"><%= item_type_label %></span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">정답 설정</span>
+                    <span class="rp-badge rp-badge--pill <%= correct_choice ? 'rp-badge--success' : 'rp-badge--danger' %>">
+                      <%= correct_choice ? "완료" : "미완료" %>
+                    </span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">배점</span>
+                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">마지막 저장</span>
+                    <span class="rp-value"><%= @item.updated_at.strftime("%Y-%m-%d %H:%M") %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checklist Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">필수 점검</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-checklist">
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if correct_choice %>>
+                    <span>정답 지정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <span>배점 입력 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if proximity_ready %>>
+                    <span>근접점수 설정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox">
+                    <span>미리보기 확인 완료</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="rp-card rp-card__footer">
+              <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
+              <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </section>
+
+    <!-- Essay Rubric Mode -->
+    <section class="rp-frame" data-state="essay-rubric" style="display: none;">
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+
+          <!-- LEFT COLUMN -->
+          <div class="rp-col-left">
+            <!-- Item Info Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 정보</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-info-grid">
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">프로젝트</span>
+                    <span class="rp-info-value"><%= project_name %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">학년군</span>
+                    <span class="rp-info-value"><%= grade_band %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">난이도</span>
+                    <span class="rp-info-value"><%= difficulty_label %></span>
+                  </div>
+                  <div class="rp-info-item">
+                    <span class="rp-info-label">지문</span>
+                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Item Content Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">문항 내용</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-stimulus-section">
+                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
+                  <div class="rp-stimulus-text">
+                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
+                  </div>
+                </div>
+
+                <div class="rp-prompt-section">
+                  <h4 class="rp-label">문항 프롬프트</h4>
+                  <div class="rp-prompt-text">
+                    <%= simple_format(@item.prompt) %>
+                  </div>
+                </div>
+
+                <div class="rp-form-group">
+                  <label class="rp-label">서술형 입력 예시</label>
+                  <textarea rows="3" placeholder="학생이 여기에 답안을 작성합니다." disabled class="rp-textarea"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sample Answers -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">정답(샘플 답안)</h3>
+              </div>
+              <div class="rp-card__body">
+                <% @item.item_sample_answers.each do |answer| %>
+                  <div class="rp-form-group">
+                    <label class="rp-label">답안</label>
+                    <textarea name="sample_answers[<%= answer.id %>]" rows="3" class="rp-textarea"><%= answer.answer %></textarea>
+                    <label class="rp-checkbox">
+                      <input type="checkbox" name="delete_sample_answers[]" value="<%= answer.id %>">
+                      <span>이 답안 삭제</span>
+                    </label>
+                  </div>
+                <% end %>
+                <div class="rp-form-group">
+                  <label class="rp-label">새 답안 추가</label>
+                  <textarea name="new_sample_answer" rows="3" class="rp-textarea" placeholder="새 샘플 답안을 입력하세요"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER COLUMN -->
+          <div class="rp-col-center">
+            <div class="rp-card rp-card--highlight">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
+                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion rp-ai-suggestion--highlight">
+                  <h4 class="rp-ai-suggestion__title">루브릭 수준 제안</h4>
+                  <p>AI가 서술형 답안의 핵심 요소를 기준으로 루브릭 초안을 생성했습니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>핵심 근거 제시 여부</li>
+                    <li>문장 구조와 논리적 연결성</li>
+                    <li>핵심 용어 정확성</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="rubric">AI 제안 적용</button>
+                </div>
+
+                <div class="rp-card">
+                  <div class="rp-card__header">
+                    <h3 class="rp-card__title">루브릭 빌더</h3>
+                    <span class="rp-badge rp-badge--info">레벨 0-3</span>
+                  </div>
+                  <div class="rp-card__body">
+                    <div class="rp-form-group">
+                      <label class="rp-label">루브릭 제목</label>
+                      <input type="text" name="rubric[title]" value="<%= @rubric&.title %>" class="rp-input">
+                    </div>
+
+                    <div class="rp-criteria-list">
+                      <% if @criteria.present? %>
+                        <% @criteria.each do |criterion| %>
+                          <div class="rp-criterion-card">
+                            <div class="rp-criterion-header">
+                              <input type="text"
+                                     name="criteria[<%= criterion.id %>][name]"
+                                     value="<%= criterion.name %>"
+                                     class="rp-input rp-criterion-name"
+                                     placeholder="평가 기준 이름">
+                              <div class="rp-criterion-actions">
+                                <%= button_to "↑", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "up"),
+                                            method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
+                                <%= button_to "↓", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "down"),
+                                            method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
+                              </div>
+                            </div>
+
+                            <label class="rp-checkbox">
+                              <input type="checkbox" name="delete_criteria[]" value="<%= criterion.id %>">
+                              <span>이 기준 삭제</span>
+                            </label>
+
+                            <div class="rp-levels-grid">
+                              <% (0..3).each do |score| %>
+                                <% level = criterion.rubric_levels.find { |l| l.level_score == score } %>
+                                <div class="rp-level-cell">
+                                  <label class="rp-level-label"><%= score %>점</label>
+                                  <%= text_area_tag "criteria[#{criterion.id}][levels][#{score}]",
+                                                    level&.descriptor,
+                                                    class: "rp-textarea rp-textarea--sm",
+                                                    placeholder: "#{score}점 기준 설명",
+                                                    rows: 2 %>
+                                </div>
+                              <% end %>
+                            </div>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+
+                    <div class="rp-form-group">
+                      <label class="rp-label">새 평가 기준 추가</label>
+                      <input type="text" name="new_criterion[name]" class="rp-input" placeholder="평가 기준 이름">
+                      <div class="rp-levels-grid">
+                        <% (0..3).each do |score| %>
+                          <div class="rp-level-cell">
+                            <label class="rp-level-label"><%= score %>점</label>
+                            <%= text_area_tag "new_criterion[levels][#{score}]",
+                                            nil,
+                                            class: "rp-textarea rp-textarea--sm",
+                                            placeholder: "설명",
+                                            rows: 2 %>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="rp-col-right">
+            <!-- Summary Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">설정 요약</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-summary-grid">
+                  <div class="rp-summary-item">
+                    <span class="rp-label">문항 유형</span>
+                    <span class="rp-value">서술형</span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">정답 설정</span>
+                    <span class="rp-badge rp-badge--pill rp-badge--success">완료</span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">배점</span>
+                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">마지막 저장</span>
+                    <span class="rp-value"><%= @item.updated_at.strftime("%Y-%m-%d %H:%M") %></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checklist Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">필수 점검</h3>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-checklist">
+                  <label class="rp-checkbox">
+                    <input type="checkbox" checked>
+                    <span>정답 지정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <span>배점 입력 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if rubric_levels_count.positive? %>>
+                    <span>루브릭 레벨 설정 완료</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox">
+                    <span>미리보기 확인 완료</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="rp-card rp-card__footer">
+              <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
+              <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </section>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="rp-modal" id="delete-confirm-modal" aria-hidden="true">
+  <div class="rp-modal__card">
+    <h3>삭제 확인</h3>
+    <p class="rp-text-muted">선택한 항목을 삭제합니다. 계속할까요?</p>
+    <div class="rp-modal__actions">
+      <button type="button" class="rp-btn rp-btn--primary" id="confirm-delete">삭제 계속</button>
+      <button type="button" class="rp-btn rp-btn--secondary" id="cancel-delete">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Tab switching
+    const tabs = document.querySelectorAll(".rp-tab");
+    const frames = document.querySelectorAll(".rp-frame");
+    const page = document.querySelector(".rp-main");
+    const params = new URLSearchParams(window.location.search);
+    const defaultState = params.get("state") || (page ? page.dataset.defaultState : "mcq-default");
+
+    const setState = (state) => {
+      // Update tabs
+      tabs.forEach((tab) => {
+        tab.classList.toggle("rp-tab--active", tab.dataset.state === state);
+      });
+      // Update frames
+      frames.forEach((frame) => {
+        frame.style.display = frame.dataset.state === state ? "block" : "none";
+      });
+    };
+
+    if (defaultState) {
+      setState(defaultState);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setState(tab.dataset.state);
+      });
+    });
+
+    // AI suggestion handlers
+    const applyCorrect = () => {
+      if (!page) return;
+      const correct = page.dataset.aiCorrect;
+      if (!correct) return;
+      const radios = document.querySelectorAll("input[name='correct_choice_id']");
+      radios.forEach((radio) => {
+        radio.checked = false;
+      });
+      const correctRadio = Array.from(radios).find((r) => {
+        const choiceNo = r.value;
+        const label = r.closest(".rp-choice-option");
+        return label && label.querySelector("[data-choice-no]");
+      });
+      if (correctRadio) correctRadio.checked = true;
+    };
+
+    document.querySelectorAll("[data-ai-apply='mcq-correct']").forEach((button) => {
+      button.addEventListener("click", applyCorrect);
+    });
+
+    document.querySelectorAll("[data-ai-apply='mcq-proximity']").forEach((button) => {
+      button.addEventListener("click", () => {
+        const frame = button.closest(".rp-frame");
+        if (!frame) return;
+        frame.querySelectorAll(".rp-input--score").forEach((input) => {
+          if (!input.value) input.value = 0;
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-ai-apply='rubric']").forEach((button) => {
+      button.addEventListener("click", () => {
+        const frame = button.closest(".rp-frame");
+        if (!frame) return;
+        frame.querySelectorAll(".rp-textarea--sm").forEach((textarea, index) => {
+          if (!textarea.value.trim()) {
+            textarea.value = `핵심 근거 ${(index % 4) + 1}을 포함해 설명합니다.`;
+          }
+        });
+      });
+    });
+
+    // Delete confirmation modal
+    const forms = document.querySelectorAll("form.rp-form");
+    const modal = document.getElementById("delete-confirm-modal");
+    const confirmBtn = document.getElementById("confirm-delete");
+    const cancelBtn = document.getElementById("cancel-delete");
+    if (!forms.length || !modal || !confirmBtn || !cancelBtn) return;
+
+    let confirmed = false;
+    let activeForm = null;
+
+    forms.forEach((form) => {
+      form.addEventListener("submit", (event) => {
+        const deleteChecks = form.querySelectorAll(
+          "input[name='delete_sample_answers[]']:checked, input[name='delete_criteria[]']:checked"
+        );
+        if (!deleteChecks.length || confirmed) return;
+
+        event.preventDefault();
+        activeForm = form;
+        modal.setAttribute("aria-hidden", "false");
+        modal.classList.add("is-open");
+      });
+    });
+
+    confirmBtn.addEventListener("click", () => {
+      confirmed = true;
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+      if (activeForm) activeForm.requestSubmit();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+    });
+  })();
+</script>

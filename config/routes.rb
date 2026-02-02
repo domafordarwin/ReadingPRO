@@ -182,6 +182,17 @@ Rails.application.routes.draw do
     end
   end
 
+  # API v1 Namespace
+  namespace :api do
+    namespace :v1 do
+      resources :evaluation_indicators, only: [:index, :show, :create, :update, :destroy] do
+        resources :sub_indicators, only: [:index, :show, :create]
+      end
+      resources :sub_indicators, only: [:index, :show, :update, :destroy]
+      resources :items, only: [:index, :show, :create, :update, :destroy]
+    end
+  end
+
   # Defines the root path route ("/")
   root "welcome#index"
 

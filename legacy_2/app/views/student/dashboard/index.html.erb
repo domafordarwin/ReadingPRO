@@ -1,0 +1,149 @@
+<% content_for :page_title do %>학생 대시보드<% end %>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">안녕하세요, 학생님!</h1>
+  <p class="rp-page-header__subtitle">오늘의 진단 현황과 읽기 활동을 한눈에 확인하세요.</p>
+</div>
+
+<!-- CTA Card -->
+<div class="rp-card rp-card--highlight rp-mb-6">
+  <div class="rp-flex rp-items-center rp-justify-between">
+    <div>
+      <h2 class="rp-card__title">새로운 진단이 배정되었습니다</h2>
+      <p class="rp-card__subtitle">읽기 역량 진단 2024 하반기</p>
+    </div>
+    <%= link_to student_diagnostics_path, class: "rp-btn rp-btn--primary rp-btn--lg" do %>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+      </svg>
+      진단 시작하기
+    <% end %>
+  </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">완료한 진단</div>
+    <div class="rp-stat__value">6건</div>
+    <div class="rp-stat__trend rp-stat__trend--up">+2 이번 달</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">배정된 진단</div>
+    <div class="rp-stat__value">2건</div>
+    <div class="rp-stat__trend">미완료</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">현재 등급</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);">Lv.3</div>
+    <div class="rp-stat__trend rp-stat__trend--up">+1 상승</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">읽은 도서</div>
+    <div class="rp-stat__value">12권</div>
+    <div class="rp-stat__trend">이번 학기</div>
+  </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="rp-grid rp-grid--2 rp-mb-6">
+  <!-- Competency Summary -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <div>
+        <h3 class="rp-card__title">역량 요약</h3>
+        <p class="rp-card__subtitle">이해력 · 의사소통 · 심미적 감수성</p>
+      </div>
+      <span class="rp-badge rp-badge--primary">최신</span>
+    </div>
+    <div class="rp-card__body">
+      <div class="rp-chart-placeholder" style="height: 160px;">
+        <div class="rp-chart-bar" style="height: 72%;"></div>
+        <div class="rp-chart-bar" style="height: 64%;"></div>
+        <div class="rp-chart-bar" style="height: 68%;"></div>
+      </div>
+      <div class="rp-flex rp-gap-2 rp-mt-4" style="flex-wrap: wrap;">
+        <span class="rp-badge rp-badge--primary">이해력 72점</span>
+        <span class="rp-badge rp-badge--info">의사소통 64점</span>
+        <span class="rp-badge rp-badge--success">심미적 감수성 68점</span>
+      </div>
+    </div>
+    <div class="rp-card__footer">
+      <%= link_to "상세 리포트 보기", student_reports_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+    </div>
+  </div>
+
+  <!-- Recent Feedback -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h3 class="rp-card__title">최근 피드백</h3>
+      <span class="rp-badge rp-badge--info">3건</span>
+    </div>
+    <div class="rp-card__body">
+      <div class="rp-table-wrapper">
+        <table class="rp-table">
+          <tbody>
+            <tr>
+              <td>
+                <strong>비문학 지문 요약</strong>
+                <div class="rp-text-muted" style="font-size: 12px;">핵심 문장 정리가 좋아졌어요.</div>
+              </td>
+              <td class="rp-text-right">
+                <span class="rp-badge rp-badge--success">오늘</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>감상문 구조</strong>
+                <div class="rp-text-muted" style="font-size: 12px;">도입과 결론 연결이 좋아요.</div>
+              </td>
+              <td class="rp-text-right">
+                <span class="rp-badge rp-badge--default">어제</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>문장 표현</strong>
+                <div class="rp-text-muted" style="font-size: 12px;">설명 문장 길이를 줄여보세요.</div>
+              </td>
+              <td class="rp-text-right">
+                <span class="rp-badge rp-badge--default">1주 전</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recommendations -->
+<div class="rp-card">
+  <div class="rp-card__header">
+    <div>
+      <h3 class="rp-card__title">맞춤 추천</h3>
+      <p class="rp-card__subtitle">지금 읽기 좋은 도서와 활동을 추천합니다.</p>
+    </div>
+  </div>
+  <div class="rp-card__body">
+    <div class="rp-grid rp-grid--3">
+      <div class="rp-card rp-card--clickable" style="padding: var(--rp-space-4);">
+        <span class="rp-badge rp-badge--primary rp-mb-2">도서</span>
+        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">읽기 추천</h4>
+        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">「시간을 달리는 소녀」 감상문 쓰기</p>
+      </div>
+      <div class="rp-card rp-card--clickable" style="padding: var(--rp-space-4);">
+        <span class="rp-badge rp-badge--warning rp-mb-2">미션</span>
+        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">활동 추천</h4>
+        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">주제 문장 만들기 미션</p>
+      </div>
+      <div class="rp-card rp-card--clickable" style="padding: var(--rp-space-4);">
+        <span class="rp-badge rp-badge--info rp-mb-2">진단</span>
+        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">진단 추천</h4>
+        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">독서 성향 재측정</p>
+      </div>
+    </div>
+  </div>
+</div>

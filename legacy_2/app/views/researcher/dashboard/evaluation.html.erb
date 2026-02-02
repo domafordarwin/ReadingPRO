@@ -1,0 +1,427 @@
+<% content_for :portal_title do %>
+  평가 영역
+<% end %>
+<% content_for :portal_subtitle do %>
+  평가 영역별 문항 구성을 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :evaluation %>
+<% end %>
+
+<style>
+  .evaluation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .evaluation-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .evaluation-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .evaluation-card__icon {
+    width: 56px;
+    height: 56px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 28px;
+  }
+
+  .evaluation-card__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .evaluation-card__meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .evaluation-card__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .evaluation-card__meta-label {
+    color: #999;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .evaluation-card__meta-value {
+    color: #333;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .evaluation-card__progress {
+    margin-bottom: 16px;
+  }
+
+  .evaluation-card__progress-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .evaluation-card__progress-bar {
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .evaluation-card__progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .evaluation-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .evaluation-card__status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .evaluation-card__status--active {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .evaluation-card__status--review {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .evaluation-card__action {
+    color: #667eea;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .evaluation-card__action:hover {
+    color: #764ba2;
+  }
+
+  .evaluation-summary {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .evaluation-summary__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .evaluation-summary__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .evaluation-summary__total {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .evaluation-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .evaluation-stat {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+
+  .evaluation-stat__label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .evaluation-stat__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  @media (max-width: 1200px) {
+    .evaluation-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .evaluation-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .evaluation-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .evaluation-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- 평가 영역 통계 -->
+<div class="evaluation-summary">
+  <div class="evaluation-summary__header">
+    <h2 class="evaluation-summary__title">평가 영역 현황</h2>
+    <div class="evaluation-summary__total">
+      85<span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
+    </div>
+  </div>
+
+  <div class="evaluation-stats">
+    <div class="evaluation-stat">
+      <div class="evaluation-stat__label">활성 영역</div>
+      <div class="evaluation-stat__value">2</div>
+    </div>
+    <div class="evaluation-stat">
+      <div class="evaluation-stat__label">검토중 영역</div>
+      <div class="evaluation-stat__value">1</div>
+    </div>
+    <div class="evaluation-stat">
+      <div class="evaluation-stat__label">평균 문항 수</div>
+      <div class="evaluation-stat__value">28</div>
+    </div>
+    <div class="evaluation-stat">
+      <div class="evaluation-stat__label">마지막 업데이트</div>
+      <div class="evaluation-stat__value" style="font-size: 14px;">01/27</div>
+    </div>
+  </div>
+</div>
+
+<!-- 평가 영역 카드 -->
+<div class="evaluation-grid">
+  <!-- 이해력 영역 -->
+  <div class="evaluation-card">
+    <div class="evaluation-card__icon">📖</div>
+    <h3 class="evaluation-card__title">이해력 영역</h3>
+
+    <div class="evaluation-card__meta">
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">문항 수</span>
+        <span class="evaluation-card__meta-value">35</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">MCQ</span>
+        <span class="evaluation-card__meta-value">22</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">주관식</span>
+        <span class="evaluation-card__meta-value">13</span>
+      </div>
+    </div>
+
+    <div class="evaluation-card__progress">
+      <div class="evaluation-card__progress-label">
+        <span>완성도</span>
+        <span>100%</span>
+      </div>
+      <div class="evaluation-card__progress-bar">
+        <div class="evaluation-card__progress-fill" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <div class="evaluation-card__footer">
+      <span class="evaluation-card__status evaluation-card__status--active">활성</span>
+      <a href="#" class="evaluation-card__action">관리 →</a>
+    </div>
+  </div>
+
+  <!-- 의사소통 능력 영역 -->
+  <div class="evaluation-card">
+    <div class="evaluation-card__icon">💬</div>
+    <h3 class="evaluation-card__title">의사소통 능력 영역</h3>
+
+    <div class="evaluation-card__meta">
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">문항 수</span>
+        <span class="evaluation-card__meta-value">28</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">MCQ</span>
+        <span class="evaluation-card__meta-value">18</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">주관식</span>
+        <span class="evaluation-card__meta-value">10</span>
+      </div>
+    </div>
+
+    <div class="evaluation-card__progress">
+      <div class="evaluation-card__progress-label">
+        <span>완성도</span>
+        <span>100%</span>
+      </div>
+      <div class="evaluation-card__progress-bar">
+        <div class="evaluation-card__progress-fill" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <div class="evaluation-card__footer">
+      <span class="evaluation-card__status evaluation-card__status--active">활성</span>
+      <a href="#" class="evaluation-card__action">관리 →</a>
+    </div>
+  </div>
+
+  <!-- 심미적 감수성 영역 -->
+  <div class="evaluation-card">
+    <div class="evaluation-card__icon">🎨</div>
+    <h3 class="evaluation-card__title">심미적 감수성 영역</h3>
+
+    <div class="evaluation-card__meta">
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">문항 수</span>
+        <span class="evaluation-card__meta-value">22</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">MCQ</span>
+        <span class="evaluation-card__meta-value">14</span>
+      </div>
+      <div class="evaluation-card__meta-item">
+        <span class="evaluation-card__meta-label">주관식</span>
+        <span class="evaluation-card__meta-value">8</span>
+      </div>
+    </div>
+
+    <div class="evaluation-card__progress">
+      <div class="evaluation-card__progress-label">
+        <span>완성도</span>
+        <span>78%</span>
+      </div>
+      <div class="evaluation-card__progress-bar">
+        <div class="evaluation-card__progress-fill" style="width: 78%;"></div>
+      </div>
+    </div>
+
+    <div class="evaluation-card__footer">
+      <span class="evaluation-card__status evaluation-card__status--review">검토중</span>
+      <a href="#" class="evaluation-card__action">관리 →</a>
+    </div>
+  </div>
+</div>
+
+<!-- 세부 영역 구성 -->
+<div class="portal-card">
+  <div class="portal-card__header">
+    <h3 class="portal-card__title">세부 평가 지표</h3>
+  </div>
+  <div class="portal-card__body">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+      <!-- 이해력 세부 지표 -->
+      <div>
+        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">📖 이해력 영역</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 문자적 이해
+            <span style="float: right; font-weight: 600; color: #667eea;">12문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 추론적 이해
+            <span style="float: right; font-weight: 600; color: #667eea;">15문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 비판적 이해
+            <span style="float: right; font-weight: 600; color: #667eea;">8문항</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 의사소통 세부 지표 -->
+      <div>
+        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">💬 의사소통 능력 영역</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 정보 전달
+            <span style="float: right; font-weight: 600; color: #667eea;">10문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 감정 표현
+            <span style="float: right; font-weight: 600; color: #667eea;">10문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 설득 및 주장
+            <span style="float: right; font-weight: 600; color: #667eea;">8문항</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 심미적 감수성 세부 지표 -->
+      <div style="grid-column: 1 / -1;">
+        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">🎨 심미적 감수성 영역</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 표현 기법 이해
+            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">8문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 감정 공감
+            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">8문항</span>
+          </li>
+          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+            ✓ 미적 가치 판단
+            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">6문항</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+<% content_for :page_title do %>부모 공유 게시판<% end %>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">부모 공유 게시판</h1>
+  <p class="rp-page-header__subtitle">다른 부모님들과 경험과 팁을 공유하세요.</p>
+</div>
+
+<!-- Create New Forum Button -->
+<div class="rp-mb-6">
+  <%= link_to "새 글 작성", new_parent_forum_path, class: "rp-btn rp-btn--primary" %>
+</div>
+
+<!-- Stats Grid -->
+<div class="rp-grid rp-grid--3 rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">전체 글</div>
+    <div class="rp-stat__value"><%= @total_posts_count %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">답변 대기</div>
+    <div class="rp-stat__value"><%= @open_posts_count %></div>
+    <div class="rp-stat__trend">미답변</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">답변 완료</div>
+    <div class="rp-stat__value"><%= @answered_posts_count %></div>
+  </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="rp-card rp-mb-6">
+  <%= form_with url: parent_forums_path, method: :get, local: true do |f| %>
+    <div class="rp-grid rp-grid--4">
+      <div class="rp-form-group">
+        <%= f.text_field :search, placeholder: "제목 또는 내용으로 검색", value: @search_query, class: "rp-input" %>
+      </div>
+      <div class="rp-form-group">
+        <%= f.select :category, [["카테고리 선택", ""]] + ParentForum::CATEGORIES.map { |c| [ParentForum::CATEGORY_LABELS[c], c] }, { selected: @category_filter }, class: "rp-select" %>
+      </div>
+      <div class="rp-form-group">
+        <%= f.select :status, [["상태 선택", ""]] + [["미답변", "open"], ["답변완료", "answered"], ["마감", "closed"]], { selected: @status_filter }, class: "rp-select" %>
+      </div>
+      <div class="rp-form-group" style="display: flex; align-items: flex-end; gap: 8px;">
+        <%= f.submit "검색", class: "rp-btn rp-btn--primary" %>
+        <% if @search_query.present? || @category_filter || @status_filter %>
+          <%= link_to "초기화", parent_forums_path, class: "rp-btn rp-btn--secondary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Forums Table -->
+<div class="rp-card">
+  <% if @posts.any? %>
+    <div class="rp-table-wrapper">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th style="width: 50%;">제목</th>
+            <th style="width: 15%;">카테고리</th>
+            <th style="width: 10%;">작성자</th>
+            <th style="width: 10%;">상태</th>
+            <th style="width: 15%;">작성일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @posts.each do |forum| %>
+            <tr style="cursor: pointer;" onclick="window.location.href='<%= parent_forum_path(forum) %>'">
+              <td>
+                <strong><%= forum.title %></strong>
+                <br>
+                <small style="color: #666;"><%= truncate(forum.content, length: 60) %></small>
+              </td>
+              <td>
+                <span class="rp-badge rp-badge--primary"><%= forum.category_label %></span>
+              </td>
+              <td><%= forum.created_by.email.split("@").first %></td>
+              <td>
+                <% if forum.closed? %>
+                  <span class="rp-badge rp-badge--danger">마감</span>
+                <% elsif forum.answered? %>
+                  <span class="rp-badge rp-badge--success">답변완료</span>
+                <% else %>
+                  <span class="rp-badge rp-badge--warning">미답변</span>
+                <% end %>
+              </td>
+              <td><%= forum.created_at.strftime("%Y.%m.%d") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div style="margin-top: 24px; display: flex; justify-content: center; gap: 8px;">
+      <% if @posts.respond_to?(:current_page) %>
+        <% if @posts.current_page > 1 %>
+          <%= link_to "◀ 이전", parent_forums_path(search: @search_query, category: @category_filter, status: @status_filter, page: @posts.current_page - 1), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+
+        <% (1..@posts.total_pages).each do |page| %>
+          <% if page == @posts.current_page %>
+            <span style="padding: 8px 12px; background: var(--rp-primary); color: white; border-radius: 6px;"><%= page %></span>
+          <% else %>
+            <%= link_to page, parent_forums_path(search: @search_query, category: @category_filter, status: @status_filter, page: page), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+          <% end %>
+        <% end %>
+
+        <% if @posts.current_page < @posts.total_pages %>
+          <%= link_to "다음 ▶", parent_forums_path(search: @search_query, category: @category_filter, status: @status_filter, page: @posts.current_page + 1), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="rp-empty-state">
+      <p style="font-size: 18px; color: #666;">게시글이 없습니다.</p>
+      <%= link_to "첫 글 작성하기", new_parent_forum_path, class: "rp-btn rp-btn--primary rp-mt-4" %>
+    </div>
+  <% end %>
+</div>

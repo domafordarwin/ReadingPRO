@@ -1,0 +1,15 @@
+<div class="rp-not-found">
+  <div class="rp-not-found__card">
+    <div class="rp-not-found__badge">404</div>
+    <h1 class="rp-not-found__title">페이지를 찾을 수 없습니다</h1>
+    <p class="rp-not-found__description">
+      요청하신 주소가 존재하지 않거나 이동되었습니다.
+    </p>
+    <div class="rp-not-found__actions">
+      <button class="rp-not-found__button rp-not-found__button--secondary" onclick="history.back()">
+        이전 페이지로
+      </button>
+      <%= link_to "홈으로 이동", root_path, class: "rp-not-found__button rp-not-found__button--primary" %>
+    </div>
+  </div>
+</div>

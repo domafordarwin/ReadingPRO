@@ -107,7 +107,7 @@ diagnostic_form = DiagnosticForm.find_or_create_by!(name: '2025 중등 읽기 �
   df.time_limit_minutes = 60
   df.difficulty_distribution = { easy: 3, medium: 5, hard: 2 }
   df.status = :active
-  df.created_by = teacher
+  df.created_by_id = teacher.id
 end
 
 # Assign items to diagnostic form
@@ -153,7 +153,6 @@ student_54_user = User.find_or_create_by!(email: "student_54@shinmyung.edu") do 
   user.password = 'ReadingPro$12#'
   user.password_confirmation = 'ReadingPro$12#'
   user.role = :student
-  user.name = "소수환"
 end
 
 student_54 = Student.find_or_create_by!(user_id: student_54_user.id) do |s|
@@ -175,11 +174,10 @@ parent_54_user = User.find_or_create_by!(email: "parent_54@shinmyung.edu") do |u
   user.password = 'ReadingPro$12#'
   user.password_confirmation = 'ReadingPro$12#'
   user.role = :parent
-  user.name = "소수환 부모"
 end
 
 Parent.find_or_create_by!(user_id: parent_54_user.id) do |p|
-  p.relationship = "부모"
+  p.name = "소수환 부모"
 end
 
 # Create School Portfolio
@@ -196,7 +194,7 @@ puts "Creating announcements..."
   Announcement.find_or_create_by!(title: "공지사항 #{i + 1}") do |ann|
     ann.content = "이것은 공지사항 #{i + 1}입니다."
     ann.priority = ['low', 'medium', 'high'].sample
-    ann.published_by = teacher
+    ann.published_by_id = teacher.id
     ann.published_at = Time.current
   end
 end

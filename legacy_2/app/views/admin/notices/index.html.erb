@@ -1,0 +1,178 @@
+<% content_for :page_title, "공지사항 관리" %>
+
+<div class="rp-page-header">
+  <div>
+    <h1 class="rp-page-title">공지사항 관리</h1>
+    <p class="rp-page-subtitle">역할별 공지사항을 작성하고 관리합니다.</p>
+  </div>
+  <div>
+    <%= link_to new_admin_notice_path, class: "rp-btn rp-btn--primary" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      새 공지사항
+    <% end %>
+  </div>
+</div>
+
+<div class="rp-card">
+  <div class="rp-card__header">
+    <h2 class="rp-card__title">공지사항 목록</h2>
+    <p class="rp-card__description">총 <%= @notices.count %>개의 공지사항</p>
+  </div>
+
+  <!-- 검색 및 필터 -->
+  <div class="rp-search-section">
+    <%= form_with url: admin_notices_path, method: :get, class: "rp-search-form" do %>
+      <div class="rp-search-controls">
+        <div class="rp-search-input-wrapper">
+          <%= text_field_tag :search, params[:search],
+              placeholder: "제목 또는 내용으로 검색...",
+              class: "rp-search-input" %>
+          <svg class="rp-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </div>
+
+        <div class="rp-filter-group">
+          <%= select_tag :role,
+              options_for_select(
+                [["모든 역할", ""]] + Notice::TARGET_ROLES.map { |r| [role_label(r), r] },
+                params[:role]
+              ),
+              class: "rp-filter-select" %>
+
+          <%= select_tag :status,
+              options_for_select(
+                [["모든 상태", ""], ["활성 공지", "active"], ["중요 공지", "important"]],
+                params[:status]
+              ),
+              class: "rp-filter-select" %>
+
+          <%= button_tag type: "submit", class: "rp-btn rp-btn--primary" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            검색
+          <% end %>
+
+          <% if params[:search].present? || params[:role].present? || params[:status].present? %>
+            <%= link_to "초기화", admin_notices_path, class: "rp-btn rp-btn--secondary" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rp-table-container">
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>제목</th>
+          <th>대상 역할</th>
+          <th>작성자</th>
+          <th>게시일</th>
+          <th>만료일</th>
+          <th>상태</th>
+          <th>작업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @notices.each do |notice| %>
+          <tr>
+            <td>
+              <%= notice.title %>
+              <% if notice.important %>
+                <span class="rp-badge rp-badge--important">중요</span>
+              <% end %>
+            </td>
+            <td>
+              <% notice.target_roles_labels.each do |role_label| %>
+                <span class="rp-badge rp-badge--sm"><%= role_label %></span>
+              <% end %>
+            </td>
+            <td><%= notice.created_by&.name || '-' %></td>
+            <td><%= notice.published_at.strftime('%Y-%m-%d') %></td>
+            <td><%= notice.expires_at&.strftime('%Y-%m-%d') || '무제한' %></td>
+            <td>
+              <% if notice.active? %>
+                <span class="rp-status rp-status--active">활성</span>
+              <% else %>
+                <span class="rp-status rp-status--inactive">비활성</span>
+              <% end %>
+            </td>
+            <td>
+              <div class="rp-action-buttons">
+                <%= link_to edit_admin_notice_path(notice), class: "rp-btn rp-btn--sm rp-btn--secondary" do %>
+                  수정
+                <% end %>
+                <%= button_to "삭제", admin_notice_path(notice),
+                    method: :delete,
+                    class: "rp-btn rp-btn--sm rp-btn--danger",
+                    data: { confirm: "정말 삭제하시겠습니까?" } %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .rp-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .rp-page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px 0;
+  }
+
+  .rp-page-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .rp-badge--sm {
+    font-size: 11px;
+    padding: 2px 8px;
+    margin-right: 4px;
+  }
+
+  .rp-badge--important {
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  .rp-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .rp-status--active {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .rp-status--inactive {
+    background-color: #f3f4f6;
+    color: #6b7280;
+  }
+</style>

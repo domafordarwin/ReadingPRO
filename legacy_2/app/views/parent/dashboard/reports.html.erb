@@ -1,0 +1,334 @@
+<% content_for :portal_title do %>
+  진단 결과 리포트
+<% end %>
+<% content_for :portal_subtitle do %>
+  <%= @student.name %> 학생의 최근 진단 결과를 확인하고 관리할 수 있습니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "parent/shared/nav", current: :reports %>
+<% end %>
+
+<style>
+  .student-selector {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+  }
+
+  .student-selector-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .student-selector select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background: white;
+    cursor: pointer;
+  }
+
+  .dashboard-header {
+    margin-bottom: 32px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 4px;
+  }
+
+  .stat-unit {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .reports-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 16px;
+  }
+
+  .report-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .report-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .report-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    height: 100%;
+  }
+
+  .report-card-left {
+    flex: 1;
+  }
+
+  .report-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .report-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .status-draft {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .status-generated {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .status-published {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+
+  .status-none {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .report-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .report-score {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .score-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .score-label {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+
+  .report-action-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .report-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: #999;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .reports-list {
+      grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- 학생 선택 -->
+<div class="student-selector">
+  <label class="student-selector-label">학생 선택</label>
+  <select onchange="changeStudent(this.value)">
+    <% @students.each do |student| %>
+      <option value="<%= student.id %>" <%= 'selected' if student.id == @student.id %>>
+        <%= student.name %>
+      </option>
+    <% end %>
+  </select>
+</div>
+
+<% if @attempts.any? %>
+  <!-- 통계 카드 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">총 응시</div>
+      <div class="stat-number"><%= @attempts.count %></div>
+      <div class="stat-unit">회</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">제점 완료</div>
+      <div class="stat-number"><%= @attempts.count { |a| a.report&.published? } %></div>
+      <div class="stat-unit">건</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">평균 점수</div>
+      <div class="stat-number"><%= calculate_average_score(@attempts) %></div>
+      <div class="stat-unit">점</div>
+    </div>
+  </div>
+
+  <!-- 리포트 목록 -->
+  <div class="reports-list">
+    <% @attempts.each do |attempt| %>
+      <% attempt_score = calculate_attempt_score(attempt) %>
+      <% if attempt.report %>
+        <a href="<%= parent_show_report_path(attempt.id, student_id: @student.id) %>" class="report-card report-card-link">
+          <div class="report-card-left">
+            <div class="report-title">
+              2025학년도 중등 저학년 문해력 진단 평가
+            </div>
+
+            <div class="report-meta">
+              <span class="status-badge status-<%= attempt.report.status %>">
+                <%= translate_report_status(attempt.report.status) %>
+              </span>
+
+              <span class="meta-item">
+                📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
+              </span>
+
+              <span class="meta-item">
+                상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="report-card-right">
+            <div class="report-score">
+              <div class="score-number"><%= attempt_score %></div>
+              <div class="score-label">/100점</div>
+            </div>
+
+            <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
+              <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= parent_show_attempt_path(attempt.id, student_id: @student.id) %>');">
+                진단 결과 보기
+              </button>
+              <div style="flex: 1; pointer-events: none;">
+                <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; width: 100%; pointer-events: auto;" onclick="event.stopPropagation();">
+                  상세보고서 보기
+                </button>
+              </div>
+            </div>
+          </div>
+        </a>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <p>진행한 진단이 없습니다.</p>
+    <p style="font-size: 12px; margin-top: 8px;">학생이 진단을 완료한 후 결과를 확인할 수 있습니다.</p>
+  </div>
+<% end %>
+
+<script>
+  function navigateTo(path) {
+    window.location.href = path;
+  }
+
+  function changeStudent(studentId) {
+    window.location.href = '<%= parent_reports_path %>' + '?student_id=' + studentId;
+  }
+</script>
