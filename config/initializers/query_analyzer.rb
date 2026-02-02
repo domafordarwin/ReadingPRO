@@ -20,29 +20,6 @@ if Rails.env.development? || Rails.env.test?
     end
   end
 
-  # Detect N+1 queries in controller actions
-  if Rails.env.development?
-    require "active_record/query_analyzer"
-
-    # Track queries per action
-    module ActiveRecord
-      class QueryAnalyzer
-        def self.warn_on_excessive_queries(limit = 5)
-          query_count = 0
-
-          ActiveSupport::Notifications.subscribe("sql.active_record") do
-            query_count += 1
-          end
-
-          yield
-
-          if query_count > limit
-            Rails.logger.warn "[N+1 WARNING] #{query_count} queries executed (limit: #{limit})"
-          end
-        ensure
-          ActiveSupport::Notifications.unsubscribe(listener) if defined?(listener)
-        end
-      end
-    end
-  end
+  # Additional N+1 detection can be added via custom service
+  # Uses QueryAnalyzer service in app/services/query_analyzer.rb
 end

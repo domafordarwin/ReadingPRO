@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_003952) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -161,6 +161,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_003952) do
     t.bigint "user_id", null: false
     t.index ["email"], name: "index_parents_on_email"
     t.index ["user_id"], name: "index_parents_on_user_id"
+  end
+
+  create_table "performance_metrics", force: :cascade do |t|
+    t.float "cls"
+    t.datetime "created_at", null: false
+    t.float "db_time"
+    t.string "endpoint"
+    t.float "fcp"
+    t.string "http_method"
+    t.float "inp"
+    t.float "lcp"
+    t.jsonb "metadata", default: {}
+    t.string "metric_type", null: false
+    t.integer "query_count"
+    t.datetime "recorded_at", null: false
+    t.float "render_time"
+    t.float "ttfb"
+    t.datetime "updated_at", null: false
+    t.float "value", null: false
+    t.index ["endpoint", "recorded_at"], name: "idx_performance_metrics_endpoint_time"
+    t.index ["metric_type", "recorded_at"], name: "idx_performance_metrics_type_time"
+    t.index ["recorded_at"], name: "index_performance_metrics_on_recorded_at"
   end
 
   create_table "reading_stimuli", force: :cascade do |t|
