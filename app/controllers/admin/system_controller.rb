@@ -47,9 +47,6 @@ module Admin
         page_load_samples: PerformanceMetric.by_type('page_load').recent(1.hour).count,
         web_vitals_samples: PerformanceMetric.where(metric_type: %w[fcp lcp cls inp ttfb]).recent(1.hour).count
       }
-
-      # Phase 3.6: Error tracking stats from Sentry
-      load_sentry_stats
     end
 
     private
@@ -91,24 +88,6 @@ module Admin
 
       # Transform keys to readable hour format
       metrics.transform_keys { |k| k.strftime('%H:00') }.sort
-    end
-
-    # Phase 3.7: Load real error tracking stats from Sentry API
-    def load_sentry_stats
-      # Check if Sentry API is configured
-      if ENV['SENTRY_AUTH_TOKEN'].present? && ENV['SENTRY_ORG_SLUG'].present?
-        # Fetch real stats from Sentry API
-        @sentry_stats = SentryService.new.fetch_error_stats
-      else
-        # Fallback: check if Sentry is at least initialized (DSN set)
-        @sentry_stats = {
-          error_count_24h: 0,
-          error_count_1h: 0,
-          most_common_error: nil,
-          error_rate: 0.0,
-          sentry_enabled: ENV['SENTRY_DSN'].present?
-        }
-      end
     end
   end
 end

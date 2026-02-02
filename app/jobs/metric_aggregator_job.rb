@@ -32,6 +32,10 @@ class MetricAggregatorJob < ApplicationJob
     cleanup_old_aggregates
 
     Rails.logger.info('[MetricAggregatorJob] Aggregation complete')
+  rescue => e
+    Rails.logger.error(
+      "[MetricAggregatorJob] Error during aggregation: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+    )
   end
 
   private

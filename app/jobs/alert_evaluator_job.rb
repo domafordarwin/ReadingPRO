@@ -46,6 +46,10 @@ class AlertEvaluatorJob < ApplicationJob
     check_metric('cls')
 
     Rails.logger.info('[AlertEvaluatorJob] Performance evaluation complete')
+  rescue => e
+    Rails.logger.error(
+      "[AlertEvaluatorJob] Error during evaluation: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+    )
   end
 
   private

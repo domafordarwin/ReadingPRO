@@ -5,11 +5,7 @@
 # Purpose:
 # - Non-blocking metric persistence
 # - Called asynchronously from middleware/controllers
-# - Errors captured to Sentry by ApplicationJob
-#
-# Phase 3.6: Error handling moved to ApplicationJob base class
-# - All exceptions are captured to Sentry before job fails
-# - Job marked as failed so SolidQueue can retry/report
+# - Catches and logs errors without blocking request
 #
 # Usage:
 #   PerformanceMetricRecorderJob.perform_later(
@@ -42,6 +38,10 @@ class PerformanceMetricRecorderJob < ApplicationJob
       ttfb: metric_data[:ttfb],
       metadata: metric_data[:metadata] || {},
       recorded_at: Time.current
+    )
+  rescue => e
+    Rails.logger.error(
+      "[PerformanceMetricRecorderJob] Failed to record #{metric_data[:metric_type]} metric: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
     )
   end
 end

@@ -177,62 +177,6 @@
 
 <div class="admin-divider"></div>
 
-<!-- Phase 3.6: Error Tracking Section -->
-<section class="admin-section">
-  <h2>🐛 실시간 에러 추적 (Sentry)</h2>
-  <p class="admin-description">애플리케이션 예외 및 에러 모니터링</p>
-
-  <% if @sentry_stats && @sentry_stats[:sentry_enabled] %>
-    <div class="admin-grid">
-      <!-- Error Count 24h -->
-      <div class="admin-stat">
-        <div class="admin-stat-label">최근 24시간 에러</div>
-        <div class="admin-stat-value <%= error_status_class(@sentry_stats[:error_count_24h]) %>">
-          <%= format_error_count(@sentry_stats[:error_count_24h]) %>
-        </div>
-      </div>
-
-      <!-- Error Count 1h -->
-      <div class="admin-stat">
-        <div class="admin-stat-label">최근 1시간 에러</div>
-        <div class="admin-stat-value <%= error_status_class(@sentry_stats[:error_count_1h]) %>">
-          <%= @sentry_stats[:error_count_1h] %>건
-        </div>
-      </div>
-
-      <!-- Error Rate -->
-      <div class="admin-stat">
-        <div class="admin-stat-label">에러율</div>
-        <div class="admin-stat-value">
-          <%= number_to_percentage(@sentry_stats[:error_rate], precision: 2) %>
-        </div>
-      </div>
-
-      <!-- Sentry Dashboard Link -->
-      <div class="admin-stat">
-        <div class="admin-stat-label">대시보드</div>
-        <div class="admin-stat-value">
-          <%= sentry_dashboard_link %>
-        </div>
-      </div>
-    </div>
-
-    <!-- Most Common Error -->
-    <% if @sentry_stats[:most_common_error].present? %>
-      <div class="admin-alert alert-info" style="margin-top: 1rem;">
-        <strong>가장 빈번한 에러:</strong><br>
-        <%= @sentry_stats[:most_common_error] %>
-      </div>
-    <% end %>
-  <% else %>
-    <div class="admin-alert alert-warning">
-      ⚠️ Sentry가 설정되지 않았습니다. 환경 변수 SENTRY_DSN을 확인하세요.
-    </div>
-  <% end %>
-</section>
-
-<div class="admin-divider"></div>
-
 <!-- Maintenance -->
 <section class="admin-grid">
   <div class="admin-card">

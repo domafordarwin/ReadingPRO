@@ -12,16 +12,7 @@ Rails.application.routes.draw do
   # hwpx file viewer
   get "/internal/hwpx_ping", to: "internal#hwpx_ping"
 
-  # Phase 3.6.5: Temporary test endpoints for Sentry verification
-  # IMPORTANT: Remove these routes after verification is complete
-  scope :test do
-    get "sentry", to: "test#sentry"
-    get "sentry_api", to: "test#sentry_api"
-    get "sentry_job", to: "test#sentry_job"
-    get "sentry_js", to: "test#sentry_js"
-  end
-
-
+  
   namespace :admin do
     root to: "system#show"
     get "system", to: "system#show"

@@ -52,10 +52,6 @@ gem "ruby-openai"
 # Anthropic Claude API (optional - keep for fallback if needed)
 # gem "anthropic"
 
-# Error tracking and monitoring
-gem "sentry-ruby"
-gem "sentry-rails"
-
 group :development, :test do
   # Load environment variables from .env file
   gem "dotenv-rails"
