@@ -111,6 +111,9 @@ class Student::DashboardController < ApplicationController
 
     # Initialize reader tendency (placeholder for now)
     @reader_tendency = ::ReaderTendency.new
+
+    # Generate guidance directions based on literacy achievements
+    @guidance_directions = generate_guidance_directions(@literacy_achievements)
   end
 
   def latest_report
@@ -141,6 +144,29 @@ class Student::DashboardController < ApplicationController
   end
 
   private
+
+  def generate_guidance_directions(achievements)
+    return [] if achievements.blank?
+
+    achievements.map do |achievement|
+      accuracy = achievement.accuracy_rate
+      indicator = achievement.evaluation_indicator
+
+      content = if accuracy >= 80
+        "#{indicator&.name} 영역에서 우수한 성과를 보이고 있습니다. 심화 학습을 추천합니다."
+      elsif accuracy >= 60
+        "#{indicator&.name} 영역에서 양호한 수준입니다. 꾸준한 연습이 필요합니다."
+      else
+        "#{indicator&.name} 영역에서 집중적인 학습이 필요합니다. 기초부터 다시 점검해 보세요."
+      end
+
+      OpenStruct.new(
+        evaluation_indicator: indicator,
+        content: content,
+        accuracy_rate: accuracy
+      )
+    end.sort_by { |d| d.accuracy_rate }
+  end
 
   def calculate_literacy_achievements(attempt)
     # Group responses by evaluation_indicator and calculate accuracy rates
