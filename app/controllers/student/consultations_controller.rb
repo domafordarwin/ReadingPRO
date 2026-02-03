@@ -23,7 +23,7 @@ class Student::ConsultationsController < ApplicationController
     @posts = if @show_my_posts
                @student.consultation_posts
              else
-               ConsultationPost.where("student_id = ? OR visibility = ?", @student.id, 'public')
+               ::ConsultationPost.where("student_id = ? OR visibility = ?", @student.id, 'public')
              end
 
     # 필터 적용
@@ -126,7 +126,7 @@ class Student::ConsultationsController < ApplicationController
   end
 
   def set_consultation_post
-    @post = ConsultationPost.find(params[:id])
+    @post = ::ConsultationPost.find(params[:id])
   end
 
   def authorize_consultation_post

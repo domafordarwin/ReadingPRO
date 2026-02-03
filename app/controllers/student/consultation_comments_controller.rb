@@ -46,7 +46,7 @@ class Student::ConsultationCommentsController < ApplicationController
   end
 
   def set_consultation_post
-    @post = ConsultationPost.find(params[:consultation_id])
+    @post = ::ConsultationPost.find(params[:consultation_id])
   end
 
   def authorize_reply

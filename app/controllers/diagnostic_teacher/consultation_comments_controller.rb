@@ -35,7 +35,7 @@ class DiagnosticTeacher::ConsultationCommentsController < ApplicationController
   private
 
   def set_consultation_post
-    @post = ConsultationPost.find(params[:consultation_id])
+    @post = ::ConsultationPost.find(params[:consultation_id])
   end
 
   def comment_params

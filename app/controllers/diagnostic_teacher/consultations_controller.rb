@@ -16,7 +16,7 @@ class DiagnosticTeacher::ConsultationsController < ApplicationController
     @student_filter = params[:student_id].presence
 
     # 진단담당교사는 모든 상담글 조회 가능
-    @posts = ConsultationPost.all
+    @posts = ::ConsultationPost.all
 
     # 필터 적용
     @posts = @posts.search(@search_query) if @search_query.present?
@@ -31,10 +31,10 @@ class DiagnosticTeacher::ConsultationsController < ApplicationController
                    .per(20)
 
     # 통계 데이터
-    @total_posts = ConsultationPost.count
-    @open_posts_count = ConsultationPost.open_posts.count
-    @private_posts_count = ConsultationPost.private_posts.count
-    @needs_reply_count = ConsultationPost.open_posts.where.missing(:consultation_comments).count
+    @total_posts = ::ConsultationPost.count
+    @open_posts_count = ::ConsultationPost.open_posts.count
+    @private_posts_count = ::ConsultationPost.private_posts.count
+    @needs_reply_count = ::ConsultationPost.open_posts.where.missing(:consultation_comments).count
   end
 
   def show
@@ -64,6 +64,6 @@ class DiagnosticTeacher::ConsultationsController < ApplicationController
   end
 
   def set_consultation_post
-    @post = ConsultationPost.find(params[:id])
+    @post = ::ConsultationPost.find(params[:id])
   end
 end
