@@ -13,4 +13,24 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
   validates :role, presence: true
+
+  # 진단담당교사 여부 (현재는 teacher 역할과 동일하게 처리)
+  # 향후 Teacher 모델에 diagnostic_assigned 플래그 추가 시 수정 필요
+  def diagnostic_teacher?
+    teacher?
+  end
+
+  # 이름 표시 (학생/학부모/교사에 따라 다르게)
+  def name
+    case role
+    when 'student'
+      student&.name || email.split('@').first
+    when 'parent'
+      parent&.name || email.split('@').first
+    when 'teacher'
+      teacher&.name || email.split('@').first
+    else
+      email.split('@').first
+    end
+  end
 end

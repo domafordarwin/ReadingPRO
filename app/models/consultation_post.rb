@@ -79,4 +79,19 @@ class ConsultationPost < ApplicationRecord
   def private?
     visibility == 'private'
   end
+
+  # 열림 상태 확인
+  def open?
+    status == 'open'
+  end
+
+  # 댓글 작성 가능 여부 (마감되지 않았고 글 작성자, 교사, 관리자 허용)
+  def can_reply?(user)
+    return false if user.nil?
+    return false if closed?
+    return true if created_by_id == user.id
+    return true if user.admin?
+    return true if user.teacher? || user.diagnostic_teacher?
+    false
+  end
 end
