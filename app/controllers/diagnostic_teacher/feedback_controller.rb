@@ -10,37 +10,35 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def index
     @current_page = "feedback"
 
-    # MCQ 문항에 대한 응답 목록 (학생별로 그룹화)
+    # MCQ 문항에 대한 응답 목록 (eager loading)
     mcq_responses = Response
       .joins(:item)
       .where("items.item_type = ?", Item.item_types[:mcq])
       .includes(:item, attempt: :student)
       .order(created_at: :desc)
 
-    # 학생별로 그룹화
-    student_responses_map = {}
-    mcq_responses.each do |response|
-      student = response.attempt.student
-      student_id = student.id
-      student_responses_map[student_id] ||= []
-      student_responses_map[student_id] << response
-    end
+    # 학생별로 그룹화 (Ruby group_by 사용 - 메모리 효율)
+    student_responses_map = mcq_responses.group_by { |r| r.attempt.student_id }
 
-    # 검색 필터
+    # 검색 필터 (N+1 제거: 이미 로드된 데이터에서 필터링)
     @search_query = params[:search].to_s.strip
     if @search_query.present?
-      student_responses_map.select! do |student_id, _responses|
-        student = Student.find_by(id: student_id)
-        student&.name&.downcase&.include?(@search_query.downcase)
+      search_downcase = @search_query.downcase
+      student_responses_map.select! do |_student_id, responses|
+        # 이미 메모리에 로드된 student 객체 사용
+        student_name = responses.first.attempt.student.name
+        student_name&.downcase&.include?(search_downcase)
       end
     end
 
     # 통계
-    @students_count = student_responses_map.keys.uniq.count
+    @students_count = student_responses_map.keys.count
     @responses_count = mcq_responses.count
 
-    # 정렬 및 페이지네이션
-    sorted_entries = student_responses_map.sort_by { |_, responses| responses.first.created_at }.reverse
+    # 정렬 및 페이지네이션 (최신순)
+    sorted_entries = student_responses_map.sort_by do |_, responses|
+      -responses.first.created_at.to_i
+    end
     @student_responses = Kaminari.paginate_array(sorted_entries).page(params[:page]).per(20)
   end
 
@@ -48,13 +46,20 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @current_page = "feedback"
 
     begin
-      # 학생 탐색 네비게이션용 (attempt가 없어도 필요)
-      students = Student.order(:name).all
-      @all_students = students.map { |s| { id: s.id, name: s.name } }
+      # 학생 탐색 네비게이션용 (SQL 쿼리로 최적화)
+      # 상위 50명 학생만 로드 (드롭다운용)
+      top_students = Student.order(:name).limit(50)
+      @all_students = top_students.map { |s| { id: s.id, name: s.name } }
 
-      current_index = students.find_index { |s| s.id == @student.id }
-      @prev_student = students[current_index - 1] if current_index && current_index > 0
-      @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
+      # Prev/Next 학생 조회 (SQL 쿼리)
+      @prev_student = Student
+        .where("name < ?", @student.name)
+        .order(name: :desc)
+        .first
+      @next_student = Student
+        .where("name > ?", @student.name)
+        .order(name: :asc)
+        .first
 
       # 최신 Attempt 로드
       @latest_attempt = @student.student_attempts.order(:created_at).last
