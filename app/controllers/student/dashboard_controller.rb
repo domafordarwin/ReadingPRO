@@ -102,6 +102,33 @@ class Student::DashboardController < ApplicationController
       redirect_to student_reports_path, alert: "리포트를 찾을 수 없습니다."
       return
     end
+
+    # Calculate literacy achievements grouped by evaluation indicator
+    @literacy_achievements = calculate_literacy_achievements(@attempt)
+
+    # Create comprehensive analysis object
+    @comprehensive_analysis = ::ComprehensiveAnalysis.new(@attempt, @literacy_achievements)
+
+    # Initialize reader tendency (placeholder for now)
+    @reader_tendency = ::ReaderTendency.new
+  end
+
+  private
+
+  def calculate_literacy_achievements(attempt)
+    # Group responses by evaluation_indicator and calculate accuracy rates
+    responses = attempt.responses.includes(:item, :selected_choice)
+    grouped = responses.group_by { |r| r.item.evaluation_indicator }
+
+    grouped.map do |indicator, responses|
+      correct_count = responses.count { |r| r.selected_choice&.is_correct }
+      OpenStruct.new(
+        evaluation_indicator: indicator,
+        total_count: responses.count,
+        correct_count: correct_count,
+        accuracy_rate: (correct_count * 100.0 / responses.count).round(1)
+      )
+    end
   end
 
   def show_attempt
