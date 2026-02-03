@@ -4,6 +4,8 @@ class ParentForum < ApplicationRecord
   belongs_to :created_by, class_name: 'User', foreign_key: 'created_by_id'
   has_many :parent_forum_comments, dependent: :destroy
 
+  CATEGORIES = %w[general question information discussion other].freeze
+
   CATEGORY_LABELS = {
     'general' => '일반',
     'question' => '질문',
