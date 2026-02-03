@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module StudentResultsHelper
+module Student::ResultsHelper
   # Performance level text based on percentage score
   def performance_level(percentage)
     case percentage
