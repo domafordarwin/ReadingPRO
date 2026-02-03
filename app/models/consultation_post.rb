@@ -54,4 +54,29 @@ class ConsultationPost < ApplicationRecord
   def answered?
     status == 'answered'
   end
+
+  # 카테고리 라벨 (한글)
+  def category_label
+    CATEGORY_LABELS[category] || category
+  end
+
+  # 교사 답변 여부 확인
+  def has_teacher_reply?
+    consultation_comments.joins(:created_by).where(users: { role: %w[teacher diagnostic_teacher admin] }).exists?
+  end
+
+  # 조회수 (view_count 별칭)
+  def views_count
+    view_count || 0
+  end
+
+  # 마지막 활동 시간 (댓글 또는 게시글 업데이트)
+  def last_activity_at
+    [updated_at, consultation_comments.maximum(:created_at)].compact.max
+  end
+
+  # 비공개 여부
+  def private?
+    visibility == 'private'
+  end
 end
