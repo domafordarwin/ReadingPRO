@@ -24,15 +24,15 @@ module Student::DashboardHelper
     mcq_count = 0
 
     # Calculate MCQ score: 1 point per correct answer
-    attempt.responses.includes(selected_choice: :choice_score, item: [:item_choices]).each do |response|
+    attempt.responses.includes(:selected_choice, :item).each do |response|
       if response.item.mcq?
         mcq_count += 1
-        total_score += 1 if response.selected_choice&.correct?
+        total_score += 1 if response.selected_choice&.is_correct
       end
     end
 
     # Calculate rubric score for constructed responses
-    attempt.responses.includes(response_rubric_scores: :rubric_criterion, item: [:item_choices]).each do |response|
+    attempt.responses.includes(response_rubric_scores: :rubric_criterion, :item).each do |response|
       if response.item.constructed?
         response.response_rubric_scores.each do |score|
           total_score += (score.score || 0)
