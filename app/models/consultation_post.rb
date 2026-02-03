@@ -13,6 +13,7 @@ class ConsultationPost < ApplicationRecord
 
   scope :recent, -> { order(created_at: :desc) }
   scope :open_posts, -> { where(status: 'open') }
+  scope :answered_posts, -> { where(status: ['answered', 'closed']) }
   scope :private_posts, -> { where(visibility: 'private') }
   scope :public_posts, -> { where(visibility: 'public') }
   scope :search, ->(query) { where('title ILIKE ? OR content ILIKE ?', "%#{query}%", "%#{query}%") }
