@@ -188,7 +188,7 @@ class Parent::DashboardController < ApplicationController
   def calculate_dashboard_stats
     {
       total_children: @children.count,
-      active_children: @children.select { |c| c.student_attempts.where('completed_at > ?', 30.days.ago).any? }.count,
+      active_children: @children.select { |c| c.student_attempts.where('submitted_at > ?', 30.days.ago).any? }.count,
       total_assessments: StudentAttempt.where(student: @children, status: 'completed').count,
       avg_score: calculate_average_score,
       pending_consultations: 0  # ConsultationRequest 모델 미구현
@@ -213,19 +213,19 @@ class Parent::DashboardController < ApplicationController
 
     # 최근 평가 기록 (Eager load diagnostic_form to prevent N+1)
     StudentAttempt.where(student: @children)
-      .where('completed_at > ?', 7.days.ago)
+      .where('submitted_at > ?', 7.days.ago)
       .includes(:diagnostic_form, :student)
-      .order(completed_at: :desc)
+      .order(submitted_at: :desc)
       .limit(10)
       .each do |attempt|
-        next unless attempt.completed_at && attempt.diagnostic_form
+        next unless attempt.submitted_at && attempt.diagnostic_form
         score_pct = attempt.max_score.to_f > 0 ? (attempt.total_score / attempt.max_score.to_f * 100).round(1) : 0
         activities << {
           type: 'assessment',
           student: attempt.student,
           title: "#{attempt.diagnostic_form.name} 완료",
           score: "#{score_pct}%",
-          timestamp: attempt.completed_at
+          timestamp: attempt.submitted_at
         }
       end
 
@@ -239,13 +239,13 @@ class Parent::DashboardController < ApplicationController
       # Use pre-loaded student_attempts (already includes from index action)
       attempts = child.student_attempts
         .select { |a| a.status == 'completed' }
-        .sort_by(&:completed_at)
+        .sort_by { |a| a.submitted_at || Time.at(0) }
 
       {
         student: child,
         attempt_count: attempts.count,
         scores: attempts.map { |a| {
-          date: a.completed_at,
+          date: a.submitted_at,
           score: calculate_attempt_score(a)
         }},
         trend: calculate_trend(attempts)
