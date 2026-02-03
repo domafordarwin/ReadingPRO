@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_000001) do
     t.index ["action"], name: "index_audit_logs_on_action"
     t.index ["resource_type", "resource_id"], name: "index_audit_logs_on_resource_type_and_resource_id"
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
+  end
+
+  create_table "consultation_comments", force: :cascade do |t|
+    t.bigint "consultation_post_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["consultation_post_id"], name: "index_consultation_comments_on_consultation_post_id"
+    t.index ["created_by_id"], name: "index_consultation_comments_on_created_by_id"
+  end
+
+  create_table "consultation_posts", force: :cascade do |t|
+    t.string "category", default: "academic", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "status", default: "open", null: false
+    t.bigint "student_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "view_count", default: 0
+    t.string "visibility", default: "private", null: false
+    t.index ["category"], name: "index_consultation_posts_on_category"
+    t.index ["created_by_id"], name: "index_consultation_posts_on_created_by_id"
+    t.index ["status"], name: "index_consultation_posts_on_status"
+    t.index ["student_id", "created_at"], name: "index_consultation_posts_on_student_id_and_created_at"
+    t.index ["student_id"], name: "index_consultation_posts_on_student_id"
+    t.index ["visibility"], name: "index_consultation_posts_on_visibility"
   end
 
   create_table "diagnostic_form_items", force: :cascade do |t|
@@ -468,6 +497,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_000001) do
   add_foreign_key "announcements", "teachers", column: "published_by_id"
   add_foreign_key "attempt_reports", "student_attempts"
   add_foreign_key "audit_logs", "users"
+  add_foreign_key "consultation_comments", "consultation_posts"
+  add_foreign_key "consultation_comments", "users", column: "created_by_id"
+  add_foreign_key "consultation_posts", "students"
+  add_foreign_key "consultation_posts", "users", column: "created_by_id"
   add_foreign_key "diagnostic_form_items", "diagnostic_forms"
   add_foreign_key "diagnostic_form_items", "items"
   add_foreign_key "diagnostic_forms", "teachers", column: "created_by_id"
