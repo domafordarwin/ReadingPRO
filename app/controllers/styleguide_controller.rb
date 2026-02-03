@@ -2,7 +2,7 @@
 
 class StyleguideController < ApplicationController
   # Require authentication to view style guide
-  before_action :authenticate_user!
+  before_action :require_login
 
   layout 'styleguide'
 

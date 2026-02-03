@@ -5,8 +5,20 @@ class ScoreResponseService
     new(response_id).call
   end
 
-  def initialize(response_id)
-    @response = Response.find(response_id)
+  def self.call_batch(response_ids)
+    return [] if response_ids.blank?
+
+    responses = Response
+      .where(id: response_ids)
+      .includes(item: :rubric, attempt: :form, selected_choice: :choice_score)
+      .to_a
+
+    responses.each { |response| new(response).call }
+    responses
+  end
+
+  def initialize(response_id_or_response)
+    @response = response_id_or_response.is_a?(Response) ? response_id_or_response : Response.find(response_id_or_response)
   end
 
   def call

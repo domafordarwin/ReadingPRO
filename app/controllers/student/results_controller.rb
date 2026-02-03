@@ -2,7 +2,8 @@
 
 module Student
   class ResultsController < ApplicationController
-    before_action :authenticate_user!
+    before_action :require_login
+    before_action -> { require_role("student") }
     before_action :require_student
     before_action :set_attempt
 

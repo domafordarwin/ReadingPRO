@@ -97,11 +97,9 @@ class Student::AssessmentsController < ApplicationController
 
     attempt.update!(status: :submitted, submitted_at: Time.current)
 
-    # Score all MCQ responses
-    mcq_responses = attempt.responses.joins(:item).where(items: { item_type: :mcq })
-    mcq_responses.each do |response|
-      ScoreResponseService.call(response.id)
-    end
+    # Batch score all MCQ responses (prevents N+1 queries)
+    mcq_response_ids = attempt.responses.joins(:item).where(items: { item_type: :mcq }).pluck(:id)
+    ScoreResponseService.call_batch(mcq_response_ids) if mcq_response_ids.any?
 
     # TODO: Auto-generate feedback for responses
 

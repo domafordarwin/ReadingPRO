@@ -127,8 +127,9 @@ export default class extends Controller {
     if (!currentQuestion) return
 
     const responseId = currentQuestion.dataset.responseId
+    const csrfToken = this.getCsrfToken()
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+    if (!csrfToken) return
 
     fetch(`/student/responses/${responseId}/toggle_flag`, {
       method: "PATCH",
@@ -175,7 +176,9 @@ export default class extends Controller {
 
       const responseId = currentQuestion.dataset.responseId
       const itemType = currentQuestion.dataset.itemType
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+      const csrfToken = this.getCsrfToken()
+
+      if (!csrfToken) return
 
       let answerData = {}
 
@@ -274,6 +277,19 @@ export default class extends Controller {
 
   getCurrentQuestion() {
     return this.questionTargets[this.currentIndexValue]
+  }
+
+  getCsrfToken() {
+    const token = document.querySelector('meta[name="csrf-token"]')?.content
+    if (!token) {
+      console.error("CSRF token not found in page meta tags")
+      if (window.Toast) {
+        window.Toast.error(
+          "Security error: CSRF token missing. Please refresh the page."
+        )
+      }
+    }
+    return token
   }
 
   loadSavedAnswers() {

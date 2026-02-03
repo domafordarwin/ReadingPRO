@@ -2,7 +2,7 @@
 
 class NotificationsController < ApplicationController
   layout "unified_portal"
-  before_action :authenticate_user!
+  before_action :require_login
 
   def index
     @current_page = "notifications"
@@ -34,9 +34,4 @@ class NotificationsController < ApplicationController
     redirect_back fallback_location: notifications_path, notice: "모든 알림이 읽음 처리되었습니다."
   end
 
-  private
-
-  def authenticate_user!
-    redirect_to login_path unless current_user
-  end
 end

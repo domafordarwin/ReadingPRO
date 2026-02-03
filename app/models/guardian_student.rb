@@ -6,7 +6,8 @@ class GuardianStudent < ApplicationRecord
 
   RELATIONSHIPS = %w[mother father guardian other].freeze
 
-  validates :parent_id, uniqueness: { scope: :student_id }
+  validates :parent_id, uniqueness: { scope: :student_id,
+                                       message: "Parent already linked to this student" }
   validates :relationship, inclusion: { in: RELATIONSHIPS }, allow_nil: true
   validates :can_view_results, inclusion: { in: [true, false] }
   validates :can_request_consultations, inclusion: { in: [true, false] }
