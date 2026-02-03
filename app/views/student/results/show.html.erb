@@ -1,0 +1,507 @@
+<% content_for :page_title, "진단 결과" %>
+
+<div class="rp-results-container">
+  <!-- Hero Card: Overall Score -->
+  <div class="rp-results-hero">
+    <div class="rp-card rp-card--highlight">
+      <div class="rp-card__body">
+        <div class="results-score-display">
+          <div class="score-percentage">
+            <span class="score-large"><%= @overall_stats[:percentage] %></span>
+            <span class="score-unit">%</span>
+          </div>
+
+          <div class="score-details">
+            <div class="detail-item">
+              <span class="detail-label">점수</span>
+              <span class="detail-value">
+                <%= @overall_stats[:total_score] %> / <%= @overall_stats[:max_score] %>점
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">정답</span>
+              <span class="detail-value">
+                <%= @overall_stats[:correct_count] %> / <%= @overall_stats[:total_questions] %>개
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">소요 시간</span>
+              <span class="detail-value">
+                <%= @overall_stats[:time_taken] || '기록 없음' %>
+              </span>
+            </div>
+          </div>
+
+          <div class="performance-level">
+            <span class="level-badge level-<%= performance_level_color(@overall_stats[:percentage]) %>">
+              <%= performance_level(@overall_stats[:percentage]) %>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Difficulty Breakdown -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h2>난이도별 성과</h2>
+      <p class="rp-card__subtitle">각 난이도 별 정답률</p>
+    </div>
+    <div class="rp-card__body">
+      <% if @difficulty_breakdown.any? %>
+        <div class="breakdown-grid">
+          <% @difficulty_breakdown.each do |stat| %>
+            <div class="breakdown-item">
+              <div class="breakdown-header">
+                <span class="breakdown-label"><%= stat[:difficulty_label] %></span>
+                <span class="breakdown-count"><%= stat[:correct] %> / <%= stat[:total] %></span>
+              </div>
+
+              <div class="rp-progress-bar">
+                <div class="rp-progress-bar__fill <%= difficulty_progress_bar_class(stat[:percentage]) %>"
+                     style="width: <%= stat[:percentage] %>%; min-width: 2px;"></div>
+              </div>
+
+              <div class="breakdown-percentage">
+                <strong><%= stat[:percentage] %>%</strong>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-muted">난이도별 데이터가 없습니다.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Evaluation Indicator Breakdown -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h2>평가 영역별 성과</h2>
+      <p class="rp-card__subtitle">읽기 능력 영역별 성과 분석</p>
+    </div>
+    <div class="rp-card__body">
+      <% if @indicator_breakdown.any? %>
+        <div class="indicator-grid">
+          <% @indicator_breakdown.each do |stat| %>
+            <div class="indicator-card">
+              <div class="indicator-header">
+                <h3><%= stat[:indicator] %></h3>
+                <span class="indicator-count"><%= stat[:total] %>문항</span>
+              </div>
+
+              <div class="indicator-score">
+                <div class="score-text">
+                  <span class="score-value"><%= stat[:percentage] %>%</span>
+                </div>
+
+                <div class="rp-progress-bar">
+                  <div class="rp-progress-bar__fill"
+                       style="width: <%= stat[:percentage] %>%; min-width: 2px;"></div>
+                </div>
+              </div>
+
+              <div class="indicator-level">
+                <span class="level-mini level-<%= performance_level_color(stat[:percentage]) %>">
+                  <%= performance_level(stat[:percentage]) %>
+                </span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-muted">평가 영역 데이터가 없습니다.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Question Results Table -->
+  <div class="rp-card">
+    <div class="rp-card__header">
+      <h2>문항별 결과</h2>
+      <p class="rp-card__subtitle">각 문항의 상세 결과</p>
+    </div>
+    <div class="rp-card__body">
+      <% if @question_results.any? %>
+        <div class="rp-table-wrapper">
+          <table class="rp-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">번호</th>
+                <th style="width: 80px;">유형</th>
+                <th style="width: 200px;">문항</th>
+                <th style="width: 150px;">답변</th>
+                <th style="width: 80px;">점수</th>
+                <th style="width: 100px;">결과</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @question_results.each_with_index do |response, index| %>
+                <tr class="question-row">
+                  <td>
+                    <strong>#<%= index + 1 %></strong>
+                  </td>
+
+                  <td>
+                    <span class="item-type-badge">
+                      <%= response.item.item_type == 'mcq' ? '객관식' : '주관식' %>
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="question-content">
+                      <%= truncate(response.item.prompt, length: 100) %>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="answer-content">
+                      <%= response_answer_preview(response) %>
+                    </div>
+                  </td>
+
+                  <td>
+                    <strong><%= response_score_display(response) %></strong>
+                  </td>
+
+                  <td>
+                    <%= response_status_badge(response) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted">문항 결과 데이터가 없습니다.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="rp-results-actions">
+    <%= link_to "← 대시보드로 돌아가기", student_dashboard_path, class: "rp-btn rp-btn--secondary" %>
+    <%= link_to "다시 진단하기", student_diagnostics_path, class: "rp-btn rp-btn--primary" %>
+  </div>
+</div>
+
+<!-- Styles -->
+<style>
+  .rp-results-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--rp-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-6);
+  }
+
+  .rp-results-hero {
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .results-score-display {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-6);
+    padding: var(--rp-space-4) 0;
+  }
+
+  .score-percentage {
+    display: flex;
+    align-items: baseline;
+    gap: var(--rp-space-2);
+  }
+
+  .score-large {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--rp-primary);
+  }
+
+  .score-unit {
+    font-size: var(--rp-font-size-lg);
+    color: var(--rp-text-muted);
+  }
+
+  .score-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+    flex: 1;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--rp-space-2);
+    background: var(--rp-bg-subtle);
+    border-radius: var(--rp-radius-md);
+  }
+
+  .detail-label {
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-muted);
+    font-weight: 600;
+  }
+
+  .detail-value {
+    font-size: var(--rp-font-size-md);
+    font-weight: 700;
+    color: var(--rp-text-title);
+  }
+
+  .performance-level {
+    display: flex;
+    align-items: center;
+  }
+
+  .level-badge {
+    padding: var(--rp-space-2) var(--rp-space-4);
+    border-radius: var(--rp-radius-full);
+    font-weight: 600;
+    font-size: var(--rp-font-size-sm);
+  }
+
+  .level-success {
+    background: var(--rp-success-soft);
+    color: var(--rp-success);
+  }
+
+  .level-info {
+    background: var(--rp-info-soft);
+    color: var(--rp-info);
+  }
+
+  .level-warning {
+    background: var(--rp-warning-soft);
+    color: var(--rp-warning);
+  }
+
+  .level-danger {
+    background: var(--rp-danger-soft);
+    color: var(--rp-danger);
+  }
+
+  .level-mini {
+    padding: var(--rp-space-1) var(--rp-space-2);
+    font-size: var(--rp-font-size-xs);
+    border-radius: var(--rp-radius-sm);
+    font-weight: 600;
+  }
+
+  /* Breakdown Grid */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--rp-space-4);
+  }
+
+  .breakdown-item {
+    padding: var(--rp-space-4);
+    background: var(--rp-bg-subtle);
+    border-radius: var(--rp-radius-md);
+  }
+
+  .breakdown-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--rp-space-3);
+    align-items: center;
+  }
+
+  .breakdown-label {
+    font-weight: 600;
+    color: var(--rp-text-title);
+  }
+
+  .breakdown-count {
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-muted);
+  }
+
+  .breakdown-percentage {
+    text-align: center;
+    margin-top: var(--rp-space-2);
+    font-size: var(--rp-font-size-md);
+  }
+
+  .rp-progress-bar__fill--success {
+    background: var(--rp-success);
+  }
+
+  .rp-progress-bar__fill--warning {
+    background: var(--rp-warning);
+  }
+
+  .rp-progress-bar__fill--danger {
+    background: var(--rp-danger);
+  }
+
+  /* Indicator Grid */
+  .indicator-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--rp-space-4);
+  }
+
+  .indicator-card {
+    padding: var(--rp-space-4);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    background: white;
+  }
+
+  .indicator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .indicator-header h3 {
+    margin: 0;
+    font-size: var(--rp-font-size-md);
+    color: var(--rp-text-title);
+  }
+
+  .indicator-count {
+    font-size: var(--rp-font-size-xs);
+    color: var(--rp-text-muted);
+  }
+
+  .indicator-score {
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .score-text {
+    text-align: center;
+    margin-bottom: var(--rp-space-2);
+  }
+
+  .score-value {
+    font-size: var(--rp-font-size-2xl);
+    font-weight: 700;
+    color: var(--rp-primary);
+  }
+
+  .indicator-level {
+    text-align: center;
+  }
+
+  /* Table */
+  .rp-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rp-table thead {
+    background: var(--rp-bg-subtle);
+    border-bottom: 1px solid var(--rp-border);
+  }
+
+  .rp-table th {
+    padding: var(--rp-space-3);
+    text-align: left;
+    font-weight: 600;
+    color: var(--rp-text-muted);
+    font-size: var(--rp-font-size-sm);
+  }
+
+  .rp-table td {
+    padding: var(--rp-space-3);
+    border-bottom: 1px solid var(--rp-border);
+  }
+
+  .question-row:hover {
+    background: var(--rp-bg-subtle);
+  }
+
+  .item-type-badge {
+    display: inline-block;
+    padding: var(--rp-space-1) var(--rp-space-2);
+    background: var(--rp-primary-soft);
+    color: var(--rp-primary);
+    border-radius: var(--rp-radius-sm);
+    font-size: var(--rp-font-size-xs);
+    font-weight: 600;
+  }
+
+  .question-content {
+    color: var(--rp-text-body);
+    line-height: 1.5;
+  }
+
+  .answer-content {
+    color: var(--rp-text-body);
+    font-size: var(--rp-font-size-sm);
+  }
+
+  /* Actions */
+  .rp-results-actions {
+    display: flex;
+    gap: var(--rp-space-4);
+    justify-content: center;
+    padding-top: var(--rp-space-4);
+    border-top: 1px solid var(--rp-border);
+  }
+
+  .rp-results-actions .rp-btn {
+    flex: 1;
+    max-width: 300px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .rp-results-container {
+      padding: var(--rp-space-4);
+    }
+
+    .results-score-display {
+      flex-direction: column;
+      gap: var(--rp-space-4);
+    }
+
+    .score-large {
+      font-size: 48px;
+    }
+
+    .score-details {
+      width: 100%;
+    }
+
+    .breakdown-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .indicator-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-table {
+      font-size: var(--rp-font-size-sm);
+    }
+
+    .rp-table th,
+    .rp-table td {
+      padding: var(--rp-space-2);
+    }
+
+    .rp-results-actions {
+      flex-direction: column;
+    }
+
+    .rp-results-actions .rp-btn {
+      max-width: 100%;
+    }
+  }
+</style>
