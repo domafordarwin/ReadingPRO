@@ -16,7 +16,7 @@ class Parent::DashboardController < ApplicationController
 
     # 현재 로그인한 부모의 자녀 목록 (필요한 데이터만 eager load)
     @children = current_user.parent.students
-      .includes(student_attempts: :diagnostic_form)
+      .includes(student_attempts: [:diagnostic_form, :attempt_report])
       .to_a
 
     # 대시보드 통계
@@ -202,8 +202,9 @@ class Parent::DashboardController < ApplicationController
     return 0 if completed_attempts.empty?
 
     total_percentage = completed_attempts.sum do |a|
-      next 0 if a.max_score.zero?
-      (a.total_score.to_f / a.max_score.to_f * 100)
+      report = a.attempt_report
+      next 0 unless report && report.max_score.to_f > 0
+      (report.total_score.to_f / report.max_score.to_f * 100)
     end
     (total_percentage / completed_attempts.count).round(1)
   end
@@ -211,15 +212,16 @@ class Parent::DashboardController < ApplicationController
   def fetch_recent_activities
     activities = []
 
-    # 최근 평가 기록 (Eager load diagnostic_form to prevent N+1)
+    # 최근 평가 기록 (Eager load diagnostic_form and attempt_report to prevent N+1)
     StudentAttempt.where(student: @children)
       .where('submitted_at > ?', 7.days.ago)
-      .includes(:diagnostic_form, :student)
+      .includes(:diagnostic_form, :student, :attempt_report)
       .order(submitted_at: :desc)
       .limit(10)
       .each do |attempt|
         next unless attempt.submitted_at && attempt.diagnostic_form
-        score_pct = attempt.max_score.to_f > 0 ? (attempt.total_score / attempt.max_score.to_f * 100).round(1) : 0
+        report = attempt.attempt_report
+        score_pct = report && report.max_score.to_f > 0 ? (report.total_score / report.max_score.to_f * 100).round(1) : 0
         activities << {
           type: 'assessment',
           student: attempt.student,
@@ -254,8 +256,9 @@ class Parent::DashboardController < ApplicationController
   end
 
   def calculate_attempt_score(attempt)
-    return 0 if attempt.max_score.zero?
-    (attempt.total_score / attempt.max_score.to_f * 100).round(1)
+    report = attempt.attempt_report
+    return 0 unless report && report.max_score.to_f > 0
+    (report.total_score.to_f / report.max_score.to_f * 100).round(1)
   end
 
   def calculate_trend(attempts)
