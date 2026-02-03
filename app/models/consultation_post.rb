@@ -46,4 +46,12 @@ class ConsultationPost < ApplicationRecord
     return true if user.teacher? || user.diagnostic_teacher?
     false
   end
+
+  def closed?
+    status == 'closed'
+  end
+
+  def answered?
+    status == 'answered'
+  end
 end

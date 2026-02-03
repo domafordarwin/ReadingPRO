@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_000003) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_diagnostic_forms_on_created_by_id"
     t.index ["status"], name: "index_diagnostic_forms_on_status"
+  end
+
+  create_table "error_logs", force: :cascade do |t|
+    t.text "backtrace"
+    t.datetime "created_at", null: false
+    t.string "error_type", null: false
+    t.string "http_method"
+    t.string "ip_address"
+    t.text "message", null: false
+    t.string "page_path"
+    t.jsonb "params", default: {}
+    t.boolean "resolved", default: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["created_at"], name: "index_error_logs_on_created_at"
+    t.index ["error_type"], name: "index_error_logs_on_error_type"
+    t.index ["page_path"], name: "index_error_logs_on_page_path"
+    t.index ["resolved"], name: "index_error_logs_on_resolved"
   end
 
   create_table "evaluation_indicators", force: :cascade do |t|

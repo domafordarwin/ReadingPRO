@@ -8,6 +8,7 @@ Bundler.require(*Rails.groups)
 
 # Require custom middleware
 require_relative "../app/middleware/performance_monitor_middleware"
+require_relative "../app/middleware/error_capture_middleware"
 
 module ReadingProRailway
   class Application < Rails::Application
@@ -26,6 +27,9 @@ module ReadingProRailway
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Error Capture Middleware (runs first to catch all errors)
+    config.middleware.insert 0, ErrorCaptureMiddleware
 
     # Phase 3.5.2: Performance monitoring middleware
     # Automatically captures request metrics for production monitoring

@@ -28,6 +28,17 @@ Rails.application.routes.draw do
     resources :announcements do
       patch :toggle_active, on: :member
     end
+
+    # Error analysis and monitoring
+    resources :error_logs, only: [:index, :show] do
+      member do
+        patch :mark_resolved
+      end
+      collection do
+        patch :bulk_resolve
+        post :analyze
+      end
+    end
   end
 
   namespace :student do

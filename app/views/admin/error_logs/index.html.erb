@@ -1,0 +1,232 @@
+<%# frozen_string_literal: true %>
+<div class="admin-section">
+  <h1>🐛 Error Analysis & Monitoring</h1>
+  <p class="admin-description">Real-time error tracking and analysis system</p>
+
+  <!-- Summary Statistics -->
+  <div class="admin-grid">
+    <div class="admin-stat">
+      <div class="admin-stat-label">Total Unresolved Errors</div>
+      <div class="admin-stat-value <%= @summary[:unresolved_count] > 10 ? 'status-red' : 'status-green' %>">
+        <%= @summary[:unresolved_count] %>
+      </div>
+    </div>
+
+    <div class="admin-stat">
+      <div class="admin-stat-label">Errors Today</div>
+      <div class="admin-stat-value">
+        <%= @summary[:today_count] %>
+      </div>
+    </div>
+
+    <div class="admin-stat">
+      <div class="admin-stat-label">Most Common Error</div>
+      <div class="admin-stat-value" style="font-size: 0.85em;">
+        <%= @error_types.first&.first || 'N/A' %>
+      </div>
+      <div class="admin-stat-meta">
+        Count: <%= @error_types.first&.last || 0 %>
+      </div>
+    </div>
+
+    <div class="admin-stat">
+      <div class="admin-stat-label">Most Affected Page</div>
+      <div class="admin-stat-value" style="font-size: 0.85em;">
+        <%= @pages_with_errors.first&.first || 'N/A' %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Type Distribution -->
+  <section class="admin-section">
+    <h2>📊 Error Type Distribution</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Error Type</th>
+          <th>Count</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% total = @error_types.sum(&:last) %>
+        <% @error_types.each do |error_type, count| %>
+          <tr>
+            <td><%= error_type %></td>
+            <td><strong><%= count %></strong></td>
+            <td>
+              <div class="admin-progress-bar">
+                <div class="admin-progress-bar-fill" style="width: <%= (count.to_f / total * 100).round %>%"></div>
+              </div>
+              <%= (count.to_f / total * 100).round(1) %>%
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Pages with Most Errors -->
+  <section class="admin-section">
+    <h2>⚠️ Pages with Most Errors</h2>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Page Path</th>
+          <th>Error Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pages_with_errors.each do |page, count| %>
+          <tr>
+            <td><code><%= page %></code></td>
+            <td><strong><%= count %></strong></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Unresolved Errors List -->
+  <section class="admin-section">
+    <h2>🔴 Unresolved Errors (Latest 20)</h2>
+
+    <div class="admin-actions" style="margin-bottom: 1rem;">
+      <form method="post" action="<%= admin_error_logs_bulk_resolve_path %>" class="admin-bulk-action">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        <input type="hidden" name="error_ids" id="error_ids" value="">
+        <button type="submit" class="admin-btn admin-btn-success" onclick="return collectSelectedErrors()">
+          ✓ Resolve Selected
+        </button>
+      </form>
+    </div>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+          <th>Timestamp</th>
+          <th>Error Type</th>
+          <th>Message</th>
+          <th>Page</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @error_logs.each do |error| %>
+          <tr class="admin-table-row error-<%= error.error_type.underscore %>">
+            <td>
+              <input type="checkbox" class="error-checkbox" data-error-id="<%= error.id %>">
+            </td>
+            <td><small><%= time_ago_in_words(error.created_at) %> ago</small></td>
+            <td>
+              <span class="admin-badge admin-badge-error"><%= error.error_type %></span>
+            </td>
+            <td>
+              <strong><%= truncate(error.message, length: 60) %></strong>
+            </td>
+            <td>
+              <code style="font-size: 0.8em;"><%= error.page_path %></code>
+            </td>
+            <td>
+              <% if error.resolved %>
+                <span class="admin-badge admin-badge-success">✓ Resolved</span>
+              <% else %>
+                <span class="admin-badge admin-badge-warning">Unresolved</span>
+              <% end %>
+            </td>
+            <td>
+              <%= link_to '📋 View', admin_error_log_path(error), class: 'admin-btn admin-btn-sm' %>
+              <% unless error.resolved %>
+                <%= link_to '✓ Resolve', admin_error_log_mark_resolved_path(error), method: :patch, class: 'admin-btn admin-btn-sm admin-btn-success' %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="admin-pagination">
+      <%= paginate @error_logs %>
+    </div>
+  </section>
+</div>
+
+<script>
+  function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.error-checkbox');
+    const selectAll = document.getElementById('select-all');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+  }
+
+  function collectSelectedErrors() {
+    const checkboxes = Array.from(document.querySelectorAll('.error-checkbox:checked'));
+    const errorIds = checkboxes.map(cb => cb.dataset.errorId).join(',');
+
+    if (errorIds.length === 0) {
+      alert('Please select at least one error');
+      return false;
+    }
+
+    document.getElementById('error_ids').value = errorIds;
+    return confirm(`Resolve ${checkboxes.length} error(s)?`);
+  }
+</script>
+
+<style>
+  .admin-progress-bar {
+    display: inline-block;
+    width: 100px;
+    height: 20px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  .admin-progress-bar-fill {
+    height: 100%;
+    background: #22c55e;
+    transition: width 0.3s ease;
+  }
+
+  .admin-table-row {
+    transition: background-color 0.2s;
+  }
+
+  .admin-table-row:hover {
+    background-color: #f5f5f5;
+  }
+
+  .error-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .admin-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+
+  .admin-badge-error {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .admin-badge-warning {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .admin-badge-success {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+</style>

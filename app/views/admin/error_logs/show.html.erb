@@ -1,0 +1,203 @@
+<%# frozen_string_literal: true %>
+<div class="admin-section">
+  <h1>🐛 Error Details</h1>
+
+  <!-- Error Information Card -->
+  <div class="error-detail-card">
+    <div class="error-header">
+      <div>
+        <h2><%= @error_log.error_type %></h2>
+        <p class="error-message"><strong><%= @error_log.message %></strong></p>
+      </div>
+      <div class="error-status">
+        <% if @error_log.resolved %>
+          <span class="badge badge-success">✓ Resolved</span>
+        <% else %>
+          <span class="badge badge-danger">⚠️ Unresolved</span>
+          <%= link_to 'Mark as Resolved', admin_error_log_mark_resolved_path(@error_log), method: :patch, class: 'admin-btn admin-btn-sm admin-btn-success' %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="admin-grid">
+      <div class="info-box">
+        <label>Timestamp</label>
+        <div><%= @error_log.created_at.strftime('%Y-%m-%d %H:%M:%S') %></div>
+      </div>
+
+      <div class="info-box">
+        <label>HTTP Method</label>
+        <div><code><%= @error_log.http_method %></code></div>
+      </div>
+
+      <div class="info-box">
+        <label>Page Path</label>
+        <div><code><%= @error_log.page_path %></code></div>
+      </div>
+
+      <div class="info-box">
+        <label>IP Address</label>
+        <div><code><%= @error_log.ip_address %></code></div>
+      </div>
+
+      <div class="info-box">
+        <label>User Agent</label>
+        <div style="word-break: break-all; font-size: 0.9em;">
+          <%= truncate(@error_log.user_agent, length: 100) %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backtrace Section -->
+  <section class="admin-section">
+    <h3>📍 Stack Trace</h3>
+    <pre class="error-backtrace"><%= @error_log.backtrace %></pre>
+  </section>
+
+  <!-- Request Parameters -->
+  <% if @error_log.params.present? %>
+    <section class="admin-section">
+      <h3>📥 Request Parameters</h3>
+      <pre class="error-params"><%= JSON.pretty_generate(@error_log.params) rescue @error_log.params.inspect %></pre>
+    </section>
+  <% end %>
+
+  <!-- Similar Errors -->
+  <% if @similar_errors.present? %>
+    <section class="admin-section">
+      <h3>🔄 Similar Errors (Last 7 Days)</h3>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Message</th>
+            <th>Page</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @similar_errors.each do |error| %>
+            <tr>
+              <td><small><%= time_ago_in_words(error.created_at) %> ago</small></td>
+              <td><%= truncate(error.message, length: 60) %></td>
+              <td><code><%= error.page_path %></code></td>
+              <td>
+                <% if error.resolved %>
+                  <span class="badge badge-success">✓ Resolved</span>
+                <% else %>
+                  <span class="badge badge-danger">Unresolved</span>
+                <% end %>
+              </td>
+              <td>
+                <%= link_to '📋 View', admin_error_log_path(error), class: 'admin-btn admin-btn-xs' %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+
+  <!-- Actions -->
+  <div class="admin-actions">
+    <%= link_to '← Back to Errors', admin_error_logs_path, class: 'admin-btn admin-btn-secondary' %>
+  </div>
+</div>
+
+<style>
+  .error-detail-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .error-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .error-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #dc2626;
+  }
+
+  .error-message {
+    margin: 0;
+    color: #666;
+    font-family: monospace;
+    word-break: break-word;
+  }
+
+  .error-status {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  .badge-success {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+
+  .badge-danger {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .info-box {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 4px;
+  }
+
+  .info-box label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9em;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-box div {
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  .error-backtrace,
+  .error-params {
+    background: #1f2937;
+    color: #e5e7eb;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    line-height: 1.4;
+  }
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+</style>
