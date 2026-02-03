@@ -4,6 +4,7 @@ class Student::AssessmentsController < ApplicationController
   before_action -> { require_role("student") }
   before_action :set_student
   before_action :set_attempt, only: [:show]
+  before_action :verify_json_csrf, only: [:submit_response, :submit_attempt]
   rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
 
   def create
@@ -67,14 +68,21 @@ class Student::AssessmentsController < ApplicationController
       return
     end
 
-    response = attempt.responses.find_or_create_by(item_id: params[:item_id]) do |r|
+    item = Item.find_by(id: params[:item_id])
+    unless item
+      render json: { success: false, error: "문항을 찾을 수 없습니다." }, status: :not_found
+      return
+    end
+
+    response = attempt.responses.find_or_create_by(item_id: item.id) do |r|
       r.student_attempt = attempt
     end
 
-    if params[:item_type] == "mcq"
-      response.update(selected_choice_id: params[:selected_choice_id])
-    elsif params[:item_type] == "constructed"
-      response.update(answer_text: params[:answer_text])
+    # Use strong parameters to prevent mass assignment
+    if item.item_type == "mcq"
+      response.update(selected_choice_id: response_params[:selected_choice_id])
+    elsif item.item_type == "constructed"
+      response.update(answer_text: response_params[:answer_text])
     end
 
     render json: { success: true, response_id: response.id }
@@ -150,5 +158,18 @@ class Student::AssessmentsController < ApplicationController
 
   def handle_not_found
     redirect_to student_diagnostics_path, alert: "요청한 리소스를 찾을 수 없습니다."
+  end
+
+  def verify_json_csrf
+    # Verify CSRF token for JSON endpoints
+    token = request.headers['X-CSRF-Token'] || params[:authenticity_token]
+    unless valid_authenticity_token?(session, token)
+      render json: { success: false, error: "CSRF token validation failed" }, status: :unprocessable_entity
+    end
+  end
+
+  def response_params
+    # Strong parameters to prevent mass assignment vulnerability
+    params.permit(:selected_choice_id, :answer_text)
   end
 end

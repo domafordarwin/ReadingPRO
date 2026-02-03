@@ -8,8 +8,16 @@ class Parent::DashboardController < ApplicationController
   def index
     @current_page = "dashboard"
 
-    # 현재 로그인한 부모의 자녀 목록
-    @children = current_user.parent.students.includes(:student_attempts, :student_portfolio)
+    # Guard: Check if user is a parent
+    unless current_user.parent
+      redirect_to student_dashboard_path, alert: "부모 계정이 아닙니다."
+      return
+    end
+
+    # 현재 로그인한 부모의 자녀 목록 (eager load with diagnostic forms)
+    @children = current_user.parent.students
+      .includes(student_attempts: :diagnostic_form, student_portfolio: [])
+      .to_a
 
     # 대시보드 통계
     @dashboard_stats = calculate_dashboard_stats
@@ -192,16 +200,20 @@ class Parent::DashboardController < ApplicationController
     completed_attempts = StudentAttempt.where(student: @children, status: 'completed')
     return 0 if completed_attempts.empty?
 
-    total = completed_attempts.sum { |a| (a.total_score / a.max_score.to_f * 100) }
+    total = completed_attempts.sum do |a|
+      next 0 if a.max_score.zero?
+      (a.total_score / a.max_score.to_f * 100)
+    end
     (total / completed_attempts.count).round(1)
   end
 
   def fetch_recent_activities
     activities = []
 
-    # 최근 평가 기록
+    # 최근 평가 기록 (Eager load diagnostic_form to prevent N+1)
     StudentAttempt.where(student: @children)
       .where('completed_at > ?', 7.days.ago)
+      .includes(:diagnostic_form)
       .order(completed_at: :desc)
       .limit(5)
       .each do |attempt|
@@ -214,9 +226,10 @@ class Parent::DashboardController < ApplicationController
         }
       end
 
-    # 상담 신청 기록
+    # 상담 신청 기록 (Eager load student to prevent N+1)
     ConsultationRequest.where(parent: current_user.parent)
       .where('created_at > ?', 7.days.ago)
+      .includes(:student)
       .order(created_at: :desc)
       .limit(5)
       .each do |request|
@@ -234,25 +247,38 @@ class Parent::DashboardController < ApplicationController
 
   def calculate_progress_data
     @children.map do |child|
-      attempts = child.student_attempts.where(status: 'completed').order(:completed_at)
+      # Use pre-loaded student_attempts (already includes from index action)
+      attempts = child.student_attempts
+        .select { |a| a.status == 'completed' }
+        .sort_by(&:completed_at)
 
       {
         student: child,
         attempt_count: attempts.count,
         scores: attempts.map { |a| {
           date: a.completed_at,
-          score: (a.total_score / a.max_score.to_f * 100).round(1)
+          score: calculate_attempt_score(a)
         }},
         trend: calculate_trend(attempts)
       }
     end
   end
 
+  def calculate_attempt_score(attempt)
+    return 0 if attempt.max_score.zero?
+    (attempt.total_score / attempt.max_score.to_f * 100).round(1)
+  end
+
   def calculate_trend(attempts)
     return 'neutral' if attempts.count < 2
 
-    recent_avg = attempts.last(3).sum { |a| a.total_score / a.max_score.to_f } / [attempts.last(3).count, 1].max
-    previous_avg = attempts.first([attempts.count - 3, 1].max).sum { |a| a.total_score / a.max_score.to_f } / [attempts.count - 3, 1].max
+    recent_attempts = attempts.last(3)
+    recent_avg = calculate_average_scores(recent_attempts)
+
+    # Calculate previous average (up to 3 attempts before recent)
+    previous_attempts_count = [attempts.count - 3, 1].max
+    previous_attempts = attempts.first(previous_attempts_count)
+    previous_avg = calculate_average_scores(previous_attempts)
 
     if recent_avg > previous_avg + 0.05
       'improving'
@@ -261,5 +287,10 @@ class Parent::DashboardController < ApplicationController
     else
       'stable'
     end
+  end
+
+  def calculate_average_scores(attempts)
+    return 0 if attempts.empty?
+    attempts.sum { |a| calculate_attempt_score(a) } / attempts.count.to_f
   end
 end
