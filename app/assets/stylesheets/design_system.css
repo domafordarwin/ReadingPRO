@@ -2678,3 +2678,153 @@ html {
   transition: background-color var(--rp-transition-normal),
               color var(--rp-transition-normal);
 }
+
+/* Mobile Optimization (Phase 9 Option A) */
+@media (max-width: 640px) {
+  /* Assessment Timer - Larger font for mobile */
+  .timer {
+    font-size: 28px !important;
+    font-weight: 700;
+    min-width: 90px;
+  }
+
+  /* Assessment Choices - Better touch targets */
+  .rp-choice {
+    padding: var(--rp-space-4);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+
+  .rp-choice input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-right: var(--rp-space-2);
+  }
+
+  /* Results Table - Horizontal scroll on mobile */
+  .rp-table {
+    font-size: 12px;
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .rp-table thead {
+    display: none;
+  }
+
+  .rp-table tbody,
+  .rp-table tr {
+    display: block;
+  }
+
+  .rp-table td {
+    display: block;
+    text-align: right;
+    padding-left: var(--rp-space-4);
+    position: relative;
+    padding-right: var(--rp-space-4);
+  }
+
+  .rp-table td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    font-weight: 600;
+    width: 100px;
+  }
+
+  /* Dashboard Cards - Stack vertically */
+  .rp-card {
+    margin-bottom: var(--rp-space-4);
+    padding: var(--rp-space-4);
+  }
+
+  .admin-grid,
+  .stats-grid,
+  .child-card {
+    grid-template-columns: 1fr;
+  }
+
+  /* Progress Bars - Full width on mobile */
+  .rp-progress-bar {
+    width: 100%;
+    height: 6px;
+  }
+
+  /* Buttons - Full width with better spacing */
+  .rp-btn {
+    width: 100%;
+    padding: var(--rp-space-3) var(--rp-space-4);
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .rp-navigation {
+    flex-direction: column;
+    gap: var(--rp-space-3);
+  }
+
+  .rp-navigation .rp-btn {
+    width: 100%;
+  }
+
+  /* Tabs - Better mobile display */
+  .rp-tabs {
+    flex-wrap: wrap;
+  }
+
+  .rp-tab-button {
+    flex: 1;
+    min-width: 80px;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    font-size: 12px;
+  }
+
+  /* Assessment Header - Vertical layout */
+  .rp-assessment__header {
+    flex-direction: column;
+    gap: var(--rp-space-4);
+  }
+
+  .rp-assessment__controls {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  /* Form Groups - Better mobile spacing */
+  .rp-form-group {
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .rp-label {
+    font-size: 14px;
+  }
+
+  .rp-input,
+  .rp-select,
+  .rp-textarea {
+    font-size: 16px;  /* Prevents zoom on iOS */
+    padding: var(--rp-space-3);
+  }
+
+  /* Activity Feed - Mobile friendly */
+  .activity-item {
+    flex-direction: column;
+    gap: var(--rp-space-2);
+  }
+
+  .activity-time {
+    text-align: right;
+    font-size: 12px;
+  }
+
+  /* Badge sizing */
+  .rp-badge {
+    padding: var(--rp-space-1) var(--rp-space-2);
+    font-size: 11px;
+  }
+}

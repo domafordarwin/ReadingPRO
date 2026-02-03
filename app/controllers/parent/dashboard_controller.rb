@@ -197,14 +197,16 @@ class Parent::DashboardController < ApplicationController
   end
 
   def calculate_average_score
-    completed_attempts = StudentAttempt.where(student: @children, status: 'completed')
+    # 이미 @children으로 eager-loaded된 데이터 사용
+    # 루프를 통해 계산 (필요시 SQL로 변경 가능)
+    completed_attempts = @children.flat_map(&:student_attempts).select { |a| a.status == 'completed' }
     return 0 if completed_attempts.empty?
 
-    total = completed_attempts.sum do |a|
+    total_percentage = completed_attempts.sum do |a|
       next 0 if a.max_score.zero?
-      (a.total_score / a.max_score.to_f * 100)
+      (a.total_score.to_f / a.max_score.to_f * 100)
     end
-    (total / completed_attempts.count).round(1)
+    (total_percentage / completed_attempts.count).round(1)
   end
 
   def fetch_recent_activities
