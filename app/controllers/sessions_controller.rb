@@ -62,7 +62,7 @@ class SessionsController < ApplicationController
     case role
     when "student" then student_dashboard_path
     when "parent" then parent_dashboard_path
-    when "teacher" then teacher_dashboard_path
+    when "teacher" then diagnostic_teacher_dashboard_path
     when "researcher" then researcher_dashboard_path
     when "admin" then admin_system_path
     else
