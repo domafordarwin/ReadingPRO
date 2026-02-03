@@ -36,7 +36,7 @@ class Parent::DashboardController < ApplicationController
   def reports
     @current_page = "reports"
     # 선택한 학생의 모든 시험 기록 조회
-    @attempts = @student.attempts.includes(:report).order(created_at: :desc)
+    @attempts = @student&.student_attempts&.includes(:attempt_report)&.order(created_at: :desc) || []
 
     respond_to do |format|
       format.html
@@ -46,57 +46,50 @@ class Parent::DashboardController < ApplicationController
 
   def consult
     @current_page = "feedback"
-
-    # 상담 신청 목록 조회
-    @consultation_requests = current_user.consultation_requests
-                                        .includes(:student)
-                                        .recent
-                                        .page(params[:page])
-                                        .per(10)
-
-    # 새 상담 신청 폼용
-    @new_request = ConsultationRequest.new
+    # ConsultationRequest 모델이 아직 미구현이므로 빈 배열 반환
+    @consultation_requests = []
+    @new_request = nil
   end
 
   def create_consultation_request
-    @new_request = ConsultationRequest.new(consultation_request_params)
-    @new_request.user = current_user
-
-    if @new_request.save
-      redirect_to parent_consult_path, notice: "상담 신청이 완료되었습니다."
-    else
-      @students = current_user.students
-      @consultation_requests = current_user.consultation_requests
-                                           .includes(:student)
-                                           .recent
-                                           .page(params[:page])
-                                           .per(10)
-      render :consult, status: :unprocessable_entity
-    end
+    # ConsultationRequest 모델 미구현 - 추후 구현 예정
+    redirect_to parent_consult_path, alert: "상담 신청 기능은 준비 중입니다."
   end
 
   def show_report
     @current_page = "reports"
-    @attempt = @student.attempts.find(params[:attempt_id])
-    @report = @attempt.report
+    @attempt = @student&.student_attempts&.find_by(id: params[:attempt_id])
+
+    unless @attempt
+      redirect_to parent_reports_path, alert: "시험 기록을 찾을 수 없습니다."
+      return
+    end
+
+    @report = @attempt.attempt_report
 
     unless @report
       redirect_to parent_reports_path, alert: "리포트를 찾을 수 없습니다."
       return
     end
 
-    @comprehensive_analysis = @attempt.comprehensive_analysis
-    @literacy_achievements = @attempt.literacy_achievements
-    @guidance_directions = @attempt.guidance_directions
-    @reader_tendency = @attempt.reader_tendency
+    # Calculate data like student dashboard does
+    @literacy_achievements = calculate_literacy_achievements(@attempt)
+    @comprehensive_analysis = ::ComprehensiveAnalysis.new(@attempt, @literacy_achievements)
+    @reader_tendency = ::ReaderTendency.new
+    @guidance_directions = generate_guidance_directions(@literacy_achievements)
   end
 
   def show_attempt
     @current_page = "reports"
-    @attempt = @student.attempts.find(params[:attempt_id])
+    @attempt = @student&.student_attempts&.find_by(id: params[:attempt_id])
+
+    unless @attempt
+      redirect_to parent_reports_path, alert: "시험 기록을 찾을 수 없습니다."
+      return
+    end
 
     # 응답 데이터 조회
-    @responses = @attempt.responses.includes(:item, :selected_choice, :response_feedbacks).order(created_at: :asc)
+    @responses = @attempt.responses.includes(:item, :selected_choice).order(created_at: :asc)
 
     # 객관식/서술형 분류
     @mcq_responses = @responses.select { |r| r.item.mcq? }
@@ -115,8 +108,8 @@ class Parent::DashboardController < ApplicationController
     end
 
     if student
-      latest_attempt = student.attempts
-        .joins(:report)
+      latest_attempt = student.student_attempts
+        .joins(:attempt_report)
         .order(created_at: :desc)
         .first
 
@@ -138,7 +131,7 @@ class Parent::DashboardController < ApplicationController
 
   def set_students
     # 현재 로그인한 부모와 연결된 모든 학생 조회
-    @students = current_user.guardian_students.includes(:student).map(&:student)
+    @students = current_user.parent&.guardian_students&.includes(:student)&.map(&:student) || []
   end
 
   def set_student_for_reports
@@ -159,7 +152,7 @@ class Parent::DashboardController < ApplicationController
         status: attempt.status,
         started_at: attempt.started_at,
         submitted_at: attempt.submitted_at,
-        report: attempt.report ? format_report_json(attempt.report) : nil
+        report: attempt.attempt_report ? format_report_json(attempt.attempt_report) : nil
       }
     end
   end
@@ -167,16 +160,14 @@ class Parent::DashboardController < ApplicationController
   def format_report_json(report)
     {
       id: report.id,
-      attempt_id: report.attempt_id,
-      status: report.status,
-      version: report.version,
-      artifact_url: report.artifact_url,
+      student_attempt_id: report.student_attempt_id,
+      total_score: report.total_score,
+      max_score: report.max_score,
+      score_percentage: report.score_percentage,
+      performance_level: report.performance_level,
       generated_at: report.generated_at,
       created_at: report.created_at,
-      updated_at: report.updated_at,
-      is_draft: report.draft?,
-      is_generated: report.generated?,
-      is_published: report.published?
+      updated_at: report.updated_at
     }
   end
 
@@ -192,7 +183,7 @@ class Parent::DashboardController < ApplicationController
       active_children: @children.select { |c| c.student_attempts.where('completed_at > ?', 30.days.ago).any? }.count,
       total_assessments: StudentAttempt.where(student: @children, status: 'completed').count,
       avg_score: calculate_average_score,
-      pending_consultations: ConsultationRequest.where(parent: current_user.parent, status: 'pending').count
+      pending_consultations: 0  # ConsultationRequest 모델 미구현
     }
   end
 
@@ -215,36 +206,24 @@ class Parent::DashboardController < ApplicationController
     # 최근 평가 기록 (Eager load diagnostic_form to prevent N+1)
     StudentAttempt.where(student: @children)
       .where('completed_at > ?', 7.days.ago)
-      .includes(:diagnostic_form)
+      .includes(:diagnostic_form, :student)
       .order(completed_at: :desc)
-      .limit(5)
+      .limit(10)
       .each do |attempt|
+        next unless attempt.completed_at && attempt.diagnostic_form
+        score_pct = attempt.max_score.to_f > 0 ? (attempt.total_score / attempt.max_score.to_f * 100).round(1) : 0
         activities << {
           type: 'assessment',
           student: attempt.student,
           title: "#{attempt.diagnostic_form.name} 완료",
-          score: "#{(attempt.total_score / attempt.max_score.to_f * 100).round(1)}%",
+          score: "#{score_pct}%",
           timestamp: attempt.completed_at
         }
       end
 
-    # 상담 신청 기록 (Eager load student to prevent N+1)
-    ConsultationRequest.where(parent: current_user.parent)
-      .where('created_at > ?', 7.days.ago)
-      .includes(:student)
-      .order(created_at: :desc)
-      .limit(5)
-      .each do |request|
-        activities << {
-          type: 'consultation',
-          student: request.student,
-          title: "상담 신청: #{request.consultation_type}",
-          status: request.status,
-          timestamp: request.created_at
-        }
-      end
+    # ConsultationRequest 모델이 없으므로 상담 기록은 생략
 
-    activities.sort_by { |a| a[:timestamp] }.reverse.take(10)
+    activities.sort_by { |a| a[:timestamp] || Time.at(0) }.reverse.take(10)
   end
 
   def calculate_progress_data
@@ -294,5 +273,44 @@ class Parent::DashboardController < ApplicationController
   def calculate_average_scores(attempts)
     return 0 if attempts.empty?
     attempts.sum { |a| calculate_attempt_score(a) } / attempts.count.to_f
+  end
+
+  def calculate_literacy_achievements(attempt)
+    # Group responses by evaluation_indicator and calculate accuracy rates
+    responses = attempt.responses.includes(:item, :selected_choice)
+    grouped = responses.group_by { |r| r.item.evaluation_indicator }
+
+    grouped.map do |indicator, indicator_responses|
+      correct_count = indicator_responses.count { |r| r.selected_choice&.is_correct }
+      OpenStruct.new(
+        evaluation_indicator: indicator,
+        total_count: indicator_responses.count,
+        correct_count: correct_count,
+        accuracy_rate: indicator_responses.count > 0 ? (correct_count * 100.0 / indicator_responses.count).round(1) : 0
+      )
+    end
+  end
+
+  def generate_guidance_directions(achievements)
+    return [] if achievements.blank?
+
+    achievements.map do |achievement|
+      accuracy = achievement.accuracy_rate
+      indicator = achievement.evaluation_indicator
+
+      content = if accuracy >= 80
+        "#{indicator&.name} 영역에서 우수한 성과를 보이고 있습니다. 심화 학습을 추천합니다."
+      elsif accuracy >= 60
+        "#{indicator&.name} 영역에서 양호한 수준입니다. 꾸준한 연습이 필요합니다."
+      else
+        "#{indicator&.name} 영역에서 집중적인 학습이 필요합니다. 기초부터 다시 점검해 보세요."
+      end
+
+      OpenStruct.new(
+        evaluation_indicator: indicator,
+        content: content,
+        accuracy_rate: accuracy
+      )
+    end.sort_by { |d| d.accuracy_rate }
   end
 end
