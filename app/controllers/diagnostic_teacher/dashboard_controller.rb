@@ -122,20 +122,19 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     # 최근 상담 신청 (최근 10개)
     @recent_requests = ConsultationRequest.includes(:student, :user).recent.limit(10)
 
-    # 평균 응답 시간 (승인된 상담 기준)
-    approved_requests = ConsultationRequest.approved
-    if approved_requests.any?
-      @avg_response_time = (approved_requests.sum { |r| (r.updated_at - r.created_at) / 3600 } / approved_requests.count).round(1)
-    else
-      @avg_response_time = 0
-    end
+    # 평균 응답 시간 (승인된 상담 기준) - SQL에서 계산
+    avg_result = ConsultationRequest.approved
+      .select("AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600) as avg_hours")
+      .first
+    @avg_response_time = avg_result&.avg_hours&.round(1) || 0
 
-    # 월별 상담 신청 추이 (최근 12개월)
+    # 월별 상담 신청 추이 (최근 12개월) - SQL GROUP BY 사용
     @monthly_trends = ConsultationRequest
       .where("created_at >= ?", 12.months.ago)
-      .group_by { |r| r.created_at.beginning_of_month }
-      .sort
-      .map { |month, requests| { month: month.strftime("%Y-%m"), count: requests.count } }
+      .group("DATE_TRUNC('month', created_at)")
+      .select("DATE_TRUNC('month', created_at) as month, COUNT(*) as count")
+      .order("month DESC")
+      .map { |record| { month: record.month.strftime("%Y-%m"), count: record.count } }
   end
 
   # 진단 관리 - 학교 담당자 관리
@@ -299,8 +298,15 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   end
 
   def set_all_students
-    # 모든 학생 조회
-    @all_students = Student.joins(:attempts).includes(attempts: [:responses, :report]).distinct
+    # 모든 학생 조회 - 충분한 eager loading으로 N+1 방지
+    @all_students = Student.joins(:attempts)
+      .includes(
+        attempts: [
+          :report,
+          { responses: [:item, :selected_choice, :response_rubric_scores] }
+        ]
+      )
+      .distinct
   end
 
   def set_student_for_detail
@@ -308,6 +314,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   end
 
   def calculate_student_average_score(student)
+    # 이미 @all_students에서 eager load된 데이터 활용
     attempts = student.attempts
     return 0 if attempts.empty?
 
@@ -315,13 +322,20 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     total_questions = 0
 
     attempts.each do |attempt|
-      attempt.responses.includes(:selected_choice, :response_rubric_scores, :item).each do |response|
+      # responses와 item이 이미 eager load됨 (@all_students에서)
+      attempt.responses.each do |response|
+        # item이 association으로 로드되어 있음 (N+1 방지)
+        item = response.item
+        next unless item.present?
+
         total_questions += 1
-        if response.item.mcq?
+        # enum 직접 비교 (메서드 호출 대신)
+        if item.item_type == 'mcq'
           total_score += 1 if response.selected_choice&.correct?
-        elsif response.item.constructed?
-          response.response_rubric_scores.each do |score|
-            total_score += (score.score || 0)
+        elsif item.item_type == 'constructed'
+          # response_rubric_scores도 eager load되어 있음
+          response.response_rubric_scores.sum { |score| score.score || 0 }.tap do |sum|
+            total_score += sum
           end
         end
       end

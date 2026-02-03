@@ -14,9 +14,9 @@ class Parent::DashboardController < ApplicationController
       return
     end
 
-    # 현재 로그인한 부모의 자녀 목록 (eager load with diagnostic forms)
+    # 현재 로그인한 부모의 자녀 목록 (필요한 데이터만 eager load)
     @children = current_user.parent.students
-      .includes(student_attempts: :diagnostic_form, student_portfolio: [])
+      .includes(student_attempts: :diagnostic_form)
       .to_a
 
     # 대시보드 통계

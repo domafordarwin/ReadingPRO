@@ -17,4 +17,8 @@ class StudentAttempt < ApplicationRecord
   scope :completed, -> { where(status: 'completed') }
   scope :recent, -> { order(completed_at: :desc) }
   scope :with_feedback, -> { where.not(comprehensive_feedback: nil) }
+  scope :with_full_data, -> {
+    includes(:student, :diagnostic_form, responses: [:item, :selected_choice, :response_rubric_scores])
+  }
+  scope :recent_n_days, ->(days) { where('created_at >= ?', days.days.ago) }
 end

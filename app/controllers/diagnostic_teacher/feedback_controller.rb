@@ -432,10 +432,15 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
     end
 
-    # AI 피드백이 없는 응답만 필터링
-    responses = student.attempts.flat_map(&:responses)
-      .select { |r| r.item&.mcq? && r.response_feedbacks.where(source: 'ai').empty? }
-      .first(10)  # 타임아웃 방지를 위해 최대 10개
+    # AI 피드백이 없는 MCQ 응답 필터링 - Eager load로 N+1 제거
+    responses = Response
+      .joins(:item)
+      .where(student_attempt: student.student_attempts)
+      .where("items.item_type = ?", Item.item_types[:mcq])
+      .includes(:item, :response_feedbacks)
+      .where.missing(:response_feedbacks)
+      .limit(10)  # 타임아웃 방지를 위해 최대 10개
+      .to_a
 
     generated_count = 0
     errors = []
