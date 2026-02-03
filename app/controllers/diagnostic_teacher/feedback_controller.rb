@@ -57,7 +57,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       @next_student = students[current_index + 1] if current_index && current_index < students.length - 1
 
       # 최신 Attempt 로드
-      @latest_attempt = @student.attempts.order(:created_at).last
+      @latest_attempt = @student.student_attempts.order(:created_at).last
 
       # Attempt가 없으면 초기화 후 반환
       unless @latest_attempt
@@ -75,7 +75,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
       @responses = Response
         .joins(:item)
-        .where(attempt_id: @student.attempts.pluck(:id))
+        .where(attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:mcq])
         .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
         .order(:created_at)
@@ -83,7 +83,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # 학생의 서술형 응답들 (constructed responses)
       @constructed_responses = Response
         .joins(:item)
-        .where(attempt_id: @student.attempts.pluck(:id))
+        .where(attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:constructed])
         .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :attempt,
                   { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
