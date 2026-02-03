@@ -15,7 +15,7 @@ class StudentAttempt < ApplicationRecord
   validates :started_at, presence: true
 
   scope :completed, -> { where(status: 'completed') }
-  scope :recent, -> { order(completed_at: :desc) }
+  scope :recent, -> { order(submitted_at: :desc) }
   scope :with_feedback, -> { where.not(comprehensive_feedback: nil) }
   scope :with_full_data, -> {
     includes(:student, :diagnostic_form, responses: [:item, :selected_choice, :response_rubric_scores])

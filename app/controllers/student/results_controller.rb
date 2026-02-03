@@ -27,14 +27,15 @@ module Student
     end
 
     def calculate_overall_stats
+      report = @attempt.attempt_report
       {
-        total_score: @attempt.total_score || 0,
-        max_score: @attempt.max_score || 0,
-        percentage: calculate_percentage(@attempt.total_score, @attempt.max_score),
+        total_score: report&.total_score || 0,
+        max_score: report&.max_score || 0,
+        percentage: calculate_percentage(report&.total_score.to_i, report&.max_score.to_i),
         total_questions: @attempt.responses.count,
         correct_count: @attempt.responses.where("raw_score = max_score").count,
         time_taken: time_taken_display,
-        completion_date: @attempt.completed_at
+        completion_date: @attempt.submitted_at
       }
     end
 
@@ -89,9 +90,9 @@ module Student
     end
 
     def time_taken_display
-      return nil unless @attempt.started_at && @attempt.completed_at
+      return nil unless @attempt.started_at && @attempt.submitted_at
 
-      duration = @attempt.completed_at - @attempt.started_at
+      duration = @attempt.submitted_at - @attempt.started_at
       minutes = (duration / 60).to_i
       seconds = (duration % 60).to_i
 

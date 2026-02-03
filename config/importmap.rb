@@ -10,3 +10,6 @@ pin "@hotwired/stimulus-loading", to: "https://cdn.jsdelivr.net/npm/@hotwired/st
 # Phase 3.5.3: Web Vitals for Real User Monitoring (RUM)
 # Collects: CLS, FCP, LCP, TTFB, INP
 pin "web-vitals", to: "https://cdn.jsdelivr.net/npm/web-vitals@4.2.4/+esm"
+
+# Stimulus controllers
+pin_all_from "app/javascript/controllers", under: "controllers"
