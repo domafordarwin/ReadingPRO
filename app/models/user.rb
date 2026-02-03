@@ -9,6 +9,8 @@ class User < ApplicationRecord
   has_one :teacher, dependent: :destroy
   has_one :parent, dependent: :destroy
   has_many :audit_logs, dependent: :destroy
+  has_many :parent_forums, foreign_key: :created_by_id, dependent: :destroy
+  has_many :parent_forum_comments, foreign_key: :created_by_id, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
   validates :password_digest, presence: true
