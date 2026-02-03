@@ -113,6 +113,33 @@ class Student::DashboardController < ApplicationController
     @reader_tendency = ::ReaderTendency.new
   end
 
+  def latest_report
+    @current_page = "reports"
+    # 최신 리포트가 있는 attempt를 찾아 직접 상세 보고서로 이동
+    latest_attempt = @student.student_attempts
+      .joins(:attempt_report)
+      .order(created_at: :desc)
+      .first
+
+    if latest_attempt
+      redirect_to student_show_report_path(latest_attempt.id)
+    else
+      redirect_to student_reports_path, alert: "작성된 리포트가 없습니다."
+    end
+  end
+
+  def show_attempt
+    @current_page = "reports"
+    @attempt = @student.student_attempts.find(params[:attempt_id])
+
+    # 응답 데이터 조회
+    @responses = @attempt.responses.includes(:item, :selected_choice, :feedback).order(created_at: :asc)
+
+    # 객관식/서술형 분류
+    @mcq_responses = @responses.select { |r| r.item.mcq? }
+    @constructed_responses = @responses.select { |r| r.item.constructed? }
+  end
+
   private
 
   def calculate_literacy_achievements(attempt)
@@ -130,34 +157,6 @@ class Student::DashboardController < ApplicationController
       )
     end
   end
-
-  def show_attempt
-    @current_page = "reports"
-    @attempt = @student.student_attempts.find(params[:attempt_id])
-
-    # 응답 데이터 조회
-    @responses = @attempt.responses.includes(:item, :selected_choice, :feedback).order(created_at: :asc)
-
-    # 객관식/서술형 분류
-    @mcq_responses = @responses.select { |r| r.item.mcq? }
-    @constructed_responses = @responses.select { |r| r.item.constructed? }
-  end
-
-  def latest_report
-    # 최신 리포트가 있는 attempt를 찾아 직접 상세 보고서로 이동
-    latest_attempt = @student.student_attempts
-      .joins(:attempt_report)
-      .order(created_at: :desc)
-      .first
-
-    if latest_attempt
-      redirect_to student_show_report_path(latest_attempt.id)
-    else
-      redirect_to student_reports_path, alert: "작성된 리포트가 없습니다."
-    end
-  end
-
-  private
 
   def set_role
     @current_role = "student"
