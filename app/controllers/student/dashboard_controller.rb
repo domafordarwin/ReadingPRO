@@ -109,8 +109,15 @@ class Student::DashboardController < ApplicationController
     # Create comprehensive analysis object
     @comprehensive_analysis = ::ComprehensiveAnalysis.new(@attempt, @literacy_achievements)
 
-    # Initialize reader tendency (placeholder for now)
-    @reader_tendency = ::ReaderTendency.new
+    # Load existing reader tendency or create placeholder struct for view
+    @reader_tendency = @attempt.reader_tendency || OpenStruct.new(
+      reading_speed: nil,
+      comprehension_strength: nil,
+      detail_orientation_score: nil,
+      speed_accuracy_balance_score: nil,
+      critical_thinking_score: nil,
+      tendency_summary: nil
+    )
 
     # Generate guidance directions based on literacy achievements
     @guidance_directions = generate_guidance_directions(@literacy_achievements)

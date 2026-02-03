@@ -75,7 +75,15 @@ class Parent::DashboardController < ApplicationController
     # Calculate data like student dashboard does
     @literacy_achievements = calculate_literacy_achievements(@attempt)
     @comprehensive_analysis = ::ComprehensiveAnalysis.new(@attempt, @literacy_achievements)
-    @reader_tendency = ::ReaderTendency.new
+    # Load existing reader tendency or create placeholder struct for view
+    @reader_tendency = @attempt.reader_tendency || OpenStruct.new(
+      reading_speed: nil,
+      comprehension_strength: nil,
+      detail_orientation_score: nil,
+      speed_accuracy_balance_score: nil,
+      critical_thinking_score: nil,
+      tendency_summary: nil
+    )
     @guidance_directions = generate_guidance_directions(@literacy_achievements)
   end
 
