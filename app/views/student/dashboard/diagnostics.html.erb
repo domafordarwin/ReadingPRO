@@ -10,7 +10,7 @@
   <% if @available_forms.any? %>
     <% @available_forms.each do |form| %>
       <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
-        <h4><%= form.title %></h4>
+        <h4><%= form.name %></h4>
         <p>문항 수: <%= form.items.count %>개</p>
         <%= form_with url: student_assessments_path, method: :post, local: true do |f| %>
           <%= f.hidden_field :form_id, value: form.id %>
@@ -26,7 +26,7 @@
   <% if @in_progress_attempts.any? %>
     <% @in_progress_attempts.each do |attempt| %>
       <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
-        <h4><%= attempt.form&.title || "제목 없음" %></h4>
+        <h4><%= attempt.form&.name || "제목 없음" %></h4>
         <p>시작: <%= attempt.started_at&.strftime("%m월 %d일") %></p>
       </div>
     <% end %>
@@ -38,7 +38,7 @@
   <% if @completed_attempts.any? %>
     <% @completed_attempts.each do |attempt| %>
       <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
-        <h4><%= attempt.form&.title || "제목 없음" %></h4>
+        <h4><%= attempt.form&.name || "제목 없음" %></h4>
         <p>완료: <%= attempt.submitted_at&.strftime("%m월 %d일") %></p>
         <%= link_to "결과보기", student_show_attempt_path(attempt.id), class: "rp-btn rp-btn--secondary" %>
       </div>

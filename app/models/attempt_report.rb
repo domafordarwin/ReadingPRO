@@ -7,4 +7,12 @@ class AttemptReport < ApplicationRecord
 
   validates :student_attempt_id, uniqueness: true
 
+  # 보고서 상태: generated_at 여부로 판단
+  def status
+    generated_at.present? ? 'published' : 'draft'
+  end
+
+  def published?
+    status == 'published'
+  end
 end
