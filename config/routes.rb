@@ -185,10 +185,13 @@ Rails.application.routes.draw do
     get "item_create", to: "dashboard#item_create"
     get "prompts", to: "dashboard#prompts"
     get "books", to: "dashboard#books"
-    resources :items, only: %i[index create edit update] do
+    get "dev", to: "dashboard#dev"
+    get "item_list", to: "dashboard#item_list"
+    post "item_bank/upload_pdf", to: "dashboard#upload_pdf", as: "upload_pdf_item_bank"
+    resources :items, only: %i[index create edit update destroy] do
       patch "move_criterion", on: :member
     end
-    resources :stimuli, only: %i[edit update destroy]
+    resources :stimuli, only: %i[new create edit update destroy]
   end
 
   get "login", to: "sessions#new"

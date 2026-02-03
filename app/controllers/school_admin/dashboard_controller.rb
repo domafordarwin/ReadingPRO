@@ -1,9 +1,15 @@
 class SchoolAdmin::DashboardController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("school_admin") }
+  before_action -> { require_role_any(%w[school_admin teacher admin]) }
   before_action :set_role
 
   def index
+    # Debug logging for school admin dashboard access
+    Rails.logger.info "🎯 SchoolAdmin Dashboard accessed"
+    Rails.logger.info "🔍 Current user: #{current_user&.id}, Role: #{current_user&.role}"
+    Rails.logger.info "🔍 Session: user_id=#{session[:user_id]}, role=#{session[:role]}"
+    Rails.logger.info "🔍 current_role method returns: #{current_role.inspect}"
+
     @current_page = "school_reports"
 
     # 학교 기본 정보
@@ -13,16 +19,16 @@ class SchoolAdmin::DashboardController < ApplicationController
     # 학생 통계
     @students = Student.all
     @total_students = @students.count
-    @total_classes = @students.pluck(:class_number).uniq.compact.count
+    @total_classes = @students.pluck(:class_name).uniq.compact.count
 
     # 진단 참여 통계
-    @total_attempts = Attempt.count
-    @completed_attempts = Attempt.where(status: 'completed').count
+    @total_attempts = StudentAttempt.count
+    @completed_attempts = StudentAttempt.where(status: 'completed').count
     @participation_rate = @total_students.zero? ? 0 : ((@total_attempts.to_f / @total_students) * 100).round(1)
 
     # 리포트 통계
-    @completed_reports = Report.where(status: 'completed').count
-    @pending_feedback = Report.where(status: ['draft', 'generated']).count
+    @completed_reports = AttemptReport.where.not(generated_at: nil).count
+    @pending_feedback = AttemptReport.where(generated_at: nil).count
 
     # 학년별 진단 결과
     @grade_scores = calculate_grade_scores
@@ -38,12 +44,12 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def diagnostics
     @current_page = "distribution"
-    @attempts = Attempt.includes(:student).order(created_at: :desc).page(params[:page]).per(10)
+    @attempts = StudentAttempt.includes(:student).order(created_at: :desc).page(params[:page]).per(10)
   end
 
   def reports
     @current_page = "school_reports"
-    @reports = Report.includes(:attempt).order(created_at: :desc).page(params[:page]).per(10)
+    @reports = AttemptReport.includes(:student_attempt).order(created_at: :desc).page(params[:page]).per(10)
   end
 
   def consultation_statistics
@@ -126,9 +132,10 @@ class SchoolAdmin::DashboardController < ApplicationController
     grades.map do |grade|
       students_in_grade = @students.select { |s| s.grade == grade }
       if students_in_grade.any?
-        attempts = Attempt.where(student_id: students_in_grade.map(&:id))
+        attempts = StudentAttempt.where(student_id: students_in_grade.map(&:id)).includes(:responses)
         if attempts.any?
-          avg_score = attempts.flat_map(&:responses).sum { |r| r.raw_score.to_i } / attempts.count.to_f
+          # Use manual_score if available, otherwise auto_score, otherwise 0
+          avg_score = attempts.flat_map(&:responses).sum { |r| (r.manual_score || r.auto_score || 0).to_f } / attempts.count.to_f
           { grade: grade, score: avg_score.round(1) }
         else
           { grade: grade, score: 0 }

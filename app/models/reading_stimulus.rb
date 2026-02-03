@@ -4,7 +4,18 @@ class ReadingStimulus < ApplicationRecord
   belongs_to :teacher, foreign_key: 'created_by_id', optional: true
   has_many :items, foreign_key: 'stimulus_id', dependent: :destroy
 
+  # Validations
   validates :body, presence: true
+  validates :code, presence: true, uniqueness: true
+  validates :bundle_status, inclusion: { in: %w[draft active archived] }, allow_blank: true
+
+  # Bundle status enum-like behavior
+  scope :draft, -> { where(bundle_status: 'draft') }
+  scope :active, -> { where(bundle_status: 'active') }
+  scope :archived, -> { where(bundle_status: 'archived') }
+
+  # Generate code before validation if not present
+  before_validation :generate_code, on: :create
 
   # Phase 3.4.1: Cache invalidation hooks
   # Invalidates HTTP caches whenever ReadingStimulus is created/updated/destroyed
@@ -12,7 +23,86 @@ class ReadingStimulus < ApplicationRecord
   after_save :invalidate_stimulus_caches
   after_destroy :invalidate_stimulus_caches
 
+  # Recalculate bundle metadata after items change
+  def recalculate_bundle_metadata!
+    items_relation = Item.where(stimulus_id: id)
+
+    self.bundle_metadata = {
+      mcq_count: items_relation.where(item_type: 'mcq').count,
+      constructed_count: items_relation.where(item_type: 'constructed').count,
+      total_count: items_relation.count,
+      key_concepts: extract_key_concepts,
+      difficulty_distribution: {
+        easy: items_relation.where(difficulty: 'easy').count,
+        medium: items_relation.where(difficulty: 'medium').count,
+        hard: items_relation.where(difficulty: 'hard').count
+      },
+      estimated_time_minutes: calculate_estimated_time(items_relation)
+    }
+
+    self.item_codes = items_relation.pluck(:code)
+    save!
+  end
+
+  # Check if bundle is complete (has at least one item)
+  def bundle_complete?
+    items.exists?
+  end
+
+  # Get MCQ count from metadata
+  def mcq_count
+    bundle_metadata['mcq_count'] || 0
+  end
+
+  # Get constructed count from metadata
+  def constructed_count
+    bundle_metadata['constructed_count'] || 0
+  end
+
+  # Get total count from metadata
+  def total_count
+    bundle_metadata['total_count'] || 0
+  end
+
+  # Get key concepts from metadata
+  def key_concepts
+    bundle_metadata['key_concepts'] || []
+  end
+
+  # Get estimated time from metadata
+  def estimated_time_minutes
+    bundle_metadata['estimated_time_minutes'] || 0
+  end
+
   private
+
+  # Generate unique stimulus code
+  def generate_code
+    return if code.present?
+
+    timestamp = Time.now.to_i
+    random = SecureRandom.hex(4).upcase
+    self.code = "STIM_#{timestamp}_#{random}"
+  end
+
+  # Extract key concepts from title and body
+  def extract_key_concepts
+    return [] if title.blank?
+
+    # Split by common delimiters and take first 5 words
+    concepts = title.split(/[,\s\-–—]+/).reject(&:blank?).take(5)
+
+    # Remove common Korean particles if needed
+    concepts.reject { |c| c.length < 2 }
+  end
+
+  # Calculate estimated time based on item types
+  # MCQ: 2 minutes, Constructed: 5 minutes
+  def calculate_estimated_time(items_relation)
+    mcq_time = items_relation.where(item_type: 'mcq').count * 2
+    constructed_time = items_relation.where(item_type: 'constructed').count * 5
+    mcq_time + constructed_time
+  end
 
   # Invalidate HTTP response caches and fragment caches
   def invalidate_stimulus_caches

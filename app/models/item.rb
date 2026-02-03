@@ -20,6 +20,10 @@ class Item < ApplicationRecord
   after_save :invalidate_item_caches
   after_destroy :invalidate_item_caches
 
+  # Update stimulus metadata when items change
+  after_commit :update_stimulus_metadata, on: [:create, :update, :destroy]
+  after_create :set_stimulus_code
+
   # Enums
   enum :item_type, { mcq: 'mcq', constructed: 'constructed' }
   enum :difficulty, { easy: 'easy', medium: 'medium', hard: 'hard' }
@@ -69,5 +73,25 @@ class Item < ApplicationRecord
   # This forces fresh_when in dashboard_controller to re-render
   def invalidate_item_caches
     CacheWarmerService.invalidate_item_caches
+  end
+
+  # Update stimulus metadata when item changes
+  def update_stimulus_metadata
+    return unless stimulus_id
+
+    stimulus = ReadingStimulus.find_by(id: stimulus_id)
+    stimulus&.recalculate_bundle_metadata!
+  rescue => e
+    Rails.logger.error "Failed to update stimulus metadata: #{e.message}"
+  end
+
+  # Set stimulus_code from stimulus when item is created
+  def set_stimulus_code
+    return unless stimulus_id && stimulus_code.blank?
+
+    stimulus = ReadingStimulus.find_by(id: stimulus_id)
+    update_column(:stimulus_code, stimulus.code) if stimulus
+  rescue => e
+    Rails.logger.error "Failed to set stimulus_code: #{e.message}"
   end
 end

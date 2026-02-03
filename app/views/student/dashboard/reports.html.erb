@@ -349,9 +349,14 @@
         },
         body: JSON.stringify({ attempt_id: attemptId })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(data => {
-        if (data.success) {
+        if (data && data.success) {
           // 리포트 생성 완료 후 상세보기 페이지로 이동
           window.location.href = '/student/reports/' + attemptId;
         } else {
@@ -387,9 +392,14 @@
           status: newStatus
         })
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(data => {
-        if (data.success) {
+        if (data && data.success) {
           alert(data.message);
           location.reload();
         } else {

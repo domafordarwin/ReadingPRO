@@ -44,9 +44,10 @@
       "consultation_statistics" => "/diagnostic_teacher/consultation_statistics"
     },
     "developer" => {
+      "dashboard" => "/researcher",
       "item_bank" => "/researcher/item_bank",
       "stimulus_mgmt" => "/researcher/passages",
-      "item_mgmt" => "/researcher/item_create",
+      "item_mgmt" => "/researcher/item_list",
       "scoring" => "/researcher/diagnostic_eval",
       "review" => "/researcher/evaluation",
       "versions" => "/researcher/legacy_db",
@@ -191,6 +192,7 @@
       "C" => {
         label: "문항/콘텐츠",
         items: [
+          { id: "dashboard", label: "대시보드", icon: "home" },
           { id: "item_bank", label: "문항은행", icon: "database" },
           { id: "stimulus_mgmt", label: "지문 관리", icon: "book-open" },
           { id: "item_mgmt", label: "문항 관리", icon: "edit-3" },

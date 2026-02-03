@@ -1,8 +1,8 @@
 <% content_for :portal_title do %>
-  지문 수정
+  새 지문 등록
 <% end %>
 <% content_for :portal_subtitle do %>
-  선택한 지문의 내용을 수정합니다.
+  새로운 읽기 지문을 등록합니다.
 <% end %>
 <% content_for :portal_nav do %>
   <%= render "researcher/shared/nav", current: :passages %>
@@ -11,7 +11,7 @@
 <section class="portal-card">
   <h2 class="portal-card-title">지문 정보</h2>
 
-  <%= form_with model: @stimulus, url: researcher_stimulus_path(@stimulus), method: :patch, local: true do |f| %>
+  <%= form_with model: @stimulus, url: researcher_stimuli_path, method: :post, local: true do |f| %>
     <% if @stimulus.errors.any? %>
       <div class="alert alert-danger">
         <h4><%= pluralize(@stimulus.errors.count, "error") %> prohibited this stimulus from being saved:</h4>
@@ -63,32 +63,11 @@
     </div>
 
     <div class="form-actions">
-      <%= f.submit "저장", class: "btn btn-primary" %>
+      <%= f.submit "등록", class: "btn btn-primary" %>
       <%= link_to "취소", researcher_passages_path, class: "btn btn-secondary" %>
-      <%= link_to "삭제", researcher_stimulus_path(@stimulus), data: { turbo_method: :delete, turbo_confirm: "정말로 이 지문을 삭제하시겠습니까? 연결된 문항도 영향을 받을 수 있습니다." }, class: "btn btn-danger" %>
     </div>
   <% end %>
 </section>
-
-<% if @stimulus.items.any? %>
-  <section class="portal-card" style="margin-top: 24px;">
-    <h3 class="portal-card-title">연결된 문항 (<%= @stimulus.items_count || @stimulus.items.count %>개)</h3>
-    <div class="connected-items">
-      <% @stimulus.items.limit(5).each do |item| %>
-        <div class="connected-item">
-          <span class="connected-item__code"><%= item.code || "##{item.id}" %></span>
-          <span class="connected-item__prompt"><%= truncate(item.prompt, length: 80) %></span>
-          <%= link_to "편집", edit_researcher_item_path(item), class: "connected-item__action" %>
-        </div>
-      <% end %>
-      <% if @stimulus.items.count > 5 %>
-        <div class="connected-item-more">
-          외 <%= @stimulus.items.count - 5 %>개 문항
-        </div>
-      <% end %>
-    </div>
-  </section>
-<% end %>
 
 <style>
   .form-group {
@@ -173,16 +152,6 @@
     background: #f8f9ff;
   }
 
-  .btn-danger {
-    background: #dc3545;
-    color: white;
-    margin-left: auto;
-  }
-
-  .btn-danger:hover {
-    background: #c82333;
-  }
-
   .alert {
     padding: 16px;
     margin-bottom: 24px;
@@ -211,112 +180,9 @@
     margin-bottom: 4px;
   }
 
-  .connected-items {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .connected-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-  }
-
-  .connected-item__code {
-    font-weight: 600;
-    color: #667eea;
-    min-width: 100px;
-  }
-
-  .connected-item__prompt {
-    flex: 1;
-    color: #333;
-    font-size: 14px;
-  }
-
-  .connected-item__action {
-    color: #667eea;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  .connected-item__action:hover {
-    color: #764ba2;
-  }
-
-  .connected-item-more {
-    text-align: center;
-    padding: 12px;
-    color: #666;
-    font-size: 13px;
-  }
-
-  .delete-loading {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .delete-loading.active {
-    display: flex;
-  }
-
-  .delete-loading__content {
-    background: white;
-    padding: 32px 48px;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .delete-loading__spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #f0f0f0;
-    border-top: 4px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .delete-loading__message {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-  }
-
   @media (max-width: 768px) {
     .form-row {
       grid-template-columns: 1fr;
     }
   }
 </style>
-
-<!-- 삭제 로딩 인디케이터 -->
-<div data-controller="delete-loading">
-  <div class="delete-loading" data-delete-loading-target="overlay">
-    <div class="delete-loading__content">
-      <div class="delete-loading__spinner"></div>
-      <div class="delete-loading__message">지문을 삭제하는 중입니다...</div>
-      <div style="font-size: 13px; color: #666; margin-top: 8px;">
-        연결된 문항 <%= @stimulus.items_count || @stimulus.items.count %>개와 데이터를 처리 중입니다.
-      </div>
-    </div>
-  </div>
-</div>

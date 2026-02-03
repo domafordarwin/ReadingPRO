@@ -485,12 +485,12 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
     end
 
-    responses = student.attempts.flat_map do |attempt|
+    responses = student.student_attempts.flat_map do |attempt|
       attempt.responses.select { |r| r.item&.mcq? }
     end.sort_by(&:created_at)
 
     # 기존 종합 피드백 로드
-    latest_attempt = student.attempts.order(:created_at).last
+    latest_attempt = student.student_attempts.order(:created_at).last
     existing_feedback = latest_attempt&.comprehensive_feedback
 
     # 종합 피드백 생성
@@ -535,7 +535,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
 
     # 가장 최근 Attempt에 종합 피드백 저장
-    attempt = student.attempts.order(:created_at).last
+    attempt = student.student_attempts.order(:created_at).last
     if attempt
       attempt.update!(comprehensive_feedback: feedback_text)
     end
@@ -576,7 +576,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     end
 
     # 종합 피드백 정교화
-    responses = student.attempts.flat_map do |attempt|
+    responses = student.student_attempts.flat_map do |attempt|
       attempt.responses.select { |r| r.item&.mcq? }
     end.sort_by(&:created_at)
 

@@ -2,31 +2,27 @@
   <%= render "researcher/shared/nav", current: :items %>
 <% end %>
 
-<% meta = @item.scoring_meta || {} %>
 <% stimulus = @item.stimulus %>
-<% project_name = meta["project"] || meta["category_main"] || "프로젝트 미지정" %>
-<% grade_band = meta["grade_band"] || "학년군 미지정" %>
+<% project_name = @item.evaluation_indicator&.name || @item.category || "평가 영역 미지정" %>
+<% grade_band = @item.evaluation_indicator ? "Level #{@item.evaluation_indicator.level}" : "학년군 미지정" %>
 <% difficulty_label = @item.difficulty || "미지정" %>
 <% item_type_label = @item.item_type == "mcq" ? "MCQ" : "서술형" %>
 <% status_label = case @item.status
                 when "draft" then "Draft"
                 when "active" then "Published"
-                when "retired" then "Retired"
+                when "archived" then "Archived"
                 else "Draft"
                 end %>
 <% status_class = case @item.status
                  when "draft" then "rp-badge--warning"
                  when "active" then "rp-badge--success"
-                 when "retired" then "rp-badge--danger"
+                 when "archived" then "rp-badge--danger"
                  else "rp-badge--warning"
                  end %>
-<% choices = @choices || @item.item_choices.includes(:choice_score).order(:choice_no) %>
-<% correct_choice = choices.find { |choice| choice.choice_score&.is_key } %>
-<% score_points = meta["points"] || meta["score"] || meta["total_score"] %>
-<% review_status = meta["review_status"] || "미검수" %>
-<% proximity_ready = choices.any? { |choice| choice.choice_score && choice.choice_score.score_percent.to_i > 0 && !choice.choice_score.is_key } %>
-<% rubric_levels_count = @criteria.present? ? @criteria.flat_map(&:rubric_levels).map(&:level_score).uniq.size : 0 %>
-<% tag_count = Array(meta["wrong_answer_tags"] || meta["tags"] || meta["error_tags"]).size %>
+<% choices = @choices || @item.item_choices.order(:id) %>
+<% correct_choice = choices.find { |choice| choice.is_correct } %>
+<% proximity_ready = choices.any? { |choice| !choice.is_correct } %>
+<% rubric_levels_count = @criteria.present? ? @criteria.flat_map(&:rubric_levels).map(&:level).uniq.size : 0 %>
 
 <% content_for :portal_header do %>
   <div class="rp-header-wrapper">
@@ -74,7 +70,7 @@
   </div>
 <% end %>
 
-<div class="rp-main" data-default-state="<%= @item.mcq? ? "mcq-default" : "essay-rubric" %>" data-ai-correct="<%= meta["correct_answer"] %>">
+<div class="rp-main" data-default-state="<%= @item.mcq? ? "mcq-default" : "essay-rubric" %>">
   <div class="rp-main__container">
     <!-- Page Header -->
     <div class="rp-page-header" style="margin-bottom: 24px;">
@@ -153,18 +149,15 @@
               <div class="rp-card__body">
                 <% choices.each do |choice| %>
                   <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                  <% choice_score = choice.choice_score %>
-                  <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice_score&.is_key %>">
-                    <%= radio_button_tag "correct_choice_id", choice.id, choice_score&.is_key, class: "rp-radio" %>
+                  <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice.is_correct %>">
+                    <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct, class: "rp-radio" %>
                     <div class="rp-choice-content">
                       <span class="rp-choice-label"><%= option_letter %></span>
                       <span class="rp-choice-text"><%= choice.content %></span>
-                      <% if choice_score&.is_key %>
-                        <span class="rp-badge rp-badge--success">정답 100%</span>
-                      <% elsif choice_score&.score_percent.to_i > 0 %>
-                        <span class="rp-badge rp-badge--warning">근접 <%= choice_score.score_percent %>%</span>
+                      <% if choice.is_correct %>
+                        <span class="rp-badge rp-badge--success">정답</span>
                       <% else %>
-                        <span class="rp-badge">미설정</span>
+                        <span class="rp-badge">오답</span>
                       <% end %>
                     </div>
                   </label>
@@ -179,9 +172,9 @@
               </div>
               <div class="rp-card__body">
                 <div class="rp-tag-list">
-                  <span class="rp-tag">대분류: <%= meta["category_main"] || "미지정" %></span>
-                  <span class="rp-tag">소분류: <%= meta["category_sub"] || "미지정" %></span>
-                  <span class="rp-tag">출제 의도: <%= meta["intent"] || "미지정" %></span>
+                  <span class="rp-tag">평가 영역: <%= @item.evaluation_indicator&.name || "미지정" %></span>
+                  <span class="rp-tag">세부 지표: <%= @item.sub_indicator&.name || "미지정" %></span>
+                  <span class="rp-tag">난이도: <%= difficulty_label %></span>
                 </div>
               </div>
             </div>
@@ -246,8 +239,8 @@
                     </span>
                   </div>
                   <div class="rp-summary-item">
-                    <span class="rp-label">배점</span>
-                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                    <span class="rp-label">난이도</span>
+                    <span class="rp-value"><%= difficulty_label %></span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -269,7 +262,7 @@
                     <span>정답 지정 완료</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <input type="checkbox">
                     <span>배점 입력 완료</span>
                   </label>
                   <label class="rp-checkbox">
@@ -359,13 +352,13 @@
               <div class="rp-card__body">
                 <% choices.each do |choice| %>
                   <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                  <% choice_score = choice.choice_score %>
                   <div class="rp-score-row">
                     <span class="rp-choice-label"><%= option_letter %></span>
                     <div class="rp-choice-text"><%= choice.content %></div>
                     <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
-                                         choice_score&.score_percent || 0,
+                                         (choice.is_correct ? 100 : 0),
                                          min: 0, max: 100, step: 5,
+                                         disabled: true,
                                          class: "rp-input rp-input--score" %>
                     <span class="rp-score-unit">%</span>
                   </div>
@@ -399,7 +392,7 @@
                     <% choices.each do |choice| %>
                       <div>
                         <span class="rp-label">보기 <%= choice.choice_no %></span>
-                        <strong><%= choice.choice_score&.score_percent || 0 %>%</strong>
+                        <strong><%= choice.is_correct ? 100 : 0 %>%</strong>
                       </div>
                     <% end %>
                   </div>
@@ -442,8 +435,8 @@
                     </span>
                   </div>
                   <div class="rp-summary-item">
-                    <span class="rp-label">배점</span>
-                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                    <span class="rp-label">난이도</span>
+                    <span class="rp-value"><%= difficulty_label %></span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -465,7 +458,7 @@
                     <span>정답 지정 완료</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <input type="checkbox">
                     <span>배점 입력 완료</span>
                   </label>
                   <label class="rp-checkbox">
@@ -554,23 +547,10 @@
             <!-- Sample Answers -->
             <div class="rp-card">
               <div class="rp-card__header">
-                <h3 class="rp-card__title">정답(샘플 답안)</h3>
+                <h3 class="rp-card__title">채점 방식</h3>
               </div>
               <div class="rp-card__body">
-                <% @item.item_sample_answers.each do |answer| %>
-                  <div class="rp-form-group">
-                    <label class="rp-label">답안</label>
-                    <textarea name="sample_answers[<%= answer.id %>]" rows="3" class="rp-textarea"><%= answer.answer %></textarea>
-                    <label class="rp-checkbox">
-                      <input type="checkbox" name="delete_sample_answers[]" value="<%= answer.id %>">
-                      <span>이 답안 삭제</span>
-                    </label>
-                  </div>
-                <% end %>
-                <div class="rp-form-group">
-                  <label class="rp-label">새 답안 추가</label>
-                  <textarea name="new_sample_answer" rows="3" class="rp-textarea" placeholder="새 샘플 답안을 입력하세요"></textarea>
-                </div>
+                <p class="rp-text-muted">이 문항은 루브릭 기반 채점을 사용합니다. 아래 루브릭 탭에서 채점 기준을 설정하세요.</p>
               </div>
             </div>
           </div>
@@ -602,7 +582,7 @@
                   <div class="rp-card__body">
                     <div class="rp-form-group">
                       <label class="rp-label">루브릭 제목</label>
-                      <input type="text" name="rubric[title]" value="<%= @rubric&.title %>" class="rp-input">
+                      <input type="text" name="rubric[name]" value="<%= @rubric&.name %>" class="rp-input">
                     </div>
 
                     <div class="rp-criteria-list">
@@ -612,7 +592,7 @@
                             <div class="rp-criterion-header">
                               <input type="text"
                                      name="criteria[<%= criterion.id %>][name]"
-                                     value="<%= criterion.name %>"
+                                     value="<%= criterion.criterion_name %>"
                                      class="rp-input rp-criterion-name"
                                      placeholder="평가 기준 이름">
                               <div class="rp-criterion-actions">
@@ -630,11 +610,11 @@
 
                             <div class="rp-levels-grid">
                               <% (0..3).each do |score| %>
-                                <% level = criterion.rubric_levels.find { |l| l.level_score == score } %>
+                                <% level = criterion.rubric_levels.find { |l| l.level == score } %>
                                 <div class="rp-level-cell">
                                   <label class="rp-level-label"><%= score %>점</label>
                                   <%= text_area_tag "criteria[#{criterion.id}][levels][#{score}]",
-                                                    level&.descriptor,
+                                                    level&.description,
                                                     class: "rp-textarea rp-textarea--sm",
                                                     placeholder: "#{score}점 기준 설명",
                                                     rows: 2 %>
@@ -686,8 +666,8 @@
                     <span class="rp-badge rp-badge--pill rp-badge--success">완료</span>
                   </div>
                   <div class="rp-summary-item">
-                    <span class="rp-label">배점</span>
-                    <span class="rp-value"><%= score_points.present? ? "#{score_points}점" : "미지정" %></span>
+                    <span class="rp-label">난이도</span>
+                    <span class="rp-value"><%= difficulty_label %></span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -709,7 +689,7 @@
                     <span>정답 지정 완료</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox" <%= "checked" if score_points.present? %>>
+                    <input type="checkbox">
                     <span>배점 입력 완료</span>
                   </label>
                   <label class="rp-checkbox">
@@ -834,7 +814,7 @@
     forms.forEach((form) => {
       form.addEventListener("submit", (event) => {
         const deleteChecks = form.querySelectorAll(
-          "input[name='delete_sample_answers[]']:checked, input[name='delete_criteria[]']:checked"
+          "input[name='delete_criteria[]']:checked"
         );
         if (!deleteChecks.length || confirmed) return;
 

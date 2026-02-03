@@ -6,20 +6,26 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   before_action :set_student_for_detail, only: [:show_student_report]
 
   def index
+    # Debug logging for teacher dashboard access
+    Rails.logger.info "🎯 DiagnosticTeacher Dashboard accessed"
+    Rails.logger.info "🔍 Current user: #{current_user&.id}, Role: #{current_user&.role}"
+    Rails.logger.info "🔍 Session: user_id=#{session[:user_id]}, role=#{session[:role]}"
+    Rails.logger.info "🔍 current_role method returns: #{current_role.inspect}"
+
     @current_page = "dashboard"
 
     # 모든 학생과 진단 데이터 로드
-    @students_with_attempts = Student.joins(:attempts).includes(attempts: [:report, :responses]).distinct
+    @students_with_attempts = Student.joins(:student_attempts).includes(student_attempts: [:attempt_report, :responses]).distinct
 
     # 대시보드 통계
-    @total_diagnoses = Attempt.count
-    @pending_diagnoses = Attempt.where.not(status: 'completed').count
+    @total_diagnoses = StudentAttempt.count
+    @pending_diagnoses = StudentAttempt.where.not(status: 'completed').count
     @completed_feedback = 0
     @pending_feedback = 0
 
     # 학생별 진단 현황 (최근 진단 기준)
     @student_statuses = @students_with_attempts.map do |student|
-      latest_attempt = student.attempts.order(created_at: :desc).first
+      latest_attempt = student.student_attempts.order(created_at: :desc).first
       if latest_attempt
         {
           student: student,
@@ -59,15 +65,12 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def show_student_report
     @current_page = "school_reports"
-    @attempt = @student.attempts.includes(
-      :report,
-      :comprehensive_analysis,
-      :literacy_achievements,
-      :guidance_directions,
+    @attempt = @student.student_attempts.includes(
+      :attempt_report,
       :reader_tendency,
       responses: [:item, :selected_choice, :response_feedbacks, :response_rubric_scores]
     ).find(params[:attempt_id])
-    @report = @attempt.report
+    @report = @attempt.attempt_report
 
     # 종합 분석 및 관련 데이터 조회
     @comprehensive_analysis = @attempt.comprehensive_analysis
@@ -82,7 +85,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @constructed_responses = @responses.select { |r| r.item.present? && r.item.constructed? }
 
     # 이전/다음 학생 ID 조회 (시도가 있는 학생만)
-    all_students_with_attempts = Student.joins(:attempts).distinct.order(:id).pluck(:id)
+    all_students_with_attempts = Student.joins(:student_attempts).distinct.order(:id).pluck(:id)
     current_index = all_students_with_attempts.index(@student.id)
 
     if current_index.present?
@@ -158,18 +161,18 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @page_title = "학생별 진단 배정"
 
     # 학생 및 배정 현황
-    all_students = Student.includes(:attempts).all
+    all_students = Student.includes(:student_attempts).all
     @total_students = all_students.count
-    @assigned_count = all_students.select { |s| s.attempts.any? }.count
+    @assigned_count = all_students.select { |s| s.student_attempts.any? }.count
     @unassigned_count = @total_students - @assigned_count
 
     # 활성 폼 현황
-    @active_forms = Form.where(status: 'active').includes(:items, :attempts)
+    @active_forms = DiagnosticForm.where(status: 'active').includes(:items)
     @active_forms_count = @active_forms.count
 
     # 학생별 배정 현황
     @students_with_assignments = all_students.map do |student|
-      attempt = student.attempts.order(created_at: :desc).first
+      attempt = student.student_attempts.order(created_at: :desc).first
       [student, attempt]
     end
   end
@@ -187,18 +190,19 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @page_title = "응시/채점 현황"
 
     # 통계 계산
-    @total_attempts = Attempt.count
-    @in_progress_count = Attempt.where(status: 'in_progress').count
-    @completed_count = Attempt.where(status: 'completed').count
+    @total_attempts = StudentAttempt.count
+    @in_progress_count = StudentAttempt.where(status: 'in_progress').count
+    @completed_count = StudentAttempt.where(status: 'completed').count
 
     # 채점 대기 (응답이 있지만 채점되지 않은 항목)
     @pending_scoring_count = Response
-      .where.missing(:selected_choice, :response_rubric_scores)
+      .where(selected_choice_id: nil)
       .joins(:item)
+      .where(items: { item_type: 'mcq' })
       .count
 
     # 학생별 응시 현황 (최근 순서대로, 페이지네이션)
-    @attempts = Attempt
+    @attempts = StudentAttempt
       .includes(:student, :responses)
       .recent
       .page(params[:page])
@@ -299,10 +303,10 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def set_all_students
     # 모든 학생 조회 - 충분한 eager loading으로 N+1 방지
-    @all_students = Student.joins(:attempts)
+    @all_students = Student.joins(:student_attempts)
       .includes(
-        attempts: [
-          :report,
+        student_attempts: [
+          :attempt_report,
           { responses: [:item, :selected_choice, :response_rubric_scores] }
         ]
       )
@@ -315,7 +319,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def calculate_student_average_score(student)
     # 이미 @all_students에서 eager load된 데이터 활용
-    attempts = student.attempts
+    attempts = student.student_attempts
     return 0 if attempts.empty?
 
     total_score = 0
@@ -355,7 +359,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def calculate_attempt_status(attempt)
     return '진행중' if attempt.status == 'in_progress'
-    return '피드백 대기' if attempt.report&.status == 'draft' || attempt.report&.status == 'generated'
+    return '피드백 대기' if attempt.attempt_report&.generated_at.nil?
     return '완료' if attempt.status == 'completed'
     '완료'
   end

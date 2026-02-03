@@ -1,11 +1,11 @@
 class Researcher::ItemsController < ApplicationController
-  layout "portal"
+  layout "unified_portal"
   before_action :require_login
   before_action -> { require_role("researcher") }
-  before_action :set_item, only: %i[edit update move_criterion]
+  before_action :set_item, only: %i[edit update destroy move_criterion]
 
   def index
-    @items = Item.includes(rubric: { rubric_criteria: :rubric_levels })
+    @items = Item.includes(:stimulus, :item_choices, rubric: { rubric_criteria: :rubric_levels })
                  .order(created_at: :desc)
 
     # Status filter
@@ -51,8 +51,8 @@ class Researcher::ItemsController < ApplicationController
 
   def edit
     @rubric = @item.rubric || @item.build_rubric
-    @criteria = @rubric.rubric_criteria.includes(:rubric_levels).order(:position)
-    @choices = @item.item_choices.includes(:choice_score).order(:choice_no)
+    @criteria = @rubric.rubric_criteria.includes(:rubric_levels).order(:id)
+    @choices = @item.item_choices.order(:id)
   end
 
   def update
@@ -70,28 +70,14 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def move_criterion
-    rubric = @item.rubric
-    criterion = rubric&.rubric_criteria&.find_by(id: params[:criterion_id])
-    return redirect_to edit_researcher_item_path(@item) unless criterion
-
-    direction = params[:direction].to_s
-    swap_with =
-      case direction
-      when "up"
-        rubric.rubric_criteria.where("position < ?", criterion.position).order(position: :desc).first
-      when "down"
-        rubric.rubric_criteria.where("position > ?", criterion.position).order(:position).first
-      end
-
-    if swap_with
-      RubricCriterion.transaction do
-        criterion_pos = criterion.position
-        criterion.update!(position: swap_with.position)
-        swap_with.update!(position: criterion_pos)
-      end
-    end
-
+    # Position-based ordering not supported in new schema
+    # Criteria are ordered by id instead
     redirect_to edit_researcher_item_path(@item)
+  end
+
+  def destroy
+    @item.destroy
+    redirect_to researcher_items_path, notice: "문항이 성공적으로 삭제되었습니다."
   end
 
   private
@@ -101,7 +87,7 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def item_params
-    params.require(:item).permit(:code, :item_type, :prompt, :explanation, :difficulty, :status, :stimulus_id)
+    params.require(:item).permit(:code, :item_type, :prompt, :explanation, :difficulty, :status, :stimulus_id, :evaluation_indicator_id, :sub_indicator_id)
   end
 
   def update_item_status!
@@ -151,7 +137,7 @@ class Researcher::ItemsController < ApplicationController
         next
       end
 
-      criterion.update(name: payload[:name]) if payload[:name].present?
+      criterion.update(criterion_name: payload[:name]) if payload[:name].present?
       update_levels!(criterion, payload[:levels] || {})
     end
 
@@ -159,9 +145,9 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def update_levels!(criterion, levels_payload)
-    levels_payload.each do |level_score, descriptor|
-      level = criterion.rubric_levels.find_or_initialize_by(level_score: level_score.to_i)
-      level.update(descriptor: descriptor)
+    levels_payload.each do |level_value, descriptor|
+      level_record = criterion.rubric_levels.find_or_initialize_by(level: level_value.to_i)
+      level_record.update(description: descriptor)
     end
   end
 
@@ -170,8 +156,7 @@ class Researcher::ItemsController < ApplicationController
     name = new_criterion[:name].to_s.strip
     return if name.blank?
 
-    next_position = (@rubric.rubric_criteria.maximum(:position) || 0) + 1
-    criterion = @rubric.rubric_criteria.create(name: name, position: next_position)
+    criterion = @rubric.rubric_criteria.create(criterion_name: name)
     update_levels!(criterion, new_criterion[:levels] || {})
   end
 end

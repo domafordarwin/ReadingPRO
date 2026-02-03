@@ -1,6 +1,6 @@
 module DiagnosticTeacher::DashboardHelper
   def calculate_diagnostic_teacher_average_score(student)
-    attempts = student.attempts
+    attempts = student.student_attempts
     return 0 if attempts.empty?
 
     total_score = attempts.sum { |a| calculate_diagnostic_teacher_attempt_score(a) }

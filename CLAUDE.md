@@ -1,394 +1,515 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+AI 어시스턴트가 이 프로젝트를 작업할 때 참고하는 컨텍스트 가이드입니다.
 
-## Project Overview
+## 프로젝트 개요
 
-ReadingPRO is a reading proficiency diagnostics and assessment system built with Rails 8.1 + PostgreSQL, deployed on Railway.
+**ReadingPRO** - 읽기 능력 진단 및 평가 시스템
+- **기술 스택**: Rails 8.1 + PostgreSQL + Turbo
+- **배포**: Railway
+- **목적**: 학생 읽기 능력 진단, 교사/학부모 대시보드, 문항 개발 포털
 
-## Common Commands
+## 빠른 명령어
 
 ```bash
-# Development
+# 개발 환경
 bundle install
 bin/rails db:prepare
 bin/rails server
 
-# Testing
-bin/rails test                    # unit tests
-bin/rails test:system             # system tests (Capybara + Selenium)
-bin/rails test test/models/item_test.rb  # single test file
+# 테스트
+bin/rails test                    # 단위 테스트
+bin/rails test:system             # 시스템 테스트
 
-# Linting & Security
-bin/rubocop                       # Ruby style checks
-bin/rubocop -a                    # auto-fix
-bin/brakeman --no-pager           # Rails security scan
-bin/bundler-audit                 # gem vulnerability scan
-bin/importmap audit               # JS dependency audit
+# 린팅 & 보안
+bin/rubocop                       # 코드 스타일 검사
+bin/rubocop -a                    # 자동 수정
+bin/brakeman --no-pager           # 보안 스캔
 
-# Database
+# 데이터베이스
 bin/rails db:migrate
-bin/rails db:test:prepare
-
-# Import (XLSX data loading)
-bundle exec rails runner script/import_literacy_bank.rb path/to/file.xlsx --dry-run
-bundle exec rails runner script/import_literacy_bank.rb path/to/file.xlsx
+rails runner "puts Model.column_names.inspect"  # 컬럼 확인
 ```
 
-## Architecture
+## 아키텍처
 
-### Layer Structure
-- **Presentation**: Admin SSR at `/admin` using Rails Views (ERB)
-- **Application**: Service layer (`app/services/`) for business logic
-- **Domain**: ActiveRecord models with PostgreSQL
+### 레이어 구조
+- **Presentation**: Rails Views (ERB) + Turbo
+- **Application**: Service layer (`app/services/`)
+- **Domain**: ActiveRecord models + PostgreSQL
 
-### Key Domain Models
+### 주요 도메인 모델
 
-**Assessment Content:**
-- `ReadingStimulus` → `stimuli` table (reading passages). Named to avoid collision with Hotwire Stimulus.
-- `Item` → test questions (MCQ or constructed response)
-- `ItemChoice` / `ChoiceScore` → MCQ options and scoring
-- `Rubric` / `RubricCriterion` / `RubricLevel` → constructed response scoring rubrics
+**평가 콘텐츠:**
+- `ReadingStimulus` - 읽기 지문 (테이블명: stimuli)
+- `Item` - 문항 (MCQ 또는 주관식)
+- `ItemChoice` - 객관식 선택지 (`is_correct` boolean)
+- `Rubric` / `RubricCriterion` / `RubricLevel` - 주관식 채점 루브릭
 
-**Test Administration:**
-- `Form` → test forms composed of items
-- `FormItem` → items within a form (with position and points)
-- `Attempt` → a user's test session
-- `Response` / `ResponseRubricScore` → answers and scores
+**진단 실행:**
+- `DiagnosticForm` - 진단 폼 (문항 모음)
+- `StudentAttempt` - 학생 진단 시도
+- `Response` / `ResponseRubricScore` - 학생 응답 및 점수
 
-### Scoring Logic
-- MCQ: automatic scoring via `ChoiceScore.score_percent`
-- Constructed: rubric-based scoring (criteria × levels)
-- All scoring logic in `ScoreResponseService`
+**평가 기준:**
+- `EvaluationIndicator` - 평가 영역 (대분류)
+- `SubIndicator` - 세부 지표 (소분류)
 
-### Custom Inflections
-Defined in `config/initializers/inflections.rb`:
-- stimulus ↔ stimuli
-- criterion ↔ criteria
+### 라우팅 구조
+```
+/                      → 메인 페이지
+/login                 → 로그인
 
-### Routes
-- `/` → welcome page
-- `/admin` → admin dashboard (items, stimuli, forms, attempts, scoring)
+# 역할별 대시보드
+/student               → 학생 대시보드
+/parent                → 학부모 대시보드
+/diagnostic_teacher    → 진단 교사 대시보드
+/school_admin          → 학교 관리자 대시보드
+/researcher            → 문항 개발자 포털
+/admin                 → 시스템 관리자
+```
 
-## Environment Variables (Production)
-- `DATABASE_URL` - PostgreSQL connection (Railway plugin)
-- `RAILS_MASTER_KEY` - contents of `config/master.key`
-- `RAILS_SERVE_STATIC_FILES=1`
-- `CABLE_ADAPTER=redis` + `REDIS_URL` (optional for Action Cable)
+## 중요한 규칙
 
-## Windows Development Note
-Before deploying, ensure Linux platform is in Gemfile.lock:
+### 스키마 확인 필수 ⚠️
+
+**새로운 모델 사용 전 반드시 컬럼 확인:**
+```bash
+rails runner "puts ModelName.column_names.inspect"
+```
+
+**주의:** 구 스키마와 신 스키마 간 컬럼명이 다릅니다. 상세한 매핑은 `docs/raw_data/development_history/SCHEMA_MIGRATION_2026_02_04.md` 참조
+
+### 주요 컬럼 변경 사항
+
+| 구 이름 | 신 이름 | 모델 |
+|--------|---------|------|
+| `scoring_meta` | 제거됨 (evaluation_indicator 사용) | Item |
+| `RubricCriterion.name` | `criterion_name` | RubricCriterion |
+| `RubricCriterion.position` | 제거됨 (id 순서) | RubricCriterion |
+| `RubricLevel.level_score` | `level` | RubricLevel |
+| `RubricLevel.descriptor` | `description` | RubricLevel |
+| `Rubric.title` | `name` | Rubric |
+| `ReadingStimulus.code` | 제거됨 (title/id 사용) | ReadingStimulus |
+| `DiagnosticForm.title` | `name` | DiagnosticForm |
+| `ItemChoice.choice_score` | `is_correct` (boolean) | ItemChoice |
+
+### 성능 최적화
+
+**Counter Cache 활용:**
+- `ReadingStimulus.items_count` → `stimulus.items.count` 대신 사용
+- `DiagnosticForm.item_count` → `form.items.count` 대신 사용
+
+**N+1 쿼리 방지:**
+```ruby
+# Good ✅
+@items = Item.includes(:stimulus, :evaluation_indicator).all
+
+# Bad ❌
+@items = Item.all
+@items.each { |item| item.stimulus.title }  # N+1 발생
+```
+
+### Turbo 환경 주의사항
+
+**표준 폼 제출이 필요한 경우:**
+```erb
+<%= form_with url: path, data: { turbo: false } do |f| %>
+  <!-- 폼 내용 -->
+<% end %>
+```
+
+**로그아웃 버튼:**
+```erb
+<%= button_to "로그아웃", logout_path, method: :delete,
+    data: { turbo: false },
+    form: { data: { turbo: false } } %>
+```
+
+## 테스트 계정
+
+```ruby
+# config/initializers/test_accounts.rb
+TEST_ACCOUNTS = {
+  "student01" => { role: "student" },
+  "parent01" => { role: "parent" },
+  "teacher01" => { role: "teacher" },
+  "diagnostic_teacher01" => { role: "diagnostic_teacher" },
+  "school_admin01" => { role: "school_admin" },
+  "researcher01" => { role: "researcher" },
+  "admin01" => { role: "admin" }
+}
+
+TEST_PASSWORD = "ReadingPro" + "$" + "12#"
+```
+
+## 환경 변수 (Production)
+
+```bash
+DATABASE_URL              # PostgreSQL 연결 (Railway)
+RAILS_MASTER_KEY          # config/master.key 내용
+RAILS_SERVE_STATIC_FILES=1
+CABLE_ADAPTER=redis       # (선택) Action Cable용
+REDIS_URL                 # (선택) Redis 연결
+```
+
+## Windows 개발 환경
+
+배포 전 Linux 플랫폼 추가:
 ```bash
 bundle lock --add-platform x86_64-linux
 bundle lock --add-platform ruby
 ```
 
----
+## 개발 문서
 
-## 작업 진행 기록 (2026-01-28)
+상세한 개발 히스토리와 에러 해결 가이드는 다음 문서를 참조하세요:
 
-### Researcher (문항개발위원) 포탈 DB 연동 작업
+- **스키마 마이그레이션 가이드**: `docs/raw_data/development_history/SCHEMA_MIGRATION_2026_02_04.md`
+  - 구/신 스키마 매핑
+  - 에러 패턴 및 해결 방법
+  - 체크리스트 및 테스트 가이드
 
-#### 완료된 작업 ✅
+- **로그인 시스템 이슈**: `docs/raw_data/development_history/LOGIN_ISSUES_HISTORY_2026_02.md`
+  - Turbo AJAX 422 에러 해결
+  - 교사 계정 대시보드 접근 문제 (Nested Array Bug)
+  - CSRF, 세션, 댓글 라우팅 문제
 
-1. **분석 및 파악**
-   - Item 모델 구조 완전히 파악 (code, item_type, status, difficulty, prompt, explanation, stimulus_id, evaluation_indicator_id, sub_indicator_id)
-   - EvaluationIndicator, SubIndicator, ReadingStimulus 모델 관계 확인
-   - 마이그레이션 파일 분석 (CreateItemBankCore, AddIndicatorReferencesToItems)
+## 문제 발생 시
 
-2. **Researcher::DashboardController 구현**
-   - `index` 액션: item_bank 페이지로 리다이렉트
-   - `item_bank` 액션 구현
-     - 검색 기능 (code, prompt에 ILIKE)
-     - 필터링 (item_type, status, difficulty)
-     - 페이지네이션 (25건/페이지)
-     - eager loading (stimulus, evaluation_indicator, sub_indicator, rubric 등)
-   - `item_create` 액션 구현
-     - EvaluationIndicator, SubIndicator, ReadingStimulus 동적 로드
-   - `load_items_with_filters` private 메서드 분리
+1. **NoMethodError 또는 PG::UndefinedColumn**
+   → `rails runner "puts ModelName.column_names.inspect"` 실행
+   → 스키마 마이그레이션 가이드 참조
 
-3. **item_bank.html.erb 동적 변경**
-   - 하드코딩된 테이블 제거
-   - 검색 폼 추가 (문항코드/내용)
-   - 필터 UI 추가
-     - 문항 유형 (객관식/주관식)
-     - 상태 (준비중/활성/폐기)
-     - 난이도 (상/중/하)
-   - 동적 테이블 생성 (@items 변수)
-   - 페이지네이션 구현 (처음/이전/숫자/다음/마지막)
-   - 상태/유형별 배지 스타일링
-   - 행 클릭 시 edit 페이지로 이동
+2. **Turbo 관련 문제**
+   → `data-turbo="false"` 추가
+   → 로그인 이슈 가이드 참조
 
-4. **item_create.html.erb 동적 변경**
-   - 하드코딩된 폼 제거
-   - 완전한 Item 생성 폼 구현
-     - 기본 정보 섹션: 코드, 유형, 난이도
-     - 평가 지표 섹션: 영역 (required), 세부 지표
-     - 문항 내용 섹션: prompt (required), 해설, 지문, 상태
-   - 동적 선택지 로드 (@evaluation_indicators, @sub_indicators, @reading_stimuli)
-   - 유효성 검증 표시 (required 마크)
-   - form action을 researcher_items_path(POST)로 설정
+3. **N+1 쿼리**
+   → `includes()` 사용
+   → Counter cache 컬럼 우선 활용
 
-5. **routes.rb 업데이트**
-   - `resources :items, only: %i[index edit update]` → `only: %i[index create edit update]`로 변경
+## 작업 원칙
 
-6. **ItemsController create 액션 구현**
-   - Item.new(item_params) 생성
-   - 성공 시: edit_researcher_item_path로 리다이렉트 (정답/설정 입력 단계)
-   - 실패 시: item_create 페이지로 리다이렉트 (에러 메시지)
-   - item_params private 메서드 추가
-     - 허용되는 params: code, item_type, prompt, explanation, difficulty, status, stimulus_id, evaluation_indicator_id, sub_indicator_id
-
-#### 아직 완료되지 않은 작업 (다음 단계)
-
-1. **passages.html.erb (지문 관리)** - DB 연동 필요
-   - ReadingStimulus 모델 활용
-   - 검색, 필터링, 페이지네이션 추가
-   - 지문 생성/수정 페이지 필요
-
-2. **prompts.html.erb (프롬프트 관리)** - 모델/DB 확인 필요
-   - Prompt 모델 있는지 확인
-   - 프롬프트 관리 시스템 설계
-
-3. **books.html.erb (도서 관리)** - 모델/DB 확인 필요
-   - Book/Series 모델 확인
-   - 도서 관리 시스템 설계
-
-4. **evaluation.html.erb, diagnostic_eval.html.erb, legacy_db.html.erb**
-   - 각 페이지의 목적과 필요한 데이터 분석 필요
-
-#### 코드 점검 사항
-- [ ] Item 생성 후 edit 페이지 접근 가능한지 테스트
-- [ ] 검색/필터링 쿼리 성능 확인 (N+1 문제 없는지)
-- [ ] 페이지네이션 로직 검증
-- [ ] 에러 처리 및 유효성 검증 테스트
-- [ ] MCQ/Constructed Response 유형별 필드 차이 처리
-
-#### 추후 개선 사항
-1. 대량 생성 기능 (CSV/XLSX 업로드)
-2. 문항 템플릿 관리
-3. AI 기반 프롬프트 생성 통합
-4. 지문-문항 자동 연결
-5. 평가 영역별 통계 대시보드
+1. **스키마 먼저 확인** - 컬럼명 추측 금지
+2. **성능 고려** - Counter cache 우선, N+1 방지
+3. **Turbo 인지** - 필요시 명시적 비활성화
+4. **문서화** - 중요한 변경사항은 raw_data에 기록
 
 ---
 
-## 작업 진행 기록 (2026-01-29)
+---
 
-### 실제 계정 연동 및 헤더 UI 개선 작업
+## 📦 문항 은행 아키텍처 (2026-02-04 재설계)
 
-#### 완료된 작업 ✅
+### 핵심 개념: 진단지 세트 (Assessment Bundle)
 
-1. **학생-사용자 직접 연결 설정**
-   - `db/migrate/20260129002928_add_user_id_to_students.rb` 마이그레이션 생성
-   - `User.has_one :student` 관계 설정
-   - `Student.belongs_to :user` 관계 설정
-   - student_54를 student_54@shinmyung.edu 계정에 연결
+**문항 은행 = 완성된 진단지 세트의 모음**
 
-2. **하드코딩된 학생 참조 제거**
-   - Student::DashboardController: `Student.find_by(name: "김하윤")` → `current_user&.student`로 변경
-   - Student::ConsultationsController: hardcoded 참조 → `current_user&.student` 로 변경
-   - Student::ConsultationCommentsController: hardcoded 참조 → `current_user&.student` 로 변경
-   - ✅ 모든 "김하윤" 참조 완전히 제거됨
+하나의 진단지 세트는:
+- 1개의 읽기 지문 (ReadingStimulus)
+- 다수의 연결된 문항들 (Items)
+  - 객관식 문항 (MCQ)
+  - 서술형 문항 (Constructed Response)
 
-3. **헤더 UI 개선**
-   - Avatar 제거 (U 배지 제거)
-   - 학생 이름만 버튼 형식으로 표시
-   - `app/views/shared/_unified_header.html.erb` 업데이트
-   - `.rp-user-name-btn` 스타일 추가 (design_system.css)
-   - 조건부 표시: 학생인 경우 학생명, 아닌 경우 이메일 표시
+### 데이터 모델 구조
 
-4. **페이지네이션 지원**
-   - `gem "kaminari"` Gemfile에 추가
-   - Student::ConsultationsController에서 `.page(params[:page]).per(20)` 사용
-   - **⚠️ 중요: Rails 서버 재시작 필수** (gem 로드 필요)
+#### ReadingStimulus (진단지 세트)
 
-#### 현재 상태
+```ruby
+class ReadingStimulus < ApplicationRecord
+  # 기존 필드
+  belongs_to :teacher, optional: true
+  has_many :items, foreign_key: 'stimulus_id'
 
-| 컴포넌트 | 상태 |
-|---------|------|
-| 학생 대시보드 | ✅ 현재 사용자 데이터 표시 |
-| 상담 게시판 | ✅ 현재 사용자 게시물만 표시 |
-| 헤더 표시 | ✅ 학생명 버튼 형식 표시 |
-| 페이지네이션 | ⚠️ Rails 서버 재시작 후 작동 |
+  # 새로운 필드 (2026-02-04)
+  # - code (string, NOT NULL, unique)     # 지문 고유 코드
+  # - item_codes (text[], default: [])    # 연결된 문항 코드 배열
+  # - bundle_metadata (jsonb, default: {})
+  #   {
+  #     mcq_count: 2,
+  #     constructed_count: 1,
+  #     total_count: 3,
+  #     key_concepts: ["적정기술", "물 정화"],
+  #     difficulty_distribution: { easy: 0, medium: 3, hard: 0 },
+  #     estimated_time_minutes: 9
+  #   }
+  # - bundle_status (string, default: 'draft')  # draft/active/archived
 
-#### 에러 처리 기록
-
-**에러: `NoMethodError - undefined method 'page' for ActiveRecord::Relation`**
-- **원인**: `gem "kaminari"` 추가 후 Rails 서버를 재시작하지 않음
-- **해결방법**: `bin/rails server` 재시작
-- **예방**: Gemfile 수정 후 항상 Rails 서버 재시작 필수
-- **발생 파일**: `app/controllers/student/consultations_controller.rb:38`
-
-#### 테스트 계정 정보
-
-```
-학생 계정:
-  이메일: student_54@shinmyung.edu
-  비밀번호: ReadingPro$12#
-  연결 학생: 소수환 (상위 성적)
-
-부모 계정:
-  이메일: parent_54@shinmyung.edu
-  비밀번호: ReadingPro$12#
-  자녀: 소수환 (student_id: 54)
+  # Helper methods
+  def recalculate_bundle_metadata!  # 메타데이터 재계산
+  def mcq_count                     # 객관식 개수
+  def constructed_count             # 서술형 개수
+  def total_count                   # 전체 문항 개수
+  def key_concepts                  # 핵심 요소 배열
+  def estimated_time_minutes        # 예상 소요 시간
+end
 ```
 
-#### 검증 체크리스트
+#### Item (개별 문항)
 
-- [x] 모든 hardcoded 학생 참조 제거 확인
-- [x] Student::DashboardController `set_student` 메서드 확인
-- [x] Student::ConsultationsController `set_student` 메서드 확인
-- [x] Student::ConsultationCommentsController `set_student` 메서드 확인
-- [x] 헤더에 현재 사용자 학생명 표시 확인
-- [ ] Rails 서버 재시작 후 상담 게시판 페이지네이션 작동 확인
+```ruby
+class Item < ApplicationRecord
+  belongs_to :stimulus, optional: true
 
-#### 다음 단계
+  # 새로운 필드 (2026-02-04)
+  # - stimulus_code (string)  # 지문 코드 참조 (optional, 명시적)
 
-1. Rails 서버 재시작 (`bin/rails server`)
-2. test 계정으로 로그인: student_54@shinmyung.edu
-3. 다음 기능 검증:
-   - 대시보드: 소수환 학생 데이터 표시
-   - 상담 게시판: 현재 사용자의 게시물만 표시
-   - 페이지네이션: 20개/페이지로 정상 작동
-   - 헤더: "소수환" 버튼으로 표시
-4. 부모 계정으로도 동일 검증
+  # Callbacks
+  after_commit :update_stimulus_metadata  # 변경 시 stimulus 메타데이터 자동 업데이트
+  after_create :set_stimulus_code         # 생성 시 stimulus_code 자동 설정
+end
+```
+
+### 코드 생성 규칙
+
+```ruby
+# Stimulus code
+"STIM_{timestamp}_{random_hex}"
+# 예: "STIM_1738662243_A3F2B1C4"
+
+# Item code
+PDF에서 추출하거나 GPT-4가 생성
+# 예: "ITEM_001", "ITEM_002", "ITEM_S001"
+```
+
+### PDF 업로드 워크플로우
+
+```
+1. PDF 업로드
+   ↓
+2. OpenaiPdfParserService: GPT-4를 통한 구조 분석
+   - 지문 추출
+   - 객관식 문항 추출 (선택지 포함)
+   - 서술형 문항 추출
+   ↓
+3. PdfItemParserService: 데이터베이스 생성
+   - ReadingStimulus 생성 (code 자동 생성)
+   - Item 생성 (MCQ + Constructed)
+   - ItemChoice 생성 (MCQ)
+   - Rubric 생성 (Constructed)
+   ↓
+4. Automatic Metadata Update
+   - Item 생성 → update_stimulus_metadata 콜백 발동
+   - ReadingStimulus.recalculate_bundle_metadata! 호출
+   - bundle_metadata 자동 계산 및 저장
+```
+
+### 문항 은행 페이지
+
+#### Controller (`dashboard#item_bank`)
+
+```ruby
+def item_bank
+  load_assessment_bundles  # ReadingStimulus를 로드 (Items와 함께)
+
+  # @assessment_bundles: 완성된 진단지 세트 배열
+  # 각 bundle은 ReadingStimulus 객체
+  # - bundle.code
+  # - bundle.title
+  # - bundle.body
+  # - bundle.mcq_count
+  # - bundle.constructed_count
+  # - bundle.total_count
+  # - bundle.key_concepts
+  # - bundle.estimated_time_minutes
+  # - bundle.bundle_status
+end
+```
+
+#### View (`item_bank.html.erb`)
+
+카드 기반 레이아웃:
+- 지문 코드 (bundle.code)
+- 지문 제목 및 요약
+- 통계 카드:
+  - 객관식 문항 개수
+  - 서술형 문항 개수
+  - 전체 문항 개수
+- 핵심 요소 배지 (key_concepts)
+- 예상 소요 시간
+- 상태 배지 (draft/active/archived)
+
+#### Filters
+
+- 검색: 지문 코드, 제목, 내용
+- 상태 필터: 전체/작업중/배포가능/보관됨
+
+### 데이터 무결성
+
+#### 자동 업데이트 메커니즘
+
+```ruby
+# Item이 생성/수정/삭제될 때
+Item.after_commit :update_stimulus_metadata
+
+# ReadingStimulus 메타데이터 자동 재계산
+def update_stimulus_metadata
+  stimulus.recalculate_bundle_metadata!
+  # - item_codes 배열 업데이트
+  # - bundle_metadata 재계산
+  #   - mcq_count, constructed_count, total_count
+  #   - difficulty_distribution
+  #   - estimated_time_minutes
+end
+```
+
+#### BundleIntegrityValidator
+
+```ruby
+# 검증 항목
+validator = BundleIntegrityValidator.new(stimulus)
+result = validator.validate!
+
+# Check:
+# 1. 지문 코드 존재
+# 2. 연결된 문항 존재
+# 3. item_codes 배열과 실제 문항 코드 일치
+# 4. bundle_metadata 정확성
+```
+
+### 마이그레이션
+
+```ruby
+# db/migrate/20260204111303_add_bundle_fields_to_reading_stimuli_and_items.rb
+
+# reading_stimuli 테이블
+add_column :reading_stimuli, :code, :string, null: false, unique: true
+add_column :reading_stimuli, :item_codes, :text, array: true, default: []
+add_column :reading_stimuli, :bundle_metadata, :jsonb, default: {}
+add_column :reading_stimuli, :bundle_status, :string, default: 'draft'
+
+# items 테이블
+add_column :items, :stimulus_code, :string
+
+# 기존 데이터 자동 마이그레이션
+# - 모든 ReadingStimulus에 코드 생성
+# - 모든 Item에 stimulus_code 설정
+# - bundle_metadata 초기 계산
+```
+
+### 사용 예시
+
+```ruby
+# PDF 업로드 후
+stimulus = ReadingStimulus.find_by(code: "STIM_1738662243_A3F2B1C4")
+
+# 메타데이터 조회
+stimulus.mcq_count            # => 2
+stimulus.constructed_count    # => 1
+stimulus.total_count          # => 3
+stimulus.key_concepts         # => ["적정기술", "물 정화"]
+stimulus.estimated_time_minutes  # => 9 (2*2 + 1*5)
+stimulus.item_codes           # => ["ITEM_001", "ITEM_002", "ITEM_S001"]
+
+# 새 문항 추가 시 자동 업데이트
+Item.create(
+  code: "ITEM_003",
+  stimulus_id: stimulus.id,
+  item_type: "mcq",
+  # ...
+)
+# → stimulus.recalculate_bundle_metadata! 자동 호출
+# → mcq_count가 2 → 3으로 업데이트
+# → item_codes에 "ITEM_003" 추가
+```
+
+### 관련 문서
+
+- **설계 문서**: `docs/ITEM_BANK_REDESIGN.md`
+- **진행 상황**: `docs/PROGRESS_2026-02-04.md`
 
 ---
 
-## 작업 진행 기록 (2026-01-29 계속)
+## Researcher 포털 구조 (2026-02-04 최종)
 
-### 학생/학부모 게시판 구축 및 댓글 라우팅 문제 해결
+### 페이지 개요
 
-#### 완료된 작업 ✅
+| 페이지 | URL | 설명 | 특징 |
+|--------|-----|------|------|
+| **대시보드** | `/researcher` | 통계 + 빠른 액션 + 최근 활동 | 실시간 통계, 최근 문항/지문 5개 |
+| **평가 영역** | `/researcher/evaluation` | 평가 지표 관리 | EvaluationIndicator, SubIndicator |
+| **문항 은행** | `/researcher/item_bank` | 완성된 문항 (지문 연결됨) | 카드 뷰, stimulus_id NOT NULL |
+| **지문 관리** | `/researcher/passages` | 모든 지문 CRUD | ReadingStimulus 관리 |
+| **문항 관리** | `/researcher/items` | 모든 문항 관리 | 테이블 뷰, 필터/검색/정렬 |
+| **문항 등록** | `/researcher/item_create` | 새 문항 생성 폼 | "문항 관리" 섹션 소속 |
 
-**1. 학생 게시판 접속 문제 해결**
-   - 원인: User-Student 데이터 연결 미흡 (user_id = NULL)
-   - 해결: 61개 student를 해당 user와 자동 연결
-   - 결과: student_54@shinmyung.edu 계정으로 consultations 게시판 접속 가능
+### 주요 특징
 
-**2. 학부모 상담 신청 시스템 구현** ✅
-   - 모델 생성:
-     - `ConsultationRequest` (상담 신청)
-     - `ConsultationRequestResponse` (교사 답변)
-   - 마이그레이션:
-     - `20260129115000_create_consultation_requests.rb`
-     - `20260129115100_create_consultation_request_responses.rb`
-   - 기능:
-     - 자녀 선택 (드롭다운)
-     - 상담 유형 (진단결과, 독서지도, 학습습관, 진단해석, 기타)
-     - 희망 일정 (미래 시간만 허용)
-     - 요청사항 (10자 이상 1000자 이하)
-     - 상담 신청 이력 조회 (상태: 대기/승인/거절/완료)
-     - 페이지네이션 (10개/페이지)
-   - 뷰: `app/views/parent/dashboard/consult.html.erb` (완전 재구현)
+#### 1. 대시보드 (`dashboard#index`)
+```ruby
+# Controller에서 로드하는 데이터
+@total_items = Item.count
+@complete_items = Item.where.not(stimulus_id: nil).count
+@total_stimuli = ReadingStimulus.count
+@active_items = Item.where(status: 'active').count
+@recent_items = Item.includes(:stimulus).order(created_at: :desc).limit(5)
+@recent_stimuli = ReadingStimulus.order(created_at: :desc).limit(5)
+```
+- 4개 통계 카드 (클릭 시 해당 페이지로 이동)
+- 4개 빠른 액션 카드
+- 최근 문항/지문 목록
 
-**3. 댓글 라우팅 문제 해결** ✅
-   - 근본 원인: 모든 Comment 모델의 외래키가 `model_name_id`이지만, 라우팅이 `parent_resource_id`로 기대
-   - 해결 방법: routes.rb에 `foreign_key` 옵션 추가
-   - 수정된 라우팅:
-     ```ruby
-     # Student Consultations Comments
-     resources :comments, controller: 'consultation_comments',
-       only: [:create, :destroy],
-       foreign_key: 'consultation_post_id'
+#### 2. 문항 은행 (`dashboard#item_bank`)
+- **필터**: `Item.where.not(stimulus_id: nil)` - 완성된 문항만
+- **레이아웃**: 카드 그리드
+- **페이지네이션**: Keyset-based (cursor)
+- **통계**: 총/객관식/주관식/활성 문항 수
 
-     # Parent Forums Comments
-     resources :comments, controller: 'forum_comments',
-       only: [:create, :destroy],
-       foreign_key: 'parent_forum_id'
+#### 3. 문항 관리 (`items#index`)
+- **필터**: 전체 문항 (완성/미완성 모두)
+- **레이아웃**: 테이블 (제목, 난이도, 유형, 지문, 상태, 생성일)
+- **기능**: 검색, 상태 필터, 루브릭 필터, 삭제
+- **Eager loading**: `.includes(:stimulus, :item_choices, rubric: ...)`
 
-     # DiagnosticTeacher (동일하게 설정)
-     ```
-   - 수정된 Controller:
-     - `Parent::ForumCommentsController#set_forum`: params[:forum_id]로 변경
-     - `DiagnosticTeacher::ForumCommentsController#set_forum`: params[:forum_id]로 변경
-   - 결과: 학부모 게시판 댓글 작성/삭제 시 올바른 포럼으로 리다이렉트
+#### 4. 지문 관리 (`stimuli` routes, `dashboard#passages`)
+- **CRUD**: 생성, 읽기, 수정, 삭제
+- **필터**: 제목/내용 검색
+- **Counter cache**: `items_count` 컬럼 사용
+- **삭제**: Cascade delete + 로딩 인디케이터 (delete_loading Stimulus controller)
 
-**4. 학생 게시판에 학부모 접근 차단** ✅
-   - 구현 방식:
-     - 컨트롤러 레벨: `before_action -> { require_role("student") }`
-     - 모델 레벨: `ConsultationPost#visible_to?`에서 `return false if user.parent?` 추가
-   - 결과: 부모가 URL을 직접 입력해도 접근 불가
+#### 5. 문항 등록 (`dashboard#item_create`)
+- **소속**: "문항 관리" 섹션 (`current: :items`)
+- **필드**: 코드, 유형, 난이도, 평가영역, 세부지표, Prompt, 해설, 지문, 상태
+- **Submit**: `researcher_items_path` (POST) → `items#create`
+- **성공 시**: `edit_researcher_item_path` (정답/루브릭 입력)
 
-#### 생성/수정된 파일 목록
+### 네비게이션 메뉴
 
-**생성된 파일:**
-- `app/models/consultation_request.rb`
-- `app/models/consultation_request_response.rb`
-- `db/migrate/20260129115000_create_consultation_requests.rb`
-- `db/migrate/20260129115100_create_consultation_request_responses.rb`
+```erb
+<%= link_to "대시보드", researcher_dashboard_path %>
+<%= link_to "평가 영역", researcher_evaluation_path %>
+<%= link_to "문항 은행", researcher_item_bank_path %>
+<%= link_to "지문 관리", researcher_passages_path %>
+<%= link_to "문항 관리", researcher_items_path %>
+<%= link_to "프롬프트 관리", researcher_prompts_path %>  # 미구현
+<%= link_to "도서 관리", researcher_books_path %>        # 미구현
+```
 
-**수정된 파일:**
-- `app/models/user.rb` (consultation_requests 관계 추가)
-- `app/models/student.rb` (consultation_requests 관계 추가)
-- `app/models/consultation_post.rb` (parent 차단 로직)
-- `app/controllers/parent/dashboard_controller.rb` (consult, create_consultation_request 액션)
-- `app/controllers/parent/forum_comments_controller.rb` (params[:forum_id] 수정)
-- `app/controllers/diagnostic_teacher/forum_comments_controller.rb` (params[:forum_id] 수정)
-- `app/views/parent/dashboard/consult.html.erb` (완전 재구현)
-- `app/views/parent/forums/show.html.erb` (form 수정)
-- `config/routes.rb` (foreign_key 옵션, 상담 신청 라우팅)
+### 데이터 흐름
 
-#### 최종 테스트 결과
+```
+1. 문항 생성
+   [문항 관리] → [+ 새 문항 추가] → [문항 등록 폼] → [저장] → [편집 페이지]
 
-| 기능 | 상태 |
-|------|------|
-| 학생 상담 게시판 접속 | ✅ 정상 |
-| 학생 댓글 삭제 | ✅ 정상 |
-| 부모 상담 신청 | ✅ 정상 |
-| 부모 포럼 댓글 작성/삭제 | ✅ 정상 |
-| 교사 포럼 댓글 작성/삭제 | ✅ 정상 |
-| 부모의 학생 게시판 접근 차단 | ✅ 정상 |
+2. 완성된 문항
+   - stimulus_id가 있는 문항 = 문항 은행에 표시
+   - stimulus_id가 없는 문항 = 문항 관리에만 표시
 
-#### 향후 계획 (요청 없음 - 보관)
+3. 지문 삭제
+   - CASCADE: 연결된 Item → Rubric/ItemChoice → Response → 모두 삭제
+   - UI: 삭제 로딩 인디케이터 (delete-loading Stimulus controller)
+```
 
-⚠️ **다음 항목은 사용자 요청이 없으면 다시 묻지 않음:**
-- 학부모-학생 게시판 연결 (학부모가 학생 상담 게시판 모니터링 기능)
-  → 현재 계획 없음
+### 성능 최적화
 
-**요청 시 수행 가능한 기능들:**
-1. 진단담당교사 상담 신청 관리 페이지 (승인/거절)
-2. 알림 시스템 (상담 신청/승인 알림)
-3. 상담 통계 대시보드
+1. **Counter Cache**: `items_count` on `reading_stimuli`
+2. **Eager Loading**: `.includes(:stimulus, :item_choices, rubric: ...)`
+3. **Keyset Pagination**: `KeysetPaginationService` (item_bank)
+4. **HTTP Caching**: ETag + Cache-Control (item_bank)
 
----
+### Turbo 호환성
 
-## 🐛 주요 버그 수정 기록
-
-### Turbo AJAX 로그인 폼 424 에러 해결 (2026-01-31)
-
-**문제:**
-- 로그인 폼 제출 시 `turbo.es2017-umd.js:696 POST /login 422 Unprocessable Content` 에러 발생
-- Rails 8.1의 Turbo가 자동으로 폼을 AJAX 요청으로 변환
-- 422 상태 코드 응답 시 폼 에러 메시지가 제대로 표시되지 않음
-
-**근본 원인:**
-- Turbo의 `FormSubmitObserver`가 모든 폼 제출을 AJAX로 자동 변환
-- `data-turbo="false"` 속성만으로는 Turbo 8.0.0에서 충분하지 않음
-- 표준 HTML 폼 제출이 필요한데 Turbo가 인터셉트
-
-**해결방법:**
-1. 폼에 `data-turbo="false"` 속성 추가
-2. 폼에 `onsubmit="return true;"` 속성 추가
-3. JavaScript 캡처 페이즈 리스너로 폼 제출 감지
-4. MutationObserver로 폼 속성 확인
-
-**수정된 파일:**
-- `app/views/sessions/new.html.erb`
-
-**관련 커밋:**
-- `8c8d2e7` - 초기 수정: data-turbo 속성 추가
-- `1e1a207` - 강화된 수정: 이벤트 리스너 추가
-- `bcec5b0` - 최종 수정: MutationObserver 및 캡처 페이즈 리스너
-
-**예상 동작:**
-- 잘못된 자격증명 입력 → 422 응답 + 에러 메시지 표시 ✅
-- 올바른 자격증명 입력 → 대시보드로 리다이렉트 ✅
-- 테스트 계정 버튼 클릭 → 자동 폼 제출 ✅
-
-**핵심 교훈:**
-- Rails 8.1 + Turbo 환경에서 표준 폼 제출이 필요한 경우:
-  - `data-turbo="false"` + `onsubmit="return true;"` 조합 사용
-  - JavaScript 캡처 페이즈 리스너로 Turbo 인터셉션 방지
-  - 422 상태는 정상 응답 - 폼 재렌더링되어야 함
+- 삭제 버튼: `data: { turbo_method: :delete, turbo_confirm: "..." }`
+- 로그인 폼: `data-turbo="false"` + `onsubmit="return true;"`
+- 삭제 로딩: Stimulus controller (`delete-loading`)

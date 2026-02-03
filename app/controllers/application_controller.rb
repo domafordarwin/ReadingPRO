@@ -32,14 +32,37 @@ class ApplicationController < ActionController::Base
   def require_role(role)
     return if current_role == role
 
-    flash[:alert] = "접근 권한이 없습니다."
+    Rails.logger.warn "❌ Access denied: user_id=#{session[:user_id]}, current_role=#{current_role.inspect}, required_role=#{role.inspect}"
+
+    # 세션이 있는지 확인
+    if session[:user_id].present?
+      # 로그인은 되어 있지만 권한이 없는 경우
+      flash[:alert] = "접근 권한이 없습니다. 해당 페이지에 접근할 수 있는 권한이 없습니다."
+      reset_session  # 세션 초기화
+    else
+      # 로그인되지 않은 경우
+      flash[:alert] = "로그인이 필요합니다."
+    end
+
     redirect_to login_path
   end
 
   def require_role_any(*roles)
+    roles = roles.flatten # Fix nested array issue from before_action
     return if roles.include?(current_role)
 
-    flash[:alert] = "접근 권한이 없습니다."
+    Rails.logger.warn "❌ Access denied: user_id=#{session[:user_id]}, current_role=#{current_role.inspect}, required_roles=#{roles.inspect}"
+
+    # 세션이 있는지 확인
+    if session[:user_id].present?
+      # 로그인은 되어 있지만 권한이 없는 경우
+      flash[:alert] = "접근 권한이 없습니다. 해당 페이지에 접근할 수 있는 권한이 없습니다."
+      reset_session  # 세션 초기화
+    else
+      # 로그인되지 않은 경우
+      flash[:alert] = "로그인이 필요합니다."
+    end
+
     redirect_to login_path
   end
 

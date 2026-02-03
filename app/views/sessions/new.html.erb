@@ -16,10 +16,16 @@
     </div>
 
     <% if flash[:alert].present? %>
-      <div class="login-alert"><%= flash[:alert] %></div>
+      <div class="login-alert login-flash-message">
+        <span class="flash-icon">⚠️</span>
+        <%= flash[:alert] %>
+      </div>
     <% end %>
     <% if flash[:notice].present? %>
-      <div class="login-notice"><%= flash[:notice] %></div>
+      <div class="login-notice login-flash-message">
+        <span class="flash-icon">✅</span>
+        <%= flash[:notice] %>
+      </div>
     <% end %>
 
     <form action="<%= login_path %>" method="post" class="login-form-new" data-turbo="false" onsubmit="return true;">
@@ -79,13 +85,17 @@
             <span class="test-icon">👨‍👩‍👧</span>
             <span class="test-label">학부모</span>
           </button>
-          <button type="button" class="login-test-btn" data-username="teacher_diag@shinmyung.edu" data-usertype="school_teacher">
-            <span class="test-icon">👨‍🏫</span>
-            <span class="test-label">학교교사</span>
+          <button type="button" class="login-test-btn" data-username="school_admin@shinmyung.edu" data-usertype="school_teacher">
+            <span class="test-icon">🏫</span>
+            <span class="test-label">학교관리자</span>
           </button>
           <button type="button" class="login-test-btn" data-username="teacher_diagnostic@shinmyung.edu" data-usertype="diagnostic_teacher">
             <span class="test-icon">📋</span>
             <span class="test-label">진단교사</span>
+          </button>
+          <button type="button" class="login-test-btn" data-username="teacher_diag@shinmyung.edu" data-usertype="school_teacher">
+            <span class="test-icon">👨‍🏫</span>
+            <span class="test-label">일반교사</span>
           </button>
           <button type="button" class="login-test-btn" data-username="researcher@shinmyung.edu" data-usertype="researcher">
             <span class="test-icon">📊</span>
@@ -185,11 +195,31 @@
     margin: 0;
   }
 
-  .login-alert, .login-notice {
+  .login-flash-message {
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 20px;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .flash-icon {
+    font-size: 18px;
+    flex-shrink: 0;
   }
 
   .login-alert {
@@ -299,6 +329,11 @@
     transform: translateY(0);
   }
 
+  .login-button-new:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+  }
+
   .login-help-links {
     display: flex;
     justify-content: space-between;
@@ -397,26 +432,28 @@
 </style>
 
 <script>
-  // Disable Turbo interception for login form - MUST run immediately
-  // Using a MutationObserver to ensure the attribute is set before Turbo processes the form
+  // CRITICAL: Disable Turbo for login form to prevent AJAX 422 errors
+  // Rails 8.1 + Turbo automatically converts form submissions to AJAX
+  // This causes 422 responses to not render properly
   (function() {
-    // Watch for the login form and ensure data-turbo is false
-    const observer = new MutationObserver(function() {
-      const loginForm = document.querySelector('.login-form-new');
-      if (loginForm && !loginForm.hasAttribute('data-turbo-disabled')) {
-        // Turbo doesn't support data-turbo="false" reliably on forms
-        // Instead, we'll intercept at the submission level
-        loginForm.setAttribute('data-turbo-disabled', 'true');
+    'use strict';
+
+    // Immediately prevent Turbo from hijacking the login form
+    document.addEventListener('turbo:before-fetch-request', function(e) {
+      const form = e.target;
+      if (form && form.classList && form.classList.contains('login-form-new')) {
+        console.log('[LoginForm] Turbo fetch request prevented for login form');
+        e.preventDefault(); // Block Turbo AJAX request
       }
-    });
+    }, true);
 
-    observer.observe(document.documentElement, { subtree: true, attributes: true });
-
-    // Listen for form submission in the capture phase (before Turbo's listener)
+    // Additional safety: listen for form submission in capture phase
     document.addEventListener('submit', function(e) {
-      if (e.target && e.target.classList.contains('login-form-new')) {
-        // Standard form submission - Turbo will still fire, but we need to ensure it doesn't take over
-        console.log('[LoginForm] Standard form submission triggered');
+      const form = e.target;
+      if (form && form.classList && form.classList.contains('login-form-new')) {
+        console.log('[LoginForm] Standard form submission (non-AJAX)');
+        // Let the standard form submission proceed
+        // Do NOT call e.preventDefault() here
       }
     }, true);
   })();
@@ -441,14 +478,55 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.querySelector('.login-form-new');
+    const submitButton = document.querySelector('.login-button-new');
     const testButtons = document.querySelectorAll('.login-test-btn');
     const emailInput = document.getElementById('email');
     const userTypeSelect = document.getElementById('user_type');
     const passwordInput = document.getElementById('password');
 
+    let isSubmitting = false;
+    const originalButtonText = submitButton.textContent;
+
+    // Handle form submission to prevent double-submit
+    loginForm.addEventListener('submit', function(e) {
+      if (isSubmitting) {
+        e.preventDefault();
+        console.log('[LoginForm] Double submission prevented');
+        return false;
+      }
+
+      isSubmitting = true;
+      submitButton.disabled = true;
+      submitButton.textContent = '로그인 중...';
+      submitButton.style.opacity = '0.7';
+      submitButton.style.cursor = 'not-allowed';
+
+      console.log('[LoginForm] Form submitting with standard POST request');
+    });
+
+    // Reset state if form submission fails (page re-renders with error)
+    // This happens when 422 is returned
+    window.addEventListener('pageshow', function() {
+      if (isSubmitting) {
+        isSubmitting = false;
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        submitButton.style.opacity = '1';
+        submitButton.style.cursor = 'pointer';
+        console.log('[LoginForm] State reset after page re-render');
+      }
+    });
+
+    // Test account buttons
     testButtons.forEach(button => {
       button.addEventListener('click', (e) => {
         e.preventDefault();
+
+        if (isSubmitting) {
+          return; // Prevent clicking test button while form is submitting
+        }
+
         emailInput.value = button.dataset.username || '';
         userTypeSelect.value = button.dataset.usertype || 'student';
         passwordInput.value = 'ReadingPro$12#';
@@ -456,8 +534,8 @@
 
         // Auto-submit the form after populating test credentials
         setTimeout(() => {
-          document.querySelector('.login-form-new').submit();
-        }, 50);
+          loginForm.submit();
+        }, 100);
       });
     });
   });

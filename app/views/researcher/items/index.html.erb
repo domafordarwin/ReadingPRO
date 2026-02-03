@@ -1,13 +1,23 @@
+<% content_for :portal_title do %>
+  문항 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  모든 문항을 관리하고 정답 및 루브릭 내용을 수정할 수 있습니다.
+<% end %>
 <% content_for :portal_nav do %>
   <%= render "researcher/shared/nav", current: :items %>
 <% end %>
 
-<div class="rp-main">
-  <div class="rp-main__container">
+<div class="portal-card">
+  <div class="portal-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 class="portal-card-title" style="margin: 0;">문항 관리</h2>
+    <%= link_to "+ 새 문항 추가", researcher_item_create_path, class: "btn btn-success" %>
+  </div>
+
+  <div style="padding: 20px 0;">
     <!-- Page Header -->
-    <div class="rp-page-header" style="margin-bottom: 32px;">
-      <h1 class="rp-page-header__title">문항 관리</h1>
-      <p class="rp-page-header__subtitle">문항별 정답 및 루브릭 내용을 확인하고 수정할 수 있습니다</p>
+    <div style="margin-bottom: 24px;">
+      <p style="color: #666; font-size: 14px; margin: 0;">문항별 정답 및 루브릭 내용을 확인하고 수정할 수 있습니다</p>
     </div>
 
     <!-- Status Tabs -->
@@ -71,9 +81,9 @@
               <thead>
                 <tr>
                   <th class="rp-table__header">제목</th>
-                  <th class="rp-table__header">학년군</th>
+                  <th class="rp-table__header">난이도</th>
                   <th class="rp-table__header">문항 유형</th>
-                  <th class="rp-table__header">문항 수</th>
+                  <th class="rp-table__header">지문</th>
                   <th class="rp-table__header">상태</th>
                   <th class="rp-table__header">생성일</th>
                   <th class="rp-table__header">작업</th>
@@ -81,8 +91,6 @@
               </thead>
               <tbody>
                 <% @items.each do |item| %>
-                  <% meta = item.scoring_meta || {} %>
-                  <% grade_band = meta["grade_band"] || "미지정" %>
                   <% status_class = case item.status
                                    when "draft" then "rp-badge--warning"
                                    when "active" then "rp-badge--success"
@@ -95,21 +103,27 @@
                                    when "retired" then "보관됨"
                                    else "초안"
                                    end %>
+                  <% difficulty_label = case item.difficulty
+                                       when "easy" then "하"
+                                       when "medium" then "중"
+                                       when "hard" then "상"
+                                       else "-"
+                                       end %>
                   <tr class="rp-table__row" onclick="openItemPreview(event, <%= item.id %>)">
                     <td class="rp-table__cell">
                       <div class="rp-item-title">
-                        <strong class="rp-item-code"><%= item.code %></strong>
+                        <strong class="rp-item-code"><%= item.code || "##{item.id}" %></strong>
                         <p class="rp-item-description"><%= truncate(item.prompt, length: 100) %></p>
                       </div>
                     </td>
-                    <td class="rp-table__cell"><%= grade_band %></td>
+                    <td class="rp-table__cell"><%= difficulty_label %></td>
                     <td class="rp-table__cell">
                       <span class="rp-badge rp-badge--pill rp-badge--info">
                         <%= item.item_type == "mcq" ? "객관식" : "서술형" %>
                       </span>
                     </td>
                     <td class="rp-table__cell">
-                      <strong><%= item.item_choices.count %></strong>
+                      <%= item.stimulus ? truncate(item.stimulus.title, length: 30) : "-" %>
                     </td>
                     <td class="rp-table__cell">
                       <span class="rp-badge rp-badge--pill <%= status_class %>">
@@ -127,12 +141,11 @@
                                     aria_label: "편집" %>
                         <a href="#" class="rp-icon-link rp-icon-link--view" title="미리보기" aria-label="미리보기"
                            onclick="openItemPreview(event, <%= item.id %>); return false;"></a>
-                        <%= button_to "", researcher_item_path(item),
-                                       method: :delete,
-                                       data: { confirm: "정말 삭제하시겠습니까?" },
-                                       class: "rp-icon-link rp-icon-link--delete",
-                                       title: "삭제",
-                                       aria_label: "삭제" %>
+                        <%= link_to "", researcher_item_path(item),
+                                    data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까?" },
+                                    class: "rp-icon-link rp-icon-link--delete",
+                                    title: "삭제",
+                                    aria_label: "삭제" %>
                       </div>
                     </td>
                   </tr>
@@ -177,6 +190,7 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <!-- Item Preview Modal -->
@@ -691,15 +705,15 @@
   const itemsData = {
     <% @items.each do |item| %>
       <%= item.id %>: {
-        title: '<%= item.code %>',
-        grade: '<%= meta = item.scoring_meta || {}; meta["grade_band"] || "미지정" %>',
+        title: '<%= item.code || "##{item.id}" %>',
+        grade: '<%= item.difficulty || "미지정" %>',
         totalItems: <%= item.item_choices.count %>,
         itemType: '<%= item.item_type == "mcq" ? "객관식" : "서술형" %>',
-        timeLimit: '<%= (item.scoring_meta || {})["time_limit"] || "60" %>분',
-        totalScore: '<%= (item.scoring_meta || {})["points"] || "100" %>점',
+        timeLimit: '60분',
+        totalScore: '100점',
         stimuli: [
           <% if item.stimulus %>
-            { number: 1, title: '<%= item.stimulus.title %>' }
+            { number: 1, title: '<%= item.stimulus.title.gsub("'", "\\\\'") %>' }
           <% end %>
         ]
       },

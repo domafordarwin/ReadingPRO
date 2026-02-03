@@ -309,7 +309,7 @@
   <div class="nav-buttons">
     <% if @prev_student_id %>
       <% prev_student = Student.find(@prev_student_id) %>
-      <% prev_attempt = prev_student.attempts.order(created_at: :desc).first %>
+      <% prev_attempt = prev_student.student_attempts.order(created_at: :desc).first %>
       <% if prev_attempt %>
         <a href="<%= diagnostic_teacher_show_student_report_path(@prev_student_id, attempt_id: prev_attempt.id) %>" class="nav-btn">
           ← 이전
@@ -323,7 +323,7 @@
 
     <% if @next_student_id %>
       <% next_student = Student.find(@next_student_id) %>
-      <% next_attempt = next_student.attempts.order(created_at: :desc).first %>
+      <% next_attempt = next_student.student_attempts.order(created_at: :desc).first %>
       <% if next_attempt %>
         <a href="<%= diagnostic_teacher_show_student_report_path(@next_student_id, attempt_id: next_attempt.id) %>" class="nav-btn">
           다음 →

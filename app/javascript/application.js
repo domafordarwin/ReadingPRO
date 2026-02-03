@@ -1,6 +1,5 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo"
-import "@hotwired/stimulus-loading"
 import { Application } from "@hotwired/stimulus"
 
 // Phase 3.5.3: Initialize Stimulus application
@@ -31,3 +30,7 @@ application.register("theme", ThemeController)
 // Phase 6.1: Student Assessment
 import AssessmentController from "controllers/assessment_controller"
 application.register("assessment", AssessmentController)
+
+// Researcher: Delete loading indicator
+import DeleteLoadingController from "controllers/delete_loading_controller"
+application.register("delete-loading", DeleteLoadingController)

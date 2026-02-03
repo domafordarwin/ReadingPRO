@@ -203,12 +203,12 @@
     </thead>
     <tbody>
       <% @students.each do |student| %>
-        <% latest_attempt = student.attempts.order(created_at: :desc).first %>
-        <% report_status = latest_attempt&.report&.status || 'none' %>
+        <% latest_attempt = student.student_attempts.order(created_at: :desc).first %>
+        <% report_status = latest_attempt&.attempt_report&.status || 'none' %>
         <% average_score = @student_scores[student.id] || 0 %>
         <tr>
           <td class="student-name"><%= student.name %></td>
-          <td class="attempt-count"><%= student.attempts.count %></td>
+          <td class="attempt-count"><%= student.student_attempts.count %></td>
           <td>
             <% if report_status == 'published' %>
               <span class="completion-badge completion-complete">발행됨</span>

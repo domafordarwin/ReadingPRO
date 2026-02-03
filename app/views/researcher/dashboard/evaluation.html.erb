@@ -224,139 +224,83 @@
   <div class="evaluation-summary__header">
     <h2 class="evaluation-summary__title">평가 영역 현황</h2>
     <div class="evaluation-summary__total">
-      85<span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
+      <%= @total_indicators %><span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
     </div>
   </div>
 
   <div class="evaluation-stats">
     <div class="evaluation-stat">
       <div class="evaluation-stat__label">활성 영역</div>
-      <div class="evaluation-stat__value">2</div>
+      <div class="evaluation-stat__value"><%= @active_indicators %></div>
     </div>
     <div class="evaluation-stat">
       <div class="evaluation-stat__label">검토중 영역</div>
-      <div class="evaluation-stat__value">1</div>
+      <div class="evaluation-stat__value"><%= @review_indicators %></div>
     </div>
     <div class="evaluation-stat">
       <div class="evaluation-stat__label">평균 문항 수</div>
-      <div class="evaluation-stat__value">28</div>
+      <div class="evaluation-stat__value"><%= @average_items %></div>
     </div>
     <div class="evaluation-stat">
       <div class="evaluation-stat__label">마지막 업데이트</div>
-      <div class="evaluation-stat__value" style="font-size: 14px;">01/27</div>
+      <div class="evaluation-stat__value" style="font-size: 14px;"><%= @last_updated.strftime("%m/%d") %></div>
     </div>
   </div>
 </div>
 
 <!-- 평가 영역 카드 -->
 <div class="evaluation-grid">
-  <!-- 이해력 영역 -->
-  <div class="evaluation-card">
-    <div class="evaluation-card__icon">📖</div>
-    <h3 class="evaluation-card__title">이해력 영역</h3>
+  <% @indicators.each do |indicator| %>
+    <%
+      total_items = indicator.items.count
+      mcq_items = indicator.items.where(item_type: 'mcq').count
+      constructed_items = indicator.items.where(item_type: 'constructed').count
+      active_items = indicator.items.where(status: 'active').count
+      completion_percent = total_items > 0 ? (active_items.to_f / total_items * 100).round : 0
+      is_active = active_items > 0
+      is_review = total_items > 0 && active_items == 0
+    %>
+    <div class="evaluation-card">
+      <div class="evaluation-card__icon">📚</div>
+      <h3 class="evaluation-card__title"><%= indicator.name %></h3>
 
-    <div class="evaluation-card__meta">
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">문항 수</span>
-        <span class="evaluation-card__meta-value">35</span>
+      <div class="evaluation-card__meta">
+        <div class="evaluation-card__meta-item">
+          <span class="evaluation-card__meta-label">문항 수</span>
+          <span class="evaluation-card__meta-value"><%= total_items %></span>
+        </div>
+        <div class="evaluation-card__meta-item">
+          <span class="evaluation-card__meta-label">MCQ</span>
+          <span class="evaluation-card__meta-value"><%= mcq_items %></span>
+        </div>
+        <div class="evaluation-card__meta-item">
+          <span class="evaluation-card__meta-label">주관식</span>
+          <span class="evaluation-card__meta-value"><%= constructed_items %></span>
+        </div>
       </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">MCQ</span>
-        <span class="evaluation-card__meta-value">22</span>
+
+      <div class="evaluation-card__progress">
+        <div class="evaluation-card__progress-label">
+          <span>완성도</span>
+          <span><%= completion_percent %>%</span>
+        </div>
+        <div class="evaluation-card__progress-bar">
+          <div class="evaluation-card__progress-fill" style="width: <%= completion_percent %>%;"></div>
+        </div>
       </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">주관식</span>
-        <span class="evaluation-card__meta-value">13</span>
+
+      <div class="evaluation-card__footer">
+        <% if is_active %>
+          <span class="evaluation-card__status evaluation-card__status--active">활성</span>
+        <% elsif is_review %>
+          <span class="evaluation-card__status evaluation-card__status--review">검토중</span>
+        <% else %>
+          <span class="evaluation-card__status">준비중</span>
+        <% end %>
+        <%= link_to "관리 →", researcher_item_bank_path(search: indicator.code), class: "evaluation-card__action" %>
       </div>
     </div>
-
-    <div class="evaluation-card__progress">
-      <div class="evaluation-card__progress-label">
-        <span>완성도</span>
-        <span>100%</span>
-      </div>
-      <div class="evaluation-card__progress-bar">
-        <div class="evaluation-card__progress-fill" style="width: 100%;"></div>
-      </div>
-    </div>
-
-    <div class="evaluation-card__footer">
-      <span class="evaluation-card__status evaluation-card__status--active">활성</span>
-      <a href="#" class="evaluation-card__action">관리 →</a>
-    </div>
-  </div>
-
-  <!-- 의사소통 능력 영역 -->
-  <div class="evaluation-card">
-    <div class="evaluation-card__icon">💬</div>
-    <h3 class="evaluation-card__title">의사소통 능력 영역</h3>
-
-    <div class="evaluation-card__meta">
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">문항 수</span>
-        <span class="evaluation-card__meta-value">28</span>
-      </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">MCQ</span>
-        <span class="evaluation-card__meta-value">18</span>
-      </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">주관식</span>
-        <span class="evaluation-card__meta-value">10</span>
-      </div>
-    </div>
-
-    <div class="evaluation-card__progress">
-      <div class="evaluation-card__progress-label">
-        <span>완성도</span>
-        <span>100%</span>
-      </div>
-      <div class="evaluation-card__progress-bar">
-        <div class="evaluation-card__progress-fill" style="width: 100%;"></div>
-      </div>
-    </div>
-
-    <div class="evaluation-card__footer">
-      <span class="evaluation-card__status evaluation-card__status--active">활성</span>
-      <a href="#" class="evaluation-card__action">관리 →</a>
-    </div>
-  </div>
-
-  <!-- 심미적 감수성 영역 -->
-  <div class="evaluation-card">
-    <div class="evaluation-card__icon">🎨</div>
-    <h3 class="evaluation-card__title">심미적 감수성 영역</h3>
-
-    <div class="evaluation-card__meta">
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">문항 수</span>
-        <span class="evaluation-card__meta-value">22</span>
-      </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">MCQ</span>
-        <span class="evaluation-card__meta-value">14</span>
-      </div>
-      <div class="evaluation-card__meta-item">
-        <span class="evaluation-card__meta-label">주관식</span>
-        <span class="evaluation-card__meta-value">8</span>
-      </div>
-    </div>
-
-    <div class="evaluation-card__progress">
-      <div class="evaluation-card__progress-label">
-        <span>완성도</span>
-        <span>78%</span>
-      </div>
-      <div class="evaluation-card__progress-bar">
-        <div class="evaluation-card__progress-fill" style="width: 78%;"></div>
-      </div>
-    </div>
-
-    <div class="evaluation-card__footer">
-      <span class="evaluation-card__status evaluation-card__status--review">검토중</span>
-      <a href="#" class="evaluation-card__action">관리 →</a>
-    </div>
-  </div>
+  <% end %>
 </div>
 
 <!-- 세부 영역 구성 -->
@@ -366,62 +310,30 @@
   </div>
   <div class="portal-card__body">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
-      <!-- 이해력 세부 지표 -->
-      <div>
-        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">📖 이해력 영역</h4>
-        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 문자적 이해
-            <span style="float: right; font-weight: 600; color: #667eea;">12문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 추론적 이해
-            <span style="float: right; font-weight: 600; color: #667eea;">15문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 비판적 이해
-            <span style="float: right; font-weight: 600; color: #667eea;">8문항</span>
-          </li>
-        </ul>
-      </div>
+      <% @indicators.each_with_index do |indicator, index| %>
+        <% next if indicator.sub_indicators.empty? %>
+        <% grid_column = (indicator.sub_indicators.count > 5 || index == @indicators.count - 1) ? "grid-column: 1 / -1;" : "" %>
+        <div style="<%= grid_column %>">
+          <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">
+            📚 <%= indicator.name %>
+          </h4>
+          <ul style="list-style: none; padding: 0; margin: 0; display: <%= indicator.sub_indicators.count > 3 ? 'grid' : 'flex' %>; <%= indicator.sub_indicators.count > 3 ? 'grid-template-columns: repeat(3, 1fr);' : 'flex-direction: column;' %> gap: 8px;">
+            <% indicator.sub_indicators.each do |sub_indicator| %>
+              <% sub_item_count = sub_indicator.items.count %>
+              <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+                ✓ <%= sub_indicator.name %>
+                <span style="<%= indicator.sub_indicators.count > 3 ? 'display: block; margin-top: 4px;' : 'float: right;' %> font-weight: 600; color: #667eea;"><%= sub_item_count %>문항</span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
-      <!-- 의사소통 세부 지표 -->
-      <div>
-        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">💬 의사소통 능력 영역</h4>
-        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 정보 전달
-            <span style="float: right; font-weight: 600; color: #667eea;">10문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 감정 표현
-            <span style="float: right; font-weight: 600; color: #667eea;">10문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 설득 및 주장
-            <span style="float: right; font-weight: 600; color: #667eea;">8문항</span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- 심미적 감수성 세부 지표 -->
-      <div style="grid-column: 1 / -1;">
-        <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">🎨 심미적 감수성 영역</h4>
-        <ul style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 표현 기법 이해
-            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">8문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 감정 공감
-            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">8문항</span>
-          </li>
-          <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
-            ✓ 미적 가치 판단
-            <span style="display: block; font-weight: 600; color: #667eea; margin-top: 4px;">6문항</span>
-          </li>
-        </ul>
-      </div>
+      <% if @indicators.all? { |ind| ind.sub_indicators.empty? } %>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+          <p>등록된 세부 평가 지표가 없습니다.</p>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>

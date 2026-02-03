@@ -226,10 +226,10 @@
     <div class="diagnostic-list">
       <% @forms.each do |form| %>
         <div class="diagnostic-list-item">
-          <div class="diagnostic-list-item__title"><%= form.title %></div>
+          <div class="diagnostic-list-item__title"><%= form.name %></div>
           <div class="diagnostic-list-item__meta">
             <div class="diagnostic-list-item__count">
-              문항 수: <strong><%= form.items.count %></strong>개
+              문항 수: <strong><%= form.item_count || 0 %></strong>개
             </div>
             <span class="diagnostic-status diagnostic-status--<%= form.status %>">
               <%= form.status == 'draft' ? '준비중' : '확정' %>

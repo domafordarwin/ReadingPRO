@@ -1,0 +1,495 @@
+<% content_for :portal_title do %>
+  개발자 포털
+<% end %>
+<parameter name="content"><% content_for :portal_subtitle do %>
+  Researcher 포털 구조 및 개발 가이드
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :dashboard %>
+<% end %>
+
+<style>
+  .dev-portal {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dev-section {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .dev-section__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #667eea;
+  }
+
+  .dev-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+  }
+
+  .dev-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    border: 1px solid #e0e0e0;
+  }
+
+  .dev-table td {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .dev-code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #e83e8c;
+  }
+
+  .dev-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .dev-badge--get { background: #28a745; color: white; }
+  .dev-badge--post { background: #007bff; color: white; }
+  .dev-badge--patch { background: #ffc107; color: black; }
+  .dev-badge--delete { background: #dc3545; color: white; }
+  .dev-badge--card { background: #667eea; color: white; }
+  .dev-badge--table { background: #764ba2; color: white; }
+
+  .dev-flow {
+    background: #f0f4ff;
+    border-left: 4px solid #667eea;
+    padding: 16px;
+    margin: 16px 0;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .dev-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .dev-card {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .dev-card__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 8px;
+  }
+
+  .dev-card__content {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .dev-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+
+  .dev-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .dev-list li:before {
+    content: "▸";
+    color: #667eea;
+    font-weight: bold;
+    margin-right: 8px;
+  }
+
+  .dev-highlight {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 12px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+
+  @media (max-width: 1024px) {
+    .dev-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .dev-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="portal-card dev-portal">
+  <h1 style="font-size: 24px; font-weight: 700; color: #333; margin-bottom: 8px;">
+    🚀 Researcher 포털 개발 가이드
+  </h1>
+  <p style="color: #666; margin-bottom: 32px;">
+    ReadingPRO Researcher 포털의 전체 구조와 개발 규칙을 문서화합니다.
+  </p>
+
+  <!-- 포털 구조 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">📊 포털 구조 개요</h2>
+
+    <table class="dev-table">
+      <thead>
+        <tr>
+          <th>페이지</th>
+          <th>URL</th>
+          <th>Controller#Action</th>
+          <th>레이아웃</th>
+          <th>주요 기능</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>대시보드</strong></td>
+          <td><code class="dev-code">/researcher</code></td>
+          <td><code class="dev-code">dashboard#index</code></td>
+          <td><span class="dev-badge dev-badge--card">카드</span></td>
+          <td>통계 + 빠른 액션 + 최근 활동</td>
+        </tr>
+        <tr>
+          <td><strong>평가 영역</strong></td>
+          <td><code class="dev-code">/researcher/evaluation</code></td>
+          <td><code class="dev-code">dashboard#evaluation</code></td>
+          <td><span class="dev-badge dev-badge--card">카드</span></td>
+          <td>EvaluationIndicator 관리</td>
+        </tr>
+        <tr>
+          <td><strong>문항 은행</strong></td>
+          <td><code class="dev-code">/researcher/item_bank</code></td>
+          <td><code class="dev-code">dashboard#item_bank</code></td>
+          <td><span class="dev-badge dev-badge--card">카드</span></td>
+          <td>완성된 문항 (stimulus_id ≠ NULL)</td>
+        </tr>
+        <tr>
+          <td><strong>지문 관리</strong></td>
+          <td><code class="dev-code">/researcher/passages</code></td>
+          <td><code class="dev-code">dashboard#passages</code></td>
+          <td><span class="dev-badge dev-badge--card">카드</span></td>
+          <td>ReadingStimulus CRUD</td>
+        </tr>
+        <tr>
+          <td><strong>문항 관리</strong></td>
+          <td><code class="dev-code">/researcher/items</code></td>
+          <td><code class="dev-code">items#index</code></td>
+          <td><span class="dev-badge dev-badge--table">테이블</span></td>
+          <td>모든 문항 관리 + 필터/검색</td>
+        </tr>
+        <tr>
+          <td><strong>문항 등록</strong></td>
+          <td><code class="dev-code">/researcher/item_create</code></td>
+          <td><code class="dev-code">dashboard#item_create</code></td>
+          <td><span class="dev-badge dev-badge--card">폼</span></td>
+          <td>새 문항 생성</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 데이터 모델 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">🗄️ 핵심 데이터 모델</h2>
+
+    <div class="dev-grid">
+      <div class="dev-card">
+        <div class="dev-card__title">Item (문항)</div>
+        <div class="dev-card__content">
+          <strong>주요 컬럼:</strong><br>
+          • code, item_type, prompt<br>
+          • difficulty, status<br>
+          • stimulus_id (FK)<br>
+          • evaluation_indicator_id (FK)<br>
+          <br>
+          <strong>관계:</strong><br>
+          belongs_to :stimulus<br>
+          has_many :item_choices<br>
+          has_one :rubric
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-card__title">ReadingStimulus (지문)</div>
+        <div class="dev-card__content">
+          <strong>주요 컬럼:</strong><br>
+          • title, body<br>
+          • source, word_count<br>
+          • reading_level<br>
+          • items_count (counter_cache)<br>
+          <br>
+          <strong>관계:</strong><br>
+          has_many :items
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-card__title">EvaluationIndicator</div>
+        <div class="dev-card__content">
+          <strong>주요 컬럼:</strong><br>
+          • code, name, description<br>
+          <br>
+          <strong>관계:</strong><br>
+          has_many :sub_indicators<br>
+          has_many :items
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 데이터 흐름 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">🔄 데이터 흐름</h2>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">1️⃣ 문항 생성 흐름</h3>
+    <div class="dev-flow">
+[문항 관리] → [+ 새 문항 추가] 버튼 클릭
+    ↓
+[문항 등록 폼] (item_create)
+- 기본 정보: code, item_type, difficulty
+- 평가 지표: evaluation_indicator_id, sub_indicator_id
+- 문항 내용: prompt, explanation
+- 연결: stimulus_id (선택), status
+    ↓
+POST /researcher/items (items#create)
+    ↓
+성공 시 → redirect_to edit_researcher_item_path
+(정답/루브릭 입력 단계)
+    </div>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">2️⃣ 완성된 문항 vs 미완성 문항</h3>
+    <div class="dev-flow">
+문항 생성 (stimulus_id = NULL)
+    ↓
+문항 관리에만 표시
+    ↓
+지문 연결 (stimulus_id 설정)
+    ↓
+문항 은행에 표시 (카드 뷰)
++ 문항 관리에도 표시 (테이블 뷰)
+    </div>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">3️⃣ 지문 삭제 CASCADE</h3>
+    <div class="dev-flow">
+ReadingStimulus 삭제
+    ↓ (dependent: :destroy)
+연결된 Item 삭제
+    ↓
+Rubric, ItemChoice 삭제
+    ↓
+Response, RubricLevel 삭제
+    </div>
+    <div class="dev-highlight">
+      ⚠️ <strong>성능 주의:</strong> 지문 1개 삭제 시 10개 문항 = 100-500+ DELETE 쿼리 발생<br>
+      → UI: delete-loading Stimulus controller로 로딩 인디케이터 표시
+    </div>
+  </div>
+
+  <!-- API Routes -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">🛣️ 주요 Routes</h2>
+
+    <table class="dev-table">
+      <thead>
+        <tr>
+          <th>HTTP</th>
+          <th>Path</th>
+          <th>Controller#Action</th>
+          <th>설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="dev-badge dev-badge--get">GET</span></td>
+          <td><code class="dev-code">/researcher/items</code></td>
+          <td><code class="dev-code">items#index</code></td>
+          <td>문항 목록 (필터/검색)</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--post">POST</span></td>
+          <td><code class="dev-code">/researcher/items</code></td>
+          <td><code class="dev-code">items#create</code></td>
+          <td>문항 생성</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--get">GET</span></td>
+          <td><code class="dev-code">/researcher/items/:id/edit</code></td>
+          <td><code class="dev-code">items#edit</code></td>
+          <td>문항 편집 (정답/루브릭)</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--patch">PATCH</span></td>
+          <td><code class="dev-code">/researcher/items/:id</code></td>
+          <td><code class="dev-code">items#update</code></td>
+          <td>문항 업데이트</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--delete">DELETE</span></td>
+          <td><code class="dev-code">/researcher/items/:id</code></td>
+          <td><code class="dev-code">items#destroy</code></td>
+          <td>문항 삭제</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--get">GET</span></td>
+          <td><code class="dev-code">/researcher/stimuli/new</code></td>
+          <td><code class="dev-code">stimuli#new</code></td>
+          <td>지문 생성 폼</td>
+        </tr>
+        <tr>
+          <td><span class="dev-badge dev-badge--post">POST</span></td>
+          <td><code class="dev-code">/researcher/stimuli</code></td>
+          <td><code class="dev-code">stimuli#create</code></td>
+          <td>지문 생성</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 성능 최적화 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">⚡ 성능 최적화</h2>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">1️⃣ Counter Cache</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># reading_stimuli 테이블
+items_count (integer, default: 0)
+
+# Item 모델
+belongs_to :stimulus, counter_cache: :items_count</code></pre>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">2️⃣ Eager Loading</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># items#index
+Item.includes(:stimulus, :item_choices, rubric: { rubric_criteria: :rubric_levels })
+
+# dashboard#index
+Item.includes(:stimulus).order(created_at: :desc).limit(5)</code></pre>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">3️⃣ Keyset Pagination (item_bank)</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code>KeysetPaginationService.new(@items_relation, per_page: 25)
+  .fetch_page(cursor: @cursor, direction: @direction)
+
+# O(1) 성능 - OFFSET 사용 안 함</code></pre>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">4️⃣ HTTP Caching (item_bank)</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code>fresh_when(etag: etag, last_modified: Item.maximum(:updated_at))
+
+# 304 Not Modified 응답으로 60-80% 절약</code></pre>
+  </div>
+
+  <!-- Turbo 호환성 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">🚄 Rails 8.1 + Turbo 호환성</h2>
+
+    <div class="dev-highlight">
+      ⚠️ <strong>중요:</strong> Rails 8.1 환경에서 Turbo는 모든 폼과 링크를 AJAX로 자동 변환합니다.
+    </div>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">✅ 올바른 사용법</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># 삭제 링크
+<%= link_to "삭제", path,
+    data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까?" } %>
+
+# 표준 폼 제출 (로그인 등)
+<%= form_with data: { turbo: false }, onsubmit: "return true;" do %>
+
+# Stimulus controller
+import DeleteLoadingController from "controllers/delete_loading_controller"
+application.register("delete-loading", DeleteLoadingController)</code></pre>
+
+    <h3 style="font-size: 16px; font-weight: 600; margin: 20px 0 12px 0;">❌ 피해야 할 패턴</h3>
+    <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># method: :delete (작동 안 함)
+<%= link_to "삭제", path, method: :delete %>
+
+# 인라인 script (CSP 위반)
+<script>
+  document.addEventListener('turbo:before-fetch-request', ...)
+</script></code></pre>
+  </div>
+
+  <!-- 개발 원칙 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">📜 개발 원칙</h2>
+
+    <ul class="dev-list">
+      <li><strong>스키마 먼저 확인:</strong> <code class="dev-code">rails runner "puts Item.column_names"</code></li>
+      <li><strong>성능 고려:</strong> Counter cache 우선, N+1 쿼리 방지</li>
+      <li><strong>Turbo 인지:</strong> data-turbo-method 사용, 필요시 data-turbo="false"</li>
+      <li><strong>문서화:</strong> 중요 변경사항은 CLAUDE.md 및 docs/raw_data에 기록</li>
+      <li><strong>테스트:</strong> 변경 후 Rails 서버 재시작 및 브라우저 캐시 클리어</li>
+    </ul>
+  </div>
+
+  <!-- 빠른 참조 -->
+  <div class="dev-section">
+    <h2 class="dev-section__title">🔗 빠른 참조</h2>
+
+    <div class="dev-grid">
+      <div class="dev-card">
+        <div class="dev-card__title">문서</div>
+        <div class="dev-card__content">
+          • CLAUDE.md<br>
+          • docs/raw_data/<br>
+          • docs/QUICK_ERROR_REFERENCE.md
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-card__title">주요 파일</div>
+        <div class="dev-card__content">
+          • config/routes.rb<br>
+          • app/controllers/researcher/<br>
+          • app/views/researcher/
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-card__title">Stimulus Controllers</div>
+        <div class="dev-card__content">
+          • delete_loading_controller.js<br>
+          • research_search_controller.js<br>
+          • application.js
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align: center; padding: 32px 0; color: #999; font-size: 13px;">
+    <p>마지막 업데이트: 2026-02-04</p>
+    <p>ReadingPRO Researcher Portal v2.0</p>
+  </div>
+</div>

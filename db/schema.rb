@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_111303) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -240,6 +240,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
     t.string "item_type", null: false
     t.text "prompt", null: false
     t.string "status", default: "draft", null: false
+    t.string "stimulus_code"
     t.bigint "stimulus_id"
     t.bigint "sub_indicator_id"
     t.jsonb "tags", default: {}, null: false
@@ -256,9 +257,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
     t.index ["item_type"], name: "index_items_on_item_type"
     t.index ["status", "difficulty"], name: "idx_items_status_difficulty"
     t.index ["status"], name: "index_items_on_status"
+    t.index ["stimulus_code"], name: "index_items_on_stimulus_code"
     t.index ["stimulus_id"], name: "index_items_on_stimulus_id"
     t.index ["sub_indicator_id", "status"], name: "idx_items_sub_indicator_status"
     t.index ["sub_indicator_id"], name: "index_items_on_sub_indicator_id"
+  end
+
+  create_table "parent_forum_comments", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.bigint "parent_forum_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_parent_forum_comments_on_created_at"
+    t.index ["created_by_id"], name: "index_parent_forum_comments_on_created_by_id"
+    t.index ["parent_forum_id"], name: "index_parent_forum_comments_on_parent_forum_id"
+  end
+
+  create_table "parent_forums", force: :cascade do |t|
+    t.string "category", default: "general", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.string "status", default: "open", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "view_count", default: 0
+    t.index ["category"], name: "index_parent_forums_on_category"
+    t.index ["created_at"], name: "index_parent_forums_on_created_at"
+    t.index ["created_by_id"], name: "index_parent_forums_on_created_by_id"
+    t.index ["status"], name: "index_parent_forums_on_status"
   end
 
   create_table "parents", force: :cascade do |t|
@@ -318,16 +346,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
 
   create_table "reading_stimuli", force: :cascade do |t|
     t.text "body", null: false
+    t.jsonb "bundle_metadata", default: {}, null: false
+    t.string "bundle_status", default: "draft", null: false
+    t.string "code", null: false
     t.datetime "created_at", null: false
     t.bigint "created_by_id"
+    t.text "item_codes", default: [], array: true
     t.integer "items_count", default: 0
     t.string "reading_level"
     t.string "source"
     t.string "title"
     t.datetime "updated_at", null: false
     t.integer "word_count"
+    t.index ["bundle_metadata"], name: "index_reading_stimuli_on_bundle_metadata", using: :gin
+    t.index ["bundle_status"], name: "index_reading_stimuli_on_bundle_status"
+    t.index ["code"], name: "index_reading_stimuli_on_code", unique: true
     t.index ["created_at"], name: "idx_reading_stimuli_created_at"
     t.index ["created_by_id"], name: "index_reading_stimuli_on_created_by_id"
+    t.index ["item_codes"], name: "index_reading_stimuli_on_item_codes", using: :gin
     t.index ["reading_level"], name: "index_reading_stimuli_on_reading_level"
   end
 
@@ -533,6 +569,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111302) do
   add_foreign_key "items", "reading_stimuli", column: "stimulus_id"
   add_foreign_key "items", "sub_indicators"
   add_foreign_key "items", "teachers", column: "created_by_id"
+  add_foreign_key "parent_forum_comments", "parent_forums"
+  add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
+  add_foreign_key "parent_forums", "users", column: "created_by_id"
   add_foreign_key "parents", "users"
   add_foreign_key "reader_tendencies", "student_attempts"
   add_foreign_key "reader_tendencies", "students"
