@@ -101,6 +101,15 @@ class Student::AssessmentsController < ApplicationController
     mcq_response_ids = attempt.responses.joins(:item).where(items: { item_type: :mcq }).pluck(:id)
     ScoreResponseService.call_batch(mcq_response_ids) if mcq_response_ids.any?
 
+    # Score all constructed response answers
+    constructed_response_ids = attempt.responses.joins(:item).where(items: { item_type: :constructed }).pluck(:id)
+    constructed_response_ids.each { |response_id| ScoreResponseService.call(response_id) } if constructed_response_ids.any?
+
+    # Calculate and store total scores
+    total_score = attempt.responses.sum(&:raw_score).to_f
+    max_score = attempt.responses.sum(&:max_score).to_f
+    attempt.update!(total_score: total_score, max_score: max_score)
+
     # TODO: Auto-generate feedback for responses
 
     render json: { success: true, redirect_url: student_show_attempt_path(attempt.id) }

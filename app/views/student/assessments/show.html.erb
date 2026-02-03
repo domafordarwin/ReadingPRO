@@ -3,14 +3,14 @@
 <div class="rp-assessment"
      data-controller="assessment"
      data-assessment-attempt-id-value="<%= @attempt.id %>"
-     data-assessment-time-limit-value="<%= @attempt.diagnostic_form.time_limit_seconds || 3600 %>"
-     data-assessment-total-questions-value="<%= @attempt.responses.count %>">
+     data-assessment-time-limit-value="<%= (@attempt.diagnostic_form.time_limit_minutes || 60) * 60 %>"
+     data-assessment-total-questions-value="<%= @attempt.diagnostic_form.items.count %>">
 
   <!-- Header with Timer -->
   <div class="rp-assessment__header">
     <div class="rp-assessment__title-section">
       <h1 class="rp-assessment__title"><%= @attempt.diagnostic_form.name %></h1>
-      <p class="rp-assessment__subtitle"><%= @attempt.responses.count %>개 문항</p>
+      <p class="rp-assessment__subtitle"><%= @attempt.diagnostic_form.items.count %>개 문항</p>
     </div>
 
     <div class="rp-assessment__controls">
@@ -30,7 +30,7 @@
   <!-- Progress Indicator -->
   <div class="rp-progress-section">
     <div class="progress-label" data-assessment-target="progress">
-      Question 1 of <%= @attempt.responses.count %>
+      Question 1 of <%= @attempt.diagnostic_form.items.count %>
     </div>
     <div class="progress-bar">
       <div class="progress-fill" id="progress-fill"></div>
@@ -39,7 +39,8 @@
 
   <!-- Questions Container -->
   <div class="rp-questions-container">
-    <% @attempt.responses.each_with_index do |response, index| %>
+    <% @attempt.diagnostic_form.items.each_with_index do |item, index| %>
+      <% response = @attempt.responses.find_or_initialize_by(item: item) %>
       <div class="rp-question"
            data-assessment-target="question"
            data-response-id="<%= response.id %>"
@@ -52,13 +53,13 @@
         </div>
 
         <!-- Stimulus (if any) -->
-        <% if response.item.reading_stimulus %>
+        <% if response.item.stimulus %>
           <div class="rp-stimulus">
             <div class="rp-stimulus__title">
-              <%= response.item.reading_stimulus.title %>
+              <%= response.item.stimulus.title %>
             </div>
             <div class="rp-stimulus__body">
-              <%= simple_format(response.item.reading_stimulus.body) %>
+              <%= simple_format(response.item.stimulus.body) %>
             </div>
           </div>
         <% end %>
