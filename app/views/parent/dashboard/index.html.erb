@@ -104,11 +104,11 @@
           <!-- Mini Chart -->
           <% if data[:scores].count >= 2 %>
             <div class="rp-mini-chart">
-              <% max_score = data[:scores].map { |s| s[:score] }.max %>
+              <% max_score = [data[:scores].map { |s| s[:score] }.max, 1].max %>
               <% data[:scores].last(10).each do |score| %>
                 <div class="rp-mini-chart__bar"
-                     style="height: <%= (score[:score] / max_score * 100).round %>%"
-                     title="<%= score[:date].strftime('%m/%d') %>: <%= score[:score] %>%"></div>
+                     style="height: <%= (score[:score].to_f / max_score * 100).round %>%"
+                     title="<%= score[:date]&.strftime('%m/%d') || 'N/A' %>: <%= score[:score] %>%"></div>
               <% end %>
             </div>
           <% end %>
