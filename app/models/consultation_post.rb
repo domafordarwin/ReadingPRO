@@ -5,6 +5,14 @@ class ConsultationPost < ApplicationRecord
   belongs_to :created_by, class_name: 'User', foreign_key: 'created_by_id'
   has_many :consultation_comments, dependent: :destroy
 
+  CATEGORY_LABELS = {
+    'academic' => '학업 관련',
+    'behavior' => '행동/태도',
+    'social' => '사회성',
+    'health' => '건강',
+    'other' => '기타'
+  }.freeze
+
   validates :title, presence: true
   validates :content, presence: true
   validates :category, presence: true, inclusion: { in: %w[academic behavior social health other] }
