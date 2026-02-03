@@ -32,7 +32,7 @@ module Student::DashboardHelper
     end
 
     # Calculate rubric score for constructed responses
-    attempt.responses.includes(response_rubric_scores: :rubric_criterion, :item).each do |response|
+    attempt.responses.includes(:item, response_rubric_scores: :rubric_criterion).each do |response|
       if response.item.constructed?
         response.response_rubric_scores.each do |score|
           total_score += (score.score || 0)
