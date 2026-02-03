@@ -1,6 +1,6 @@
 class DiagnosticTeacher::DashboardController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("diagnostic_teacher") }
+  before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
   before_action :set_all_students, only: [:reports]
   before_action :set_student_for_detail, only: [:show_student_report]

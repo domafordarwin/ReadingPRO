@@ -2,7 +2,7 @@
 
 class DiagnosticTeacher::FeedbackController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("diagnostic_teacher") }
+  before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
   before_action :set_student, only: [:show]
   before_action :set_response, only: [:generate_feedback, :refine_feedback]

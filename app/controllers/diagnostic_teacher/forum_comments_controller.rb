@@ -2,7 +2,7 @@
 
 class DiagnosticTeacher::ForumCommentsController < ApplicationController
   layout "unified_portal"
-  before_action -> { require_role("diagnostic_teacher") }
+  before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_forum
   before_action :set_comment, only: [:destroy]
 
