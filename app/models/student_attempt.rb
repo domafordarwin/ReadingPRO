@@ -8,6 +8,7 @@ class StudentAttempt < ApplicationRecord
   has_one :reader_tendency, dependent: :destroy
 
   alias_method :report, :attempt_report
+  alias_method :form, :diagnostic_form
 
   enum :status, { in_progress: 'in_progress', completed: 'completed', submitted: 'submitted' }
 
