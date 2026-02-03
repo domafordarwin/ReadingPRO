@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_140006) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -149,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140006) do
     t.datetime "updated_at", null: false
     t.index ["parent_id", "student_id"], name: "index_guardian_students_on_parent_id_and_student_id", unique: true
     t.index ["primary_contact"], name: "index_guardian_students_on_primary_contact"
+    t.unique_constraint ["parent_id", "student_id"], deferrable: :deferred, name: "unique_guardian_student_pair"
   end
 
   create_table "hourly_performance_aggregates", force: :cascade do |t|
