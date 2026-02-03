@@ -42,100 +42,140 @@
 <!-- Stats Grid -->
 <div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
   <div class="rp-stat">
-    <div class="rp-stat__label">종합 등급</div>
-    <div class="rp-stat__value" style="color: var(--rp-success);">B+</div>
-    <div class="rp-stat__trend rp-stat__trend--up">+1등급</div>
+    <div class="rp-stat__label">모니터링 자녀</div>
+    <div class="rp-stat__value"><%= @dashboard_stats[:total_children] %></div>
+    <div class="rp-stat__trend">명</div>
   </div>
   <div class="rp-stat">
-    <div class="rp-stat__label">최근 진단일</div>
-    <div class="rp-stat__value">01/20</div>
-    <div class="rp-stat__trend">2026년</div>
+    <div class="rp-stat__label">이번 달 활동</div>
+    <div class="rp-stat__value"><%= @dashboard_stats[:active_children] %></div>
+    <div class="rp-stat__trend">명</div>
   </div>
   <div class="rp-stat">
-    <div class="rp-stat__label">완료 진단</div>
-    <div class="rp-stat__value">8건</div>
+    <div class="rp-stat__label">진행된 평가</div>
+    <div class="rp-stat__value"><%= @dashboard_stats[:total_assessments] %></div>
+    <div class="rp-stat__trend">건</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">평균 점수</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);"><%= @dashboard_stats[:avg_score] %>%</div>
     <div class="rp-stat__trend">누적</div>
-  </div>
-  <div class="rp-stat">
-    <div class="rp-stat__label">피드백 수</div>
-    <div class="rp-stat__value">5건</div>
-    <div class="rp-stat__trend">이번 학기</div>
   </div>
 </div>
 
-<!-- Main Content -->
-<div class="rp-grid rp-grid--2 rp-mb-6">
-  <!-- Diagnosis Result -->
-  <div class="rp-card">
-    <div class="rp-card__header">
-      <div>
-        <h3 class="rp-card__title">진단 결과 요약</h3>
-        <p class="rp-card__subtitle">최근 3회 진단 평균</p>
-      </div>
-      <span class="rp-badge rp-badge--info">최신</span>
-    </div>
-    <div class="rp-card__body">
-      <div class="rp-chart-placeholder" style="height: 140px;">
-        <div class="rp-chart-bar" style="height: 78%;"></div>
-        <div class="rp-chart-bar" style="height: 65%;"></div>
-        <div class="rp-chart-bar" style="height: 72%;"></div>
-      </div>
-      <div class="rp-flex rp-gap-2 rp-mt-4" style="flex-wrap: wrap;">
-        <span class="rp-badge rp-badge--primary">이해력 78점</span>
-        <span class="rp-badge rp-badge--info">의사소통 65점</span>
-        <span class="rp-badge rp-badge--success">심미적 감수성 72점</span>
-      </div>
-    </div>
-    <div class="rp-card__footer">
-      <a href="/parent/reports" class="rp-btn rp-btn--secondary rp-btn--sm">
-        상세 리포트 보기
-      </a>
-      <a href="#" class="rp-btn rp-btn--ghost rp-btn--sm">
-        PDF 다운로드
-      </a>
-    </div>
-  </div>
+<!-- Children Progress Section -->
+<% if @progress_data.any? %>
+  <div class="rp-mb-6">
+    <h2 style="margin: 0 0 var(--rp-space-4) 0; font-size: var(--rp-font-size-2xl); color: var(--rp-text-title);">자녀 학습 현황</h2>
+    <% @progress_data.each do |data| %>
+      <div class="rp-card rp-mb-4">
+        <div class="rp-card__header">
+          <div class="rp-flex rp-items-center rp-justify-between" style="width: 100%;">
+            <h3 class="rp-card__title" style="margin: 0;"><%= data[:student].name %></h3>
+            <% if data[:trend] == 'improving' %>
+              <span class="rp-badge rp-badge--success">📈 상승</span>
+            <% elsif data[:trend] == 'declining' %>
+              <span class="rp-badge rp-badge--danger">📉 하락</span>
+            <% else %>
+              <span class="rp-badge rp-badge--default">➡️ 유지</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="rp-card__body">
+          <div class="rp-grid rp-grid--3 rp-gap-4" style="margin-bottom: var(--rp-space-4);">
+            <div>
+              <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">완료한 평가</div>
+              <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-text-title);"><%= data[:attempt_count] %>건</div>
+            </div>
 
-  <!-- Recent Activity -->
-  <div class="rp-card">
-    <div class="rp-card__header">
-      <h3 class="rp-card__title">최근 활동</h3>
-    </div>
-    <div class="rp-card__body">
-      <div class="rp-table-wrapper">
-        <table class="rp-table">
-          <tbody>
-            <tr>
-              <td>
-                <strong>읽기 진단 완료</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">종합 B+ 등급 획득</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--success">오늘</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>「시간을 달리는 소녀」 완독</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">감상문 작성 중</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--default">어제</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>피드백 확인</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">문장 표현 개선 권장</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--default">3일 전</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <% if data[:scores].any? %>
+              <div>
+                <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">최근 점수</div>
+                <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-primary);"><%= data[:scores].last[:score] %>%</div>
+              </div>
+
+              <div>
+                <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">평균 점수</div>
+                <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-success);"><%= (data[:scores].sum { |s| s[:score] } / data[:scores].count).round(1) %>%</div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Mini Chart -->
+          <% if data[:scores].count >= 2 %>
+            <div class="rp-mini-chart">
+              <% max_score = data[:scores].map { |s| s[:score] }.max %>
+              <% data[:scores].last(10).each do |score| %>
+                <div class="rp-mini-chart__bar"
+                     style="height: <%= (score[:score] / max_score * 100).round %>%"
+                     title="<%= score[:date].strftime('%m/%d') %>: <%= score[:score] %>%"></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <div class="rp-card__footer">
+          <%= link_to "자세히 보기", parent_reports_path(student_id: data[:student].id), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        </div>
       </div>
-    </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- Recent Activity -->
+<div class="rp-card rp-mb-6">
+  <div class="rp-card__header">
+    <h3 class="rp-card__title">최근 활동</h3>
+  </div>
+  <div class="rp-card__body">
+    <% if @recent_activities.any? %>
+      <div class="rp-activity-feed">
+        <% @recent_activities.each do |activity| %>
+          <div class="rp-activity-item rp-mb-4">
+            <div class="rp-flex rp-items-start rp-gap-3">
+              <div class="rp-activity-icon" style="flex-shrink: 0;">
+                <% if activity[:type] == 'assessment' %>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"></path>
+                    <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                <% else %>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                <% end %>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--rp-text-title);">
+                  <strong><%= activity[:student].name %></strong> - <%= activity[:title] %>
+                </div>
+                <% if activity[:score] %>
+                  <div style="color: var(--rp-primary); font-size: var(--rp-font-size-sm); margin-top: var(--rp-space-1);">
+                    점수: <%= activity[:score] %>
+                  </div>
+                <% elsif activity[:status] %>
+                  <div style="margin-top: var(--rp-space-1);">
+                    <% if activity[:status] == 'pending' %>
+                      <span class="rp-badge rp-badge--warning">대기중</span>
+                    <% elsif activity[:status] == 'approved' %>
+                      <span class="rp-badge rp-badge--success">승인됨</span>
+                    <% elsif activity[:status] == 'rejected' %>
+                      <span class="rp-badge rp-badge--danger">거절됨</span>
+                    <% else %>
+                      <span class="rp-badge rp-badge--default"><%= activity[:status].titleize %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+              <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); white-space: nowrap;">
+                <%= time_ago_in_words(activity[:timestamp]) %> 전
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="rp-text-muted">최근 활동이 없습니다.</p>
+    <% end %>
   </div>
 </div>
 

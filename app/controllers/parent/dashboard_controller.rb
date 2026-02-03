@@ -9,15 +9,16 @@ class Parent::DashboardController < ApplicationController
     @current_page = "dashboard"
 
     # 현재 로그인한 부모의 자녀 목록
-    @students = current_user.guardian_students.includes(:student).map(&:student)
+    @children = current_user.parent.students.includes(:student_attempts, :student_portfolio)
 
-    # 첫 번째 자녀를 기본으로 선택 (URL 파라미터로 다른 자녀 선택 가능)
-    selected_student_id = params[:student_id]
-    @selected_student = if selected_student_id
-                          @students.find { |s| s.id == selected_student_id.to_i }
-                        else
-                          @students.first
-                        end
+    # 대시보드 통계
+    @dashboard_stats = calculate_dashboard_stats
+
+    # 최근 활동
+    @recent_activities = fetch_recent_activities
+
+    # 자녀별 진행 현황
+    @progress_data = calculate_progress_data
   end
 
   def children
@@ -173,5 +174,92 @@ class Parent::DashboardController < ApplicationController
 
   def consultation_request_params
     params.require(:consultation_request).permit(:student_id, :category, :scheduled_at, :content)
+  end
+
+  # Phase 6.4: Dashboard data calculation methods
+
+  def calculate_dashboard_stats
+    {
+      total_children: @children.count,
+      active_children: @children.select { |c| c.student_attempts.where('completed_at > ?', 30.days.ago).any? }.count,
+      total_assessments: StudentAttempt.where(student: @children, status: 'completed').count,
+      avg_score: calculate_average_score,
+      pending_consultations: ConsultationRequest.where(parent: current_user.parent, status: 'pending').count
+    }
+  end
+
+  def calculate_average_score
+    completed_attempts = StudentAttempt.where(student: @children, status: 'completed')
+    return 0 if completed_attempts.empty?
+
+    total = completed_attempts.sum { |a| (a.total_score / a.max_score.to_f * 100) }
+    (total / completed_attempts.count).round(1)
+  end
+
+  def fetch_recent_activities
+    activities = []
+
+    # 최근 평가 기록
+    StudentAttempt.where(student: @children)
+      .where('completed_at > ?', 7.days.ago)
+      .order(completed_at: :desc)
+      .limit(5)
+      .each do |attempt|
+        activities << {
+          type: 'assessment',
+          student: attempt.student,
+          title: "#{attempt.diagnostic_form.name} 완료",
+          score: "#{(attempt.total_score / attempt.max_score.to_f * 100).round(1)}%",
+          timestamp: attempt.completed_at
+        }
+      end
+
+    # 상담 신청 기록
+    ConsultationRequest.where(parent: current_user.parent)
+      .where('created_at > ?', 7.days.ago)
+      .order(created_at: :desc)
+      .limit(5)
+      .each do |request|
+        activities << {
+          type: 'consultation',
+          student: request.student,
+          title: "상담 신청: #{request.consultation_type}",
+          status: request.status,
+          timestamp: request.created_at
+        }
+      end
+
+    activities.sort_by { |a| a[:timestamp] }.reverse.take(10)
+  end
+
+  def calculate_progress_data
+    @children.map do |child|
+      attempts = child.student_attempts.where(status: 'completed').order(:completed_at)
+
+      {
+        student: child,
+        attempt_count: attempts.count,
+        scores: attempts.map { |a| {
+          date: a.completed_at,
+          score: (a.total_score / a.max_score.to_f * 100).round(1)
+        }},
+        trend: calculate_trend(attempts)
+      }
+    end
+  end
+
+  def calculate_trend(attempts)
+    return 'neutral' if attempts.count < 2
+
+    recent_avg = attempts.last(3).sum { |a| a.total_score / a.max_score.to_f } / [attempts.last(3).count, 1].max
+    previous_avg = attempts.first([attempts.count - 3, 1].max).sum { |a| a.total_score / a.max_score.to_f } / [attempts.count - 3, 1].max
+
+    if recent_avg > previous_avg + 0.05
+      'improving'
+    elsif recent_avg < previous_avg - 0.05
+      'declining'
+    else
+      'stable'
+    end
   end
 end

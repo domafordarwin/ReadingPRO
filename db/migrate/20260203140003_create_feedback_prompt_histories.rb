@@ -15,6 +15,5 @@ class CreateFeedbackPromptHistories < ActiveRecord::Migration[7.0]
     end
 
     add_index :feedback_prompt_histories, :created_at
-    add_index :feedback_prompt_histories, :feedback_prompt_id
   end
 end

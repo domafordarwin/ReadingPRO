@@ -2098,6 +2098,64 @@
   to { transform: rotate(360deg); }
 }
 
+/* Parent Dashboard Styles */
+.rp-mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 80px;
+  margin-top: var(--rp-space-4);
+}
+
+.rp-mini-chart__bar {
+  flex: 1;
+  background: var(--rp-primary);
+  border-radius: var(--rp-radius-sm) var(--rp-radius-sm) 0 0;
+  min-height: 4px;
+  transition: background var(--rp-transition-fast);
+  cursor: pointer;
+}
+
+.rp-mini-chart__bar:hover {
+  background: var(--rp-primary-hover);
+}
+
+.rp-activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-4);
+}
+
+.rp-activity-item {
+  padding: var(--rp-space-3);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+  transition: background var(--rp-transition-fast);
+}
+
+.rp-activity-item:hover {
+  background: var(--rp-border);
+}
+
+.rp-activity-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: var(--rp-radius-md);
+  color: var(--rp-text-muted);
+}
+
+.rp-activity-item.activity-assessment .rp-activity-icon {
+  color: var(--rp-success);
+}
+
+.rp-activity-item.activity-consultation .rp-activity-icon {
+  color: var(--rp-info);
+}
+
 .rp-icon--spinning {
   animation: rp-spin 1s linear infinite;
 }

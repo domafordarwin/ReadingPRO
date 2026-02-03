@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_140006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
     t.index ["level"], name: "index_evaluation_indicators_on_level"
   end
 
+  create_table "feedback_prompt_histories", force: :cascade do |t|
+    t.decimal "api_cost", precision: 10, scale: 6
+    t.jsonb "api_response", default: {}
+    t.datetime "created_at", null: false
+    t.bigint "feedback_prompt_id", null: false
+    t.string "model_used"
+    t.text "prompt_used", null: false
+    t.bigint "response_feedback_id", null: false
+    t.integer "token_count"
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_feedback_prompt_histories_on_created_at"
+    t.index ["feedback_prompt_id"], name: "index_feedback_prompt_histories_on_feedback_prompt_id"
+    t.index ["response_feedback_id"], name: "index_feedback_prompt_histories_on_response_feedback_id"
+  end
+
+  create_table "feedback_prompts", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.jsonb "parameters", default: {}
+    t.string "prompt_type", null: false
+    t.text "template", null: false
+    t.datetime "updated_at", null: false
+    t.integer "usage_count", default: 0
+    t.index ["active"], name: "index_feedback_prompts_on_active"
+    t.index ["name"], name: "index_feedback_prompts_on_name", unique: true
+    t.index ["prompt_type", "active"], name: "index_feedback_prompts_on_prompt_type_and_active"
+  end
+
   create_table "feedbacks", force: :cascade do |t|
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -107,6 +136,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
     t.index ["created_by_id"], name: "index_feedbacks_on_created_by_id"
     t.index ["feedback_type"], name: "index_feedbacks_on_feedback_type"
     t.index ["response_id"], name: "index_feedbacks_on_response_id"
+  end
+
+  create_table "guardian_students", force: :cascade do |t|
+    t.boolean "can_request_consultations", default: true
+    t.boolean "can_view_results", default: true
+    t.datetime "created_at", null: false
+    t.bigint "parent_id", null: false
+    t.boolean "primary_contact", default: false
+    t.string "relationship"
+    t.bigint "student_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_id", "student_id"], name: "index_guardian_students_on_parent_id_and_student_id", unique: true
+    t.index ["primary_contact"], name: "index_guardian_students_on_primary_contact"
   end
 
   create_table "hourly_performance_aggregates", force: :cascade do |t|
@@ -204,6 +246,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
     t.index ["recorded_at"], name: "index_performance_metrics_on_recorded_at"
   end
 
+  create_table "reader_tendencies", force: :cascade do |t|
+    t.integer "avg_response_time_seconds"
+    t.string "comprehension_strength"
+    t.string "comprehension_weakness"
+    t.datetime "created_at", null: false
+    t.integer "critical_thinking_score"
+    t.integer "detail_orientation_score"
+    t.string "reading_speed"
+    t.integer "revision_count"
+    t.integer "speed_accuracy_balance_score"
+    t.bigint "student_attempt_id", null: false
+    t.bigint "student_id", null: false
+    t.jsonb "tendency_data", default: {}
+    t.text "tendency_summary"
+    t.datetime "updated_at", null: false
+    t.boolean "uses_flagging"
+    t.integer "words_per_minute"
+    t.index ["student_attempt_id"], name: "index_reader_tendencies_on_student_attempt_id"
+    t.index ["student_id", "created_at"], name: "index_reader_tendencies_on_student_id_and_created_at"
+    t.index ["student_id"], name: "index_reader_tendencies_on_student_id"
+  end
+
   create_table "reading_stimuli", force: :cascade do |t|
     t.text "body", null: false
     t.datetime "created_at", null: false
@@ -217,6 +281,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
     t.index ["created_at"], name: "idx_reading_stimuli_created_at"
     t.index ["created_by_id"], name: "index_reading_stimuli_on_created_by_id"
     t.index ["reading_level"], name: "index_reading_stimuli_on_reading_level"
+  end
+
+  create_table "response_feedbacks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "feedback", null: false
+    t.string "feedback_type"
+    t.bigint "response_id", null: false
+    t.decimal "score_override", precision: 5, scale: 2
+    t.string "source", default: "ai", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_response_feedbacks_on_created_at"
+    t.index ["response_id", "source"], name: "index_response_feedbacks_on_response_id_and_source"
+    t.index ["response_id"], name: "index_response_feedbacks_on_response_id"
+    t.index ["source"], name: "index_response_feedbacks_on_source"
   end
 
   create_table "response_rubric_scores", force: :cascade do |t|
@@ -307,6 +385,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
   end
 
   create_table "student_attempts", force: :cascade do |t|
+    t.text "comprehensive_feedback"
+    t.datetime "comprehensive_feedback_generated_at"
     t.datetime "created_at", null: false
     t.bigint "diagnostic_form_id", null: false
     t.datetime "started_at", null: false
@@ -315,6 +395,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
     t.datetime "submitted_at"
     t.integer "time_spent_seconds"
     t.datetime "updated_at", null: false
+    t.index ["comprehensive_feedback_generated_at"], name: "index_student_attempts_on_comprehensive_feedback_generated_at"
     t.index ["diagnostic_form_id"], name: "index_student_attempts_on_diagnostic_form_id"
     t.index ["status"], name: "index_student_attempts_on_status"
     t.index ["student_id", "diagnostic_form_id"], name: "index_student_attempts_on_student_id_and_diagnostic_form_id"
@@ -389,15 +470,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_140000) do
   add_foreign_key "diagnostic_form_items", "diagnostic_forms"
   add_foreign_key "diagnostic_form_items", "items"
   add_foreign_key "diagnostic_forms", "teachers", column: "created_by_id"
+  add_foreign_key "feedback_prompt_histories", "feedback_prompts"
+  add_foreign_key "feedback_prompt_histories", "response_feedbacks"
   add_foreign_key "feedbacks", "responses"
   add_foreign_key "feedbacks", "teachers", column: "created_by_id"
+  add_foreign_key "guardian_students", "parents"
+  add_foreign_key "guardian_students", "students"
   add_foreign_key "item_choices", "items"
   add_foreign_key "items", "evaluation_indicators"
   add_foreign_key "items", "reading_stimuli", column: "stimulus_id"
   add_foreign_key "items", "sub_indicators"
   add_foreign_key "items", "teachers", column: "created_by_id"
   add_foreign_key "parents", "users"
+  add_foreign_key "reader_tendencies", "student_attempts"
+  add_foreign_key "reader_tendencies", "students"
   add_foreign_key "reading_stimuli", "teachers", column: "created_by_id"
+  add_foreign_key "response_feedbacks", "responses"
   add_foreign_key "response_rubric_scores", "responses"
   add_foreign_key "response_rubric_scores", "rubric_criteria"
   add_foreign_key "response_rubric_scores", "teachers", column: "created_by_id"

@@ -4,7 +4,7 @@ class CreateReaderTendencies < ActiveRecord::Migration[7.0]
   def change
     create_table :reader_tendencies do |t|
       t.references :student, null: false, foreign_key: true
-      t.references :student_attempt, null: false, foreign_key: true
+      t.references :student_attempt, null: false, foreign_key: true, unique: true
 
       # Reading Speed
       t.string :reading_speed  # 'slow', 'average', 'fast'
@@ -32,6 +32,5 @@ class CreateReaderTendencies < ActiveRecord::Migration[7.0]
     end
 
     add_index :reader_tendencies, [:student_id, :created_at]
-    add_index :reader_tendencies, :student_attempt_id, unique: true
   end
 end
