@@ -26,6 +26,10 @@ raw_Data/
 Thumbs.db
 *.swp
 
+# Windows reserved files
+nul
+cookie.txt
+
 # Claude Code & bkit (로컬 설정, 생성된 문서)
 .claude/
 .claude-code/
