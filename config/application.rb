@@ -29,7 +29,9 @@ module ReadingProRailway
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Set timezone to Seoul (KST: UTC+9)
+    config.time_zone = "Seoul"
+    config.active_record.default_timezone = :utc  # Store in UTC, display in Seoul time
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Error Capture Middleware (runs first to catch all errors)

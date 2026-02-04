@@ -307,11 +307,11 @@ class AnswerKeyTemplateService
       sheet.add_row ["• 대분류: 평가 영역 이름 (예: 사실적 이해, 추론적 이해, 한국어 읽기 능력)"]
       sheet.add_row ["  - 기존에 등록된 이름과 정확히 일치해야 합니다 (대소문자 구분 안함)"]
       sheet.add_row ["  - 없으면 자동으로 생성됩니다"]
-      sheet.add_row ["  - ⚠️ 최소 5자 이상이어야 합니다"]
+      sheet.add_row ["  - ⚠️ 최소 3자 이상이어야 합니다"]
       sheet.add_row ["• 소분류: 세부 지표 이름 (예: 내용 확인, 세부정보 파악, 주어-술어 구조 인식)"]
       sheet.add_row ["  - 기존에 등록된 이름과 정확히 일치해야 합니다 (대소문자 구분 안함)"]
       sheet.add_row ["  - 없으면 자동으로 생성됩니다 (대분류 필수)"]
-      sheet.add_row ["  - ⚠️ 최소 5자 이상이어야 합니다"]
+      sheet.add_row ["  - ⚠️ 최소 3자 이상이어야 합니다"]
       sheet.add_row ["• 난이도: 상/중/하 또는 영문 (예: 중, medium, 하)"]
       sheet.add_row ["• 보기 번호: 선택지 번호 (1, 2, 3, 4 등)"]
       sheet.add_row []
@@ -666,7 +666,7 @@ class AnswerKeyTemplateService
     # Update each choice
     choice_data.each do |data|
       choice_no = data[:choice_no].is_a?(Float) ? data[:choice_no].to_i : data[:choice_no].to_i
-      proximity_score = data[:proximity_score]
+      proximity_score_raw = data[:proximity_score]
 
       choice = item.item_choices.find_by(choice_no: choice_no)
       next unless choice
@@ -677,17 +677,38 @@ class AnswerKeyTemplateService
       # Set proximity score (correct answer = 100)
       score = if is_correct
         100
-      elsif proximity_score.present?
-        proximity_score.is_a?(Float) ? proximity_score.to_i : proximity_score.to_i
+      elsif proximity_score_raw.present?
+        # Handle various formats (Float, Integer, String)
+        case proximity_score_raw
+        when Float, Integer
+          proximity_score_raw.to_i
+        when String
+          proximity_score_raw.strip.to_i
+        else
+          0
+        end
       else
         0
       end
 
-      choice.update(is_correct: is_correct, proximity_score: score)
+      # Log the update for debugging
+      Rails.logger.info "[MCQ Choice Update] Item: #{item.code}, Choice: #{choice_no}, Is Correct: #{is_correct}, Proximity Score: #{score} (raw: #{proximity_score_raw.inspect})"
+
+      result = choice.update(is_correct: is_correct, proximity_score: score)
+
+      unless result
+        add_log(results, "⚠️ 문항 #{item.code} 보기 #{choice_no}번 업데이트 실패: #{choice.errors.full_messages.join(', ')}")
+      end
     end
 
     results[:mcq_updated] += 1
-    add_log(results, "✓ 문항 #{item.code}: 정답 #{correct_choice_no}번 + 근접점수 설정")
+
+    # Summary log with proximity scores
+    choices_summary = item.item_choices.order(:choice_no).map do |c|
+      "#{c.choice_no}번(#{c.is_correct ? '정답' : c.proximity_score.to_i}점)"
+    end.join(", ")
+
+    add_log(results, "✓ 문항 #{item.code}: 정답 #{correct_choice_no}번 | 근접점수: #{choices_summary}")
   end
 
   # Process rubric criteria for constructed response (3-level rubric)
@@ -852,9 +873,9 @@ class AnswerKeyTemplateService
     if metadata[:evaluation_indicator].present?
       indicator_name = metadata[:evaluation_indicator].to_s.strip
 
-      # name 최소 길이 검증 (5자)
-      if indicator_name.length < 5
-        results[:errors] << "문항 #{item.code}: 대분류 이름이 너무 짧습니다 (최소 5자, 현재: '#{indicator_name}' #{indicator_name.length}자)"
+      # name 최소 길이 검증 (3자)
+      if indicator_name.length < 3
+        results[:errors] << "문항 #{item.code}: 대분류 이름이 너무 짧습니다 (최소 3자, 현재: '#{indicator_name}' #{indicator_name.length}자)"
         return
       end
 
@@ -883,9 +904,9 @@ class AnswerKeyTemplateService
     if metadata[:sub_indicator].present?
       sub_indicator_name = metadata[:sub_indicator].to_s.strip
 
-      # name 최소 길이 검증 (5자)
-      if sub_indicator_name.length < 5
-        results[:errors] << "문항 #{item.code}: 소분류 이름이 너무 짧습니다 (최소 5자, 현재: '#{sub_indicator_name}' #{sub_indicator_name.length}자)"
+      # name 최소 길이 검증 (3자)
+      if sub_indicator_name.length < 3
+        results[:errors] << "문항 #{item.code}: 소분류 이름이 너무 짧습니다 (최소 3자, 현재: '#{sub_indicator_name}' #{sub_indicator_name.length}자)"
         return
       end
 

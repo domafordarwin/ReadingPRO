@@ -29,7 +29,7 @@ class SessionsController < ApplicationController
     if current_user
       begin
         target_path = role_redirect_path(current_user.role)
-        redirect_to target_path
+        redirect_to target_path, status: :see_other
         nil
       rescue => e
         # role_redirect_path에서 에러 발생 시 세션 초기화
@@ -88,7 +88,8 @@ class SessionsController < ApplicationController
 
       redirect_path = role_redirect_path(user.role)
       Rails.logger.info "🔍 Redirecting to: #{redirect_path}"
-      redirect_to redirect_path
+      # Use 303 See Other to prevent Turbo from converting redirect to TURBO_STREAM
+      redirect_to redirect_path, status: :see_other
       return
     end
 
@@ -99,7 +100,7 @@ class SessionsController < ApplicationController
         session[:role] = account[:role]
         session[:username] = login_id
         Rails.logger.info "✅ Test account logged in: #{login_id} (#{account[:role]})"
-        redirect_to role_redirect_path(account[:role])
+        redirect_to role_redirect_path(account[:role]), status: :see_other
         return
       end
     end

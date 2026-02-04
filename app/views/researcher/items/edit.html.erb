@@ -74,6 +74,14 @@
   <div class="rp-main__container">
     <!-- Page Header -->
     <div class="rp-page-header" style="margin-bottom: 24px;">
+      <div class="rp-page-header__top">
+        <%= link_to researcher_items_path, class: "rp-back-button" do %>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>문항 목록으로 돌아가기</span>
+        <% end %>
+      </div>
       <h1 class="rp-page-header__title">문항 편집: <%= @item.code %></h1>
       <p class="rp-page-header__subtitle">정답/채점 기준을 설정하세요</p>
     </div>
@@ -810,6 +818,37 @@
 </script>
 
 <style>
+  /* Page Header with Back Button */
+  .rp-page-header__top {
+    margin-bottom: 16px;
+  }
+
+  .rp-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .rp-back-button:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #111827;
+    transform: translateX(-2px);
+  }
+
+  .rp-back-button svg {
+    flex-shrink: 0;
+  }
+
   /* Item Preview Section - Always Visible Above Tabs */
   .item-preview-section {
     background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
