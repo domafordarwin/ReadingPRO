@@ -102,21 +102,27 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def update_choice_scores!
+    correct_choice_id = params[:correct_choice_id].to_s
     choice_params = params.fetch(:choice_scores, {})
 
-    choice_params.each do |choice_id, payload|
-      choice = @item.item_choices.find_by(id: choice_id)
-      next unless choice
-
-      next_score = payload[:score_percent]
-      choice.update(is_correct: false) if next_score.present?
-    end
-
-    correct_choice_id = params[:correct_choice_id].to_s
-    return if correct_choice_id.blank?
-
+    # Update all choices: set correct answer and proximity scores
     @item.item_choices.each do |choice|
-      choice.update(is_correct: choice.id.to_s == correct_choice_id)
+      is_correct = (choice.id.to_s == correct_choice_id)
+
+      # Get proximity score from params or use default
+      score_data = choice_params[choice.id.to_s]
+      proximity_score = if is_correct
+        100  # Correct answer is always 100%
+      elsif score_data && score_data[:score_percent].present?
+        score_data[:score_percent].to_i.clamp(0, 100)
+      else
+        0  # Default for wrong answers
+      end
+
+      choice.update(
+        is_correct: is_correct,
+        proximity_score: proximity_score
+      )
     end
   end
 

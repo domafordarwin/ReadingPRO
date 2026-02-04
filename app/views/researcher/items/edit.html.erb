@@ -355,15 +355,19 @@
                     <line x1="12" y1="16" x2="12" y2="12"></line>
                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                   </svg>
-                  <p>각 선택지별로 부분 점수를 설정하세요. 정답은 100%, 오답은 0%가 기본값입니다. 근접한 답에 부분 점수를 부여할 수 있습니다.</p>
+                  <p>정답을 선택하고 각 선택지별로 부분 점수를 설정하세요. 정답은 자동으로 100%로 설정되며, 오답에만 근접점수를 부여할 수 있습니다.</p>
                 </div>
 
                 <div class="rp-proximity-scores-list">
                   <% choices.each do |choice| %>
                     <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                    <div class="rp-proximity-score-item <%= 'rp-proximity-score-item--correct' if choice.is_correct %>">
+                    <div class="rp-proximity-score-item <%= 'rp-proximity-score-item--correct' if choice.is_correct %>" data-choice-id="<%= choice.id %>">
                       <div class="rp-proximity-score-header">
-                        <span class="rp-choice-label-large"><%= option_letter %></span>
+                        <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct,
+                                            class: "rp-radio-proximity",
+                                            id: "proximity_choice_#{choice.id}",
+                                            data: { choice_id: choice.id } %>
+                        <label for="proximity_choice_<%= choice.id %>" class="rp-choice-label-large" style="cursor: pointer;"><%= option_letter %></label>
                         <% if choice.is_correct %>
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
@@ -372,18 +376,24 @@
                       <div class="rp-proximity-score-input-group">
                         <label class="rp-score-input-label">점수 비율</label>
                         <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
-                                             (choice.is_correct ? 100 : 0),
+                                             choice.proximity_score || (choice.is_correct ? 100 : 0),
                                              min: 0, max: 100, step: 5,
-                                             disabled: true,
-                                             class: "rp-input rp-input--score-large" %>
+                                             disabled: choice.is_correct,
+                                             class: "rp-input rp-input--score-large",
+                                             id: "score_input_#{choice.id}" %>
                         <span class="rp-score-unit-large">%</span>
                       </div>
                     </div>
                   <% end %>
                 </div>
 
-                <div class="rp-note-box">
-                  <strong>참고:</strong> 근접점수 기능은 현재 개발 중입니다. 곧 활성화될 예정입니다.
+                <div class="rp-instruction-box" style="margin-top: 16px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <p><strong>안내:</strong> 정답은 자동으로 100%로 고정됩니다. 오답 선택지에만 부분 점수(0-95%)를 설정할 수 있습니다.</p>
                 </div>
               </div>
             </div>
@@ -813,6 +823,46 @@
     cancelBtn.addEventListener("click", () => {
       modal.setAttribute("aria-hidden", "true");
       modal.classList.remove("is-open");
+    });
+
+    // Proximity score tab: handle correct answer change
+    const proximityRadios = document.querySelectorAll(".rp-radio-proximity");
+    proximityRadios.forEach((radio) => {
+      radio.addEventListener("change", (event) => {
+        const selectedChoiceId = event.target.value;
+
+        // Update all proximity score items
+        document.querySelectorAll(".rp-proximity-score-item").forEach((item) => {
+          const choiceId = item.dataset.choiceId;
+          const scoreInput = item.querySelector(".rp-input--score-large");
+          const badge = item.querySelector(".rp-badge--success");
+          const isCorrect = (choiceId === selectedChoiceId);
+
+          // Update visual state
+          if (isCorrect) {
+            item.classList.add("rp-proximity-score-item--correct");
+            scoreInput.value = 100;
+            scoreInput.disabled = true;
+
+            // Add "정답" badge if not exists
+            if (!badge) {
+              const newBadge = document.createElement("span");
+              newBadge.className = "rp-badge rp-badge--success";
+              newBadge.textContent = "정답";
+              item.querySelector(".rp-proximity-score-header").appendChild(newBadge);
+            }
+          } else {
+            item.classList.remove("rp-proximity-score-item--correct");
+            scoreInput.value = scoreInput.value === "100" ? 0 : scoreInput.value;
+            scoreInput.disabled = false;
+
+            // Remove "정답" badge if exists
+            if (badge) {
+              badge.remove();
+            }
+          }
+        });
+      });
     });
   })();
 </script>
@@ -1778,6 +1828,13 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+  }
+
+  .rp-radio-proximity {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 0;
   }
 
   .rp-choice-label-large {
