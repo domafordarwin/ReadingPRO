@@ -8,17 +8,426 @@
   <%= render "researcher/shared/nav", current: :item_bank %>
 <% end %>
 
+<!-- 통계 및 필터 섹션 -->
+<div class="item-bank-header">
+  <div class="stats-summary">
+    <div class="stat-card">
+      <span class="stat-value"><%= @total_count || @assessment_bundles.size %></span>
+      <span class="stat-label">전체 세트</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value"><%= @assessment_bundles.sum(&:mcq_count) %></span>
+      <span class="stat-label">객관식 문항</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value"><%= @assessment_bundles.sum(&:constructed_count) %></span>
+      <span class="stat-label">서술형 문항</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value"><%= @assessment_bundles.count { |b| b.ai_analyzed? } %></span>
+      <span class="stat-label">AI 분석 완료</span>
+    </div>
+  </div>
+
+  <!-- 검색 및 필터 -->
+  <div class="filters-section">
+    <%= form_with url: researcher_item_bank_path, method: :get, local: true, class: "filters-form" do %>
+      <div class="filter-group">
+        <input type="text" name="search" value="<%= @search_query %>" placeholder="코드, 제목, 내용 검색..." class="search-input">
+      </div>
+      <div class="filter-group">
+        <select name="bundle_status" class="filter-select">
+          <option value="">전체 상태</option>
+          <% @available_bundle_statuses&.each do |status| %>
+            <option value="<%= status %>" <%= 'selected' if @bundle_status_filter == status %>><%= status_label(status) %></option>
+          <% end %>
+        </select>
+      </div>
+      <div class="filter-group">
+        <select name="difficulty" class="filter-select">
+          <option value="">전체 난이도</option>
+          <option value="easy" <%= 'selected' if params[:difficulty] == 'easy' %>>쉬움</option>
+          <option value="medium" <%= 'selected' if params[:difficulty] == 'medium' %>>보통</option>
+          <option value="hard" <%= 'selected' if params[:difficulty] == 'hard' %>>어려움</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">검색</button>
+      <%= link_to "초기화", researcher_item_bank_path, class: "btn btn-secondary" %>
+    <% end %>
+  </div>
+</div>
+
 <!-- 완성된 진단지 세트 카드 뷰 -->
 <div class="bundles-grid">
-  <% @assessment_bundles.each do |bundle| %>
-    <div class="bundle-card">
-      <h3><%= bundle.code %></h3>
-      <p><%= truncate(bundle.body, length: 150) %></p>
-      <div class="stats">
-        <span>객관식: <%= bundle.mcq_count %></span>
-        <span>서술형: <%= bundle.constructed_count %></span>
-        <span>예상시간: <%= bundle.estimated_time_minutes %>분</span>
+  <% if @assessment_bundles.empty? %>
+    <div class="empty-state">
+      <p>등록된 진단지 세트가 없습니다.</p>
+      <p><%= link_to "PDF 업로드하여 문항 추가", "#upload-section", class: "btn btn-primary" %></p>
+    </div>
+  <% else %>
+    <% @assessment_bundles.each do |bundle| %>
+      <div class="bundle-card <%= 'ai-analyzed' if bundle.ai_analyzed? %>">
+        <!-- 헤더 -->
+        <div class="bundle-header">
+          <div class="bundle-code"><%= bundle.code %></div>
+          <div class="bundle-badges">
+            <span class="badge badge-<%= bundle.bundle_status %>"><%= status_label(bundle.bundle_status) %></span>
+            <% if bundle.ai_analyzed? %>
+              <span class="badge badge-ai" title="AI 분석 완료">AI</span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- 제목 및 요약 -->
+        <h3 class="bundle-title"><%= bundle.title.presence || "제목 없음" %></h3>
+        <p class="bundle-summary">
+          <% if bundle.ai_summary.present? %>
+            <%= bundle.ai_summary %>
+          <% else %>
+            <%= truncate(bundle.body, length: 150) %>
+          <% end %>
+        </p>
+
+        <!-- AI 분석 정보 -->
+        <% if bundle.ai_analyzed? %>
+          <div class="ai-analysis-section">
+            <div class="analysis-row">
+              <span class="analysis-label">영역:</span>
+              <span class="analysis-value"><%= bundle.domain %></span>
+            </div>
+            <div class="analysis-row">
+              <span class="analysis-label">난이도:</span>
+              <span class="difficulty-badge difficulty-<%= bundle.difficulty_level %>">
+                <%= difficulty_label(bundle.difficulty_level) %>
+                <% if bundle.difficulty_score %>
+                  (<%= bundle.difficulty_score %>/10)
+                <% end %>
+              </span>
+            </div>
+            <% if bundle.target_grade.present? %>
+              <div class="analysis-row">
+                <span class="analysis-label">대상:</span>
+                <span class="analysis-value"><%= bundle.target_grade %></span>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- 핵심 개념 태그 -->
+          <div class="key-concepts">
+            <% bundle.key_concepts.take(5).each do |concept| %>
+              <span class="concept-tag"><%= concept %></span>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- 문항 통계 -->
+        <div class="bundle-stats">
+          <div class="stat-item">
+            <span class="stat-icon">📝</span>
+            <span class="stat-text">객관식 <%= bundle.mcq_count %>개</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">✍️</span>
+            <span class="stat-text">서술형 <%= bundle.constructed_count %>개</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-text"><%= bundle.estimated_time_minutes %>분</span>
+          </div>
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="bundle-actions">
+          <%= link_to "상세보기", researcher_passage_path(bundle), class: "btn btn-sm btn-outline" %>
+          <% unless bundle.ai_analyzed? %>
+            <%= button_to "AI 분석", analyze_researcher_passage_path(bundle), method: :post, class: "btn btn-sm btn-ai", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } %>
+          <% end %>
+        </div>
       </div>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- 페이지네이션 -->
+<% if @has_next || @has_prev %>
+  <div class="pagination-section">
+    <% if @has_prev && @prev_cursor %>
+      <%= link_to "← 이전", researcher_item_bank_path(cursor: @prev_cursor, direction: "backward", search: @search_query, bundle_status: @bundle_status_filter), class: "btn btn-outline" %>
+    <% end %>
+    <% if @has_next && @next_cursor %>
+      <%= link_to "다음 →", researcher_item_bank_path(cursor: @next_cursor, direction: "forward", search: @search_query, bundle_status: @bundle_status_filter), class: "btn btn-outline" %>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- PDF 업로드 섹션 -->
+<div id="upload-section" class="upload-section">
+  <h3>PDF 업로드</h3>
+  <p>진단 문항이 포함된 PDF 파일을 업로드하여 자동으로 문항을 추출합니다.</p>
+  <%= form_with url: upload_pdf_researcher_dashboard_path, method: :post, multipart: true, local: true, class: "upload-form" do %>
+    <div class="upload-area">
+      <input type="file" name="pdf_file" accept=".pdf" class="file-input" required>
+      <button type="submit" class="btn btn-primary">업로드 및 분석</button>
     </div>
   <% end %>
 </div>
+
+<style>
+  .item-bank-header {
+    margin-bottom: 2rem;
+  }
+
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary, #2563eb);
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .filters-section {
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .search-input, .filter-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 6px;
+    font-size: 0.875rem;
+  }
+
+  .bundles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .bundle-card {
+    background: white;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .bundle-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .bundle-card.ai-analyzed {
+    border-left: 4px solid var(--primary, #2563eb);
+  }
+
+  .bundle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .bundle-code {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+    background: var(--bg-secondary, #f3f4f6);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .bundle-badges {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .badge-draft { background: #fef3c7; color: #92400e; }
+  .badge-active { background: #d1fae5; color: #065f46; }
+  .badge-archived { background: #e5e7eb; color: #374151; }
+  .badge-ai { background: #dbeafe; color: #1e40af; }
+
+  .bundle-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary, #111827);
+  }
+
+  .bundle-summary {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #4b5563);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .ai-analysis-section {
+    background: var(--bg-secondary, #f8fafc);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .analysis-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .analysis-label {
+    color: var(--text-muted, #6b7280);
+  }
+
+  .analysis-value {
+    font-weight: 500;
+  }
+
+  .difficulty-badge {
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .difficulty-easy { background: #d1fae5; color: #065f46; }
+  .difficulty-medium { background: #fef3c7; color: #92400e; }
+  .difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+  .key-concepts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .concept-tag {
+    background: var(--bg-tertiary, #e0e7ff);
+    color: var(--primary, #3730a3);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+  }
+
+  .bundle-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #4b5563);
+  }
+
+  .bundle-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border, #d1d5db);
+    color: var(--text-primary, #374151);
+  }
+
+  .btn-ai {
+    background: var(--primary, #2563eb);
+    color: white;
+    border: none;
+  }
+
+  .pagination-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+  }
+
+  .upload-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .upload-section h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-area {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted, #6b7280);
+  }
+</style>
+
+<%
+  # Helper methods defined inline
+  def status_label(status)
+    { 'draft' => '작업중', 'active' => '배포가능', 'archived' => '보관됨' }[status] || status
+  end
+
+  def difficulty_label(level)
+    { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[level] || level
+  end
+%>

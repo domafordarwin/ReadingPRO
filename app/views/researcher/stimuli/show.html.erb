@@ -1,0 +1,635 @@
+<% content_for :portal_title do %>
+  진단지 세트 상세
+<% end %>
+<% content_for :portal_subtitle do %>
+  <%= @stimulus.code %>
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :item_bank %>
+<% end %>
+
+<div class="passage-detail">
+  <!-- 헤더 -->
+  <div class="detail-header">
+    <div class="header-left">
+      <h1><%= @stimulus.title.presence || "제목 없음" %></h1>
+      <div class="header-meta">
+        <span class="code-badge"><%= @stimulus.code %></span>
+        <span class="status-badge status-<%= @stimulus.bundle_status %>">
+          <%= { 'draft' => '작업중', 'active' => '배포가능', 'archived' => '보관됨' }[@stimulus.bundle_status] %>
+        </span>
+        <% if @stimulus.ai_analyzed? %>
+          <span class="ai-badge">AI 분석 완료</span>
+        <% end %>
+      </div>
+    </div>
+    <div class="header-actions">
+      <%= link_to "편집", edit_researcher_stimulus_path(@stimulus), class: "btn btn-outline" %>
+      <%= button_to "복제", duplicate_researcher_passage_path(@stimulus), method: :post, class: "btn btn-outline", data: { turbo_confirm: "이 진단지 세트를 복제하시겠습니까? 모든 문항도 함께 복제됩니다." } %>
+      <% unless @stimulus.ai_analyzed? %>
+        <%= button_to "AI 분석", analyze_researcher_passage_path(@stimulus), method: :post, class: "btn btn-primary", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } %>
+      <% else %>
+        <%= button_to "AI 재분석", analyze_researcher_passage_path(@stimulus), method: :post, class: "btn btn-outline", data: { turbo_confirm: "AI 분석을 다시 실행하시겠습니까?" } %>
+      <% end %>
+      <%= link_to "목록으로", researcher_item_bank_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <!-- AI 분석 결과 (있는 경우) -->
+  <% if @stimulus.ai_analyzed? %>
+    <div class="ai-analysis-card">
+      <h3>AI 분석 결과</h3>
+      <div class="analysis-grid">
+        <div class="analysis-item">
+          <span class="label">영역</span>
+          <span class="value"><%= @stimulus.domain %></span>
+        </div>
+        <div class="analysis-item">
+          <span class="label">주제</span>
+          <span class="value"><%= @stimulus.main_topic %></span>
+        </div>
+        <div class="analysis-item">
+          <span class="label">난이도</span>
+          <span class="value difficulty-<%= @stimulus.difficulty_level %>">
+            <%= { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[@stimulus.difficulty_level] %>
+            (<%= @stimulus.difficulty_score %>/10)
+          </span>
+        </div>
+        <div class="analysis-item">
+          <span class="label">대상 학년</span>
+          <span class="value"><%= @stimulus.target_grade || "-" %></span>
+        </div>
+      </div>
+
+      <% if @stimulus.ai_summary.present? %>
+        <div class="analysis-summary">
+          <span class="label">AI 요약</span>
+          <p><%= @stimulus.ai_summary %></p>
+        </div>
+      <% end %>
+
+      <div class="key-concepts-section">
+        <span class="label">핵심 개념</span>
+        <div class="concept-tags">
+          <% @stimulus.key_concepts.each do |concept| %>
+            <span class="concept-tag"><%= concept %></span>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @stimulus.ai_analysis["readability_factors"].present? %>
+        <div class="readability-factors">
+          <span class="label">가독성 분석</span>
+          <div class="factors-grid">
+            <% @stimulus.ai_analysis["readability_factors"].each do |key, value| %>
+              <div class="factor-item">
+                <span class="factor-label"><%= { "vocabulary_level" => "어휘 수준", "sentence_complexity" => "문장 복잡도", "concept_abstractness" => "개념 추상성", "background_knowledge_required" => "배경지식 요구" }[key] || key %></span>
+                <span class="factor-value"><%= value %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="analysis-meta">
+        분석 일시: <%= Time.parse(@stimulus.bundle_metadata["analyzed_at"]).strftime("%Y-%m-%d %H:%M") rescue "-" %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- 지문 본문 -->
+  <div class="passage-body-card">
+    <h3>지문 본문</h3>
+    <div class="passage-content">
+      <%= simple_format(@stimulus.body) %>
+    </div>
+    <div class="passage-meta">
+      <span>단어 수: <%= @stimulus.body.to_s.split.size %>개</span>
+      <span>예상 소요 시간: <%= @stimulus.estimated_time_minutes %>분</span>
+    </div>
+  </div>
+
+  <!-- 연결된 문항 목록 -->
+  <div class="items-section">
+    <div class="section-header">
+      <h3>연결된 문항 (<%= @stimulus.items.count %>개)</h3>
+      <%= link_to "+ 문항 추가", researcher_item_create_path(stimulus_id: @stimulus.id), class: "btn btn-sm btn-outline" %>
+    </div>
+
+    <% if @stimulus.items.any? %>
+      <div class="items-grid">
+        <% @stimulus.items.includes(:item_choices, rubric: { rubric_criteria: :rubric_levels }).each do |item| %>
+          <div class="item-card item-type-<%= item.item_type %>">
+            <div class="item-header">
+              <span class="item-code"><%= item.code %></span>
+              <span class="item-type-badge"><%= item.item_type == 'mcq' ? '객관식' : '서술형' %></span>
+              <span class="difficulty-badge difficulty-<%= item.difficulty %>"><%= { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[item.difficulty] %></span>
+            </div>
+            <p class="item-prompt"><%= truncate(item.prompt, length: 200) %></p>
+
+            <% if item.item_type == 'mcq' && item.item_choices.any? %>
+              <div class="item-choices">
+                <% item.item_choices.each_with_index do |choice, idx| %>
+                  <div class="choice <%= 'correct' if choice.is_correct %>">
+                    <span class="choice-num"><%= (idx + 1).to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
+                    <%= choice.choice_text %>
+                    <% if choice.is_correct %>
+                      <span class="correct-marker">정답</span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% elsif item.item_type == 'constructed' && item.rubric.present? %>
+              <div class="rubric-preview">
+                <span class="rubric-label">채점 기준: <%= item.rubric.rubric_criteria.count %>개 기준</span>
+              </div>
+            <% end %>
+
+            <div class="item-actions">
+              <%= link_to "편집", edit_researcher_item_path(item), class: "btn btn-xs btn-outline" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-items">
+        <p>연결된 문항이 없습니다.</p>
+        <p><%= link_to "문항 추가하기", researcher_item_create_path(stimulus_id: @stimulus.id), class: "btn btn-primary" %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 문항 통계 -->
+  <div class="stats-card">
+    <h3>통계</h3>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-value"><%= @stimulus.mcq_count %></span>
+        <span class="stat-label">객관식</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value"><%= @stimulus.constructed_count %></span>
+        <span class="stat-label">서술형</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value"><%= @stimulus.total_count %></span>
+        <span class="stat-label">전체 문항</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value"><%= @stimulus.estimated_time_minutes %>분</span>
+        <span class="stat-label">예상 시간</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 버전 이력 -->
+  <% if @stimulus.versions.any? %>
+    <div class="version-history-card">
+      <h3>수정 이력</h3>
+      <div class="version-list">
+        <% @stimulus.version_history.limit(10).each do |version| %>
+          <div class="version-item">
+            <div class="version-info">
+              <span class="version-event">
+                <%= { 'create' => '생성', 'update' => '수정', 'destroy' => '삭제' }[version.event] || version.event %>
+              </span>
+              <span class="version-time"><%= version.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+            </div>
+            <% if version.changeset.present? %>
+              <div class="version-changes">
+                <% version.changeset.except('updated_at', 'bundle_metadata').each do |field, changes| %>
+                  <div class="change-item">
+                    <span class="field-name"><%= field_label(field) %>:</span>
+                    <span class="old-value"><%= truncate(changes[0].to_s, length: 30) %></span>
+                    →
+                    <span class="new-value"><%= truncate(changes[1].to_s, length: 30) %></span>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <% if @stimulus.versions.count > 10 %>
+        <div class="version-more">
+          <span>외 <%= @stimulus.versions.count - 10 %>개의 기록이 있습니다.</span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%
+  def field_label(field)
+    {
+      'title' => '제목',
+      'body' => '본문',
+      'code' => '코드',
+      'bundle_status' => '상태',
+      'item_codes' => '문항 코드'
+    }[field] || field
+  end
+%>
+
+<style>
+  .passage-detail {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+  }
+
+  .detail-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .code-badge {
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--bg-secondary, #f3f4f6);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .status-badge, .ai-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .status-draft { background: #fef3c7; color: #92400e; }
+  .status-active { background: #d1fae5; color: #065f46; }
+  .status-archived { background: #e5e7eb; color: #374151; }
+  .ai-badge { background: #dbeafe; color: #1e40af; }
+
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ai-analysis-card, .passage-body-card, .items-section, .stats-card {
+    background: white;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ai-analysis-card h3, .passage-body-card h3, .stats-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary, #111827);
+  }
+
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .analysis-item {
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .analysis-item .label, .analysis-summary .label, .key-concepts-section .label, .readability-factors .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+    margin-bottom: 0.25rem;
+  }
+
+  .analysis-item .value {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .difficulty-easy { color: #065f46; }
+  .difficulty-medium { color: #92400e; }
+  .difficulty-hard { color: #991b1b; }
+
+  .analysis-summary p {
+    margin: 0.5rem 0 0;
+    line-height: 1.6;
+  }
+
+  .key-concepts-section {
+    margin-top: 1rem;
+  }
+
+  .concept-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .concept-tag {
+    background: var(--bg-tertiary, #e0e7ff);
+    color: var(--primary, #3730a3);
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+
+  .readability-factors {
+    margin-top: 1rem;
+  }
+
+  .factors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .factor-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+
+  .factor-label { color: var(--text-muted, #6b7280); }
+  .factor-value { font-weight: 500; }
+
+  .analysis-meta {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .passage-content {
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 1.5rem;
+    border-radius: 8px;
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .passage-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .section-header h3 {
+    margin: 0;
+  }
+
+  .items-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .item-card {
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--bg-secondary, #fafafa);
+  }
+
+  .item-card.item-type-mcq { border-left: 3px solid #2563eb; }
+  .item-card.item-type-constructed { border-left: 3px solid #7c3aed; }
+
+  .item-header {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-code {
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--bg-tertiary, #e5e7eb);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+  }
+
+  .item-type-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .difficulty-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+  }
+
+  .difficulty-badge.difficulty-easy { background: #d1fae5; color: #065f46; }
+  .difficulty-badge.difficulty-medium { background: #fef3c7; color: #92400e; }
+  .difficulty-badge.difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+  .item-prompt {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .item-choices {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 6px;
+  }
+
+  .choice {
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .choice.correct {
+    color: #065f46;
+    font-weight: 500;
+  }
+
+  .choice-num {
+    font-size: 1rem;
+  }
+
+  .correct-marker {
+    font-size: 0.65rem;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    margin-left: auto;
+  }
+
+  .rubric-preview {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #f3e8ff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #7c3aed;
+  }
+
+  .item-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .empty-items {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary, #2563eb);
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  @media (max-width: 640px) {
+    .detail-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Version History Styles */
+  .version-history-card {
+    background: white;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .version-history-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary, #111827);
+  }
+
+  .version-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .version-item {
+    padding: 0.75rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary, #2563eb);
+  }
+
+  .version-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .version-event {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary, #2563eb);
+  }
+
+  .version-time {
+    font-size: 0.8rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .version-changes {
+    font-size: 0.85rem;
+  }
+
+  .change-item {
+    padding: 0.25rem 0;
+  }
+
+  .field-name {
+    color: var(--text-muted, #6b7280);
+    margin-right: 0.5rem;
+  }
+
+  .old-value {
+    color: #dc2626;
+    text-decoration: line-through;
+  }
+
+  .new-value {
+    color: #059669;
+    font-weight: 500;
+  }
+
+  .version-more {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted, #6b7280);
+  }
+</style>

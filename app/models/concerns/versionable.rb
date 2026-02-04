@@ -16,19 +16,7 @@ module Versionable
 
   included do
     has_paper_trail on: [ :create, :update, :destroy ],
-                    ignore: [ :updated_at ],
-                    meta: {
-                      user_id: :paper_trail_user_id,
-                      ip_address: :paper_trail_ip
-                    }
-  end
-
-  def paper_trail_user_id
-    PaperTrail.request.whodunnit
-  end
-
-  def paper_trail_ip
-    PaperTrail.request.controller_info[:ip] if PaperTrail.request.controller_info
+                    ignore: [ :updated_at ]
   end
 
   # Helper methods for accessing versions

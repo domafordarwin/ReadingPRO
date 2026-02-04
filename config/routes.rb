@@ -192,6 +192,14 @@ Rails.application.routes.draw do
       patch "move_criterion", on: :member
     end
     resources :stimuli, only: %i[new create edit update destroy]
+
+    # Passage management with AI analysis
+    resources :passages, only: %i[show edit update destroy], controller: "stimuli" do
+      member do
+        post :analyze    # AI analysis endpoint
+        post :duplicate  # Duplicate stimulus with items
+      end
+    end
   end
 
   get "login", to: "sessions#new"

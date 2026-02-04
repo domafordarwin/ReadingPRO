@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Item < ApplicationRecord
+  include Versionable  # PaperTrail version tracking
+
   # Associations - Assessment Content
   belongs_to :stimulus, class_name: "ReadingStimulus", foreign_key: "stimulus_id", optional: true, counter_cache: :items_count
   belongs_to :teacher, foreign_key: "created_by_id", optional: true
@@ -58,6 +60,64 @@ class Item < ApplicationRecord
 
   def indicator_code
     evaluation_indicator&.code || "UNMAPPED"
+  end
+
+  # Duplicate the item with all its choices and rubric
+  # Options:
+  #   - stimulus: ReadingStimulus to attach to (required)
+  #   - suffix: string (default: "_COPY") - suffix for the code
+  def duplicate(stimulus:, suffix: "_COPY")
+    return nil unless stimulus
+
+    new_item = dup
+
+    # Generate new code
+    base_code = code.gsub(/_COPY\d*$/, "") # Remove existing _COPY suffixes
+    copy_count = Item.where("code LIKE ?", "#{base_code}_COPY%").count
+    new_item.code = "#{base_code}_COPY#{copy_count + 1}"
+
+    # Attach to new stimulus
+    new_item.stimulus_id = stimulus.id
+    new_item.stimulus_code = stimulus.code
+    new_item.status = "draft"
+    new_item.created_at = nil
+    new_item.updated_at = nil
+
+    if new_item.save
+      # Duplicate choices for MCQ
+      if item_type == "mcq" && item_choices.any?
+        item_choices.each do |choice|
+          new_choice = choice.dup
+          new_choice.item_id = new_item.id
+          new_choice.save
+        end
+      end
+
+      # Duplicate rubric for constructed response
+      if item_type == "constructed" && rubric.present?
+        new_rubric = rubric.dup
+        new_rubric.item_id = new_item.id
+        new_rubric.save
+
+        # Duplicate criteria and levels
+        rubric.rubric_criteria.each do |criterion|
+          new_criterion = criterion.dup
+          new_criterion.rubric_id = new_rubric.id
+          new_criterion.save
+
+          criterion.rubric_levels.each do |level|
+            new_level = level.dup
+            new_level.rubric_criterion_id = new_criterion.id
+            new_level.save
+          end
+        end
+      end
+
+      new_item
+    else
+      Rails.logger.error "[Item#duplicate] Failed to save: #{new_item.errors.full_messages}"
+      nil
+    end
   end
 
   private
