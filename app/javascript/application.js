@@ -31,6 +31,10 @@ application.register("theme", ThemeController)
 import AssessmentController from "controllers/assessment_controller"
 application.register("assessment", AssessmentController)
 
+// Module-based Assessment (2026-02-04)
+import ModuleAssessmentController from "controllers/module_assessment_controller"
+application.register("module-assessment", ModuleAssessmentController)
+
 // Researcher: Delete loading indicator
 import DeleteLoadingController from "controllers/delete_loading_controller"
 application.register("delete-loading", DeleteLoadingController)

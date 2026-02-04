@@ -1,0 +1,282 @@
+<% content_for :portal_title do %>
+  진단지 편집
+<% end %>
+<% content_for :portal_subtitle do %>
+  진단지 정보를 수정하고 포함된 모듈을 변경하세요.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :scoring %>
+<% end %>
+
+<section class="portal-card">
+  <%= form_with model: @diagnostic_form, url: researcher_diagnostic_form_path(@diagnostic_form), method: :patch, local: true, class: "diagnostic-form" do |f| %>
+    <!-- 기본 정보 -->
+    <div class="form-section">
+      <h3 class="form-section-title">기본 정보</h3>
+
+      <div class="form-group">
+        <%= f.label :name, "진단지 이름", class: "form-label" %>
+        <%= f.text_field :name, class: "form-input", required: true %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :description, "설명", class: "form-label" %>
+        <%= f.text_area :description, class: "form-textarea", rows: 3 %>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :time_limit_minutes, "제한 시간 (분)", class: "form-label" %>
+          <%= f.number_field :time_limit_minutes, class: "form-input", min: 1 %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :status, "상태", class: "form-label" %>
+          <%= f.select :status, [["준비중", "draft"], ["활성", "active"]], {}, class: "form-select" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 모듈 선택 -->
+    <div class="form-section">
+      <h3 class="form-section-title">평가 모듈 선택</h3>
+      <p class="form-section-description">진단지에 포함할 모듈을 선택하세요. 변경 시 기존 선택이 대체됩니다.</p>
+
+      <% if @available_modules.any? %>
+        <div class="module-selection">
+          <% @available_modules.each do |stimulus| %>
+            <div class="module-card">
+              <label class="module-card-label">
+                <%= check_box_tag "module_ids[]", stimulus.id, @selected_module_ids.include?(stimulus.id), class: "module-checkbox", id: "module_#{stimulus.id}" %>
+                <div class="module-card-content">
+                  <div class="module-card-header">
+                    <h4 class="module-title"><%= stimulus.title %></h4>
+                    <span class="module-code"><%= stimulus.code %></span>
+                  </div>
+                  <div class="module-stats">
+                    <span class="module-stat">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+                      </svg>
+                      객관식 <%= stimulus.mcq_count %>개
+                    </span>
+                    <span class="module-stat">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                      </svg>
+                      서술형 <%= stimulus.constructed_count %>개
+                    </span>
+                    <span class="module-stat">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      예상 <%= stimulus.estimated_time_minutes %>분
+                    </span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <p>사용 가능한 모듈이 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- 액션 버튼 -->
+    <div class="form-actions">
+      <%= link_to "취소", researcher_diagnostic_eval_path, class: "btn-secondary" %>
+      <%= f.submit "저장", class: "btn-primary" %>
+    </div>
+  <% end %>
+</section>
+
+<style>
+  .diagnostic-form {
+    max-width: 900px;
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .form-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .form-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-section-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .module-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+  }
+
+  .module-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .module-card:has(.module-checkbox:checked) {
+    border-color: #667eea;
+    background: #f0f4ff;
+  }
+
+  .module-card-label {
+    display: block;
+    cursor: pointer;
+    padding: 1rem;
+  }
+
+  .module-checkbox {
+    margin-right: 0.75rem;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .module-card-content {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 30px);
+  }
+
+  .module-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .module-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .module-code {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-family: monospace;
+  }
+
+  .module-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .module-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    color: #6b7280;
+  }
+
+  .module-stat svg {
+    color: #9ca3af;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6b7280;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.625rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  .btn-secondary:hover {
+    background: #f9fafb;
+  }
+</style>

@@ -1,14 +1,69 @@
 <% content_for :portal_title do %>
-  진단 평가
+  진단지 구성
 <% end %>
 <% content_for :portal_subtitle do %>
-  진단 세트별 평가 기준을 관리합니다.
+  여러 평가 모듈을 조합하여 진단지를 구성하고 관리합니다.
 <% end %>
 <% content_for :portal_nav do %>
-  <%= render "researcher/shared/nav", current: :diagnostic_eval %>
+  <%= render "researcher/shared/nav", current: :scoring %>
 <% end %>
 
 <style>
+  .diagnostic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .action-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .action-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .action-btn-outline {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  .action-btn-outline:hover {
+    background: #f9fafb;
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .action-btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .action-btn-danger:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #fef2f2;
+  }
+
   .diagnostic-search {
     margin-bottom: 24px;
     display: flex;
@@ -86,9 +141,15 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
   }
 
+  .diagnostic-list-item__content {
+    flex: 1;
+    min-width: 0;
+  }
+
   .diagnostic-list-item__title {
     font-weight: 600;
     color: #333;
+    margin-bottom: 8px;
   }
 
   .diagnostic-list-item__meta {
@@ -100,6 +161,12 @@
   .diagnostic-list-item__count {
     font-size: 13px;
     color: #666;
+  }
+
+  .diagnostic-list-item__actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 16px;
   }
 
   .diagnostic-status {
@@ -175,6 +242,12 @@
   }
 
   @media (max-width: 768px) {
+    .diagnostic-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
     .diagnostic-search {
       flex-direction: column;
     }
@@ -189,51 +262,100 @@
       gap: 12px;
     }
 
+    .diagnostic-list-item__content {
+      width: 100%;
+    }
+
     .diagnostic-list-item__meta {
       flex-direction: column;
       align-items: flex-start;
       width: 100%;
+    }
+
+    .diagnostic-list-item__actions {
+      width: 100%;
+      margin-left: 0;
+    }
+
+    .action-btn {
+      flex: 1;
     }
   }
 </style>
 
 <!-- 검색 기능 -->
 <%= form_with url: researcher_diagnostic_eval_path, method: :get, local: true, class: "diagnostic-search" do |f| %>
-  <%= f.text_field :search, placeholder: "평가 세트명으로 검색...", value: @search_query %>
+  <%= f.text_field :search, placeholder: "진단지명으로 검색...", value: @search_query %>
   <%= f.submit "검색", class: "btn-primary" %>
 <% end %>
 
 <!-- 통계 -->
 <div class="diagnostic-stats">
   <div class="diagnostic-stat">
-    <div class="diagnostic-stat__label">총 평가 세트</div>
+    <div class="diagnostic-stat__label">총 진단지</div>
     <div class="diagnostic-stat__value"><%= @total_count %></div>
   </div>
   <div class="diagnostic-stat">
-    <div class="diagnostic-stat__label">활성 세트</div>
+    <div class="diagnostic-stat__label">활성 진단지</div>
     <div class="diagnostic-stat__value"><%= @forms.select { |f| f.active? }.count %></div>
   </div>
   <div class="diagnostic-stat">
-    <div class="diagnostic-stat__label">준비 중인 세트</div>
+    <div class="diagnostic-stat__label">준비 중인 진단지</div>
     <div class="diagnostic-stat__value"><%= @forms.select { |f| f.draft? }.count %></div>
   </div>
 </div>
 
 <section class="portal-card">
-  <h2 class="portal-card-title">평가 세트</h2>
+  <div class="diagnostic-header">
+    <h2 class="portal-card-title">진단지 목록</h2>
+    <%= link_to new_researcher_diagnostic_form_path, class: "action-btn action-btn-primary" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>새 진단지 만들기</span>
+    <% end %>
+  </div>
 
   <% if @forms.any? %>
     <div class="diagnostic-list">
       <% @forms.each do |form| %>
         <div class="diagnostic-list-item">
-          <div class="diagnostic-list-item__title"><%= form.name %></div>
-          <div class="diagnostic-list-item__meta">
-            <div class="diagnostic-list-item__count">
-              문항 수: <strong><%= form.item_count || 0 %></strong>개
+          <div class="diagnostic-list-item__content">
+            <div class="diagnostic-list-item__title"><%= form.name %></div>
+            <div class="diagnostic-list-item__meta">
+              <div class="diagnostic-list-item__count">
+                문항 수: <strong><%= form.item_count || 0 %></strong>개
+              </div>
+              <span class="diagnostic-status diagnostic-status--<%= form.status %>">
+                <%= form.status == 'draft' ? '준비중' : '확정' %>
+              </span>
             </div>
-            <span class="diagnostic-status diagnostic-status--<%= form.status %>">
-              <%= form.status == 'draft' ? '준비중' : '확정' %>
-            </span>
+          </div>
+          <div class="diagnostic-list-item__actions">
+            <%= link_to researcher_diagnostic_form_path(form), class: "action-btn action-btn-outline action-btn-sm" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>보기</span>
+            <% end %>
+            <%= link_to edit_researcher_diagnostic_form_path(form), class: "action-btn action-btn-outline action-btn-sm" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>편집</span>
+            <% end %>
+            <%= button_to researcher_diagnostic_form_path(form), method: :delete,
+                data: { turbo_confirm: "정말 이 진단지를 삭제하시겠습니까?" },
+                class: "action-btn action-btn-outline action-btn-sm action-btn-danger" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>삭제</span>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -264,12 +386,12 @@
   <% else %>
     <div class="diagnostic-empty">
       <div class="diagnostic-empty__icon">📋</div>
-      <div class="diagnostic-empty__message">평가 세트가 없습니다</div>
+      <div class="diagnostic-empty__message">진단지가 없습니다</div>
       <div class="diagnostic-empty__submessage">
         <% if @search_query.present? %>
-          "<%= @search_query %>"에 해당하는 평가 세트가 없습니다.
+          "<%= @search_query %>"에 해당하는 진단지가 없습니다.
         <% else %>
-          새로운 평가 세트를 추가해주세요.
+          새로운 진단지를 추가해주세요.
         <% end %>
       </div>
     </div>

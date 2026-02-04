@@ -49,6 +49,9 @@ gem "paper_trail", "~> 15.0"
 # PDF parsing for importing test items
 gem "pdf-reader"
 
+# CSV parsing (removed from default gems in Ruby 3.4)
+gem "csv"
+
 # OpenAI API (GPT models)
 gem "ruby-openai"
 

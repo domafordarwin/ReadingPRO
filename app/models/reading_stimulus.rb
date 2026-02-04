@@ -10,11 +10,44 @@ class ReadingStimulus < ApplicationRecord
   validates :body, presence: true
   validates :code, presence: true, uniqueness: true
   validates :bundle_status, inclusion: { in: %w[draft active archived] }, allow_blank: true
+  validates :grade_level, inclusion: { in: %w[elementary_low elementary_high middle_low middle_high] }, allow_blank: true
 
   # Bundle status enum-like behavior
   scope :draft, -> { where(bundle_status: "draft") }
   scope :active, -> { where(bundle_status: "active") }
   scope :archived, -> { where(bundle_status: "archived") }
+
+  # Grade level scopes (학년별)
+  # 초저: 초등 1-2학년, 초고: 초등 3-6학년, 중저: 중1-2학년, 중고: 중3-고등
+  scope :elementary_low, -> { where(grade_level: "elementary_low") }
+  scope :elementary_high, -> { where(grade_level: "elementary_high") }
+  scope :middle_low, -> { where(grade_level: "middle_low") }
+  scope :middle_high, -> { where(grade_level: "middle_high") }
+  scope :with_grade_level, ->(level) { level.present? ? where(grade_level: level) : all }
+
+  # Grade level labels (한국어)
+  GRADE_LEVELS = {
+    "elementary_low" => "초저 (초1-2)",
+    "elementary_high" => "초고 (초3-6)",
+    "middle_low" => "중저 (중1-2)",
+    "middle_high" => "중고 (중3-고)"
+  }.freeze
+
+  # Grade level short labels
+  GRADE_LEVEL_SHORT = {
+    "elementary_low" => "초저",
+    "elementary_high" => "초고",
+    "middle_low" => "중저",
+    "middle_high" => "중고"
+  }.freeze
+
+  # Grade level colors for badges
+  GRADE_LEVEL_COLORS = {
+    "elementary_low" => "#4CAF50",    # 녹색
+    "elementary_high" => "#2196F3",   # 파란색
+    "middle_low" => "#FF9800",        # 주황색
+    "middle_high" => "#9C27B0"        # 보라색
+  }.freeze
 
   # Generate code before validation if not present
   before_validation :generate_code, on: :create
@@ -144,6 +177,26 @@ class ReadingStimulus < ApplicationRecord
   # Get AI-generated summary
   def ai_summary
     bundle_metadata["summary"]
+  end
+
+  # Get grade level label (한국어)
+  def grade_level_label
+    GRADE_LEVELS[grade_level] || "미지정"
+  end
+
+  # Get grade level short label
+  def grade_level_short
+    GRADE_LEVEL_SHORT[grade_level] || "미지정"
+  end
+
+  # Get grade level badge color
+  def grade_level_color
+    GRADE_LEVEL_COLORS[grade_level] || "#9E9E9E"
+  end
+
+  # Check if grade level is set
+  def grade_level_set?
+    grade_level.present?
   end
 
   # Duplicate the stimulus with all its items

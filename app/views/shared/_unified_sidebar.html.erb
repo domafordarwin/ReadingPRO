@@ -45,12 +45,13 @@
     },
     "developer" => {
       "dashboard" => "/researcher",
+      "review" => "/researcher/evaluation",
       "item_bank" => "/researcher/item_bank",
       "stimulus_mgmt" => "/researcher/passages",
       "item_mgmt" => "/researcher/item_list",
       "scoring" => "/researcher/diagnostic_eval",
-      "review" => "/researcher/evaluation",
-      "versions" => "/researcher/legacy_db",
+      "prompts" => "/researcher/prompts",
+      "books" => "/researcher/books",
       "statistics" => "/researcher/evaluation",
       "sub_analysis" => "/researcher/evaluation",
       "scoring_status" => "/researcher/diagnostic_eval"
@@ -193,12 +194,13 @@
         label: "문항/콘텐츠",
         items: [
           { id: "dashboard", label: "대시보드", icon: "home" },
-          { id: "item_bank", label: "문항은행", icon: "database" },
+          { id: "review", label: "평가 영역", icon: "target" },
+          { id: "item_bank", label: "모듈 관리", icon: "database" },
           { id: "stimulus_mgmt", label: "지문 관리", icon: "book-open" },
           { id: "item_mgmt", label: "문항 관리", icon: "edit-3" },
-          { id: "scoring", label: "정답/채점 기준", icon: "check-square" },
-          { id: "review", label: "검토/승인 요청", icon: "git-pull-request" },
-          { id: "versions", label: "버전/변경 이력", icon: "git-branch" }
+          { id: "scoring", label: "진단지 구성", icon: "check-square" },
+          { id: "prompts", label: "프롬프트 관리", icon: "message-square" },
+          { id: "books", label: "도서 관리", icon: "book" }
         ]
       },
       "D" => {

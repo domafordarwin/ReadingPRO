@@ -266,7 +266,7 @@
     <div class="stat-card">
       <div class="stat-card__label">완성된 문항</div>
       <div class="stat-card__value" style="color: #667eea;"><%= @complete_items %></div>
-      <%= link_to "문항 은행 →", researcher_item_bank_path, class: "stat-card__link" %>
+      <%= link_to "진단지 관리 →", researcher_item_bank_path, class: "stat-card__link" %>
     </div>
     <div class="stat-card">
       <div class="stat-card__label">등록된 지문</div>
@@ -305,8 +305,8 @@
         <line x1="9" y1="9" x2="15" y2="9"></line>
         <line x1="9" y1="15" x2="15" y2="15"></line>
       </svg>
-      <div class="action-card__title">문항 은행</div>
-      <div class="action-card__subtitle">완성된 문항 보기</div>
+      <div class="action-card__title">진단지 생성 및 관리</div>
+      <div class="action-card__subtitle">완성된 진단지 세트 보기</div>
     <% end %>
     <%= link_to researcher_evaluation_path, class: "action-card" do %>
       <svg class="action-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -1,0 +1,986 @@
+<% content_for :portal_title do %>
+  <%= @diagnostic_form.name %> - 미리보기
+<% end %>
+<% content_for :portal_subtitle do %>
+  학생이 보는 화면과 동일한 방식으로 진단지를 검토합니다 (정답 표시됨)
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :scoring %>
+<% end %>
+
+<div class="preview-container">
+  <!-- Top Header -->
+  <div class="preview-header">
+    <div class="preview-header__title">
+      <h1><%= @diagnostic_form.name %></h1>
+      <p><%= @total_items %>개 문항 · <%= @modules.count %>개 모듈 · 예상 시간 <%= @estimated_time %>분</p>
+    </div>
+
+    <div class="preview-header__controls">
+      <div class="info-box">
+        <div class="info-box__label">미리보기 모드</div>
+        <div class="info-box__value">정답 표시됨</div>
+      </div>
+
+      <%= link_to researcher_diagnostic_eval_path, class: "back-btn" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>목록으로</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <% if @modules.any? %>
+    <div class="preview-progress">
+      <div class="preview-progress__info">
+        <span class="preview-progress__label" id="progressLabel">
+          모듈 1 / <%= @modules.count %> · 문항 1 / <%= @total_items %>
+        </span>
+        <span class="preview-progress__percent" id="progressPercent">0%</span>
+      </div>
+      <div class="preview-progress__bar">
+        <div class="preview-progress__fill" id="progressFill" style="width: 0%"></div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Empty State: No Modules -->
+  <% if @modules.empty? %>
+    <div class="empty-state-container">
+      <div class="empty-state-card">
+        <svg class="empty-state-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h2 class="empty-state-title">진단지가 비어있습니다</h2>
+        <p class="empty-state-description">
+          이 진단지에는 아직 평가 모듈이 추가되지 않았습니다.<br>
+          평가 모듈을 추가하여 진단지를 완성하세요.
+        </p>
+        <div class="empty-state-actions">
+          <%= link_to edit_researcher_diagnostic_form_path(@diagnostic_form), class: "empty-state-btn empty-state-btn--primary" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>모듈 추가하기</span>
+          <% end %>
+          <%= link_to researcher_diagnostic_eval_path, class: "empty-state-btn empty-state-btn--secondary" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>목록으로</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Main Content: Split Layout -->
+  <% if @modules.any? %>
+  <div class="preview-main">
+    <!-- Left Panel: Stimulus (Reading Passage) -->
+    <div class="preview-left">
+      <div class="stimulus-panel">
+        <% @modules.each_with_index do |module_data, module_index| %>
+          <div class="stimulus-content"
+               data-module-index="<%= module_index %>"
+               <%= 'style=display:none;' if module_index > 0 %>>
+            <% if module_data[:stimulus] %>
+              <div class="stimulus-header">
+                <div class="stimulus-badge">📖 지문</div>
+                <h2 class="stimulus-title"><%= module_data[:stimulus].title %></h2>
+                <div class="stimulus-meta">코드: <%= module_data[:stimulus].code %></div>
+              </div>
+              <div class="stimulus-body">
+                <%= simple_format(module_data[:stimulus].body) %>
+              </div>
+            <% else %>
+              <div class="stimulus-header">
+                <h2 class="stimulus-title">모듈 <%= module_index + 1 %></h2>
+              </div>
+              <div class="stimulus-empty">
+                <p>이 모듈에는 지문이 없습니다.</p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right Panel: Questions -->
+    <div class="preview-right">
+      <div class="question-panel">
+        <% item_global_index = 0 %>
+        <% @modules.each_with_index do |module_data, module_index| %>
+          <% module_data[:items].each_with_index do |item_data, item_index| %>
+            <% item = item_data[:item] %>
+            <% dfi = item_data[:diagnostic_form_item] %>
+
+            <div class="question-card"
+                 data-module-index="<%= module_index %>"
+                 data-global-index="<%= item_global_index %>"
+                 <%= 'style=display:none;' if item_global_index > 0 %>>
+
+              <!-- Question Header -->
+              <div class="question-header">
+                <div class="question-number">
+                  문항 <%= dfi.position %> / <%= @total_items %>
+                </div>
+                <div class="question-badges">
+                  <span class="question-badge question-badge--<%= item.item_type %>">
+                    <%= item.item_type == "mcq" ? "객관식" : "서술형" %>
+                  </span>
+                  <span class="question-badge question-badge--preview">미리보기</span>
+                </div>
+              </div>
+
+              <!-- Question Code -->
+              <div class="question-code">문항 코드: <%= item.code %></div>
+
+              <!-- Question Prompt -->
+              <div class="question-prompt">
+                <%= simple_format(item.prompt) %>
+              </div>
+
+              <!-- MCQ Choices -->
+              <% if item.item_type == "mcq" %>
+                <div class="question-choices">
+                  <% item.item_choices.order(:choice_no).each do |choice| %>
+                    <div class="choice-item <%= 'choice-item--correct' if choice.is_correct %>">
+                      <div class="choice-indicator">
+                        <% if choice.is_correct %>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        <% else %>
+                          <div class="choice-circle"></div>
+                        <% end %>
+                      </div>
+                      <span class="choice-number"><%= choice.choice_no %></span>
+                      <span class="choice-content">
+                        <%= choice.content %>
+                        <% if choice.is_correct %>
+                          <strong class="correct-label">✓ 정답</strong>
+                        <% end %>
+                      </span>
+                    </div>
+                  <% end %>
+                </div>
+
+                <!-- Answer Status -->
+                <% if item.item_choices.any?(&:is_correct) %>
+                  <div class="answer-status answer-status--set">
+                    ✓ 정답이 설정되어 있습니다
+                  </div>
+                <% else %>
+                  <div class="answer-status answer-status--unset">
+                    ⚠️ 정답이 설정되지 않았습니다
+                  </div>
+                <% end %>
+              <% else %>
+                <!-- Constructed Response -->
+                <div class="question-answer">
+                  <div class="answer-box">
+                    <div class="answer-box__label">학생 답변 영역</div>
+                    <div class="answer-box__placeholder">
+                      학생들이 서술형 답변을 입력하는 영역입니다.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Rubric Info -->
+                <% if item.rubric %>
+                  <div class="rubric-info">
+                    <div class="rubric-info__header">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                      <span>채점 기준 (루브릭)</span>
+                    </div>
+                    <% if item.rubric.rubric_criteria.any? %>
+                      <div class="rubric-info__content">
+                        <% item.rubric.rubric_criteria.each do |criterion| %>
+                          <div class="rubric-criterion">
+                            <div class="rubric-criterion__name"><%= criterion.criterion_name %></div>
+                            <div class="rubric-levels">
+                              <% criterion.rubric_levels.order(level: :desc).each do |level| %>
+                                <div class="rubric-level">
+                                  <span class="rubric-level__score"><%= level.level %>점</span>
+                                  <span class="rubric-level__desc"><%= level.description %></span>
+                                </div>
+                              <% end %>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <div class="answer-status answer-status--unset">
+                        ⚠️ 채점 기준이 설정되지 않았습니다
+                      </div>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="answer-status answer-status--unset">
+                    ⚠️ 루브릭이 생성되지 않았습니다
+                  </div>
+                <% end %>
+              <% end %>
+
+              <!-- Item Explanation -->
+              <% if item.explanation.present? %>
+                <div class="item-explanation">
+                  <div class="item-explanation__header">💡 해설</div>
+                  <div class="item-explanation__content">
+                    <%= simple_format(item.explanation) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <% item_global_index += 1 %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Footer -->
+  <div class="preview-footer">
+    <button class="nav-btn nav-btn--secondary" id="prevButton" disabled>
+      ← 이전 문항
+    </button>
+
+    <div class="footer-info">
+      <%= link_to edit_researcher_diagnostic_form_path(@diagnostic_form), class: "edit-link" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        진단지 편집
+      <% end %>
+    </div>
+
+    <button class="nav-btn nav-btn--primary" id="nextButton">
+      다음 문항 →
+    </button>
+  </div>
+  <% end %>
+</div>
+
+<!-- JavaScript for Navigation (only load if modules exist) -->
+<% if @modules.any? %>
+<script>
+  let currentIndex = 0;
+  const totalModules = <%= @modules.count %>;
+
+  const questions = document.querySelectorAll('.question-card');
+  const stimuli = document.querySelectorAll('.stimulus-content');
+  const prevButton = document.getElementById('prevButton');
+  const nextButton = document.getElementById('nextButton');
+  const progressLabel = document.getElementById('progressLabel');
+  const progressPercent = document.getElementById('progressPercent');
+  const progressFill = document.getElementById('progressFill');
+
+  // Use actual DOM element count instead of server-side variable
+  const totalItems = questions.length;
+
+  console.log('[Preview] Total questions found:', totalItems);
+  console.log('[Preview] Total stimuli found:', stimuli.length);
+
+  function showQuestion(index) {
+    console.log('[Preview] Showing question index:', index, 'of', totalItems);
+
+    // Hide all questions and stimuli
+    questions.forEach(q => q.style.display = 'none');
+    stimuli.forEach(s => s.style.display = 'none');
+
+    // Show current question
+    const currentQuestion = questions[index];
+    if (currentQuestion) {
+      currentQuestion.style.display = 'block';
+
+      // Show corresponding stimulus
+      const moduleIndex = parseInt(currentQuestion.dataset.moduleIndex);
+      console.log('[Preview] Module index:', moduleIndex);
+      if (stimuli[moduleIndex]) {
+        stimuli[moduleIndex].style.display = 'block';
+      }
+
+      // Update progress
+      updateProgress();
+
+      // Update navigation buttons
+      updateButtons();
+
+      // Scroll to top
+      currentQuestion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      console.error('[Preview] Question not found at index:', index);
+    }
+  }
+
+  function updateProgress() {
+    const currentItem = currentIndex + 1;
+    const currentQuestion = questions[currentIndex];
+    if (!currentQuestion) return;
+
+    const moduleIndex = parseInt(currentQuestion.dataset.moduleIndex) + 1;
+
+    progressLabel.textContent = `모듈 ${moduleIndex} / ${totalModules} · 문항 ${currentItem} / ${totalItems}`;
+
+    const percent = Math.round((currentItem / totalItems) * 100);
+    progressPercent.textContent = `${percent}%`;
+    progressFill.style.width = `${percent}%`;
+  }
+
+  function updateButtons() {
+    prevButton.disabled = (currentIndex === 0);
+    nextButton.disabled = (currentIndex >= totalItems - 1);
+
+    console.log('[Preview] Buttons updated - prev disabled:', prevButton.disabled, ', next disabled:', nextButton.disabled);
+  }
+
+  prevButton.addEventListener('click', () => {
+    if (currentIndex > 0) {
+      currentIndex--;
+      showQuestion(currentIndex);
+    }
+  });
+
+  nextButton.addEventListener('click', () => {
+    if (currentIndex < totalItems - 1) {
+      currentIndex++;
+      showQuestion(currentIndex);
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      prevButton.click();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      nextButton.click();
+    }
+  });
+
+  // Initialize
+  showQuestion(0);
+</script>
+<% end %>
+
+<!-- Styles -->
+<style>
+  .preview-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 60px);
+  }
+
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    background: white;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .preview-header__title h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .preview-header__title p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .preview-header__controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .info-box {
+    padding: 8px 16px;
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+  }
+
+  .info-box__label {
+    font-size: 11px;
+    color: #92400e;
+    font-weight: 600;
+  }
+
+  .info-box__value {
+    font-size: 13px;
+    color: #78350f;
+    font-weight: 700;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover {
+    background: #f9fafb;
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .preview-progress {
+    padding: 16px 32px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .preview-progress__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .preview-progress__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .preview-progress__percent {
+    font-size: 14px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .preview-progress__bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .preview-progress__fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+  }
+
+  .preview-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .preview-left,
+  .preview-right {
+    overflow-y: auto;
+    height: calc(100vh - 280px);
+  }
+
+  .preview-left {
+    background: #f9fafb;
+    border-right: 2px solid #e5e7eb;
+  }
+
+  .preview-right {
+    background: white;
+  }
+
+  .stimulus-panel {
+    padding: 32px;
+  }
+
+  .stimulus-content {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stimulus-header {
+    margin-bottom: 24px;
+  }
+
+  .stimulus-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .stimulus-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+
+  .stimulus-meta {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .stimulus-body {
+    line-height: 2;
+    color: #374151;
+    font-size: 16px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .stimulus-empty {
+    padding: 40px;
+    text-align: center;
+    color: #9ca3af;
+  }
+
+  .question-panel {
+    padding: 32px;
+  }
+
+  .question-card {
+    animation: fadeIn 0.3s ease;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .question-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b7280;
+  }
+
+  .question-badges {
+    display: flex;
+    gap: 8px;
+  }
+
+  .question-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .question-badge--mcq {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .question-badge--constructed {
+    background: #e0e7ff;
+    color: #5b21b6;
+  }
+
+  .question-badge--preview {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .question-code {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 16px;
+  }
+
+  .question-prompt {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #111827;
+    margin-bottom: 24px;
+  }
+
+  .question-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .choice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+  }
+
+  .choice-item--correct {
+    background: #d1fae5;
+    border-color: #10b981;
+  }
+
+  .choice-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .choice-indicator svg {
+    color: #10b981;
+  }
+
+  .choice-circle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+  }
+
+  .choice-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .choice-item--correct .choice-number {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+  }
+
+  .choice-content {
+    flex: 1;
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  .correct-label {
+    color: #059669;
+    margin-left: 8px;
+  }
+
+  .answer-status {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 16px;
+  }
+
+  .answer-status--set {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+  }
+
+  .answer-status--unset {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+  }
+
+  .answer-box {
+    padding: 20px;
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .answer-box__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+
+  .answer-box__placeholder {
+    font-size: 14px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .rubric-info {
+    background: #ede9fe;
+    border: 2px solid #a78bfa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .rubric-info__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #5b21b6;
+    margin-bottom: 12px;
+  }
+
+  .rubric-criterion {
+    margin-bottom: 12px;
+  }
+
+  .rubric-criterion__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b21a8;
+    margin-bottom: 8px;
+  }
+
+  .rubric-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rubric-level {
+    display: flex;
+    gap: 12px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .rubric-level__score {
+    font-weight: 700;
+    color: #7c3aed;
+    min-width: 40px;
+  }
+
+  .rubric-level__desc {
+    color: #374151;
+  }
+
+  .item-explanation {
+    background: #f0f9ff;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 24px;
+  }
+
+  .item-explanation__header {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 12px;
+  }
+
+  .item-explanation__content {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  .preview-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 32px;
+    background: white;
+    border-top: 2px solid #e5e7eb;
+  }
+
+  .footer-info {
+    flex: 1;
+    text-align: center;
+  }
+
+  .edit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .edit-link:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+  }
+
+  .nav-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .nav-btn--secondary {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .nav-btn--secondary:hover:not(:disabled) {
+    background: #e5e7eb;
+  }
+
+  .nav-btn--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .nav-btn--primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Empty State */
+  .empty-state-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+  }
+
+  .empty-state-card {
+    text-align: center;
+    max-width: 500px;
+  }
+
+  .empty-state-icon {
+    color: #d1d5db;
+    margin-bottom: 24px;
+  }
+
+  .empty-state-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+
+  .empty-state-description {
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  .empty-state-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .empty-state-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .empty-state-btn svg {
+    flex-shrink: 0;
+  }
+
+  .empty-state-btn--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .empty-state-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .empty-state-btn--secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  .empty-state-btn--secondary:hover {
+    background: #f9fafb;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .preview-main {
+      grid-template-columns: 1fr;
+    }
+
+    .preview-left {
+      border-right: none;
+      border-bottom: 2px solid #e5e7eb;
+      max-height: 40vh;
+    }
+  }
+</style>

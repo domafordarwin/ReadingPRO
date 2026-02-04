@@ -179,6 +179,7 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
     get "evaluation", to: "dashboard#evaluation"
     get "item_bank", to: "dashboard#item_bank"
+    get "archived_bundles", to: "dashboard#archived_bundles"
     get "legacy_db", to: "dashboard#legacy_db"
     get "diagnostic_eval", to: "dashboard#diagnostic_eval"
     get "passages", to: "dashboard#passages"
@@ -188,6 +189,10 @@ Rails.application.routes.draw do
     get "dev", to: "dashboard#dev"
     get "item_list", to: "dashboard#item_list"
     post "item_bank/upload_pdf", to: "dashboard#upload_pdf", as: "upload_pdf_item_bank"
+
+    # Diagnostic forms (진단지) management
+    resources :diagnostic_forms, only: %i[show new create edit update destroy]
+
     resources :items, only: %i[index create edit update destroy] do
       patch "move_criterion", on: :member
     end
@@ -198,6 +203,12 @@ Rails.application.routes.draw do
       member do
         post :analyze    # AI analysis endpoint
         post :duplicate  # Duplicate stimulus with items
+        post :archive    # Archive (hide from list)
+        post :restore    # Restore from archive
+        post :upload_answer_key   # Upload answer key PDF
+        patch :bulk_update_answers # Bulk update answers
+        get :download_answer_template  # Download CSV template
+        post :upload_answer_template   # Upload filled CSV template
       end
     end
   end

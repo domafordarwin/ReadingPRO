@@ -151,6 +151,26 @@ class Researcher::DashboardController < ApplicationController
   def upload_pdf
     if params[:pdf_file].present?
       uploaded_file = params[:pdf_file]
+      grade_level = params[:grade_level]
+
+      # Validate grade_level
+      valid_levels = %w[elementary_low elementary_high middle_low middle_high]
+      unless valid_levels.include?(grade_level)
+        respond_to do |format|
+          format.html do
+            flash[:alert] = "학년 레벨을 선택해주세요."
+            redirect_to researcher_item_bank_path
+          end
+          format.json do
+            render json: {
+              success: false,
+              message: "학년 레벨을 선택해주세요.",
+              redirect_url: researcher_item_bank_path
+            }, status: :bad_request
+          end
+        end
+        return
+      end
 
       # Save uploaded file temporarily
       temp_path = Rails.root.join("tmp", "uploads", uploaded_file.original_filename)
@@ -159,23 +179,69 @@ class Researcher::DashboardController < ApplicationController
         file.write(uploaded_file.read)
       end
 
-      # Parse PDF and create items
-      parser = PdfItemParserService.new(temp_path)
+      # Parse PDF and create items with grade_level
+      parser = PdfItemParserService.new(temp_path, grade_level: grade_level)
       results = parser.parse_and_create
 
       # Clean up temp file
       File.delete(temp_path) if File.exist?(temp_path)
 
       if results[:errors].any?
-        flash[:alert] = "PDF 업로드 중 오류 발생: #{results[:errors].join(', ')}"
+        error_message = "PDF 업로드 중 오류 발생: #{results[:errors].join(', ')}"
+
+        respond_to do |format|
+          format.html do
+            flash[:alert] = error_message
+            redirect_to researcher_item_bank_path
+          end
+          format.json do
+            render json: {
+              success: false,
+              message: error_message,
+              redirect_url: researcher_item_bank_path
+            }, status: :unprocessable_entity
+          end
+        end
       else
-        flash[:notice] = "성공! 지문 #{results[:stimuli_created]}개, 문항 #{results[:items_created]}개가 생성되었습니다."
+        success_message = "성공! 지문 #{results[:stimuli_created]}개, 문항 #{results[:items_created]}개가 생성되었습니다. 각 문항의 정답과 채점 기준을 설정해주세요."
+        redirect_url = results[:stimulus_ids].present? ?
+                       researcher_passage_path(results[:stimulus_ids].first) :
+                       researcher_item_bank_path
+
+        respond_to do |format|
+          format.html do
+            flash[:notice] = success_message
+            redirect_to redirect_url
+          end
+          format.json do
+            render json: {
+              success: true,
+              message: success_message,
+              redirect_url: redirect_url,
+              stimuli_created: results[:stimuli_created],
+              items_created: results[:items_created],
+              logs: results[:logs] || []
+            }, status: :ok
+          end
+        end
       end
     else
-      flash[:alert] = "PDF 파일을 선택해주세요."
-    end
+      error_message = "PDF 파일을 선택해주세요."
 
-    redirect_to researcher_item_bank_path
+      respond_to do |format|
+        format.html do
+          flash[:alert] = error_message
+          redirect_to researcher_item_bank_path
+        end
+        format.json do
+          render json: {
+            success: false,
+            message: error_message,
+            redirect_url: researcher_item_bank_path
+          }, status: :bad_request
+        end
+      end
+    end
   end
 
   private
@@ -302,8 +368,18 @@ class Researcher::DashboardController < ApplicationController
     end
 
     # Bundle status filter
+    # By default, exclude archived bundles unless user specifically filters for them
     if @bundle_status_filter.present? && %w[draft active archived].include?(@bundle_status_filter)
       @bundles_relation = @bundles_relation.where(bundle_status: @bundle_status_filter)
+    else
+      # Exclude archived bundles from default view
+      @bundles_relation = @bundles_relation.where.not(bundle_status: "archived")
+    end
+
+    # Grade level filter (초저, 초고, 중저, 중고)
+    @grade_level_filter = params[:grade_level].to_s.strip
+    if @grade_level_filter.present? && %w[elementary_low elementary_high middle_low middle_high].include?(@grade_level_filter)
+      @bundles_relation = @bundles_relation.where(grade_level: @grade_level_filter)
     end
 
     # Keyset pagination
@@ -343,7 +419,7 @@ class Researcher::DashboardController < ApplicationController
 
   # Generate cache key for bundle filters
   def bundle_filter_cache_key
-    [ @search_query, @bundle_status_filter ].join(":")
+    [ @search_query, @bundle_status_filter, @grade_level_filter ].join(":")
   end
 
   # Generate cache key for current filter combination

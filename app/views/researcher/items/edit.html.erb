@@ -78,6 +78,84 @@
       <p class="rp-page-header__subtitle">정답/채점 기준을 설정하세요</p>
     </div>
 
+    <!-- Item Preview Section (Always Visible) -->
+    <div class="item-preview-section">
+      <!-- Item Type & Metadata -->
+      <div class="item-meta-badges">
+        <span class="item-type-badge item-type-badge--<%= @item.item_type %>">
+          <%= @item.item_type == "mcq" ? "객관식 (MCQ)" : "서술형" %>
+        </span>
+        <span class="difficulty-badge difficulty-badge--<%= @item.difficulty || 'medium' %>">
+          난이도: <%= difficulty_label %>
+        </span>
+        <% if @item.evaluation_indicator %>
+          <span class="indicator-badge">
+            <%= @item.evaluation_indicator.name %>
+          </span>
+        <% end %>
+      </div>
+
+      <!-- Stimulus (Reading Passage) - 먼저 표시 -->
+      <% if stimulus %>
+        <div class="stimulus-card">
+          <div class="stimulus-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <h3>지문</h3>
+            <% if stimulus.code %>
+              <span class="stimulus-code-badge"><%= stimulus.code %></span>
+            <% end %>
+          </div>
+          <div class="stimulus-title-section">
+            <h4><%= stimulus.title %></h4>
+          </div>
+          <div class="stimulus-body-section">
+            <%= simple_format(stimulus.body) %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Item Prompt (Question) - 지문 다음에 표시 -->
+      <div class="item-prompt-card">
+        <div class="item-prompt-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4M12 8h.01"></path>
+          </svg>
+          <h3>문항 발문</h3>
+        </div>
+        <div class="item-prompt-body">
+          <%= simple_format(@item.prompt) %>
+        </div>
+      </div>
+
+      <!-- MCQ Choices Preview (only for MCQ items) - 마지막에 표시 -->
+      <% if @item.mcq? && @choices.any? %>
+        <div class="item-choices-preview">
+          <div class="item-choices-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <h3>선택지</h3>
+          </div>
+          <div class="choices-grid">
+            <% @choices.each do |choice| %>
+              <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+              <div class="choice-preview <%= 'choice-preview--correct' if choice.is_correct %>">
+                <div class="choice-preview-label"><%= option_letter %></div>
+                <div class="choice-preview-text"><%= choice.content %></div>
+                <% if choice.is_correct %>
+                  <span class="correct-indicator">✓ 정답</span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
     <!-- Mode Tabs -->
     <div class="rp-tabs" role="tablist" aria-label="문항 편집 모드">
       <button type="button" class="rp-tab rp-tab--active" data-state="mcq-default" role="tab">MCQ 정답</button>
@@ -88,138 +166,59 @@
     <!-- MCQ Default Mode -->
     <section class="rp-frame" data-state="mcq-default">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
-        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+        <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
-          <!-- LEFT COLUMN -->
+          <!-- LEFT COLUMN: Choices Selection -->
           <div class="rp-col-left">
-            <!-- Item Info Card -->
             <div class="rp-card">
               <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 정보</h3>
+                <h3 class="rp-card__title">정답 선택</h3>
+                <span class="rp-badge rp-badge--info">총 <%= choices.count %>개 선택지</span>
               </div>
               <div class="rp-card__body">
-                <div class="rp-info-grid">
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">프로젝트</span>
-                    <span class="rp-info-value"><%= project_name %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">학년군</span>
-                    <span class="rp-info-value"><%= grade_band %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">난이도</span>
-                    <span class="rp-info-value"><%= difficulty_label %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">지문</span>
-                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
-                  </div>
+                <p class="rp-instruction-text">올바른 선택지를 클릭하여 정답으로 지정하세요.</p>
+
+                <div class="rp-choices-list">
+                  <% choices.each do |choice| %>
+                    <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+                    <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice.is_correct %>">
+                      <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct, class: "rp-radio" %>
+                      <div class="rp-choice-content">
+                        <span class="rp-choice-label"><%= option_letter %></span>
+                        <span class="rp-choice-text"><%= choice.content %></span>
+                        <% if choice.is_correct %>
+                          <span class="rp-badge rp-badge--success">정답</span>
+                        <% end %>
+                      </div>
+                    </label>
+                  <% end %>
                 </div>
               </div>
             </div>
 
-            <!-- Item Content Card -->
+            <!-- Additional Info -->
             <div class="rp-card">
               <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 내용</h3>
+                <h3 class="rp-card__title">평가 정보</h3>
               </div>
               <div class="rp-card__body">
-                <div class="rp-stimulus-section">
-                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
-                  <div class="rp-stimulus-text">
-                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
-                  </div>
+                <div class="rp-info-row">
+                  <span class="rp-info-label">평가 영역</span>
+                  <span class="rp-info-value"><%= @item.evaluation_indicator&.name || "미지정" %></span>
                 </div>
-
-                <div class="rp-prompt-section">
-                  <h4 class="rp-label">문항 프롬프트</h4>
-                  <div class="rp-prompt-text">
-                    <%= simple_format(@item.prompt) %>
-                  </div>
+                <div class="rp-info-row">
+                  <span class="rp-info-label">세부 지표</span>
+                  <span class="rp-info-value"><%= @item.sub_indicator&.name || "미지정" %></span>
                 </div>
-              </div>
-            </div>
-
-            <!-- MCQ Choices -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">선택지</h3>
-              </div>
-              <div class="rp-card__body">
-                <% choices.each do |choice| %>
-                  <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                  <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice.is_correct %>">
-                    <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct, class: "rp-radio" %>
-                    <div class="rp-choice-content">
-                      <span class="rp-choice-label"><%= option_letter %></span>
-                      <span class="rp-choice-text"><%= choice.content %></span>
-                      <% if choice.is_correct %>
-                        <span class="rp-badge rp-badge--success">정답</span>
-                      <% else %>
-                        <span class="rp-badge">오답</span>
-                      <% end %>
-                    </div>
-                  </label>
-                <% end %>
-              </div>
-            </div>
-
-            <!-- Tags/Memo -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">관련 정보</h3>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-tag-list">
-                  <span class="rp-tag">평가 영역: <%= @item.evaluation_indicator&.name || "미지정" %></span>
-                  <span class="rp-tag">세부 지표: <%= @item.sub_indicator&.name || "미지정" %></span>
-                  <span class="rp-tag">난이도: <%= difficulty_label %></span>
+                <div class="rp-info-row">
+                  <span class="rp-info-label">난이도</span>
+                  <span class="rp-info-value"><%= difficulty_label %></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- CENTER COLUMN -->
-          <div class="rp-col-center">
-            <div class="rp-card rp-card--highlight">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
-                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-ai-suggestion">
-                  <h4 class="rp-ai-suggestion__title">정답 타당성 검토</h4>
-                  <p>정답 타당성: 보기 C가 지문 근거와 가장 직접적으로 연결됩니다.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>정답 후보를 검토하고 확정하세요.</li>
-                    <li>근거 문장을 정답 설명에 반영하세요.</li>
-                  </ul>
-                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-correct">제안 적용</button>
-                </div>
-
-                <div class="rp-ai-suggestion">
-                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
-                  <p>보기 B도 부분 정답으로 해석될 수 있어 표현을 수정하세요.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>보기 B의 조건을 명확히 한정하세요.</li>
-                    <li>보기 D를 다른 관점으로 변경하세요.</li>
-                  </ul>
-                </div>
-
-                <div class="rp-ai-suggestion">
-                  <h4 class="rp-ai-suggestion__title">배점/근접점수 제안</h4>
-                  <p>MCQ 근접점수는 아직 설정되지 않았습니다.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>근접점수 분포를 확인하고 입력하세요.</li>
-                    <li>교육청 기준에 맞게 총점을 조정하세요.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- RIGHT COLUMN -->
+          <!-- RIGHT COLUMN: Summary, AI, Actions -->
           <div class="rp-col-right">
             <!-- Summary Card -->
             <div class="rp-card">
@@ -230,13 +229,17 @@
                 <div class="rp-summary-grid">
                   <div class="rp-summary-item">
                     <span class="rp-label">문항 유형</span>
-                    <span class="rp-value"><%= item_type_label %></span>
+                    <span class="rp-value">객관식</span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">정답 설정</span>
                     <span class="rp-badge rp-badge--pill <%= correct_choice ? 'rp-badge--success' : 'rp-badge--danger' %>">
                       <%= correct_choice ? "완료" : "미완료" %>
                     </span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">선택지 수</span>
+                    <span class="rp-value"><%= choices.count %>개</span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
@@ -250,6 +253,44 @@
               </div>
             </div>
 
+            <!-- Collapsible AI Suggestions -->
+            <details class="rp-card rp-card--collapsible">
+              <summary class="rp-card__header rp-card__header--clickable">
+                <div class="rp-card__title-group">
+                  <svg class="rp-icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                  <h3 class="rp-card__title">AI 제안</h3>
+                </div>
+                <span class="rp-badge rp-badge--ai">GPT-4</span>
+              </summary>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion rp-ai-suggestion--spaced">
+                  <h4 class="rp-ai-suggestion__title">정답 타당성 검토</h4>
+                  <p class="rp-ai-suggestion__desc">정답 타당성: 보기 C가 지문 근거와 가장 직접적으로 연결됩니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>정답 후보를 검토하고 확정하세요.</li>
+                    <li>근거 문장을 정답 설명에 반영하세요.</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm rp-btn--full" data-ai-apply="mcq-correct">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    제안 적용
+                  </button>
+                </div>
+
+                <div class="rp-ai-suggestion rp-ai-suggestion--warning rp-ai-suggestion--spaced">
+                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
+                  <p class="rp-ai-suggestion__desc">보기 B도 부분 정답으로 해석될 수 있어 표현을 수정하세요.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>보기 B의 조건을 명확히 한정하세요.</li>
+                    <li>보기 D를 다른 관점으로 변경하세요.</li>
+                  </ul>
+                </div>
+              </div>
+            </details>
+
             <!-- Checklist Card -->
             <div class="rp-card">
               <div class="rp-card__header">
@@ -262,16 +303,16 @@
                     <span>정답 지정 완료</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox">
-                    <span>배점 입력 완료</span>
+                    <input type="checkbox" <%= "checked" if choices.count >= 4 %>>
+                    <span>선택지 4개 이상</span>
                   </label>
                   <label class="rp-checkbox">
                     <input type="checkbox" <%= "checked" if proximity_ready %>>
-                    <span>근접점수 설정 완료</span>
+                    <span>근접점수 설정</span>
                   </label>
                   <label class="rp-checkbox">
                     <input type="checkbox">
-                    <span>미리보기 확인 완료</span>
+                    <span>미리보기 확인</span>
                   </label>
                 </div>
               </div>
@@ -290,132 +331,57 @@
     <!-- MCQ Proximity Mode -->
     <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
-        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+        <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
-          <!-- LEFT COLUMN -->
+          <!-- LEFT COLUMN: Proximity Score Setting -->
           <div class="rp-col-left">
-            <!-- Item Info Card -->
             <div class="rp-card">
               <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 정보</h3>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-info-grid">
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">프로젝트</span>
-                    <span class="rp-info-value"><%= project_name %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">학년군</span>
-                    <span class="rp-info-value"><%= grade_band %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">난이도</span>
-                    <span class="rp-info-value"><%= difficulty_label %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">지문</span>
-                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item Content Card -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 내용</h3>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-stimulus-section">
-                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
-                  <div class="rp-stimulus-text">
-                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
-                  </div>
-                </div>
-
-                <div class="rp-prompt-section">
-                  <h4 class="rp-label">문항 프롬프트</h4>
-                  <div class="rp-prompt-text">
-                    <%= simple_format(@item.prompt) %>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Score Setting -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">선택지별 점수 설정</h3>
+                <h3 class="rp-card__title">선택지별 근접점수 설정</h3>
                 <span class="rp-badge rp-badge--info">0-100%</span>
               </div>
               <div class="rp-card__body">
-                <% choices.each do |choice| %>
-                  <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                  <div class="rp-score-row">
-                    <span class="rp-choice-label"><%= option_letter %></span>
-                    <div class="rp-choice-text"><%= choice.content %></div>
-                    <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
-                                         (choice.is_correct ? 100 : 0),
-                                         min: 0, max: 100, step: 5,
-                                         disabled: true,
-                                         class: "rp-input rp-input--score" %>
-                    <span class="rp-score-unit">%</span>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <!-- CENTER COLUMN -->
-          <div class="rp-col-center">
-            <div class="rp-card rp-card--highlight">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
-                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-ai-suggestion">
-                  <h4 class="rp-ai-suggestion__title">정답 타당성 검토</h4>
-                  <p>정답 타당성: 보기 C가 지문 근거와 가장 직접적으로 연결됩니다.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>정답 후보를 검토하고 확정하세요.</li>
-                    <li>정답 설명을 구체화하세요.</li>
-                  </ul>
-                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-correct">제안 적용</button>
+                <div class="rp-instruction-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <p>각 선택지별로 부분 점수를 설정하세요. 정답은 100%, 오답은 0%가 기본값입니다. 근접한 답에 부분 점수를 부여할 수 있습니다.</p>
                 </div>
 
-                <div class="rp-ai-suggestion rp-ai-suggestion--highlight">
-                  <h4 class="rp-ai-suggestion__title">근접점수 제안</h4>
-                  <p>AI가 근접점수 분포를 계산했습니다. 기본 배점 기준입니다.</p>
-                  <div class="rp-score-table">
-                    <% choices.each do |choice| %>
-                      <div>
-                        <span class="rp-label">보기 <%= choice.choice_no %></span>
-                        <strong><%= choice.is_correct ? 100 : 0 %>%</strong>
+                <div class="rp-proximity-scores-list">
+                  <% choices.each do |choice| %>
+                    <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+                    <div class="rp-proximity-score-item <%= 'rp-proximity-score-item--correct' if choice.is_correct %>">
+                      <div class="rp-proximity-score-header">
+                        <span class="rp-choice-label-large"><%= option_letter %></span>
+                        <% if choice.is_correct %>
+                          <span class="rp-badge rp-badge--success">정답</span>
+                        <% end %>
                       </div>
-                    <% end %>
-                  </div>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>근접점수를 입력하고 저장하세요.</li>
-                    <li>시험 운영 정책과 맞는지 확인하세요.</li>
-                  </ul>
-                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="mcq-proximity">제안 적용</button>
+                      <div class="rp-choice-text-display"><%= choice.content %></div>
+                      <div class="rp-proximity-score-input-group">
+                        <label class="rp-score-input-label">점수 비율</label>
+                        <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
+                                             (choice.is_correct ? 100 : 0),
+                                             min: 0, max: 100, step: 5,
+                                             disabled: true,
+                                             class: "rp-input rp-input--score-large" %>
+                        <span class="rp-score-unit-large">%</span>
+                      </div>
+                    </div>
+                  <% end %>
                 </div>
 
-                <div class="rp-ai-suggestion">
-                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
-                  <p>보기 B와 D가 모두 정답 가능성이 있어 표현을 수정하세요.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>보기 B를 단일 조건으로 변경하세요.</li>
-                    <li>보기 D에 반례 조건을 추가하세요.</li>
-                  </ul>
+                <div class="rp-note-box">
+                  <strong>참고:</strong> 근접점수 기능은 현재 개발 중입니다. 곧 활성화될 예정입니다.
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- RIGHT COLUMN -->
+          <!-- RIGHT COLUMN: Summary, AI, Actions -->
           <div class="rp-col-right">
             <!-- Summary Card -->
             <div class="rp-card">
@@ -426,13 +392,17 @@
                 <div class="rp-summary-grid">
                   <div class="rp-summary-item">
                     <span class="rp-label">문항 유형</span>
-                    <span class="rp-value"><%= item_type_label %></span>
+                    <span class="rp-value">객관식 (근접점수)</span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">정답 설정</span>
                     <span class="rp-badge rp-badge--pill <%= correct_choice ? 'rp-badge--success' : 'rp-badge--danger' %>">
                       <%= correct_choice ? "완료" : "미완료" %>
                     </span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">선택지 수</span>
+                    <span class="rp-value"><%= choices.count %>개</span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
@@ -446,6 +416,52 @@
               </div>
             </div>
 
+            <!-- Collapsible AI Suggestions -->
+            <details class="rp-card rp-card--collapsible">
+              <summary class="rp-card__header rp-card__header--clickable">
+                <div class="rp-card__title-group">
+                  <svg class="rp-icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                  <h3 class="rp-card__title">AI 제안</h3>
+                </div>
+                <span class="rp-badge rp-badge--ai">GPT-4</span>
+              </summary>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion rp-ai-suggestion--spaced">
+                  <h4 class="rp-ai-suggestion__title">근접점수 제안</h4>
+                  <p class="rp-ai-suggestion__desc">AI가 근접점수 분포를 계산했습니다. 기본 배점 기준입니다.</p>
+                  <div class="rp-score-preview-table">
+                    <% choices.each do |choice| %>
+                      <div class="rp-score-preview-row">
+                        <span class="rp-label">보기 <%= choice.choice_no %></span>
+                        <strong><%= choice.is_correct ? 100 : 0 %>%</strong>
+                      </div>
+                    <% end %>
+                  </div>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>근접점수를 입력하고 저장하세요.</li>
+                    <li>시험 운영 정책과 맞는지 확인하세요.</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm rp-btn--full" data-ai-apply="mcq-proximity">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    제안 적용
+                  </button>
+                </div>
+
+                <div class="rp-ai-suggestion rp-ai-suggestion--warning rp-ai-suggestion--spaced">
+                  <h4 class="rp-ai-suggestion__title">문항 모호성 경고</h4>
+                  <p class="rp-ai-suggestion__desc">보기 B와 D가 모두 정답 가능성이 있어 표현을 수정하세요.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>보기 B를 단일 조건으로 변경하세요.</li>
+                    <li>보기 D에 반례 조건을 추가하세요.</li>
+                  </ul>
+                </div>
+              </div>
+            </details>
+
             <!-- Checklist Card -->
             <div class="rp-card">
               <div class="rp-card__header">
@@ -458,16 +474,16 @@
                     <span>정답 지정 완료</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox">
-                    <span>배점 입력 완료</span>
-                  </label>
-                  <label class="rp-checkbox">
                     <input type="checkbox" <%= "checked" if proximity_ready %>>
                     <span>근접점수 설정 완료</span>
                   </label>
                   <label class="rp-checkbox">
                     <input type="checkbox">
-                    <span>미리보기 확인 완료</span>
+                    <span>총점 확인 (100% 기준)</span>
+                  </label>
+                  <label class="rp-checkbox">
+                    <input type="checkbox">
+                    <span>미리보기 확인</span>
                   </label>
                 </div>
               </div>
@@ -486,169 +502,89 @@
     <!-- Essay Rubric Mode -->
     <section class="rp-frame" data-state="essay-rubric" style="display: none;">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
-        <div class="rp-grid rp-grid--3" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+        <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
-          <!-- LEFT COLUMN -->
+          <!-- LEFT COLUMN: Rubric Builder -->
           <div class="rp-col-left">
-            <!-- Item Info Card -->
             <div class="rp-card">
               <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 정보</h3>
+                <h3 class="rp-card__title">루브릭 빌더</h3>
+                <span class="rp-badge rp-badge--info">레벨 0-3</span>
               </div>
               <div class="rp-card__body">
-                <div class="rp-info-grid">
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">프로젝트</span>
-                    <span class="rp-info-value"><%= project_name %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">학년군</span>
-                    <span class="rp-info-value"><%= grade_band %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">난이도</span>
-                    <span class="rp-info-value"><%= difficulty_label %></span>
-                  </div>
-                  <div class="rp-info-item">
-                    <span class="rp-info-label">지문</span>
-                    <span class="rp-info-value"><a href="#"><%= stimulus&.title || "지문 미지정" %></a></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item Content Card -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">문항 내용</h3>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-stimulus-section">
-                  <h4 class="rp-label">지문: <%= stimulus&.title || "지문 미지정" %></h4>
-                  <div class="rp-stimulus-text">
-                    <%= simple_format(stimulus&.body.to_s || "(지문 없음)") %>
-                  </div>
-                </div>
-
-                <div class="rp-prompt-section">
-                  <h4 class="rp-label">문항 프롬프트</h4>
-                  <div class="rp-prompt-text">
-                    <%= simple_format(@item.prompt) %>
-                  </div>
-                </div>
-
                 <div class="rp-form-group">
-                  <label class="rp-label">서술형 입력 예시</label>
-                  <textarea rows="3" placeholder="학생이 여기에 답안을 작성합니다." disabled class="rp-textarea"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <!-- Sample Answers -->
-            <div class="rp-card">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">채점 방식</h3>
-              </div>
-              <div class="rp-card__body">
-                <p class="rp-text-muted">이 문항은 루브릭 기반 채점을 사용합니다. 아래 루브릭 탭에서 채점 기준을 설정하세요.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- CENTER COLUMN -->
-          <div class="rp-col-center">
-            <div class="rp-card rp-card--highlight">
-              <div class="rp-card__header">
-                <h3 class="rp-card__title">AI 제안/정답 검수</h3>
-                <p class="rp-text-muted">AI가 정답 설정의 타당성을 검토합니다</p>
-              </div>
-              <div class="rp-card__body">
-                <div class="rp-ai-suggestion rp-ai-suggestion--highlight">
-                  <h4 class="rp-ai-suggestion__title">루브릭 수준 제안</h4>
-                  <p>AI가 서술형 답안의 핵심 요소를 기준으로 루브릭 초안을 생성했습니다.</p>
-                  <ul class="rp-ai-suggestion__list">
-                    <li>핵심 근거 제시 여부</li>
-                    <li>문장 구조와 논리적 연결성</li>
-                    <li>핵심 용어 정확성</li>
-                  </ul>
-                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" data-ai-apply="rubric">AI 제안 적용</button>
+                  <label class="rp-label">루브릭 제목</label>
+                  <input type="text" name="rubric[name]" value="<%= @rubric&.name %>" class="rp-input" placeholder="예: 읽기 이해 평가 루브릭">
                 </div>
 
-                <div class="rp-card">
-                  <div class="rp-card__header">
-                    <h3 class="rp-card__title">루브릭 빌더</h3>
-                    <span class="rp-badge rp-badge--info">레벨 0-3</span>
-                  </div>
-                  <div class="rp-card__body">
-                    <div class="rp-form-group">
-                      <label class="rp-label">루브릭 제목</label>
-                      <input type="text" name="rubric[name]" value="<%= @rubric&.name %>" class="rp-input">
-                    </div>
-
-                    <div class="rp-criteria-list">
-                      <% if @criteria.present? %>
-                        <% @criteria.each do |criterion| %>
-                          <div class="rp-criterion-card">
-                            <div class="rp-criterion-header">
-                              <input type="text"
-                                     name="criteria[<%= criterion.id %>][name]"
-                                     value="<%= criterion.criterion_name %>"
-                                     class="rp-input rp-criterion-name"
-                                     placeholder="평가 기준 이름">
-                              <div class="rp-criterion-actions">
-                                <%= button_to "↑", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "up"),
-                                            method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
-                                <%= button_to "↓", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "down"),
-                                            method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
-                              </div>
-                            </div>
-
-                            <label class="rp-checkbox">
-                              <input type="checkbox" name="delete_criteria[]" value="<%= criterion.id %>">
-                              <span>이 기준 삭제</span>
-                            </label>
-
-                            <div class="rp-levels-grid">
-                              <% (0..3).each do |score| %>
-                                <% level = criterion.rubric_levels.find { |l| l.level == score } %>
-                                <div class="rp-level-cell">
-                                  <label class="rp-level-label"><%= score %>점</label>
-                                  <%= text_area_tag "criteria[#{criterion.id}][levels][#{score}]",
-                                                    level&.description,
-                                                    class: "rp-textarea rp-textarea--sm",
-                                                    placeholder: "#{score}점 기준 설명",
-                                                    rows: 2 %>
-                                </div>
-                              <% end %>
-                            </div>
+                <div class="rp-criteria-list">
+                  <% if @criteria.present? %>
+                    <% @criteria.each do |criterion| %>
+                      <div class="rp-criterion-card">
+                        <div class="rp-criterion-header">
+                          <input type="text"
+                                 name="criteria[<%= criterion.id %>][name]"
+                                 value="<%= criterion.criterion_name %>"
+                                 class="rp-input rp-criterion-name"
+                                 placeholder="평가 기준 이름 (예: 핵심 개념 이해도)">
+                          <div class="rp-criterion-actions">
+                            <%= button_to "↑", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "up"),
+                                        method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
+                            <%= button_to "↓", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "down"),
+                                        method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
                           </div>
-                        <% end %>
-                      <% end %>
-                    </div>
+                        </div>
 
-                    <div class="rp-form-group">
-                      <label class="rp-label">새 평가 기준 추가</label>
-                      <input type="text" name="new_criterion[name]" class="rp-input" placeholder="평가 기준 이름">
-                      <div class="rp-levels-grid">
-                        <% (0..3).each do |score| %>
-                          <div class="rp-level-cell">
-                            <label class="rp-level-label"><%= score %>점</label>
-                            <%= text_area_tag "new_criterion[levels][#{score}]",
-                                            nil,
-                                            class: "rp-textarea rp-textarea--sm",
-                                            placeholder: "설명",
-                                            rows: 2 %>
-                          </div>
-                        <% end %>
+                        <label class="rp-checkbox rp-checkbox--delete">
+                          <input type="checkbox" name="delete_criteria[]" value="<%= criterion.id %>">
+                          <span>이 기준 삭제</span>
+                        </label>
+
+                        <div class="rp-levels-grid rp-levels-grid--4col">
+                          <% (0..3).each do |score| %>
+                            <% level = criterion.rubric_levels.find { |l| l.level == score } %>
+                            <div class="rp-level-cell">
+                              <label class="rp-level-label rp-level-label--score-<%= score %>"><%= score %>점</label>
+                              <%= text_area_tag "criteria[#{criterion.id}][levels][#{score}]",
+                                                level&.description,
+                                                class: "rp-textarea rp-textarea--level",
+                                                placeholder: "#{score}점 수준의 답안 설명을 입력하세요",
+                                                rows: 3 %>
+                            </div>
+                          <% end %>
+                        </div>
                       </div>
-                    </div>
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <div class="rp-form-group rp-new-criterion">
+                  <label class="rp-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    새 평가 기준 추가
+                  </label>
+                  <input type="text" name="new_criterion[name]" class="rp-input" placeholder="평가 기준 이름 (예: 논리적 구성력)">
+                  <div class="rp-levels-grid rp-levels-grid--4col">
+                    <% (0..3).each do |score| %>
+                      <div class="rp-level-cell">
+                        <label class="rp-level-label rp-level-label--score-<%= score %>"><%= score %>점</label>
+                        <%= text_area_tag "new_criterion[levels][#{score}]",
+                                        nil,
+                                        class: "rp-textarea rp-textarea--level",
+                                        placeholder: "#{score}점 수준 설명",
+                                        rows: 3 %>
+                      </div>
+                    <% end %>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- RIGHT COLUMN -->
+          <!-- RIGHT COLUMN: Summary, AI, Actions -->
           <div class="rp-col-right">
             <!-- Summary Card -->
             <div class="rp-card">
@@ -662,8 +598,12 @@
                     <span class="rp-value">서술형</span>
                   </div>
                   <div class="rp-summary-item">
-                    <span class="rp-label">정답 설정</span>
-                    <span class="rp-badge rp-badge--pill rp-badge--success">완료</span>
+                    <span class="rp-label">채점 방식</span>
+                    <span class="rp-value">루브릭 기반</span>
+                  </div>
+                  <div class="rp-summary-item">
+                    <span class="rp-label">평가 기준</span>
+                    <span class="rp-value"><%= @criteria.count %>개</span>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
@@ -677,6 +617,36 @@
               </div>
             </div>
 
+            <!-- Collapsible AI Suggestions -->
+            <details class="rp-card rp-card--collapsible">
+              <summary class="rp-card__header rp-card__header--clickable">
+                <div class="rp-card__title-group">
+                  <svg class="rp-icon-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                  <h3 class="rp-card__title">AI 제안</h3>
+                </div>
+                <span class="rp-badge rp-badge--ai">GPT-4</span>
+              </summary>
+              <div class="rp-card__body">
+                <div class="rp-ai-suggestion">
+                  <h4 class="rp-ai-suggestion__title">루브릭 수준 제안</h4>
+                  <p class="rp-ai-suggestion__desc">AI가 서술형 답안의 핵심 요소를 기준으로 루브릭 초안을 생성했습니다.</p>
+                  <ul class="rp-ai-suggestion__list">
+                    <li>핵심 근거 제시 여부</li>
+                    <li>문장 구조와 논리적 연결성</li>
+                    <li>핵심 용어 정확성</li>
+                  </ul>
+                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm rp-btn--full" data-ai-apply="rubric">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    AI 제안 적용
+                  </button>
+                </div>
+              </div>
+            </details>
+
             <!-- Checklist Card -->
             <div class="rp-card">
               <div class="rp-card__header">
@@ -685,20 +655,20 @@
               <div class="rp-card__body">
                 <div class="rp-checklist">
                   <label class="rp-checkbox">
-                    <input type="checkbox" checked>
-                    <span>정답 지정 완료</span>
+                    <input type="checkbox" <%= "checked" if @rubric&.name.present? %>>
+                    <span>루브릭 제목 입력</span>
                   </label>
                   <label class="rp-checkbox">
-                    <input type="checkbox">
-                    <span>배점 입력 완료</span>
+                    <input type="checkbox" <%= "checked" if @criteria.any? %>>
+                    <span>평가 기준 추가</span>
                   </label>
                   <label class="rp-checkbox">
                     <input type="checkbox" <%= "checked" if rubric_levels_count.positive? %>>
-                    <span>루브릭 레벨 설정 완료</span>
+                    <span>레벨별 설명 작성</span>
                   </label>
                   <label class="rp-checkbox">
                     <input type="checkbox">
-                    <span>미리보기 확인 완료</span>
+                    <span>미리보기 확인</span>
                   </label>
                 </div>
               </div>
@@ -838,3 +808,1054 @@
     });
   })();
 </script>
+
+<style>
+  /* Item Preview Section - Always Visible Above Tabs */
+  .item-preview-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    border: 1px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .item-meta-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .item-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .item-type-badge--mcq {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+
+  .item-type-badge--constructed {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  }
+
+  .difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .difficulty-badge--easy {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .difficulty-badge--medium {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+  }
+
+  .difficulty-badge--hard {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  /* Item Prompt Card */
+  .item-prompt-card {
+    background: white;
+    border: 2px solid #e0e7ff; /* 더 강한 테두리 */
+    border-radius: 10px;
+    padding: 20px 24px; /* 좌우 패딩 증가 */
+    margin-bottom: 20px; /* 일관된 간격 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06); /* 더 부드러운 그림자 */
+    transition: all 0.2s;
+  }
+
+  .item-prompt-card:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .item-prompt-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px; /* 여백 증가 */
+    padding-bottom: 10px; /* 하단 패딩 추가 */
+    border-bottom: 1px solid #f3f4f6; /* 구분선 추가 */
+  }
+
+  .item-prompt-header svg {
+    color: #6366f1;
+  }
+
+  .item-prompt-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .item-prompt-body {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1f2937;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 40px; /* 최소 높이로 일관된 느낌 */
+    /* 높이는 내용에 따라 자동 조절 - 고정 높이 없음 */
+  }
+
+  .item-prompt-body p {
+    margin: 0 0 10px 0;
+  }
+
+  .item-prompt-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Choices Preview Grid */
+  .item-choices-preview {
+    background: white;
+    border: 2px solid #d1fae5; /* 초록색 테두리 */
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px; /* 일관된 간격 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s;
+  }
+
+  .item-choices-preview:hover {
+    border-color: #a7f3d0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .item-choices-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #059669;
+  }
+
+  .item-choices-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .choices-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .choice-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .choice-preview:hover {
+    background: #f3f4f6;
+  }
+
+  .choice-preview--correct {
+    background: #f0fdf4;
+    border-color: #86efac;
+  }
+
+  .choice-preview-label {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 14px;
+    color: #374151;
+  }
+
+  .choice-preview--correct .choice-preview-label {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+  }
+
+  .choice-preview-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .correct-indicator {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    background: #10b981;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Stimulus Card (Reading Passage) */
+  .stimulus-card {
+    background: white;
+    border: 2px solid #dbeafe;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px; /* 일관된 간격 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s;
+  }
+
+  .stimulus-card:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .stimulus-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-bottom: 1px solid #bfdbfe;
+  }
+
+  .stimulus-card-header svg {
+    flex-shrink: 0;
+    color: #3b82f6;
+  }
+
+  .stimulus-card-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e40af;
+    margin: 0;
+    flex: 1;
+  }
+
+  .stimulus-code-badge {
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #93c5fd;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #1e40af;
+    font-weight: 600;
+  }
+
+  .stimulus-title-section {
+    padding: 16px 20px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .stimulus-title-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .stimulus-body-section {
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #374151;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .stimulus-body-section p {
+    margin: 0 0 12px 0;
+  }
+
+  .stimulus-body-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Scrollbar styling for stimulus body */
+  .stimulus-body-section::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .stimulus-body-section::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+
+  .stimulus-body-section::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+
+  .stimulus-body-section::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .item-preview-section {
+      padding: 16px;
+    }
+
+    .item-meta-badges {
+      gap: 8px;
+    }
+
+    .choices-grid {
+      gap: 8px;
+    }
+
+    .choice-preview {
+      padding: 10px 12px;
+    }
+
+    .item-prompt-card {
+      padding: 16px 18px; /* 모바일에서 패딩 축소 */
+    }
+
+    .item-prompt-body {
+      font-size: 14px;
+    }
+
+    .item-choices-preview {
+      padding: 16px 18px; /* 모바일에서 패딩 축소 */
+    }
+
+    .stimulus-card-header {
+      padding: 12px 16px;
+    }
+
+    .stimulus-title-section {
+      padding: 12px 16px;
+    }
+
+    .stimulus-body-section {
+      padding: 16px;
+      font-size: 14px;
+      max-height: 300px;
+    }
+  }
+
+  /* ========================================
+     Rubric Builder Interface Styles
+     ======================================== */
+
+  /* 2-Column Grid Layout */
+  .rp-grid--2 {
+    display: grid;
+  }
+
+  /* Basic Card Styles */
+  .rp-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .rp-card__header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .rp-card__title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rp-card__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .rp-card__body {
+    padding: 20px;
+  }
+
+  .rp-card__footer {
+    padding: 16px 20px;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Collapsible Card with <details> */
+  .rp-card--collapsible {
+    border: 2px solid #e0e7ff;
+  }
+
+  .rp-card--collapsible[open] {
+    border-color: #c7d2fe;
+  }
+
+  .rp-card__header--clickable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+  }
+
+  .rp-card__header--clickable:hover {
+    background-color: #f9fafb;
+  }
+
+  .rp-icon-chevron {
+    transition: transform 0.2s;
+    color: #6b7280;
+  }
+
+  details[open] .rp-icon-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Badge Styles */
+  .rp-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .rp-badge--info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .rp-badge--ai {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+  }
+
+  /* Form Elements */
+  .rp-form-group {
+    margin-bottom: 20px;
+  }
+
+  .rp-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+
+  .rp-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .rp-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .rp-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+
+  .rp-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .rp-textarea--level {
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  /* Criterion Card */
+  .rp-criteria-list {
+    margin-bottom: 24px;
+  }
+
+  .rp-criterion-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .rp-criterion-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .rp-criterion-name {
+    flex: 1;
+    font-weight: 600;
+  }
+
+  .rp-criterion-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  /* Checkbox */
+  .rp-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+
+  .rp-checkbox--delete {
+    color: #dc2626;
+  }
+
+  .rp-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  /* 4-Column Levels Grid */
+  .rp-levels-grid--4col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .rp-level-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rp-level-label {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .rp-level-label--score-0 {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .rp-level-label--score-1 {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .rp-level-label--score-2 {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .rp-level-label--score-3 {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  /* New Criterion Section */
+  .rp-new-criterion {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px dashed #bae6fd;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .rp-new-criterion .rp-label {
+    color: #0369a1;
+  }
+
+  /* AI Suggestion Styles */
+  .rp-ai-suggestion {
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .rp-ai-suggestion__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b21a8;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-ai-suggestion__desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+  }
+
+  .rp-ai-suggestion__list {
+    margin: 0 0 12px 0;
+    padding-left: 20px;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  .rp-ai-suggestion__list li {
+    margin-bottom: 4px;
+  }
+
+  /* Summary Grid */
+  .rp-summary-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .rp-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .rp-summary-item:last-child {
+    border-bottom: none;
+  }
+
+  .rp-summary-item .rp-label {
+    margin: 0;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .rp-summary-item .rp-value {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  /* Checklist */
+  .rp-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Button Styles */
+  .rp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rp-btn--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .rp-btn--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .rp-btn--secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+  }
+
+  .rp-btn--secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+  }
+
+  .rp-btn--sm {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .rp-btn--full {
+    width: 100%;
+  }
+
+  .rp-btn--ghost {
+    background: transparent;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    padding: 4px 8px;
+  }
+
+  .rp-btn--ghost:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  /* Instruction and Info Elements */
+  .rp-instruction-text {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .rp-instruction-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #1e40af;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .rp-instruction-box p {
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .rp-instruction-box svg {
+    flex-shrink: 0;
+    color: #3b82f6;
+    margin-top: 2px;
+  }
+
+  .rp-note-box {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: #92400e;
+  }
+
+  .rp-note-box strong {
+    font-weight: 600;
+  }
+
+  /* Choices List for MCQ */
+  .rp-choices-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rp-choice-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rp-choice-option:hover {
+    border-color: #c7d2fe;
+    background: #f9fafb;
+  }
+
+  .rp-choice-option--correct {
+    border-color: #6ee7b7;
+    background: #d1fae5;
+  }
+
+  .rp-radio {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    cursor: pointer;
+  }
+
+  .rp-choice-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rp-choice-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #f3f4f6;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    flex-shrink: 0;
+  }
+
+  .rp-choice-text {
+    flex: 1;
+    font-size: 14px;
+    color: #1f2937;
+    line-height: 1.6;
+  }
+
+  /* Info Row */
+  .rp-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .rp-info-row:last-child {
+    border-bottom: none;
+  }
+
+  .rp-info-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .rp-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  /* AI Suggestion Variants */
+  .rp-ai-suggestion--spaced {
+    margin-bottom: 16px;
+  }
+
+  .rp-ai-suggestion--spaced:last-child {
+    margin-bottom: 0;
+  }
+
+  .rp-ai-suggestion--warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #fcd34d;
+  }
+
+  .rp-ai-suggestion--warning .rp-ai-suggestion__title {
+    color: #92400e;
+  }
+
+  /* Proximity Score Elements */
+  .rp-proximity-scores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rp-proximity-score-item {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+
+  .rp-proximity-score-item:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .rp-proximity-score-item--correct {
+    border-color: #6ee7b7;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  }
+
+  .rp-proximity-score-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .rp-choice-label-large {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .rp-choice-text-display {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .rp-proximity-score-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .rp-score-input-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .rp-input--score-large {
+    width: 100px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .rp-score-unit-large {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  /* Score Preview Table */
+  .rp-score-preview-table {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .rp-score-preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .rp-score-preview-row:last-child {
+    border-bottom: none;
+  }
+
+  .rp-score-preview-row .rp-label {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .rp-score-preview-row strong {
+    font-size: 14px;
+    color: #111827;
+  }
+
+  /* Badge Pill */
+  .rp-badge--pill {
+    border-radius: 12px;
+  }
+
+  .rp-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .rp-badge--danger {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1200px) {
+    .rp-grid--2 {
+      grid-template-columns: 1fr !important;
+    }
+
+    .rp-levels-grid--4col {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .rp-levels-grid--4col {
+      grid-template-columns: 1fr;
+    }
+
+    .rp-proximity-score-input-group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .rp-input--score-large {
+      width: 80px;
+    }
+  }
+</style>

@@ -1,452 +1,646 @@
 <% content_for :page_title, "진단 응시" %>
 
-<div class="rp-assessment"
-     data-controller="assessment"
-     data-assessment-attempt-id-value="<%= @attempt.id %>"
-     data-assessment-time-limit-value="<%= (@attempt.diagnostic_form.time_limit_minutes || 60) * 60 %>"
-     data-assessment-total-questions-value="<%= @attempt.diagnostic_form.items.count %>">
+<div class="assessment-container"
+     data-controller="module-assessment"
+     data-module-assessment-attempt-id-value="<%= @attempt.id %>"
+     data-module-assessment-time-limit-value="<%= (@diagnostic_form.time_limit_minutes || 60) * 60 %>"
+     data-module-assessment-total-items-value="<%= @diagnostic_form_items.count %>"
+     data-module-assessment-total-modules-value="<%= @modules.count %>">
 
-  <!-- Header with Timer -->
-  <div class="rp-assessment__header">
-    <div class="rp-assessment__title-section">
-      <h1 class="rp-assessment__title"><%= @attempt.diagnostic_form.name %></h1>
-      <p class="rp-assessment__subtitle"><%= @attempt.diagnostic_form.items.count %>개 문항</p>
+  <!-- Top Header -->
+  <div class="assessment-header">
+    <div class="assessment-header__title">
+      <h1><%= @diagnostic_form.name %></h1>
+      <p><%= @diagnostic_form_items.count %>개 문항 · <%= @modules.count %>개 모듈</p>
     </div>
 
-    <div class="rp-assessment__controls">
-      <div class="timer-section">
-        <div class="timer" data-assessment-target="timer">60:00</div>
-        <div class="timer-label">남은 시간</div>
+    <div class="assessment-header__controls">
+      <!-- Timer -->
+      <div class="timer-box">
+        <div class="timer-box__icon">⏱️</div>
+        <div class="timer-box__content">
+          <div class="timer-box__time" data-module-assessment-target="timer">60:00</div>
+          <div class="timer-box__label">남은 시간</div>
+        </div>
       </div>
 
+      <!-- Auto-save Indicator -->
       <div class="autosave-indicator"
-           data-assessment-target="autosaveIndicator"
-           style="opacity: 0; transition: opacity 0.3s ease;">
-        Saving...
+           data-module-assessment-target="autosaveIndicator"
+           style="opacity: 0;">
+        저장 중...
       </div>
     </div>
   </div>
 
-  <!-- Progress Indicator -->
-  <div class="rp-progress-section">
-    <div class="progress-label" data-assessment-target="progress">
-      Question 1 of <%= @attempt.diagnostic_form.items.count %>
+  <!-- Progress Bar -->
+  <div class="assessment-progress">
+    <div class="assessment-progress__info">
+      <span class="assessment-progress__label" data-module-assessment-target="progressLabel">
+        모듈 1 / <%= @modules.count %> · 문항 1 / <%= @diagnostic_form_items.count %>
+      </span>
+      <span class="assessment-progress__percent" data-module-assessment-target="progressPercent">0%</span>
     </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill"></div>
+    <div class="assessment-progress__bar">
+      <div class="assessment-progress__fill" data-module-assessment-target="progressFill" style="width: 0%"></div>
     </div>
   </div>
 
-  <!-- Questions Container -->
-  <div class="rp-questions-container">
-    <% @attempt.diagnostic_form.items.each_with_index do |item, index| %>
-      <% response = @attempt.responses.find_or_initialize_by(item: item) %>
-      <div class="rp-question"
-           data-assessment-target="question"
-           data-response-id="<%= response.id %>"
-           data-item-type="<%= response.item.item_type %>"
-           <%= 'hidden' if index > 0 %}>
-
-        <!-- Question Number -->
-        <div class="question-number">
-          문항 <%= index + 1 %>
-        </div>
-
-        <!-- Stimulus (if any) -->
-        <% if response.item.stimulus %>
-          <div class="rp-stimulus">
-            <div class="rp-stimulus__title">
-              <%= response.item.stimulus.title %>
-            </div>
-            <div class="rp-stimulus__body">
-              <%= simple_format(response.item.stimulus.body) %>
-            </div>
-          </div>
-        <% end %>
-
-        <!-- Question Prompt -->
-        <div class="rp-question__prompt">
-          <%= simple_format(response.item.prompt) %>
-        </div>
-
-        <!-- MCQ Choices -->
-        <% if response.item.item_type == 'mcq' %>
-          <div class="rp-choices">
-            <% response.item.item_choices.each_with_index do |choice, i| %>
-              <label class="rp-choice">
-                <input type="radio"
-                       name="response_<%= response.id %>"
-                       value="<%= choice.id %>"
-                       data-assessment-target="mcqChoice"
-                       data-action="change->assessment#saveResponse"
-                       <%= 'checked' if response.selected_choice_id == choice.id %>>
-                <span class="choice-number"><%= i + 1 %></span>
-                <span class="choice-content"><%= choice.content %></span>
-              </label>
+  <!-- Main Content: Split Layout -->
+  <div class="assessment-main">
+    <!-- Left Panel: Stimulus (Reading Passage) -->
+    <div class="assessment-left">
+      <div class="stimulus-panel">
+        <% @modules.each_with_index do |module_data, module_index| %>
+          <div class="stimulus-content"
+               data-module-assessment-target="stimulus"
+               data-module-index="<%= module_index %>"
+               <%= 'style=display:none;' if module_index > 0 %>>
+            <% if module_data[:stimulus] %>
+              <div class="stimulus-header">
+                <div class="stimulus-badge">📖 지문</div>
+                <h2 class="stimulus-title"><%= module_data[:stimulus].title %></h2>
+              </div>
+              <div class="stimulus-body">
+                <%= simple_format(module_data[:stimulus].body) %>
+              </div>
+            <% else %>
+              <div class="stimulus-header">
+                <h2 class="stimulus-title">모듈 <%= module_index + 1 %></h2>
+              </div>
+              <div class="stimulus-empty">
+                <p>이 모듈에는 지문이 없습니다.</p>
+              </div>
             <% end %>
           </div>
-        <% else %>
-          <!-- Constructed Response -->
-          <div class="rp-constructed-response">
-            <textarea class="rp-textarea"
-                      data-assessment-target="constructedAnswer"
-                      data-action="input->assessment#saveResponse"
-                      placeholder="답변을 입력하세요"
-                      rows="6"><%= response.answer_text %></textarea>
-          </div>
         <% end %>
-
-        <!-- Flag for Review Button -->
-        <div class="rp-question__footer">
-          <button class="rp-btn rp-btn--ghost rp-flag-button
-                         <%= 'active' if response.flagged_for_review %>"
-                  data-assessment-target="flagButton"
-                  data-action="click->assessment#toggleFlag">
-            <%= icon 'flag' %>
-            복습하기 (F)
-          </button>
-        </div>
       </div>
-    <% end %>
+    </div>
+
+    <!-- Right Panel: Questions -->
+    <div class="assessment-right">
+      <div class="question-panel">
+        <% item_global_index = 0 %>
+        <% @modules.each_with_index do |module_data, module_index| %>
+          <% module_data[:items].each_with_index do |item_data, item_index| %>
+            <% item = item_data[:item] %>
+            <% dfi = item_data[:diagnostic_form_item] %>
+            <% response = item_data[:response] || @attempt.responses.find_or_initialize_by(item: item) %>
+
+            <div class="question-card"
+                 data-module-assessment-target="question"
+                 data-module-index="<%= module_index %>"
+                 data-item-index="<%= item_index %>"
+                 data-global-index="<%= item_global_index %>"
+                 data-item-id="<%= item.id %>"
+                 data-item-type="<%= item.item_type %>"
+                 <%= 'style=display:none;' if item_global_index > 0 %>>
+
+              <!-- Question Header -->
+              <div class="question-header">
+                <div class="question-number">
+                  문항 <%= dfi.position %> / <%= @diagnostic_form_items.count %>
+                </div>
+                <div class="question-badges">
+                  <span class="question-badge question-badge--<%= item.item_type %>">
+                    <%= item.item_type == "mcq" ? "객관식" : "서술형" %>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Question Prompt -->
+              <div class="question-prompt">
+                <%= simple_format(item.prompt) %>
+              </div>
+
+              <!-- MCQ Choices -->
+              <% if item.item_type == "mcq" %>
+                <div class="question-choices">
+                  <% item.item_choices.order(:choice_no).each_with_index do |choice, i| %>
+                    <label class="choice-item">
+                      <input type="radio"
+                             name="response_<%= item.id %>"
+                             value="<%= choice.id %>"
+                             data-module-assessment-target="mcqChoice"
+                             data-action="change->module-assessment#saveResponse"
+                             data-item-id="<%= item.id %>"
+                             <%= 'checked' if response.selected_choice_id == choice.id %>>
+                      <span class="choice-number"><%= choice.choice_no %></span>
+                      <span class="choice-content"><%= choice.content %></span>
+                    </label>
+                  <% end %>
+                </div>
+              <% else %>
+                <!-- Constructed Response -->
+                <div class="question-answer">
+                  <textarea class="answer-textarea"
+                            data-module-assessment-target="constructedAnswer"
+                            data-action="input->module-assessment#saveResponse"
+                            data-item-id="<%= item.id %>"
+                            placeholder="답변을 입력하세요"
+                            rows="8"><%= response.answer_text %></textarea>
+                </div>
+              <% end %>
+
+              <!-- Question Footer -->
+              <div class="question-footer">
+                <button class="flag-button <%= 'active' if response.flagged_for_review %>"
+                        data-module-assessment-target="flagButton"
+                        data-action="click->module-assessment#toggleFlag"
+                        data-item-id="<%= item.id %>">
+                  🚩 나중에 다시 보기
+                </button>
+              </div>
+            </div>
+
+            <% item_global_index += 1 %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
   </div>
 
-  <!-- Navigation Buttons -->
-  <div class="rp-navigation">
-    <button class="rp-btn rp-btn--secondary"
-            data-action="click->assessment#previousQuestion">
-      ← 이전
+  <!-- Navigation Footer -->
+  <div class="assessment-footer">
+    <button class="nav-btn nav-btn--secondary"
+            data-module-assessment-target="prevButton"
+            data-action="click->module-assessment#previousQuestion"
+            disabled>
+      ← 이전 문항
     </button>
 
-    <button class="rp-btn rp-btn--primary"
-            data-action="click->assessment#nextQuestion">
-      다음 →
+    <button class="nav-btn nav-btn--primary"
+            data-module-assessment-target="nextButton"
+            data-action="click->module-assessment#nextQuestion">
+      다음 문항 →
     </button>
 
-    <!-- Submit Button - Form Submission -->
-    <form action="<%= student_assessments_path %>"
-          method="POST"
-          class="rp-submit-form"
-          style="display: inline;">
-      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-      <%= hidden_field_tag :attempt_id, @attempt.id %>
-
-      <button type="submit"
-              class="rp-btn rp-btn--danger"
-              data-assessment-target="submitButton"
-              onclick="return confirm('진단을 제출하시겠습니까? 제출 후에는 답변을 수정할 수 없습니다.');">
-        제출하기
-      </button>
-    </form>
+    <button class="nav-btn nav-btn--danger"
+            data-module-assessment-target="submitButton"
+            data-action="click->module-assessment#submitAttempt"
+            style="display: none;">
+      제출하기
+    </button>
   </div>
 </div>
 
 <!-- Styles -->
 <style>
-  .rp-assessment {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: var(--rp-space-6);
-  }
-
-  .rp-assessment__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--rp-space-6);
-    padding-bottom: var(--rp-space-4);
-    border-bottom: 1px solid var(--rp-border);
-  }
-
-  .rp-assessment__title-section {
-    flex: 1;
-  }
-
-  .rp-assessment__title {
-    font-size: var(--rp-font-size-2xl);
-    font-weight: 700;
-    margin: 0 0 var(--rp-space-1) 0;
-  }
-
-  .rp-assessment__subtitle {
-    font-size: var(--rp-font-size-sm);
-    color: var(--rp-text-muted);
-    margin: 0;
-  }
-
-  .rp-assessment__controls {
-    display: flex;
-    gap: var(--rp-space-4);
-    align-items: center;
-  }
-
-  .timer-section {
+  .assessment-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: var(--rp-space-1);
-  }
-
-  .timer {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--rp-text-title);
-    font-family: 'Courier New', monospace;
-    min-width: 80px;
-    text-align: center;
-  }
-
-  .timer.text-success {
-    color: var(--rp-success);
-  }
-
-  .timer.text-warning {
-    color: var(--rp-warning);
-  }
-
-  .timer.text-danger {
-    color: var(--rp-danger);
-  }
-
-  .timer-label {
-    font-size: var(--rp-font-size-xs);
-    color: var(--rp-text-muted);
-  }
-
-  .autosave-indicator {
-    font-size: var(--rp-font-size-sm);
-    color: var(--rp-text-muted);
-    min-height: 20px;
-    text-align: center;
-  }
-
-  .autosave-indicator.saving {
-    color: var(--rp-warning);
-  }
-
-  .autosave-indicator.saved {
-    color: var(--rp-success);
-  }
-
-  .autosave-indicator.error {
-    color: var(--rp-danger);
-  }
-
-  .rp-progress-section {
-    margin-bottom: var(--rp-space-6);
-    background: var(--rp-bg-subtle);
-    padding: var(--rp-space-4);
-    border-radius: var(--rp-radius-md);
-  }
-
-  .progress-label {
-    font-size: var(--rp-font-size-sm);
-    color: var(--rp-text-muted);
-    margin-bottom: var(--rp-space-2);
-  }
-
-  .progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--rp-border);
-    border-radius: var(--rp-radius-full);
+    height: 100vh;
     overflow: hidden;
   }
 
-  .progress-fill {
+  .assessment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    background: white;
+    border-bottom: 2px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  .assessment-header__title h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .assessment-header__title p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .assessment-header__controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .timer-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+  }
+
+  .timer-box__icon {
+    font-size: 24px;
+  }
+
+  .timer-box__time {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+  }
+
+  .timer-box__label {
+    font-size: 11px;
+    opacity: 0.9;
+  }
+
+  .timer-box.warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  }
+
+  .timer-box.danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+
+  .autosave-indicator {
+    font-size: 13px;
+    color: #6b7280;
+    transition: opacity 0.3s;
+  }
+
+  .autosave-indicator.saving {
+    color: #fbbf24;
+  }
+
+  .autosave-indicator.saved {
+    color: #10b981;
+  }
+
+  .assessment-progress {
+    padding: 16px 32px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+
+  .assessment-progress__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .assessment-progress__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .assessment-progress__percent {
+    font-size: 14px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .assessment-progress__bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .assessment-progress__fill {
     height: 100%;
-    background: var(--rp-primary);
-    width: 0%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
     transition: width 0.3s ease;
   }
 
-  .rp-questions-container {
-    margin-bottom: var(--rp-space-6);
+  .assessment-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
   }
 
-  .rp-question {
+  .assessment-left,
+  .assessment-right {
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  .assessment-left {
+    background: #f9fafb;
+    border-right: 2px solid #e5e7eb;
+  }
+
+  .assessment-right {
     background: white;
-    border: 1px solid var(--rp-border);
-    border-radius: var(--rp-radius-lg);
-    padding: var(--rp-space-6);
-    margin-bottom: var(--rp-space-4);
   }
 
-  .rp-question.hidden {
-    display: none;
+  .stimulus-panel {
+    padding: 32px;
   }
 
-  .rp-question.flagged {
-    border-left: 4px solid var(--rp-warning);
+  .stimulus-content {
+    animation: fadeIn 0.3s ease;
   }
 
-  .question-number {
-    font-size: var(--rp-font-size-sm);
-    color: var(--rp-text-muted);
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stimulus-header {
+    margin-bottom: 24px;
+  }
+
+  .stimulus-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 600;
-    margin-bottom: var(--rp-space-4);
+    margin-bottom: 12px;
   }
 
-  .rp-stimulus {
-    background: var(--rp-bg-subtle);
-    border-left: 4px solid var(--rp-primary);
-    border-radius: var(--rp-radius-md);
-    padding: var(--rp-space-4);
-    margin-bottom: var(--rp-space-4);
+  .stimulus-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
   }
 
-  .rp-stimulus__title {
-    font-weight: 600;
-    margin-bottom: var(--rp-space-2);
-    font-size: var(--rp-font-size-md);
-  }
-
-  .rp-stimulus__body {
-    color: var(--rp-text-body);
-    line-height: 1.6;
+  .stimulus-body {
+    line-height: 2;
+    color: #374151;
+    font-size: 16px;
     white-space: pre-wrap;
     word-wrap: break-word;
   }
 
-  .rp-question__prompt {
-    font-size: var(--rp-font-size-base);
-    font-weight: 600;
-    margin-bottom: var(--rp-space-4);
-    line-height: 1.6;
+  .stimulus-empty {
+    padding: 40px;
+    text-align: center;
+    color: #9ca3af;
   }
 
-  .rp-choices {
+  .question-panel {
+    padding: 32px;
+  }
+
+  .question-card {
+    animation: fadeIn 0.3s ease;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .question-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b7280;
+  }
+
+  .question-badges {
+    display: flex;
+    gap: 8px;
+  }
+
+  .question-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .question-badge--mcq {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .question-badge--constructed {
+    background: #e0e7ff;
+    color: #5b21b6;
+  }
+
+  .question-prompt {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: #111827;
+    margin-bottom: 24px;
+  }
+
+  .question-choices {
     display: flex;
     flex-direction: column;
-    gap: var(--rp-space-3);
-    margin-bottom: var(--rp-space-4);
+    gap: 12px;
+    margin-bottom: 24px;
   }
 
-  .rp-choice {
+  .choice-item {
     display: flex;
     align-items: flex-start;
-    gap: var(--rp-space-3);
-    padding: var(--rp-space-3);
-    border: 1px solid var(--rp-border);
-    border-radius: var(--rp-radius-md);
+    gap: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all var(--rp-transition-fast);
+    transition: all 0.2s;
   }
 
-  .rp-choice:hover {
-    background: var(--rp-bg-subtle);
-    border-color: var(--rp-primary);
+  .choice-item:hover {
+    background: #f3f4f6;
+    border-color: #667eea;
   }
 
-  .rp-choice input[type="radio"] {
+  .choice-item:has(input:checked) {
+    background: #eef2ff;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .choice-item input[type="radio"] {
     margin-top: 2px;
     cursor: pointer;
-  }
-
-  .rp-choice input[type="radio"]:checked + .choice-number {
-    color: var(--rp-primary);
-    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 
   .choice-number {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    background: var(--rp-bg-subtle);
-    border-radius: var(--rp-radius-sm);
-    font-weight: 600;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
     flex-shrink: 0;
+  }
+
+  .choice-item:has(input:checked) .choice-number {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
   }
 
   .choice-content {
     flex: 1;
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.6;
   }
 
-  .rp-constructed-response {
-    margin-bottom: var(--rp-space-4);
+  .question-answer {
+    margin-bottom: 24px;
   }
 
-  .rp-textarea {
+  .answer-textarea {
     width: 100%;
-    padding: var(--rp-space-3);
-    border: 1px solid var(--rp-border);
-    border-radius: var(--rp-radius-md);
+    padding: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
     font-family: inherit;
-    font-size: var(--rp-font-size-base);
+    font-size: 15px;
+    line-height: 1.6;
     resize: vertical;
+    transition: border-color 0.2s;
   }
 
-  .rp-textarea:focus {
+  .answer-textarea:focus {
     outline: none;
-    border-color: var(--rp-primary);
-    box-shadow: 0 0 0 3px var(--rp-primary-soft);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
-  .rp-question__footer {
-    border-top: 1px solid var(--rp-border);
-    padding-top: var(--rp-space-4);
-    margin-top: var(--rp-space-4);
+  .question-footer {
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
   }
 
-  .rp-flag-button {
-    display: flex;
+  .flag-button {
+    display: inline-flex;
     align-items: center;
-    gap: var(--rp-space-2);
+    gap: 8px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
   }
 
-  .rp-flag-button.active {
-    background: var(--rp-warning-soft);
-    color: var(--rp-warning);
-    border-color: var(--rp-warning);
+  .flag-button:hover {
+    background: #f9fafb;
+    border-color: #fbbf24;
+    color: #f59e0b;
   }
 
-  .rp-navigation {
+  .flag-button.active {
+    background: #fef3c7;
+    border-color: #fbbf24;
+    color: #f59e0b;
+  }
+
+  .assessment-footer {
     display: flex;
-    justify-content: space-between;
-    gap: var(--rp-space-4);
-    padding-top: var(--rp-space-4);
-    border-top: 1px solid var(--rp-border);
+    gap: 16px;
+    padding: 20px 32px;
+    background: white;
+    border-top: 2px solid #e5e7eb;
+    flex-shrink: 0;
   }
 
-  .rp-navigation .rp-btn {
+  .nav-btn {
     flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
   }
 
-  .rp-submit-form {
-    flex: 1;
+  .nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
-  .rp-submit-form .rp-btn {
-    width: 100%;
+  .nav-btn--secondary {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .nav-btn--secondary:hover:not(:disabled) {
+    background: #e5e7eb;
+  }
+
+  .nav-btn--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .nav-btn--primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .nav-btn--danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  }
+
+  .nav-btn--danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
   }
 
   /* Responsive */
+  @media (max-width: 1024px) {
+    .assessment-main {
+      grid-template-columns: 1fr;
+    }
+
+    .assessment-left {
+      border-right: none;
+      border-bottom: 2px solid #e5e7eb;
+      max-height: 40vh;
+    }
+  }
+
   @media (max-width: 768px) {
-    .rp-assessment {
-      padding: var(--rp-space-4);
-    }
-
-    .rp-assessment__header {
+    .assessment-header {
       flex-direction: column;
-      gap: var(--rp-space-4);
+      gap: 16px;
+      align-items: flex-start;
     }
 
-    .rp-assessment__controls {
+    .assessment-header__controls {
       width: 100%;
       justify-content: space-between;
     }
 
-    .rp-question {
-      padding: var(--rp-space-4);
+    .stimulus-panel,
+    .question-panel {
+      padding: 20px;
     }
 
-    .rp-navigation {
+    .assessment-footer {
       flex-direction: column;
-    }
-
-    .timer {
-      font-size: 20px;
     }
   }
 </style>

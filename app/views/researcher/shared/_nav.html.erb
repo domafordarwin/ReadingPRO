@@ -1,6 +1,15 @@
 <%= link_to "대시보드", researcher_dashboard_path, class: "portal-nav-link#{' is-active' if current == :dashboard}" %>
 <%= link_to "평가 영역", researcher_evaluation_path, class: "portal-nav-link#{' is-active' if current == :evaluation}" %>
-<%= link_to "문항 은행", researcher_item_bank_path, class: "portal-nav-link#{' is-active' if current == :item_bank}" %>
+<%= link_to "모듈 관리", researcher_item_bank_path, class: "portal-nav-link#{' is-active' if current == :item_bank}" %>
+<%= link_to "진단지 구성", researcher_diagnostic_eval_path, class: "portal-nav-link#{' is-active' if current == :scoring}" %>
+<%= link_to researcher_archived_bundles_path, class: "portal-nav-link portal-nav-link-archive#{' is-active' if current == :archived_bundles}" do %>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+    <rect x="1" y="3" width="22" height="5"></rect>
+    <line x1="10" y1="12" x2="14" y2="12"></line>
+  </svg>
+  보관함
+<% end %>
 <%= link_to "지문 관리", researcher_passages_path, class: "portal-nav-link#{' is-active' if current == :passages}" %>
 <%= link_to "문항 관리", researcher_item_list_path, class: "portal-nav-link#{' is-active' if current == :items}" %>
 <%= link_to "프롬프트 관리", researcher_prompts_path, class: "portal-nav-link#{' is-active' if current == :prompts}" %>

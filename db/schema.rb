@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_111304) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_134528) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -351,6 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111304) do
     t.string "code", null: false
     t.datetime "created_at", null: false
     t.bigint "created_by_id"
+    t.string "grade_level"
     t.text "item_codes", default: [], array: true
     t.integer "items_count", default: 0
     t.string "reading_level"
@@ -363,6 +364,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_111304) do
     t.index ["code"], name: "index_reading_stimuli_on_code", unique: true
     t.index ["created_at"], name: "idx_reading_stimuli_created_at"
     t.index ["created_by_id"], name: "index_reading_stimuli_on_created_by_id"
+    t.index ["grade_level"], name: "idx_reading_stimuli_grade_level"
     t.index ["item_codes"], name: "index_reading_stimuli_on_item_codes", using: :gin
     t.index ["reading_level"], name: "index_reading_stimuli_on_reading_level"
   end

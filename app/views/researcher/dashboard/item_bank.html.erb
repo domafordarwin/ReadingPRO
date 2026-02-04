@@ -1,147 +1,337 @@
 <% content_for :portal_title do %>
-  문항 은행
+  모듈 관리
 <% end %>
 <% content_for :portal_subtitle do %>
-  완성된 진단지 세트를 관리하세요.
+  평가 모듈(지문 + 문항)을 생성하고 관리하세요. 모듈을 조합하여 진단지를 구성할 수 있습니다.
 <% end %>
 <% content_for :portal_nav do %>
   <%= render "researcher/shared/nav", current: :item_bank %>
 <% end %>
 
-<!-- 통계 및 필터 섹션 -->
-<div class="item-bank-header">
-  <div class="stats-summary">
-    <div class="stat-card">
-      <span class="stat-value"><%= @total_count || @assessment_bundles.size %></span>
-      <span class="stat-label">전체 세트</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-value"><%= @assessment_bundles.sum(&:mcq_count) %></span>
-      <span class="stat-label">객관식 문항</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-value"><%= @assessment_bundles.sum(&:constructed_count) %></span>
-      <span class="stat-label">서술형 문항</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-value"><%= @assessment_bundles.count { |b| b.ai_analyzed? } %></span>
-      <span class="stat-label">AI 분석 완료</span>
-    </div>
+<!-- 페이지 헤더: 타이틀 + 업로드 버튼 -->
+<div class="page-header">
+  <div class="page-header-left">
+    <h1 class="page-title">평가 모듈</h1>
+    <p class="page-description">총 <%= @total_count || @assessment_bundles.size %>개의 평가 모듈</p>
   </div>
+  <div class="page-header-right">
+    <button type="button" class="btn-upload" onclick="toggleUploadPanel()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>PDF 업로드</span>
+    </button>
+  </div>
+</div>
 
-  <!-- 검색 및 필터 -->
-  <div class="filters-section">
-    <%= form_with url: researcher_item_bank_path, method: :get, local: true, class: "filters-form" do %>
-      <div class="filter-group">
-        <input type="text" name="search" value="<%= @search_query %>" placeholder="코드, 제목, 내용 검색..." class="search-input">
+<!-- 업로드 패널 (토글) -->
+<div id="upload-panel" class="upload-panel hidden">
+  <div class="upload-panel-content">
+    <div class="upload-panel-header">
+      <h3>새 진단지 업로드</h3>
+      <button type="button" class="btn-close" onclick="toggleUploadPanel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <%= form_with url: researcher_upload_pdf_item_bank_path, method: :post, multipart: true, local: true, class: "upload-form-modern", id: "pdf-upload-form" do %>
+      <div class="upload-dropzone" id="dropzone">
+        <div class="upload-icon-wrapper">
+          <svg class="upload-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          <div class="upload-sparkle">✨</div>
+        </div>
+        <p class="upload-text">
+          <span class="upload-text-main">PDF를 여기에 드롭하거나 클릭하세요</span>
+        </p>
+        <p class="upload-hint">
+          <span class="upload-hint-icon">🤖</span>
+          <span>AI가 지문과 문항을 자동으로 분석하여 모듈을 생성합니다</span>
+        </p>
+        <div class="upload-features">
+          <span class="upload-feature">📝 지문 자동 추출</span>
+          <span class="upload-feature">🔵 객관식 자동 생성</span>
+          <span class="upload-feature">🟣 서술형 자동 생성</span>
+        </div>
+        <input type="file" name="pdf_file" accept=".pdf" class="file-input-hidden" id="pdf-file-input" required>
       </div>
-      <div class="filter-group">
-        <select name="bundle_status" class="filter-select">
-          <option value="">전체 상태</option>
-          <% @available_bundle_statuses&.each do |status| %>
-            <option value="<%= status %>" <%= 'selected' if @bundle_status_filter == status %>><%= status_label(status) %></option>
-          <% end %>
-        </select>
+
+      <!-- 레벨 선택 -->
+      <div class="grade-level-selector">
+        <label class="grade-level-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <span>학년 레벨 선택 <span class="required-mark">*</span></span>
+        </label>
+        <div class="grade-level-options">
+          <label class="grade-level-option" data-level="elementary_low">
+            <input type="radio" name="grade_level" value="elementary_low" required>
+            <span class="grade-option-content">
+              <span class="grade-option-badge" style="background: #4CAF50;">초저</span>
+              <span class="grade-option-text">초등 1-2학년</span>
+            </span>
+          </label>
+          <label class="grade-level-option" data-level="elementary_high">
+            <input type="radio" name="grade_level" value="elementary_high">
+            <span class="grade-option-content">
+              <span class="grade-option-badge" style="background: #2196F3;">초고</span>
+              <span class="grade-option-text">초등 3-6학년</span>
+            </span>
+          </label>
+          <label class="grade-level-option" data-level="middle_low">
+            <input type="radio" name="grade_level" value="middle_low">
+            <span class="grade-option-content">
+              <span class="grade-option-badge" style="background: #FF9800;">중저</span>
+              <span class="grade-option-text">중학 1-2학년</span>
+            </span>
+          </label>
+          <label class="grade-level-option" data-level="middle_high">
+            <input type="radio" name="grade_level" value="middle_high">
+            <span class="grade-option-content">
+              <span class="grade-option-badge" style="background: #9C27B0;">중고</span>
+              <span class="grade-option-text">중3~고등</span>
+            </span>
+          </label>
+        </div>
       </div>
-      <div class="filter-group">
-        <select name="difficulty" class="filter-select">
-          <option value="">전체 난이도</option>
-          <option value="easy" <%= 'selected' if params[:difficulty] == 'easy' %>>쉬움</option>
-          <option value="medium" <%= 'selected' if params[:difficulty] == 'medium' %>>보통</option>
-          <option value="hard" <%= 'selected' if params[:difficulty] == 'hard' %>>어려움</option>
-        </select>
+
+      <!-- 프로그레스바 -->
+      <div class="upload-progress" id="upload-progress" style="display: none;">
+        <div class="progress-info">
+          <span class="progress-text" id="progress-text">파일 업로드 중...</span>
+          <span class="progress-percentage" id="progress-percentage">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+        </div>
+        <p class="progress-hint">PDF를 분석하고 문항을 생성하는 중입니다. 잠시만 기다려주세요.</p>
+
+        <!-- 처리 로그 -->
+        <div class="process-logs" id="process-logs" style="display: none;">
+          <div class="logs-header">처리 과정</div>
+          <div class="logs-container" id="logs-container"></div>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary">검색</button>
-      <%= link_to "초기화", researcher_item_bank_path, class: "btn btn-secondary" %>
+
+      <div class="upload-actions">
+        <span class="selected-file" id="selected-file-name"></span>
+        <button type="submit" class="btn-submit-upload" id="submit-btn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span id="submit-btn-text">파일을 선택해주세요</span>
+        </button>
+      </div>
     <% end %>
   </div>
 </div>
 
-<!-- 완성된 진단지 세트 카드 뷰 -->
+<!-- 통계 카드 -->
+<div class="stats-row">
+  <div class="stat-card-modern">
+    <div class="stat-icon stat-icon-blue">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number"><%= @total_count || @assessment_bundles.size %></span>
+      <span class="stat-text">전체 모듈</span>
+    </div>
+  </div>
+  <div class="stat-card-modern">
+    <div class="stat-icon stat-icon-green">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number"><%= @assessment_bundles.sum(&:mcq_count) %></span>
+      <span class="stat-text">객관식</span>
+    </div>
+  </div>
+  <div class="stat-card-modern">
+    <div class="stat-icon stat-icon-purple">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number"><%= @assessment_bundles.sum(&:constructed_count) %></span>
+      <span class="stat-text">서술형</span>
+    </div>
+  </div>
+  <div class="stat-card-modern">
+    <div class="stat-icon stat-icon-indigo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/>
+      </svg>
+    </div>
+    <div class="stat-info">
+      <span class="stat-number"><%= @assessment_bundles.count { |b| b.ai_analyzed? } %></span>
+      <span class="stat-text">AI 분석</span>
+    </div>
+  </div>
+</div>
+
+<!-- 검색 및 필터 -->
+<div class="filters-bar">
+  <%= form_with url: researcher_item_bank_path, method: :get, local: true, class: "filters-form-modern" do %>
+    <div class="search-wrapper">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" name="search" value="<%= @search_query %>" placeholder="코드, 제목, 내용으로 검색..." class="search-input-modern">
+    </div>
+    <select name="bundle_status" class="filter-select-modern">
+      <option value="">전체 상태</option>
+      <% @available_bundle_statuses&.each do |status| %>
+        <option value="<%= status %>" <%= 'selected' if @bundle_status_filter == status %>><%= status_label(status) %></option>
+      <% end %>
+    </select>
+    <select name="difficulty" class="filter-select-modern">
+      <option value="">전체 난이도</option>
+      <option value="easy" <%= 'selected' if params[:difficulty] == 'easy' %>>쉬움</option>
+      <option value="medium" <%= 'selected' if params[:difficulty] == 'medium' %>>보통</option>
+      <option value="hard" <%= 'selected' if params[:difficulty] == 'hard' %>>어려움</option>
+    </select>
+    <select name="grade_level" class="filter-select-modern filter-grade-level">
+      <option value="">전체 레벨</option>
+      <option value="elementary_low" <%= 'selected' if params[:grade_level] == 'elementary_low' %>>초저 (초1-2)</option>
+      <option value="elementary_high" <%= 'selected' if params[:grade_level] == 'elementary_high' %>>초고 (초3-6)</option>
+      <option value="middle_low" <%= 'selected' if params[:grade_level] == 'middle_low' %>>중저 (중1-2)</option>
+      <option value="middle_high" <%= 'selected' if params[:grade_level] == 'middle_high' %>>중고 (중3-고)</option>
+    </select>
+    <button type="submit" class="btn-search">검색</button>
+    <% if @search_query.present? || @bundle_status_filter.present? || params[:difficulty].present? || params[:grade_level].present? %>
+      <%= link_to researcher_item_bank_path, class: "btn-reset" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        초기화
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- 진단지 세트 그리드 -->
 <div class="bundles-grid">
   <% if @assessment_bundles.empty? %>
-    <div class="empty-state">
-      <p>등록된 진단지 세트가 없습니다.</p>
-      <p><%= link_to "PDF 업로드하여 문항 추가", "#upload-section", class: "btn btn-primary" %></p>
+    <div class="empty-state-modern">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <h3>등록된 진단지가 없습니다</h3>
+      <p>PDF를 업로드하여 첫 번째 진단지 세트를 만들어보세요.</p>
+      <button type="button" class="btn-upload-empty" onclick="toggleUploadPanel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        새 진단지 업로드
+      </button>
     </div>
   <% else %>
     <% @assessment_bundles.each do |bundle| %>
-      <div class="bundle-card <%= 'ai-analyzed' if bundle.ai_analyzed? %>">
-        <!-- 헤더 -->
-        <div class="bundle-header">
-          <div class="bundle-code"><%= bundle.code %></div>
+      <div class="bundle-card-modern <%= 'ai-analyzed' if bundle.ai_analyzed? %>">
+        <div class="bundle-card-header">
+          <code class="bundle-code-tag"><%= bundle.code %></code>
           <div class="bundle-badges">
-            <span class="badge badge-<%= bundle.bundle_status %>"><%= status_label(bundle.bundle_status) %></span>
+            <% if bundle.grade_level_set? %>
+              <span class="grade-level-badge" style="background: <%= bundle.grade_level_color %>;" title="<%= bundle.grade_level_label %>">
+                <%= bundle.grade_level_short %>
+              </span>
+            <% end %>
+            <span class="status-badge status-<%= bundle.bundle_status %>"><%= status_label(bundle.bundle_status) %></span>
             <% if bundle.ai_analyzed? %>
-              <span class="badge badge-ai" title="AI 분석 완료">AI</span>
+              <span class="ai-badge" title="AI 분석 완료">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a1 1 0 0 0-1 1v5a1 1 0 0 0 .29.71l3 3a1 1 0 0 0 1.42-1.42L13 11.59V7a1 1 0 0 0-1-1z"/></svg>
+                AI
+              </span>
             <% end %>
           </div>
         </div>
 
-        <!-- 제목 및 요약 -->
-        <h3 class="bundle-title"><%= bundle.title.presence || "제목 없음" %></h3>
-        <p class="bundle-summary">
+        <h3 class="bundle-title-modern"><%= bundle.title.presence || "제목 없음" %></h3>
+
+        <p class="bundle-excerpt">
           <% if bundle.ai_summary.present? %>
             <%= bundle.ai_summary %>
           <% else %>
-            <%= truncate(bundle.body, length: 150) %>
+            <%= truncate(bundle.body, length: 120) %>
           <% end %>
         </p>
 
-        <!-- AI 분석 정보 -->
         <% if bundle.ai_analyzed? %>
-          <div class="ai-analysis-section">
-            <div class="analysis-row">
-              <span class="analysis-label">영역:</span>
-              <span class="analysis-value"><%= bundle.domain %></span>
-            </div>
-            <div class="analysis-row">
-              <span class="analysis-label">난이도:</span>
-              <span class="difficulty-badge difficulty-<%= bundle.difficulty_level %>">
-                <%= difficulty_label(bundle.difficulty_level) %>
-                <% if bundle.difficulty_score %>
-                  (<%= bundle.difficulty_score %>/10)
-                <% end %>
-              </span>
-            </div>
+          <div class="bundle-meta">
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <%= bundle.domain %>
+            </span>
+            <span class="meta-item difficulty-<%= bundle.difficulty_level %>">
+              <%= difficulty_label(bundle.difficulty_level) %>
+            </span>
             <% if bundle.target_grade.present? %>
-              <div class="analysis-row">
-                <span class="analysis-label">대상:</span>
-                <span class="analysis-value"><%= bundle.target_grade %></span>
-              </div>
+              <span class="meta-item"><%= bundle.target_grade %></span>
             <% end %>
           </div>
-
-          <!-- 핵심 개념 태그 -->
-          <div class="key-concepts">
-            <% bundle.key_concepts.take(5).each do |concept| %>
-              <span class="concept-tag"><%= concept %></span>
+          <div class="bundle-tags">
+            <% bundle.key_concepts.take(4).each do |concept| %>
+              <span class="tag"><%= concept %></span>
             <% end %>
           </div>
         <% end %>
 
-        <!-- 문항 통계 -->
-        <div class="bundle-stats">
-          <div class="stat-item">
-            <span class="stat-icon">📝</span>
-            <span class="stat-text">객관식 <%= bundle.mcq_count %>개</span>
+        <div class="bundle-footer">
+          <div class="bundle-stats-row">
+            <span class="stat-mini"><strong><%= bundle.mcq_count %></strong> 객관식</span>
+            <span class="stat-mini"><strong><%= bundle.constructed_count %></strong> 서술형</span>
+            <span class="stat-mini"><strong><%= bundle.estimated_time_minutes %></strong>분</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-icon">✍️</span>
-            <span class="stat-text">서술형 <%= bundle.constructed_count %>개</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon">⏱️</span>
-            <span class="stat-text"><%= bundle.estimated_time_minutes %>분</span>
-          </div>
-        </div>
 
-        <!-- 액션 버튼 -->
-        <div class="bundle-actions">
-          <%= link_to "상세보기", researcher_passage_path(bundle), class: "btn btn-sm btn-outline" %>
-          <% unless bundle.ai_analyzed? %>
-            <%= button_to "AI 분석", analyze_researcher_passage_path(bundle), method: :post, class: "btn btn-sm btn-ai", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } %>
+          <%# 정답 상태 표시 %>
+          <%
+            mcq_items = bundle.items.where(item_type: 'mcq')
+            mcq_without_answer = mcq_items.count - mcq_items.joins(:item_choices).where(item_choices: { is_correct: true }).distinct.count
+            constructed_items = bundle.items.where(item_type: 'constructed')
+            constructed_without_rubric = constructed_items.count - constructed_items.joins(rubric: :rubric_criteria).distinct.count
+            total_missing = mcq_without_answer + constructed_without_rubric
+          %>
+          <% if total_missing > 0 %>
+            <div class="answer-status-row">
+              <span class="answer-status-warning">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                정답/채점기준 미설정 <%= total_missing %>개
+              </span>
+            </div>
           <% end %>
+
+          <div class="bundle-actions-row">
+            <%= link_to researcher_passage_path(bundle), class: "btn-action btn-view" do %>
+              상세보기
+            <% end %>
+            <% if total_missing > 0 %>
+              <%= link_to researcher_passage_path(bundle, anchor: "answer-key-section"), class: "btn-action btn-answer-key" do %>
+                정답 등록
+              <% end %>
+            <% end %>
+            <% unless bundle.ai_analyzed? %>
+              <%= button_to analyze_researcher_passage_path(bundle), method: :post, class: "btn-action btn-analyze", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } do %>
+                AI 분석
+              <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>
@@ -150,284 +340,1391 @@
 
 <!-- 페이지네이션 -->
 <% if @has_next || @has_prev %>
-  <div class="pagination-section">
+  <div class="pagination-modern">
     <% if @has_prev && @prev_cursor %>
-      <%= link_to "← 이전", researcher_item_bank_path(cursor: @prev_cursor, direction: "backward", search: @search_query, bundle_status: @bundle_status_filter), class: "btn btn-outline" %>
+      <%= link_to researcher_item_bank_path(cursor: @prev_cursor, direction: "backward", search: @search_query, bundle_status: @bundle_status_filter), class: "pagination-btn" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        이전
+      <% end %>
     <% end %>
     <% if @has_next && @next_cursor %>
-      <%= link_to "다음 →", researcher_item_bank_path(cursor: @next_cursor, direction: "forward", search: @search_query, bundle_status: @bundle_status_filter), class: "btn btn-outline" %>
+      <%= link_to researcher_item_bank_path(cursor: @next_cursor, direction: "forward", search: @search_query, bundle_status: @bundle_status_filter), class: "pagination-btn" do %>
+        다음
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <% end %>
     <% end %>
   </div>
 <% end %>
 
-<!-- PDF 업로드 섹션 -->
-<div id="upload-section" class="upload-section">
-  <h3>PDF 업로드</h3>
-  <p>진단 문항이 포함된 PDF 파일을 업로드하여 자동으로 문항을 추출합니다.</p>
-  <%= form_with url: upload_pdf_researcher_dashboard_path, method: :post, multipart: true, local: true, class: "upload-form" do %>
-    <div class="upload-area">
-      <input type="file" name="pdf_file" accept=".pdf" class="file-input" required>
-      <button type="submit" class="btn btn-primary">업로드 및 분석</button>
-    </div>
-  <% end %>
-</div>
-
-<style>
-  .item-bank-header {
-    margin-bottom: 2rem;
+<script>
+  function toggleUploadPanel() {
+    const panel = document.getElementById('upload-panel');
+    if (panel) {
+      panel.classList.toggle('hidden');
+    }
   }
 
-  .stats-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
+  // Turbo 호환 이벤트 리스너
+  function setupUploadPanel() {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('pdf-file-input');
+    const fileNameDisplay = document.getElementById('selected-file-name');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = document.getElementById('submit-btn-text');
+    const uploadForm = document.getElementById('pdf-upload-form');
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressPercentage = document.getElementById('progress-percentage');
+
+    if (!dropzone || !fileInput) {
+      console.warn('Upload panel elements not found');
+      return;
+    }
+
+    // DOM 요소에 초기화 상태 저장 - 가장 확실한 중복 방지 방법
+    if (dropzone.dataset.initialized === 'true') {
+      console.log('Dropzone already initialized, skipping');
+      return;
+    }
+
+    console.log('Initializing upload panel');
+
+    // 드롭존 클릭 시 파일 선택
+    dropzone.addEventListener('click', () => {
+      console.log('Dropzone clicked');
+      fileInput.click();
+    });
+
+    // 드래그 오버
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add('dragover');
+    });
+
+    // 드래그 떠남
+    dropzone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+    });
+
+    // 드롭
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove('dragover');
+
+      if (e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        // Create a new DataTransfer object and add the file
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        updateFileName(file.name);
+        enableSubmitButton();
+        console.log('File dropped:', file.name);
+      }
+    });
+
+    // 파일 선택 변경
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        updateFileName(file.name);
+        enableSubmitButton();
+        console.log('File selected:', file.name);
+      }
+    });
+
+    // 폼 제출 처리
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (!fileInput.files.length) {
+          alert('파일을 선택해주세요.');
+          return;
+        }
+
+        console.log('Starting upload...');
+        startUpload();
+      });
+    }
+
+    function updateFileName(name) {
+      if (fileNameDisplay) {
+        fileNameDisplay.textContent = name;
+        fileNameDisplay.style.display = 'inline-block';
+      }
+    }
+
+    function enableSubmitButton() {
+      if (submitBtn && submitBtnText) {
+        submitBtn.disabled = false;
+        submitBtn.classList.add('enabled');
+        submitBtnText.textContent = '업로드 및 분석';
+      }
+    }
+
+    function disableSubmitButton() {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('enabled');
+      }
+    }
+
+    // 초기 처리 상태 표시
+    function showInitialProcessingState() {
+      const processLogsDiv = document.getElementById('process-logs');
+      const logsContainer = document.getElementById('logs-container');
+
+      if (processLogsDiv && logsContainer) {
+        logsContainer.innerHTML = '';
+        processLogsDiv.style.display = 'block';
+
+        // 초기 메시지 표시
+        const initialMessages = [
+          '📤 PDF 파일 업로드 시작...',
+          '⏳ 서버에서 처리 중입니다...'
+        ];
+
+        initialMessages.forEach((msg, index) => {
+          setTimeout(() => {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.textContent = msg;
+            logEntry.style.opacity = '0';
+            logEntry.style.transform = 'translateY(-10px)';
+            logsContainer.appendChild(logEntry);
+
+            setTimeout(() => {
+              logEntry.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+              logEntry.style.opacity = '1';
+              logEntry.style.transform = 'translateY(0)';
+            }, 10);
+          }, index * 200);
+        });
+      }
+
+      // 초기 진행 상태 표시
+      updateProgress(5, 'PDF 업로드 준비 중...');
+    }
+
+    function startUpload() {
+      // 버튼 비활성화
+      disableSubmitButton();
+      if (submitBtnText) {
+        submitBtnText.textContent = '업로드 중...';
+      }
+
+      // 프로그레스바 표시
+      if (progressContainer) {
+        progressContainer.style.display = 'block';
+      }
+
+      // 드롭존 숨기기
+      if (dropzone) {
+        dropzone.style.display = 'none';
+      }
+
+      // 초기 처리 상태 표시
+      showInitialProcessingState();
+
+      // FormData 생성
+      const formData = new FormData(uploadForm);
+
+      // XMLHttpRequest로 업로드 (진행 상황 추적 가능)
+      const xhr = new XMLHttpRequest();
+
+      // 업로드 진행 상황
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          updateProgress(percentComplete, '파일 업로드 중...');
+        }
+      });
+
+      // 파일 업로드 완료 (서버 처리 시작)
+      xhr.upload.addEventListener('load', () => {
+        // 업로드는 완료, 이제 서버에서 AI 분석 중
+        updateProgress(100, '🤖 AI가 PDF를 분석하고 있습니다...');
+        startPulseAnimation();
+        showProcessingMessage('OpenAI API로 지문과 문항을 추출 중입니다. 약 30초~2분 정도 소요될 수 있습니다.');
+      });
+
+      // 서버 응답 완료
+      xhr.addEventListener('load', () => {
+        stopPulseAnimation();
+
+        try {
+          const response = JSON.parse(xhr.responseText);
+
+          if (xhr.status === 200 && response.success) {
+            // 성공: 100% 완료 표시
+            updateProgress(100, '✅ 분석 완료!');
+
+            // 로그가 있으면 순차적으로 표시
+            if (response.logs && response.logs.length > 0) {
+              // 약간의 지연 후 로그 표시 시작
+              setTimeout(() => {
+                displayProcessLogs(response.logs, () => {
+                  // 모든 로그 표시 완료 후 리디렉션
+                  updateProgress(100, '✅ 모든 처리 완료!');
+                  setTimeout(() => {
+                    window.location.href = response.redirect_url;
+                  }, 1500);
+                });
+              }, 300);
+            } else {
+              // 로그가 없으면 바로 리디렉션
+              updateProgress(100, 'PDF 분석 및 문항 생성 완료!');
+              setTimeout(() => {
+                window.location.href = response.redirect_url;
+              }, 1000);
+            }
+          } else {
+            // 서버에서 에러 반환
+            const errorMsg = response.message || '업로드 중 오류가 발생했습니다.';
+            handleError(errorMsg);
+          }
+        } catch (e) {
+          // JSON 파싱 실패
+          console.error('Failed to parse response:', e);
+          handleError('서버 응답을 처리할 수 없습니다. (상태 코드: ' + xhr.status + ')');
+        }
+      });
+
+      // 에러 처리
+      xhr.addEventListener('error', () => {
+        handleError('네트워크 오류가 발생했습니다.');
+      });
+
+      xhr.addEventListener('abort', () => {
+        handleError('업로드가 취소되었습니다.');
+      });
+
+      // CSRF 토큰 가져오기
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+      xhr.open('POST', uploadForm.action, true);
+      if (csrfToken) {
+        xhr.setRequestHeader('X-CSRF-Token', csrfToken);
+      }
+      // JSON 응답 요청
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.send(formData);
+
+      console.log('Upload started via XHR');
+    }
+
+    function updateProgress(percent, text) {
+      if (progressBar) {
+        progressBar.style.width = percent + '%';
+      }
+      if (progressPercentage) {
+        progressPercentage.textContent = Math.round(percent) + '%';
+      }
+      if (progressText) {
+        progressText.textContent = text;
+      }
+    }
+
+    // AI 처리 중 펄스 애니메이션
+    function startPulseAnimation() {
+      if (progressBar) {
+        progressBar.classList.add('pulse-animation');
+      }
+    }
+
+    function stopPulseAnimation() {
+      if (progressBar) {
+        progressBar.classList.remove('pulse-animation');
+      }
+    }
+
+    // 처리 중 안내 메시지 표시
+    function showProcessingMessage(message) {
+      const processLogsDiv = document.getElementById('process-logs');
+      const logsContainer = document.getElementById('logs-container');
+
+      if (processLogsDiv && logsContainer) {
+        processLogsDiv.style.display = 'block';
+
+        // 기존 로그에 추가
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry log-entry--processing';
+        logEntry.innerHTML = '<span class="processing-spinner"></span> ' + message;
+        logsContainer.appendChild(logEntry);
+
+        // 페이드 인
+        setTimeout(() => {
+          logEntry.style.opacity = '1';
+          logEntry.style.transform = 'translateY(0)';
+        }, 10);
+      }
+    }
+
+    function handleError(message) {
+      stopPulseAnimation();
+      alert(message);
+
+      // 상태 복원
+      if (progressContainer) {
+        progressContainer.style.display = 'none';
+      }
+      if (dropzone) {
+        dropzone.style.display = 'flex';
+      }
+      if (progressBar) {
+        progressBar.style.width = '0%';
+      }
+
+      // 폼 리셋
+      if (uploadForm) {
+        uploadForm.reset();
+      }
+      if (fileNameDisplay) {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+      }
+
+      // 버튼 비활성화 (파일 다시 선택해야 함)
+      disableSubmitButton();
+      if (submitBtnText) {
+        submitBtnText.textContent = '파일을 선택해주세요';
+      }
+    }
+
+    function resetForm() {
+      // 폼 완전 리셋
+      if (uploadForm) {
+        uploadForm.reset();
+      }
+      if (fileNameDisplay) {
+        fileNameDisplay.textContent = '';
+        fileNameDisplay.style.display = 'none';
+      }
+      if (progressContainer) {
+        progressContainer.style.display = 'none';
+      }
+      if (dropzone) {
+        dropzone.style.display = 'flex';
+      }
+      if (progressBar) {
+        progressBar.style.width = '0%';
+      }
+      disableSubmitButton();
+      if (submitBtnText) {
+        submitBtnText.textContent = '파일을 선택해주세요';
+      }
+    }
+
+    // 처리 로그를 순차적으로 표시
+    function displayProcessLogs(logs, onComplete) {
+      const processLogsDiv = document.getElementById('process-logs');
+      const logsContainer = document.getElementById('logs-container');
+
+      if (!processLogsDiv || !logsContainer) {
+        console.warn('Process logs elements not found');
+        if (onComplete) onComplete();
+        return;
+      }
+
+      // 로그 컨테이너 초기화 및 표시
+      logsContainer.innerHTML = '';
+      processLogsDiv.style.display = 'block';
+
+      // 각 로그를 순차적으로 표시 (300ms 간격)
+      let currentIndex = 0;
+      const displayInterval = setInterval(() => {
+        if (currentIndex >= logs.length) {
+          clearInterval(displayInterval);
+          if (onComplete) {
+            setTimeout(onComplete, 500); // 마지막 로그 표시 후 0.5초 대기
+          }
+          return;
+        }
+
+        const log = logs[currentIndex];
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.textContent = log.message;
+
+        // 애니메이션 효과
+        logEntry.style.opacity = '0';
+        logEntry.style.transform = 'translateY(-10px)';
+        logsContainer.appendChild(logEntry);
+
+        // 페이드 인 애니메이션
+        setTimeout(() => {
+          logEntry.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          logEntry.style.opacity = '1';
+          logEntry.style.transform = 'translateY(0)';
+        }, 10);
+
+        // 자동 스크롤
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+
+        currentIndex++;
+      }, 300); // 300ms 간격으로 표시
+    }
+
+    // 초기화 완료 표시 (DOM 요소에 저장)
+    dropzone.dataset.initialized = 'true';
+    console.log('Upload panel initialized successfully');
+  }
+
+  // DOMContentLoaded와 turbo:load 모두 지원
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupUploadPanel);
+  } else {
+    setupUploadPanel();
+  }
+
+  // Turbo 페이지 전환 시 초기화 상태 리셋
+  document.addEventListener('turbo:before-render', () => {
+    console.log('Turbo before render - resetting initialization state');
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      delete dropzone.dataset.initialized;
+    }
+  });
+
+  // 페이지 떠날 때 초기화 상태 리셋
+  document.addEventListener('turbo:before-visit', () => {
+    console.log('Turbo before visit - cleanup');
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      delete dropzone.dataset.initialized;
+    }
+  });
+
+  document.addEventListener('turbo:load', setupUploadPanel);
+</script>
+
+<style>
+  /* 페이지 헤더 */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+
+  .page-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+  }
+
+  .btn-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-upload:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  /* 업로드 패널 */
+  .upload-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100vh;
+    background: white;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .upload-panel.hidden {
+    transform: translateX(100%);
+  }
+
+  .upload-panel-content {
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .upload-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
   }
 
-  .stat-card {
-    background: var(--bg-secondary, #f8f9fa);
-    border-radius: 8px;
-    padding: 1rem;
-    text-align: center;
+  .upload-panel-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
   }
 
-  .stat-value {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--primary, #2563eb);
-  }
-
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--text-muted, #6b7280);
-  }
-
-  .filters-section {
-    background: var(--bg-secondary, #f8f9fa);
-    padding: 1rem;
-    border-radius: 8px;
-  }
-
-  .filters-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: center;
-  }
-
-  .filter-group {
-    flex: 1;
-    min-width: 150px;
-  }
-
-  .search-input, .filter-select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border, #e5e7eb);
+  .btn-close {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #6b7280;
     border-radius: 6px;
-    font-size: 0.875rem;
   }
 
-  .bundles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
+  .btn-close:hover {
+    background: #f3f4f6;
+    color: #111827;
   }
 
-  .bundle-card {
-    background: white;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: 12px;
-    padding: 1.25rem;
-    transition: box-shadow 0.2s, transform 0.2s;
+  .upload-dropzone {
+    position: relative;
+    border: 3px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 3.5rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   }
 
-  .bundle-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  .upload-dropzone:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
   }
 
-  .bundle-card.ai-analyzed {
-    border-left: 4px solid var(--primary, #2563eb);
+  .upload-dropzone.dragover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    transform: scale(1.02);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
   }
 
-  .bundle-header {
+  .upload-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .upload-icon {
+    color: #667eea;
+    filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.2));
+    transition: all 0.3s ease;
+  }
+
+  .upload-dropzone:hover .upload-icon {
+    transform: translateY(-4px);
+    color: #764ba2;
+  }
+
+  .upload-sparkle {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 1.5rem;
+    animation: sparkle 2s ease-in-out infinite;
+  }
+
+  @keyframes sparkle {
+    0%, 100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.2) rotate(180deg);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .upload-text {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .upload-text-main {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    letter-spacing: -0.01em;
+  }
+
+  .upload-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .upload-hint-icon {
+    font-size: 1.125rem;
+  }
+
+  .upload-features {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .upload-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    font-weight: 500;
+  }
+
+  .upload-dropzone:hover .upload-feature {
+    border-color: #c7d2fe;
+    background: #f0f4ff;
+    color: #667eea;
+  }
+
+  /* 레벨 선택기 */
+  .grade-level-selector {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #fafbfc 0%, #f3f4f6 100%);
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .grade-level-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 1rem;
+  }
+
+  .grade-level-label svg {
+    color: #667eea;
+  }
+
+  .required-mark {
+    color: #ef4444;
+    font-weight: 600;
+  }
+
+  .grade-level-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .grade-level-option {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+
+  .grade-level-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .grade-option-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+  }
+
+  .grade-level-option:hover .grade-option-content {
+    border-color: #c7d2fe;
+    background: #f0f4ff;
+  }
+
+  .grade-level-option input[type="radio"]:checked + .grade-option-content {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  }
+
+  .grade-option-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    border-radius: 6px;
+    min-width: 42px;
+    letter-spacing: 0.02em;
+  }
+
+  .grade-option-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #4b5563;
+  }
+
+  .grade-level-option input[type="radio"]:checked + .grade-option-content .grade-option-text {
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .file-input-hidden {
+    display: none;
+  }
+
+  .upload-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .selected-file {
+    font-size: 0.8125rem;
+    color: #667eea;
+    display: none;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-submit-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    margin-left: auto;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+  }
+
+  .btn-submit-upload.enabled {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    opacity: 1;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-submit-upload.enabled:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-submit-upload:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* 프로그레스바 스타일 */
+  .upload-progress {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+  }
+
+  .progress-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
   }
 
-  .bundle-code {
-    font-family: monospace;
+  .progress-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary, #111827);
+  }
+
+  .progress-percentage {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary, #667eea);
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary, #e5e7eb);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  /* AI 처리 중 펄스 애니메이션 */
+  .progress-bar.pulse-animation {
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+    }
+    50% {
+      opacity: 0.7;
+      box-shadow: 0 0 20px rgba(102, 126, 234, 0.8), 0 0 30px rgba(118, 75, 162, 0.6);
+    }
+  }
+
+  .progress-hint {
+    margin-top: 0.75rem;
     font-size: 0.75rem;
     color: var(--text-muted, #6b7280);
-    background: var(--bg-secondary, #f3f4f6);
+    text-align: center;
+  }
+
+  /* 처리 로그 스타일 */
+  .process-logs {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+  }
+
+  .logs-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin-bottom: 0.75rem;
+  }
+
+  .logs-container {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 6px;
+    padding: 0.75rem;
+  }
+
+  .log-entry {
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #374151);
+    padding: 0.375rem 0;
+    font-family: 'Consolas', 'Monaco', monospace;
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* AI 처리 중 로그 엔트리 */
+  .log-entry--processing {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #667eea;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  /* 처리 중 스피너 */
+  .processing-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .log-entry:not(:last-child) {
+    border-bottom: 1px solid var(--border-light, #f3f4f6);
+  }
+
+  /* 통계 카드 */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card-modern {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-icon-blue { background: #dbeafe; color: #2563eb; }
+  .stat-icon-green { background: #d1fae5; color: #059669; }
+  .stat-icon-purple { background: #ede9fe; color: #7c3aed; }
+  .stat-icon-indigo { background: #e0e7ff; color: #4f46e5; }
+
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    display: block;
+  }
+
+  .stat-text {
+    font-size: 0.8125rem;
+    color: #6b7280;
+  }
+
+  /* 필터 바 */
+  .filters-bar {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filters-form-modern {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+  }
+
+  .search-input-modern {
+    width: 100%;
+    padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white;
+  }
+
+  .search-input-modern:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .filter-select-modern {
+    padding: 0.625rem 2rem 0.625rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 8px center;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .btn-search {
+    padding: 0.625rem 1.25rem;
+    background: #111827;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .btn-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  /* 번들 그리드 */
+  .bundles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .bundle-card-modern {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bundle-card-modern:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .bundle-card-modern.ai-analyzed {
+    border-left: 3px solid #667eea;
+  }
+
+  .bundle-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .bundle-code-tag {
+    font-size: 0.6875rem;
+    background: #f3f4f6;
+    color: #6b7280;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
   }
 
   .bundle-badges {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.375rem;
   }
 
-  .badge {
-    font-size: 0.7rem;
+  .status-badge {
+    font-size: 0.6875rem;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     font-weight: 500;
   }
 
-  .badge-draft { background: #fef3c7; color: #92400e; }
-  .badge-active { background: #d1fae5; color: #065f46; }
-  .badge-archived { background: #e5e7eb; color: #374151; }
-  .badge-ai { background: #dbeafe; color: #1e40af; }
+  .status-draft { background: #fef3c7; color: #92400e; }
+  .status-active { background: #d1fae5; color: #065f46; }
+  .status-archived { background: #f3f4f6; color: #6b7280; }
 
-  .bundle-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem 0;
-    color: var(--text-primary, #111827);
-  }
-
-  .bundle-summary {
-    font-size: 0.875rem;
-    color: var(--text-secondary, #4b5563);
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  .ai-analysis-section {
-    background: var(--bg-secondary, #f8fafc);
-    border-radius: 8px;
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .analysis-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .analysis-label {
-    color: var(--text-muted, #6b7280);
-  }
-
-  .analysis-value {
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: #dbeafe;
+    color: #1e40af;
     font-weight: 500;
   }
 
-  .difficulty-badge {
-    padding: 0.15rem 0.4rem;
+  .grade-level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    min-width: 32px;
+  }
+
+  .bundle-title-modern {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+  }
+
+  .bundle-excerpt {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    flex: 1;
+  }
+
+  .bundle-meta {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .meta-item.difficulty-easy { color: #059669; }
+  .meta-item.difficulty-medium { color: #d97706; }
+  .meta-item.difficulty-hard { color: #dc2626; }
+
+  .bundle-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag {
+    font-size: 0.6875rem;
+    background: #f0f4ff;
+    color: #4f46e5;
+    padding: 0.2rem 0.5rem;
+    border-radius: 99px;
+  }
+
+  .bundle-footer {
+    border-top: 1px solid #f3f4f6;
+    padding-top: 1rem;
+    margin-top: auto;
+  }
+
+  .bundle-stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stat-mini {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .stat-mini strong {
+    color: #111827;
+  }
+
+  .bundle-actions-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-action {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+
+  .btn-view {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .btn-view:hover {
+    background: #e5e7eb;
+  }
+
+  .btn-analyze {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-answer-key {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+  }
+
+  .btn-answer-key:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  }
+
+  /* 정답 상태 표시 */
+  .answer-status-row {
+    margin-bottom: 0.75rem;
+  }
+
+  .answer-status-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
   }
 
-  .difficulty-easy { background: #d1fae5; color: #065f46; }
-  .difficulty-medium { background: #fef3c7; color: #92400e; }
-  .difficulty-hard { background: #fee2e2; color: #991b1b; }
-
-  .key-concepts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+  .answer-status-warning svg {
+    flex-shrink: 0;
   }
 
-  .concept-tag {
-    background: var(--bg-tertiary, #e0e7ff);
-    color: var(--primary, #3730a3);
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-  }
-
-  .bundle-stats {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border, #e5e7eb);
-  }
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary, #4b5563);
-  }
-
-  .bundle-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .btn-sm {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border, #d1d5db);
-    color: var(--text-primary, #374151);
-  }
-
-  .btn-ai {
-    background: var(--primary, #2563eb);
-    color: white;
-    border: none;
-  }
-
-  .pagination-section {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border, #e5e7eb);
-  }
-
-  .upload-section {
-    margin-top: 3rem;
-    padding: 2rem;
-    background: var(--bg-secondary, #f8f9fa);
-    border-radius: 12px;
-    text-align: center;
-  }
-
-  .upload-section h3 {
-    margin-bottom: 0.5rem;
-  }
-
-  .upload-area {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .empty-state {
+  /* 빈 상태 */
+  .empty-state-modern {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 3rem;
-    color: var(--text-muted, #6b7280);
+    padding: 4rem 2rem;
+    background: #fafafa;
+    border-radius: 16px;
+    border: 2px dashed #e5e7eb;
+  }
+
+  .empty-state-modern svg {
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state-modern h3 {
+    font-size: 1.125rem;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .empty-state-modern p {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .btn-upload-empty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* 페이지네이션 */
+  .pagination-modern {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .pagination-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  /* 반응형 */
+  @media (max-width: 1024px) {
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .stats-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .upload-panel {
+      width: 100%;
+    }
+
+    .bundles-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
-
-<%
-  # Helper methods defined inline
-  def status_label(status)
-    { 'draft' => '작업중', 'active' => '배포가능', 'archived' => '보관됨' }[status] || status
-  end
-
-  def difficulty_label(level)
-    { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[level] || level
-  end
-%>

@@ -2,7 +2,7 @@ class Researcher::StimuliController < ApplicationController
   layout "unified_portal"
   before_action :require_login
   before_action -> { require_role("researcher") }
-  before_action :set_stimulus, only: %i[show edit update destroy analyze duplicate]
+  before_action :set_stimulus, only: %i[show edit update destroy analyze duplicate archive restore upload_answer_key bulk_update_answers download_answer_template upload_answer_template]
   before_action :set_role
 
   def show
@@ -71,6 +71,170 @@ class Researcher::StimuliController < ApplicationController
       Rails.logger.error "[Stimulus#duplicate] Error: #{e.message}"
       redirect_to researcher_passage_path(@stimulus),
                   alert: "복제 중 오류가 발생했습니다: #{e.message}"
+    end
+  end
+
+  # Archive stimulus (hide from list, but keep data)
+  def archive
+    if @stimulus.update(bundle_status: "archived")
+      redirect_to researcher_item_bank_path,
+                  notice: "진단지 세트가 보관처리 되었습니다. 지문과 문항 데이터는 유지됩니다."
+    else
+      redirect_to researcher_passage_path(@stimulus),
+                  alert: "보관처리에 실패했습니다."
+    end
+  end
+
+  # Restore stimulus from archive
+  def restore
+    if @stimulus.update(bundle_status: "draft")
+      redirect_to researcher_passage_path(@stimulus),
+                  notice: "진단지 세트가 복원되었습니다."
+    else
+      redirect_to researcher_passage_path(@stimulus),
+                  alert: "복원에 실패했습니다."
+    end
+  end
+
+  # Upload answer key PDF and auto-populate answers/rubrics
+  def upload_answer_key
+    Rails.logger.info "[Upload Answer Key] Action called, params: #{params.keys.join(', ')}"
+    Rails.logger.info "[Upload Answer Key] answer_key_pdf present: #{params[:answer_key_pdf].present?}"
+
+    unless params[:answer_key_pdf].present?
+      Rails.logger.warn "[Upload Answer Key] No file provided"
+      redirect_to researcher_passage_path(@stimulus), alert: "정답지 PDF 파일을 선택해주세요."
+      return
+    end
+
+    uploaded_file = params[:answer_key_pdf]
+
+    unless uploaded_file.content_type == "application/pdf"
+      redirect_to researcher_passage_path(@stimulus), alert: "PDF 파일만 업로드할 수 있습니다."
+      return
+    end
+
+    begin
+      # Save uploaded file to temp location
+      temp_path = Rails.root.join("tmp", "answer_key_#{Time.now.to_i}_#{uploaded_file.original_filename}")
+      Rails.logger.info "[Upload Answer Key] Saving file to: #{temp_path}"
+      File.open(temp_path, "wb") { |f| f.write(uploaded_file.read) }
+      Rails.logger.info "[Upload Answer Key] File saved, size: #{File.size(temp_path)} bytes"
+
+      # Parse and update answers
+      Rails.logger.info "[Upload Answer Key] Starting parse service for stimulus #{@stimulus.id}"
+      parser = AnswerKeyParserService.new(temp_path.to_s, @stimulus)
+      results = parser.parse_and_update
+      Rails.logger.info "[Upload Answer Key] Parse complete: #{results.inspect}"
+
+      # Clean up temp file
+      File.delete(temp_path) if File.exist?(temp_path)
+
+      # Recalculate bundle metadata
+      @stimulus.recalculate_bundle_metadata!
+
+      if results[:errors].any?
+        redirect_to researcher_passage_path(@stimulus),
+                    alert: "정답지 처리 중 오류: #{results[:errors].join(', ')}"
+      else
+        redirect_to researcher_passage_path(@stimulus),
+                    notice: "정답지 등록 완료! 객관식 #{results[:mcq_updated]}개, 루브릭 #{results[:rubrics_updated]}개 업데이트"
+      end
+    rescue => e
+      Rails.logger.error "[Upload Answer Key] Error: #{e.message}\n#{e.backtrace.join("\n")}"
+      redirect_to researcher_passage_path(@stimulus),
+                  alert: "정답지 처리 중 오류가 발생했습니다: #{e.message}"
+    end
+  end
+
+  # Bulk update answers for all items in stimulus
+  def bulk_update_answers
+    answers_params = params[:answers] || {}
+
+    updated_count = 0
+    errors = []
+
+    @stimulus.items.each do |item|
+      item_params = answers_params[item.id.to_s]
+      next unless item_params
+
+      if item.mcq?
+        # Update MCQ correct answer
+        correct_choice_id = item_params[:correct_choice_id]
+        if correct_choice_id.present?
+          item.item_choices.update_all(is_correct: false)
+          choice = item.item_choices.find_by(id: correct_choice_id)
+          if choice
+            choice.update(is_correct: true)
+            updated_count += 1
+          end
+        end
+      end
+
+      # Update explanation
+      if item_params[:explanation].present?
+        item.update(explanation: item_params[:explanation])
+      end
+    end
+
+    # Recalculate bundle metadata
+    @stimulus.recalculate_bundle_metadata!
+
+    redirect_to researcher_passage_path(@stimulus),
+                notice: "#{updated_count}개 문항의 정답이 업데이트되었습니다."
+  end
+
+  # Download answer key template CSV
+  def download_answer_template
+    service = AnswerKeyTemplateService.new(@stimulus)
+    csv_content = service.generate_template
+
+    filename = "정답지_템플릿_#{@stimulus.code}_#{Date.current.strftime('%Y%m%d')}.csv"
+
+    send_data csv_content,
+              filename: filename,
+              type: "text/csv; charset=utf-8",
+              disposition: "attachment"
+  end
+
+  # Upload filled answer key template
+  def upload_answer_template
+    unless params[:answer_template].present?
+      redirect_to researcher_passage_path(@stimulus), alert: "CSV 파일을 선택해주세요."
+      return
+    end
+
+    uploaded_file = params[:answer_template]
+
+    # Accept CSV and Excel files
+    allowed_types = ["text/csv", "text/plain", "application/vnd.ms-excel",
+                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+
+    unless allowed_types.include?(uploaded_file.content_type) || uploaded_file.original_filename.end_with?(".csv")
+      redirect_to researcher_passage_path(@stimulus), alert: "CSV 파일만 업로드할 수 있습니다."
+      return
+    end
+
+    begin
+      csv_content = uploaded_file.read.force_encoding("UTF-8")
+
+      service = AnswerKeyTemplateService.new(@stimulus)
+      results = service.process_template(csv_content)
+
+      # Recalculate bundle metadata
+      @stimulus.recalculate_bundle_metadata!
+
+      if results[:errors].any?
+        redirect_to researcher_passage_path(@stimulus),
+                    alert: "일부 항목 처리 중 오류: #{results[:errors].first(3).join(', ')}"
+      else
+        redirect_to researcher_passage_path(@stimulus),
+                    notice: "정답 등록 완료! 객관식 #{results[:mcq_updated]}개, 루브릭 #{results[:rubrics_updated]}개 업데이트"
+      end
+    rescue => e
+      Rails.logger.error "[Upload Answer Template] Error: #{e.message}\n#{e.backtrace.join("\n")}"
+      redirect_to researcher_passage_path(@stimulus),
+                  alert: "템플릿 처리 중 오류가 발생했습니다: #{e.message}"
     end
   end
 

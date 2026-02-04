@@ -24,14 +24,60 @@
       </div>
     </div>
     <div class="header-actions">
-      <%= link_to "편집", edit_researcher_stimulus_path(@stimulus), class: "btn btn-outline" %>
-      <%= button_to "복제", duplicate_researcher_passage_path(@stimulus), method: :post, class: "btn btn-outline", data: { turbo_confirm: "이 진단지 세트를 복제하시겠습니까? 모든 문항도 함께 복제됩니다." } %>
-      <% unless @stimulus.ai_analyzed? %>
-        <%= button_to "AI 분석", analyze_researcher_passage_path(@stimulus), method: :post, class: "btn btn-primary", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } %>
-      <% else %>
-        <%= button_to "AI 재분석", analyze_researcher_passage_path(@stimulus), method: :post, class: "btn btn-outline", data: { turbo_confirm: "AI 분석을 다시 실행하시겠습니까?" } %>
+      <%= link_to edit_researcher_stimulus_path(@stimulus), class: "action-btn action-btn-outline" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>편집</span>
       <% end %>
-      <%= link_to "목록으로", researcher_item_bank_path, class: "btn btn-secondary" %>
+      <%= button_to duplicate_researcher_passage_path(@stimulus), method: :post, class: "action-btn action-btn-outline", data: { turbo_confirm: "이 진단지 세트를 복제하시겠습니까? 모든 문항도 함께 복제됩니다." } do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>복제</span>
+      <% end %>
+      <% unless @stimulus.ai_analyzed? %>
+        <%= button_to analyze_researcher_passage_path(@stimulus), method: :post, class: "action-btn action-btn-ai", data: { turbo_confirm: "AI 분석을 실행하시겠습니까?" } do %>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <span>AI 분석</span>
+        <% end %>
+      <% else %>
+        <%= button_to analyze_researcher_passage_path(@stimulus), method: :post, class: "action-btn action-btn-outline", data: { turbo_confirm: "AI 분석을 다시 실행하시겠습니까?" } do %>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+          </svg>
+          <span>AI 재분석</span>
+        <% end %>
+      <% end %>
+      <% if @stimulus.bundle_status != 'archived' %>
+        <%= button_to archive_researcher_passage_path(@stimulus), method: :post, class: "action-btn action-btn-archive", data: { turbo_confirm: "이 진단지 세트를 보관처리 하시겠습니까?\n\n지문과 문항 데이터는 삭제되지 않으며, 목록에서만 숨겨집니다." } do %>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+          </svg>
+          <span>보관처리</span>
+        <% end %>
+      <% else %>
+        <%= button_to restore_researcher_passage_path(@stimulus), method: :post, class: "action-btn action-btn-restore", data: { turbo_confirm: "이 진단지 세트를 보관 해제하시겠습니까?" } do %>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+          </svg>
+          <span>보관 해제</span>
+        <% end %>
+      <% end %>
+      <%= link_to researcher_item_bank_path, class: "action-btn action-btn-back" do %>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>목록으로</span>
+      <% end %>
     </div>
   </div>
 
@@ -112,18 +158,40 @@
   <!-- 연결된 문항 목록 -->
   <div class="items-section">
     <div class="section-header">
-      <h3>연결된 문항 (<%= @stimulus.items.count %>개)</h3>
-      <%= link_to "+ 문항 추가", researcher_item_create_path(stimulus_id: @stimulus.id), class: "btn btn-sm btn-outline" %>
+      <div class="section-header-left">
+        <h3>연결된 문항 (<span id="itemCount"><%= @stimulus.items.count %></span>개)</h3>
+        <div class="item-type-filters">
+          <button class="filter-btn active" data-filter="all">전체</button>
+          <button class="filter-btn" data-filter="mcq">객관식 (<span class="mcq-count"><%= @stimulus.items.where(item_type: 'mcq').count %></span>)</button>
+          <button class="filter-btn" data-filter="constructed">서술형 (<span class="constructed-count"><%= @stimulus.items.where(item_type: 'constructed').count %></span>)</button>
+        </div>
+      </div>
+      <%= link_to researcher_item_create_path(stimulus_id: @stimulus.id), class: "action-btn action-btn-add action-btn-sm" do %>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>문항 추가</span>
+      <% end %>
     </div>
 
     <% if @stimulus.items.any? %>
       <div class="items-grid">
         <% @stimulus.items.includes(:item_choices, rubric: { rubric_criteria: :rubric_levels }).each do |item| %>
-          <div class="item-card item-type-<%= item.item_type %>">
+          <div class="item-card item-type-<%= item.item_type %>" data-item-type="<%= item.item_type %>">
             <div class="item-header">
               <span class="item-code"><%= item.code %></span>
-              <span class="item-type-badge"><%= item.item_type == 'mcq' ? '객관식' : '서술형' %></span>
+              <span class="item-type-badge item-type-badge-<%= item.item_type %>"><%= item.item_type == 'mcq' ? '객관식' : '서술형' %></span>
               <span class="difficulty-badge difficulty-<%= item.difficulty %>"><%= { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[item.difficulty] %></span>
+              <% if item.item_type == 'mcq' %>
+                <% if item.item_choices.none?(&:is_correct) %>
+                  <span class="answer-status-badge answer-missing">정답 미설정</span>
+                <% end %>
+              <% elsif item.item_type == 'constructed' %>
+                <% if item.rubric.blank? || item.rubric.rubric_criteria.count <= 1 %>
+                  <span class="answer-status-badge answer-missing">채점기준 미설정</span>
+                <% end %>
+              <% end %>
             </div>
             <p class="item-prompt"><%= truncate(item.prompt, length: 200) %></p>
 
@@ -132,7 +200,7 @@
                 <% item.item_choices.each_with_index do |choice, idx| %>
                   <div class="choice <%= 'correct' if choice.is_correct %>">
                     <span class="choice-num"><%= (idx + 1).to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
-                    <%= choice.choice_text %>
+                    <%= choice.content %>
                     <% if choice.is_correct %>
                       <span class="correct-marker">정답</span>
                     <% end %>
@@ -146,7 +214,25 @@
             <% end %>
 
             <div class="item-actions">
-              <%= link_to "편집", edit_researcher_item_path(item), class: "btn btn-xs btn-outline" %>
+              <%
+                needs_answer_setup = false
+                button_text = "편집"
+
+                if item.item_type == 'mcq' && item.item_choices.none?(&:is_correct)
+                  needs_answer_setup = true
+                  button_text = "정답 설정"
+                elsif item.item_type == 'constructed' && (item.rubric.blank? || item.rubric.rubric_criteria.count <= 1)
+                  needs_answer_setup = true
+                  button_text = "채점기준 설정"
+                end
+              %>
+              <%= link_to edit_researcher_item_path(item), class: "action-btn action-btn-#{needs_answer_setup ? 'primary' : 'outline'} action-btn-xs" do %>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span><%= button_text %></span>
+              <% end %>
             </div>
           </div>
         <% end %>
@@ -154,7 +240,15 @@
     <% else %>
       <div class="empty-items">
         <p>연결된 문항이 없습니다.</p>
-        <p><%= link_to "문항 추가하기", researcher_item_create_path(stimulus_id: @stimulus.id), class: "btn btn-primary" %></p>
+        <p>
+          <%= link_to researcher_item_create_path(stimulus_id: @stimulus.id), class: "action-btn action-btn-primary" do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>문항 추가하기</span>
+          <% end %>
+        </p>
       </div>
     <% end %>
   </div>
@@ -182,8 +276,179 @@
     </div>
   </div>
 
+  <!-- 정답지 업로드 섹션 -->
+  <% if @stimulus.items.any? %>
+  <div class="answer-key-section" id="answer-key-section">
+    <div class="section-header-full">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        정답/채점기준 등록
+      </h3>
+      <p class="section-description">정답지 PDF를 업로드하면 AI가 자동으로 정답과 채점기준을 추출합니다.</p>
+    </div>
+
+    <!-- 정답 상태 요약 -->
+    <div class="answer-status-summary">
+      <%
+        mcq_items = @stimulus.items.where(item_type: 'mcq')
+        mcq_with_answer = mcq_items.joins(:item_choices).where(item_choices: { is_correct: true }).distinct.count
+        constructed_items = @stimulus.items.where(item_type: 'constructed')
+        constructed_with_rubric = constructed_items.joins(rubric: :rubric_criteria).distinct.count
+      %>
+      <div class="status-summary-item <%= mcq_with_answer == mcq_items.count ? 'complete' : 'incomplete' %>">
+        <span class="status-icon">
+          <% if mcq_with_answer == mcq_items.count && mcq_items.count > 0 %>✓<% else %>○<% end %>
+        </span>
+        <span class="status-text">객관식 정답: <%= mcq_with_answer %>/<%= mcq_items.count %>개 설정</span>
+      </div>
+      <div class="status-summary-item <%= constructed_with_rubric == constructed_items.count ? 'complete' : 'incomplete' %>">
+        <span class="status-icon">
+          <% if constructed_with_rubric == constructed_items.count && constructed_items.count > 0 %>✓<% else %>○<% end %>
+        </span>
+        <span class="status-text">서술형 채점기준: <%= constructed_with_rubric %>/<%= constructed_items.count %>개 설정</span>
+      </div>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <div class="answer-tabs">
+      <button class="answer-tab active" data-tab="template">템플릿 등록</button>
+      <button class="answer-tab" data-tab="bulk-edit">일괄 편집</button>
+    </div>
+
+    <!-- 템플릿 등록 탭 -->
+    <div class="answer-tab-content active" id="tab-template">
+      <div class="template-section">
+        <!-- Step 1: 템플릿 다운로드 -->
+        <div class="template-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>정답지 템플릿 다운로드</h4>
+            <p>문항 ID가 포함된 CSV 템플릿을 다운로드합니다.</p>
+            <%= link_to download_answer_template_researcher_passage_path(@stimulus), class: "action-btn action-btn-outline" do %>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>템플릿 다운로드 (CSV)</span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Step 2: 정답 입력 안내 -->
+        <div class="template-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>정답 입력</h4>
+            <p>다운로드한 템플릿 파일을 Excel이나 텍스트 편집기로 열어 "정답" 열에 값을 입력합니다.</p>
+            <div class="template-guide">
+              <div class="guide-item">
+                <span class="guide-label">객관식:</span>
+                <span class="guide-value">정답 번호 (예: 3)</span>
+              </div>
+              <div class="guide-item">
+                <span class="guide-label">서술형:</span>
+                <span class="guide-value">채점기준명:점수 (예: 내용이해:3, 표현력:3)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: 템플릿 업로드 -->
+        <div class="template-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>정답지 업로드</h4>
+            <p>정답을 입력한 CSV 파일을 업로드합니다.</p>
+            <%= form_with url: upload_answer_template_researcher_passage_path(@stimulus), method: :post, multipart: true, class: "template-upload-form", data: { turbo: false } do |f| %>
+              <div class="upload-area-compact" id="templateDropZone">
+                <input type="file" name="answer_template" id="templateFile" accept=".csv,.xlsx" class="file-input-hidden">
+                <label for="templateFile" class="upload-label-compact">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <polyline points="9 15 12 12 15 15"></polyline>
+                  </svg>
+                  <span>CSV 파일 선택</span>
+                </label>
+                <span class="selected-template-name" id="templateFileName"></span>
+              </div>
+              <div class="template-upload-actions">
+                <%= f.submit "정답 등록", class: "action-btn action-btn-primary", id: "uploadTemplateBtn", disabled: true %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 일괄 편집 탭 -->
+    <div class="answer-tab-content" id="tab-bulk-edit">
+      <%= form_with url: bulk_update_answers_researcher_passage_path(@stimulus), method: :patch, class: "bulk-edit-form", data: { turbo: false } do |f| %>
+        <div class="bulk-edit-grid">
+          <% @stimulus.items.order(:created_at).each_with_index do |item, index| %>
+            <div class="bulk-edit-item item-type-<%= item.item_type %>">
+              <div class="bulk-edit-header">
+                <span class="item-number"><%= index + 1 %></span>
+                <span class="item-code"><%= item.code %></span>
+                <span class="item-type-badge-mini item-type-<%= item.item_type %>">
+                  <%= item.item_type == 'mcq' ? '객관식' : '서술형' %>
+                </span>
+              </div>
+
+              <div class="bulk-edit-prompt">
+                <%= truncate(item.prompt, length: 80) %>
+              </div>
+
+              <% if item.item_type == 'mcq' %>
+                <div class="bulk-edit-choices">
+                  <% item.item_choices.order(:choice_no).each do |choice| %>
+                    <label class="bulk-choice-option">
+                      <input type="radio"
+                             name="answers[<%= item.id %>][correct_choice_id]"
+                             value="<%= choice.id %>"
+                             <%= 'checked' if choice.is_correct %>>
+                      <span class="choice-num"><%= choice.choice_no %></span>
+                      <span class="choice-text"><%= truncate(choice.content, length: 40) %></span>
+                    </label>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="bulk-edit-rubric-link">
+                  <%= link_to edit_researcher_item_path(item), class: "rubric-edit-link" do %>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    채점기준 편집
+                  <% end %>
+                  <% if item.rubric&.rubric_criteria&.any? %>
+                    <span class="rubric-status complete">✓ <%= item.rubric.rubric_criteria.count %>개 기준</span>
+                  <% else %>
+                    <span class="rubric-status incomplete">미설정</span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="bulk-edit-actions">
+          <%= f.submit "변경사항 저장", class: "action-btn action-btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <% end %>
+
   <!-- 버전 이력 -->
-  <% if @stimulus.versions.any? %>
+  <% if @stimulus.respond_to?(:versions) && @stimulus.versions.any? %>
     <div class="version-history-card">
       <h3>수정 이력</h3>
       <div class="version-list">
@@ -279,6 +544,137 @@
   .header-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Modern Action Buttons */
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .action-btn svg {
+    flex-shrink: 0;
+  }
+
+  .action-btn-outline {
+    background: white;
+    border: 1px solid var(--border, #d1d5db);
+    color: var(--text-secondary, #4b5563);
+  }
+
+  .action-btn-outline:hover {
+    background: var(--bg-secondary, #f3f4f6);
+    border-color: var(--primary, #2563eb);
+    color: var(--primary, #2563eb);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+  }
+
+  .action-btn-ai {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+
+  .action-btn-ai:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #4338ca 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+  }
+
+  .action-btn-archive {
+    background: transparent;
+    border: 1px solid #f59e0b;
+    color: #d97706;
+  }
+
+  .action-btn-archive:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+
+  .action-btn-restore {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
+  .action-btn-restore:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  }
+
+  .action-btn-back {
+    background: var(--bg-secondary, #f3f4f6);
+    border: 1px solid var(--border, #e5e7eb);
+    color: var(--text-muted, #6b7280);
+  }
+
+  .action-btn-back:hover {
+    background: var(--bg-tertiary, #e5e7eb);
+    color: var(--text-primary, #374151);
+  }
+
+  .action-btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .action-btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  .action-btn-add {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  }
+
+  .action-btn-add:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+  }
+
+  .action-btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .action-btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 5px;
+    gap: 0.25rem;
+  }
+
+  /* Focus states for accessibility */
+  .action-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+  }
+
+  .action-btn:active {
+    transform: translateY(0);
   }
 
   .ai-analysis-card, .passage-body-card, .items-section, .stats-card {
@@ -400,10 +796,58 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    gap: 16px;
+  }
+
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
   .section-header h3 {
     margin: 0;
+  }
+
+  /* 문항 타입 필터 버튼 */
+  .item-type-filters {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #6b7280;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+  }
+
+  .filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  }
+
+  .filter-btn .mcq-count,
+  .filter-btn .constructed-count {
+    font-weight: 600;
+  }
+
+  /* 문항 카드 필터링 시 숨김 */
+  .item-card.hidden {
+    display: none;
   }
 
   .items-grid {
@@ -440,8 +884,21 @@
     font-size: 0.7rem;
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
-    background: #dbeafe;
+    font-weight: 600;
+  }
+
+  /* 객관식: 파란색 */
+  .item-type-badge-mcq {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
     color: #1e40af;
+    border: 1px solid #93c5fd;
+  }
+
+  /* 서술형: 보라색 */
+  .item-type-badge-constructed {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    color: #7c3aed;
+    border: 1px solid #d8b4fe;
   }
 
   .difficulty-badge {
@@ -453,6 +910,25 @@
   .difficulty-badge.difficulty-easy { background: #d1fae5; color: #065f46; }
   .difficulty-badge.difficulty-medium { background: #fef3c7; color: #92400e; }
   .difficulty-badge.difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+  .answer-status-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+    animation: pulse-warning 2s ease-in-out infinite;
+  }
+
+  .answer-status-badge.answer-missing {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fbbf24;
+  }
+
+  @keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
 
   .item-prompt {
     margin: 0.5rem 0;
@@ -555,6 +1031,551 @@
     }
   }
 
+  /* 정답지 업로드 섹션 */
+  .answer-key-section {
+    background: white;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header-full {
+    margin-bottom: 1rem;
+  }
+
+  .section-header-full h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary, #111827);
+  }
+
+  .section-header-full h3 svg {
+    color: #667eea;
+  }
+
+  .section-description {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    margin: 0;
+  }
+
+  /* 정답 상태 요약 */
+  .answer-status-summary {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .status-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .status-summary-item.complete .status-icon {
+    color: #10b981;
+    font-weight: bold;
+  }
+
+  .status-summary-item.incomplete .status-icon {
+    color: #f59e0b;
+  }
+
+  .status-summary-item.complete .status-text {
+    color: #059669;
+  }
+
+  .status-summary-item.incomplete .status-text {
+    color: #d97706;
+  }
+
+  /* 탭 메뉴 */
+  .answer-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border, #e5e7eb);
+    margin-bottom: 1.5rem;
+  }
+
+  .answer-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted, #6b7280);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+
+  .answer-tab:hover {
+    color: var(--primary, #667eea);
+  }
+
+  .answer-tab.active {
+    color: var(--primary, #667eea);
+    border-bottom-color: var(--primary, #667eea);
+  }
+
+  .answer-tab-content {
+    display: none;
+  }
+
+  .answer-tab-content.active {
+    display: block;
+  }
+
+  /* PDF 업로드 영역 */
+  .answer-key-upload-form {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s;
+    background: var(--bg-secondary, #f9fafb);
+  }
+
+  .upload-area:hover,
+  .upload-area.dragover {
+    border-color: #667eea;
+    background: #f0f4ff;
+  }
+
+  .file-input-hidden {
+    display: none;
+  }
+
+  .upload-label {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .upload-label svg {
+    color: #9ca3af;
+  }
+
+  .upload-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+  }
+
+  .upload-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #667eea;
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+
+  .file-icon {
+    font-size: 1.5rem;
+  }
+
+  .file-name {
+    font-weight: 600;
+    color: #667eea;
+  }
+
+  .file-remove {
+    background: #fee2e2;
+    border: none;
+    color: #dc2626;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .upload-actions {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  .upload-note {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .action-btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+    position: relative;
+  }
+
+  .action-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* 일괄 편집 */
+  .bulk-edit-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .bulk-edit-item {
+    padding: 1rem;
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: 8px;
+    border-left: 3px solid #d1d5db;
+  }
+
+  .bulk-edit-item.item-type-mcq {
+    border-left-color: #2563eb;
+  }
+
+  .bulk-edit-item.item-type-constructed {
+    border-left-color: #7c3aed;
+  }
+
+  .bulk-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .item-type-badge-mini {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .item-type-badge-mini.item-type-mcq {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .item-type-badge-mini.item-type-constructed {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+
+  .bulk-edit-prompt {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #4b5563);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .bulk-edit-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .bulk-choice-option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+  }
+
+  .bulk-choice-option:hover {
+    border-color: #667eea;
+  }
+
+  .bulk-choice-option:has(input:checked) {
+    background: #d1fae5;
+    border-color: #10b981;
+  }
+
+  .bulk-choice-option input {
+    margin: 0;
+  }
+
+  .bulk-choice-option .choice-num {
+    font-weight: 700;
+    color: #6b7280;
+  }
+
+  .bulk-choice-option:has(input:checked) .choice-num {
+    color: #059669;
+  }
+
+  .bulk-choice-option .choice-text {
+    color: #374151;
+  }
+
+  .bulk-edit-rubric-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .rubric-edit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: white;
+    border: 1px solid #d8b4fe;
+    border-radius: 6px;
+    color: #7c3aed;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .rubric-edit-link:hover {
+    background: #f3e8ff;
+    border-color: #7c3aed;
+  }
+
+  .rubric-status {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .rubric-status.complete {
+    color: #059669;
+  }
+
+  .rubric-status.incomplete {
+    color: #d97706;
+  }
+
+  .bulk-edit-actions {
+    margin-top: 1.5rem;
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e5e7eb);
+  }
+
+  /* Template Registration Styles */
+  .template-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .template-step {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-secondary, #f9fafb);
+    border-radius: 10px;
+    border: 1px solid var(--border, #e5e7eb);
+    transition: all 0.2s;
+  }
+
+  .template-step:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-primary, #111827);
+  }
+
+  .step-content p {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .template-guide {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .guide-item {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px dashed #e5e7eb;
+  }
+
+  .guide-item:last-child {
+    border-bottom: none;
+  }
+
+  .guide-label {
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+    min-width: 60px;
+  }
+
+  .guide-value {
+    color: var(--text-secondary, #6b7280);
+    font-family: monospace;
+    font-size: 0.8rem;
+  }
+
+  .template-upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .upload-area-compact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    background: white;
+    transition: all 0.2s;
+  }
+
+  .upload-area-compact:hover,
+  .upload-area-compact.dragover {
+    border-color: #667eea;
+    background: #f0f4ff;
+  }
+
+  .upload-area-compact.has-file {
+    border-color: #10b981;
+    background: #ecfdf5;
+    border-style: solid;
+  }
+
+  .upload-label-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary, #f3f4f6);
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .upload-label-compact:hover {
+    background: #e5e7eb;
+  }
+
+  .upload-label-compact svg {
+    color: #667eea;
+  }
+
+  .upload-label-compact span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary, #374151);
+  }
+
+  .selected-template-name {
+    flex: 1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #059669;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .selected-template-name:empty {
+    display: none;
+  }
+
+  .selected-template-name::before {
+    content: '✓ ';
+    color: #10b981;
+  }
+
+  .template-upload-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .template-upload-actions .action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #d1d5db;
+    box-shadow: none;
+  }
+
   /* Version History Styles */
   .version-history-card {
     background: white;
@@ -633,3 +1654,253 @@
     color: var(--text-muted, #6b7280);
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 문항 타입 필터링 기능
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const itemCards = document.querySelectorAll('.item-card');
+    const itemCountEl = document.getElementById('itemCount');
+
+    if (filterBtns.length > 0 && itemCards.length > 0) {
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const filter = this.dataset.filter;
+
+          // 활성 버튼 업데이트
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          // 문항 카드 필터링
+          let visibleCount = 0;
+
+          itemCards.forEach(card => {
+            const itemType = card.dataset.itemType;
+
+            if (filter === 'all') {
+              card.classList.remove('hidden');
+              visibleCount++;
+            } else if (itemType === filter) {
+              card.classList.remove('hidden');
+              visibleCount++;
+            } else {
+              card.classList.add('hidden');
+            }
+          });
+
+          // 표시되는 문항 수 업데이트
+          if (itemCountEl) {
+            itemCountEl.textContent = visibleCount;
+          }
+        });
+      });
+    }
+
+    // 정답/채점기준 탭 기능
+    const answerTabs = document.querySelectorAll('.answer-tab');
+    const tabContents = document.querySelectorAll('.answer-tab-content');
+
+    if (answerTabs.length > 0) {
+      answerTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+
+          // 활성 탭 업데이트
+          answerTabs.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+
+          // 탭 콘텐츠 표시
+          tabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === 'tab-' + tabId) {
+              content.classList.add('active');
+            }
+          });
+        });
+      });
+    }
+
+    // 정답지 PDF 업로드 기능
+    const answerKeyFile = document.getElementById('answerKeyFile');
+    const answerKeyDropZone = document.getElementById('answerKeyDropZone');
+    const selectedAnswerFile = document.getElementById('selectedAnswerFile');
+    const answerFileName = document.getElementById('answerFileName');
+    const removeAnswerFile = document.getElementById('removeAnswerFile');
+    const uploadAnswerKeyBtn = document.getElementById('uploadAnswerKeyBtn');
+
+    console.log('[Answer Key Upload] Elements found:', {
+      answerKeyFile: !!answerKeyFile,
+      answerKeyDropZone: !!answerKeyDropZone,
+      selectedAnswerFile: !!selectedAnswerFile,
+      uploadAnswerKeyBtn: !!uploadAnswerKeyBtn
+    });
+
+    if (answerKeyFile && answerKeyDropZone) {
+      // 파일 선택 시
+      answerKeyFile.addEventListener('change', function() {
+        console.log('[Answer Key Upload] File change event, files:', this.files.length);
+        if (this.files.length > 0) {
+          showSelectedFile(this.files[0]);
+        }
+      });
+
+      // 드래그 앤 드롭
+      answerKeyDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+      });
+
+      answerKeyDropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+      });
+
+      answerKeyDropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type === 'application/pdf') {
+          answerKeyFile.files = files;
+          showSelectedFile(files[0]);
+        }
+      });
+
+      // 파일 제거
+      if (removeAnswerFile) {
+        removeAnswerFile.addEventListener('click', function() {
+          answerKeyFile.value = '';
+          hideSelectedFile();
+        });
+      }
+
+      function showSelectedFile(file) {
+        console.log('[Answer Key Upload] showSelectedFile called:', file.name);
+        if (answerFileName) answerFileName.textContent = file.name;
+        if (selectedAnswerFile) selectedAnswerFile.style.display = 'flex';
+        if (uploadAnswerKeyBtn) {
+          uploadAnswerKeyBtn.disabled = false;
+          console.log('[Answer Key Upload] Button enabled');
+        }
+
+        // 레이블 숨김
+        const label = answerKeyDropZone.querySelector('.upload-label');
+        if (label) label.style.display = 'none';
+      }
+
+      function hideSelectedFile() {
+        if (selectedAnswerFile) selectedAnswerFile.style.display = 'none';
+        if (uploadAnswerKeyBtn) uploadAnswerKeyBtn.disabled = true;
+
+        // 레이블 표시
+        const label = answerKeyDropZone.querySelector('.upload-label');
+        if (label) label.style.display = 'flex';
+      }
+
+      // 폼 제출 시 로딩 상태 표시
+      const uploadForm = document.querySelector('.answer-key-upload-form');
+      console.log('[Answer Key Upload] Form found:', !!uploadForm);
+      if (uploadForm) {
+        console.log('[Answer Key Upload] Form action:', uploadForm.action);
+        uploadForm.addEventListener('submit', function(e) {
+          console.log('[Answer Key Upload] Form submit triggered');
+          console.log('[Answer Key Upload] File input files:', answerKeyFile.files.length);
+          if (uploadAnswerKeyBtn) {
+            const loadingText = uploadAnswerKeyBtn.dataset.loadingText || '분석 중...';
+            uploadAnswerKeyBtn.value = loadingText;
+            uploadAnswerKeyBtn.disabled = true;
+            uploadAnswerKeyBtn.classList.add('loading');
+          }
+        });
+      }
+    }
+
+    // 템플릿 파일 업로드 기능
+    const templateFile = document.getElementById('templateFile');
+    const templateDropZone = document.getElementById('templateDropZone');
+    const templateFileName = document.getElementById('templateFileName');
+    const uploadTemplateBtn = document.getElementById('uploadTemplateBtn');
+
+    console.log('[Template Upload] Elements found:', {
+      templateFile: !!templateFile,
+      templateDropZone: !!templateDropZone,
+      templateFileName: !!templateFileName,
+      uploadTemplateBtn: !!uploadTemplateBtn
+    });
+
+    if (templateFile && templateDropZone) {
+      // 파일 선택 시
+      templateFile.addEventListener('change', function() {
+        console.log('[Template Upload] File change event, files:', this.files.length);
+        if (this.files.length > 0) {
+          showTemplateFile(this.files[0]);
+        } else {
+          hideTemplateFile();
+        }
+      });
+
+      // 드래그 앤 드롭
+      templateDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+      });
+
+      templateDropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+      });
+
+      templateDropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          const file = files[0];
+          const validTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+          const validExtensions = ['.csv', '.xlsx'];
+          const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+
+          if (validTypes.includes(file.type) || hasValidExtension) {
+            templateFile.files = files;
+            showTemplateFile(files[0]);
+          } else {
+            alert('CSV 또는 Excel 파일만 업로드할 수 있습니다.');
+          }
+        }
+      });
+
+      function showTemplateFile(file) {
+        console.log('[Template Upload] showTemplateFile called:', file.name);
+        if (templateFileName) templateFileName.textContent = file.name;
+        if (templateDropZone) templateDropZone.classList.add('has-file');
+        if (uploadTemplateBtn) {
+          uploadTemplateBtn.disabled = false;
+          console.log('[Template Upload] Button enabled');
+        }
+      }
+
+      function hideTemplateFile() {
+        if (templateFileName) templateFileName.textContent = '';
+        if (templateDropZone) templateDropZone.classList.remove('has-file');
+        if (uploadTemplateBtn) uploadTemplateBtn.disabled = true;
+      }
+
+      // 폼 제출 시 로딩 상태 표시
+      const templateUploadForm = document.querySelector('.template-upload-form');
+      console.log('[Template Upload] Form found:', !!templateUploadForm);
+      if (templateUploadForm) {
+        console.log('[Template Upload] Form action:', templateUploadForm.action);
+        templateUploadForm.addEventListener('submit', function(e) {
+          console.log('[Template Upload] Form submit triggered');
+          console.log('[Template Upload] File input files:', templateFile.files.length);
+          if (uploadTemplateBtn) {
+            uploadTemplateBtn.value = '등록 중...';
+            uploadTemplateBtn.disabled = true;
+            uploadTemplateBtn.classList.add('loading');
+          }
+        });
+      }
+    }
+  });
+</script>

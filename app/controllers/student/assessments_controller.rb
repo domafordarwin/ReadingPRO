@@ -53,6 +53,9 @@ class Student::AssessmentsController < ApplicationController
 
     @responses = @attempt.responses.includes(:item, :selected_choice).index_by(&:item_id)
 
+    # Group items by stimulus (module)
+    @modules = group_items_by_module
+
     # Prepare assessment data as JSON string for safe rendering
     @assessment_data = build_assessment_json
   rescue StandardError => e
@@ -178,5 +181,42 @@ class Student::AssessmentsController < ApplicationController
   def response_params
     # Strong parameters to prevent mass assignment vulnerability
     params.permit(:selected_choice_id, :answer_text)
+  end
+
+  # Group diagnostic form items by stimulus (module)
+  def group_items_by_module
+    modules = []
+    current_module = nil
+    current_stimulus_id = nil
+
+    @diagnostic_form_items.each do |dfi|
+      item = dfi.item
+      stimulus_id = item.stimulus_id
+
+      # If stimulus changes or is nil, start a new module
+      if current_stimulus_id != stimulus_id
+        # Save previous module if exists
+        modules << current_module if current_module
+
+        # Start new module
+        current_module = {
+          stimulus: item.stimulus,
+          items: []
+        }
+        current_stimulus_id = stimulus_id
+      end
+
+      # Add item to current module
+      current_module[:items] << {
+        diagnostic_form_item: dfi,
+        item: item,
+        response: @responses[item.id]
+      }
+    end
+
+    # Add last module
+    modules << current_module if current_module
+
+    modules
   end
 end

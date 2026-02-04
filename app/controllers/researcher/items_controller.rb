@@ -2,6 +2,7 @@ class Researcher::ItemsController < ApplicationController
   layout "unified_portal"
   before_action :require_login
   before_action -> { require_role("researcher") }
+  before_action :set_role
   before_action :set_item, only: %i[edit update destroy move_criterion]
 
   def index
@@ -81,6 +82,10 @@ class Researcher::ItemsController < ApplicationController
   end
 
   private
+
+  def set_role
+    @current_role = "developer"
+  end
 
   def set_item
     @item = Item.find(params[:id])
