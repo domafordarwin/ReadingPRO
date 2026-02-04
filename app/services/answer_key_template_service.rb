@@ -1,7 +1,7 @@
 # Answer Key Template Service
 # Generates CSV templates for answer registration and processes uploaded templates
 
-require 'csv'
+require "csv"
 
 class AnswerKeyTemplateService
   def initialize(stimulus)
@@ -10,7 +10,7 @@ class AnswerKeyTemplateService
 
   # Generate CSV template for download
   def generate_template
-    CSV.generate(col_sep: ",", encoding: "UTF-8") do |csv|
+    ::CSV.generate(col_sep: ",", encoding: "UTF-8") do |csv|
       # Add BOM for Excel compatibility
       csv << ["\uFEFF문항ID", "문항코드", "문항유형", "발문(참고용)", "선택지/기준", "정답"]
 
@@ -58,7 +58,7 @@ class AnswerKeyTemplateService
     begin
       # Parse CSV (handle BOM if present)
       content = csv_content.gsub(/^\xEF\xBB\xBF/, '')
-      csv = CSV.parse(content, headers: true, col_sep: ",")
+      csv = ::CSV.parse(content, headers: true, col_sep: ",")
 
       add_log(results, "📄 CSV 파일 파싱 완료 (#{csv.count}행)")
 
@@ -134,7 +134,7 @@ class AnswerKeyTemplateService
 
       add_log(results, "🎉 처리 완료!")
 
-    rescue CSV::MalformedCSVError => e
+    rescue ::CSV::MalformedCSVError => e
       results[:errors] << "CSV 형식 오류: #{e.message}"
     rescue => e
       results[:errors] << "처리 오류: #{e.message}"
