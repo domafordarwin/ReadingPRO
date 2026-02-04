@@ -17,7 +17,7 @@ class EvaluationIndicator < ApplicationRecord
 
   # Validations
   validates :code, presence: true, uniqueness: true, length: { minimum: 3, maximum: 100 }
-  validates :name, presence: true, length: { minimum: 5, maximum: 500 }
+  validates :name, presence: true, length: { minimum: 3, maximum: 500 }
   validates :level, presence: true, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 5 }
   validates :description, length: { maximum: 2000 }, allow_nil: true
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_134528) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_04_155907) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -224,6 +224,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_134528) do
     t.datetime "created_at", null: false
     t.boolean "is_correct", default: false, null: false
     t.bigint "item_id", null: false
+    t.integer "proximity_score"
     t.datetime "updated_at", null: false
     t.index ["item_id", "choice_no"], name: "index_item_choices_on_item_id_and_choice_no", unique: true
     t.index ["item_id"], name: "index_item_choices_on_item_id"

@@ -184,42 +184,60 @@ class Researcher::StimuliController < ApplicationController
                 notice: "#{updated_count}개 문항의 정답이 업데이트되었습니다."
   end
 
-  # Download answer key template CSV
+  # Download answer key template Excel
   def download_answer_template
     service = AnswerKeyTemplateService.new(@stimulus)
-    csv_content = service.generate_template
+    excel_content = service.generate_excel_template
 
-    filename = "정답지_템플릿_#{@stimulus.code}_#{Date.current.strftime('%Y%m%d')}.csv"
+    filename = "정답지_템플릿_#{@stimulus.code}_#{Date.current.strftime('%Y%m%d')}.xlsx"
 
-    send_data csv_content,
+    send_data excel_content,
               filename: filename,
-              type: "text/csv; charset=utf-8",
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               disposition: "attachment"
   end
 
-  # Upload filled answer key template
+  # Upload filled answer key template (CSV or Excel)
   def upload_answer_template
     unless params[:answer_template].present?
-      redirect_to researcher_passage_path(@stimulus), alert: "CSV 파일을 선택해주세요."
+      redirect_to researcher_passage_path(@stimulus), alert: "파일을 선택해주세요."
       return
     end
 
     uploaded_file = params[:answer_template]
+    filename = uploaded_file.original_filename.downcase
 
-    # Accept CSV and Excel files
-    allowed_types = ["text/csv", "text/plain", "application/vnd.ms-excel",
-                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+    # Detect file type
+    is_excel = filename.end_with?(".xlsx", ".xls") ||
+               uploaded_file.content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+               uploaded_file.content_type == "application/vnd.ms-excel"
 
-    unless allowed_types.include?(uploaded_file.content_type) || uploaded_file.original_filename.end_with?(".csv")
-      redirect_to researcher_passage_path(@stimulus), alert: "CSV 파일만 업로드할 수 있습니다."
+    is_csv = filename.end_with?(".csv") ||
+             uploaded_file.content_type == "text/csv" ||
+             uploaded_file.content_type == "text/plain"
+
+    unless is_excel || is_csv
+      redirect_to researcher_passage_path(@stimulus), alert: "Excel(.xlsx) 또는 CSV 파일만 업로드할 수 있습니다."
       return
     end
 
     begin
-      csv_content = uploaded_file.read.force_encoding("UTF-8")
-
       service = AnswerKeyTemplateService.new(@stimulus)
-      results = service.process_template(csv_content)
+
+      if is_excel
+        # Save to temp file for roo to process
+        temp_path = Rails.root.join("tmp", "answer_template_#{Time.now.to_i}_#{uploaded_file.original_filename}")
+        File.open(temp_path, "wb") { |f| f.write(uploaded_file.read) }
+
+        results = service.process_excel_template(temp_path.to_s)
+
+        # Clean up
+        File.delete(temp_path) if File.exist?(temp_path)
+      else
+        # CSV processing
+        csv_content = uploaded_file.read.force_encoding("UTF-8")
+        results = service.process_template(csv_content)
+      end
 
       # Recalculate bundle metadata
       @stimulus.recalculate_bundle_metadata!

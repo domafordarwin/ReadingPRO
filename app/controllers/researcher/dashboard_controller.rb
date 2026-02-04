@@ -67,10 +67,9 @@ class Researcher::DashboardController < ApplicationController
     # Fresh? returns true if ETag matches (allow 304 response)
     fresh_when(etag: etag, last_modified: ReadingStimulus.maximum(:updated_at))
 
-    # Support HTML and Turbo Stream responses (Phase 3.1)
+    # Support HTML responses only (Turbo Stream removed - not needed for card grid layout)
     respond_to do |format|
       format.html
-      format.turbo_stream
     end
   end
 

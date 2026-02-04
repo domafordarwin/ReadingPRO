@@ -328,14 +328,14 @@
           <div class="step-number">1</div>
           <div class="step-content">
             <h4>정답지 템플릿 다운로드</h4>
-            <p>문항 ID가 포함된 CSV 템플릿을 다운로드합니다.</p>
+            <p>문항 ID가 포함된 Excel 템플릿을 다운로드합니다. 작성 안내 시트도 포함되어 있습니다.</p>
             <%= link_to download_answer_template_researcher_passage_path(@stimulus), class: "action-btn action-btn-outline" do %>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              <span>템플릿 다운로드 (CSV)</span>
+              <span>템플릿 다운로드 (Excel)</span>
             <% end %>
           </div>
         </div>
@@ -345,7 +345,7 @@
           <div class="step-number">2</div>
           <div class="step-content">
             <h4>정답 입력</h4>
-            <p>다운로드한 템플릿 파일을 Excel이나 텍스트 편집기로 열어 "정답" 열에 값을 입력합니다.</p>
+            <p>다운로드한 Excel 파일을 열어 "정답" 열(F열)에 값을 입력합니다. "작성 안내" 시트를 참고하세요.</p>
             <div class="template-guide">
               <div class="guide-item">
                 <span class="guide-label">객관식:</span>
@@ -364,10 +364,10 @@
           <div class="step-number">3</div>
           <div class="step-content">
             <h4>정답지 업로드</h4>
-            <p>정답을 입력한 CSV 파일을 업로드합니다.</p>
+            <p>정답을 입력한 Excel 파일을 업로드합니다. (CSV도 지원)</p>
             <%= form_with url: upload_answer_template_researcher_passage_path(@stimulus), method: :post, multipart: true, class: "template-upload-form", data: { turbo: false } do |f| %>
               <div class="upload-area-compact" id="templateDropZone">
-                <input type="file" name="answer_template" id="templateFile" accept=".csv,.xlsx" class="file-input-hidden">
+                <input type="file" name="answer_template" id="templateFile" accept=".xlsx,.xls,.csv" class="file-input-hidden">
                 <label for="templateFile" class="upload-label-compact">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -375,7 +375,7 @@
                     <line x1="12" y1="18" x2="12" y2="12"></line>
                     <polyline points="9 15 12 12 15 15"></polyline>
                   </svg>
-                  <span>CSV 파일 선택</span>
+                  <span>Excel 파일 선택</span>
                 </label>
                 <span class="selected-template-name" id="templateFileName"></span>
               </div>

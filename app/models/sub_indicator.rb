@@ -19,7 +19,7 @@ class SubIndicator < ApplicationRecord
   # Validations
   validates :evaluation_indicator_id, presence: true
   validates :code, length: { maximum: 100 }, uniqueness: { scope: :evaluation_indicator_id }, allow_nil: true
-  validates :name, presence: true, length: { minimum: 5, maximum: 500 }
+  validates :name, presence: true, length: { minimum: 3, maximum: 500 }
   validates :description, length: { maximum: 2000 }, allow_nil: true
 
   # Scopes

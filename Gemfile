@@ -52,6 +52,12 @@ gem "pdf-reader"
 # CSV parsing (removed from default gems in Ruby 3.4)
 gem "csv"
 
+# Excel file generation
+gem "caxlsx"
+
+# Excel file reading
+gem "roo"
+
 # OpenAI API (GPT models)
 gem "ruby-openai"
 
