@@ -18,33 +18,33 @@ module Admin
     def show
       # Current metrics (last 5 minutes)
       @current_metrics = {
-        avg_page_load: recent_avg_metric('page_load', 5.minutes),
-        p95_page_load: recent_percentile_metric('page_load', 95, 5.minutes),
-        avg_query_time: recent_avg_metric('query_time', 5.minutes),
+        avg_page_load: recent_avg_metric("page_load", 5.minutes),
+        p95_page_load: recent_percentile_metric("page_load", 95, 5.minutes),
+        avg_query_time: recent_avg_metric("query_time", 5.minutes),
         cache_hit_rate: calculate_cache_hit_rate
       }
 
       # Trend data (last 24 hours, hourly buckets)
       @metric_trends = {
-        page_load: hourly_trend('page_load', 24.hours),
-        query_time: hourly_trend('query_time', 24.hours),
-        fcp: hourly_trend('fcp', 24.hours),
-        lcp: hourly_trend('lcp', 24.hours)
+        page_load: hourly_trend("page_load", 24.hours),
+        query_time: hourly_trend("query_time", 24.hours),
+        fcp: hourly_trend("fcp", 24.hours),
+        lcp: hourly_trend("lcp", 24.hours)
       }
 
       # Web Vitals summary (last 1 hour)
       @web_vitals = {
-        fcp_avg: recent_avg_metric('fcp', 1.hour),
-        lcp_avg: recent_avg_metric('lcp', 1.hour),
-        cls_avg: recent_avg_metric('cls', 1.hour),
-        inp_avg: recent_avg_metric('inp', 1.hour),
-        ttfb_avg: recent_avg_metric('ttfb', 1.hour)
+        fcp_avg: recent_avg_metric("fcp", 1.hour),
+        lcp_avg: recent_avg_metric("lcp", 1.hour),
+        cls_avg: recent_avg_metric("cls", 1.hour),
+        inp_avg: recent_avg_metric("inp", 1.hour),
+        ttfb_avg: recent_avg_metric("ttfb", 1.hour)
       }
 
       # Metric collection counts
       @metric_counts = {
         total_metrics_24h: PerformanceMetric.recent(24.hours).count,
-        page_load_samples: PerformanceMetric.by_type('page_load').recent(1.hour).count,
+        page_load_samples: PerformanceMetric.by_type("page_load").recent(1.hour).count,
         web_vitals_samples: PerformanceMetric.where(metric_type: %w[fcp lcp cls inp ttfb]).recent(1.hour).count
       }
     end
@@ -81,13 +81,13 @@ module Admin
     def hourly_trend(type, duration)
       # Group metrics by hour and calculate average per hour
       metrics = PerformanceMetric
-        .where('recorded_at > ?', duration.ago)
+        .where("recorded_at > ?", duration.ago)
         .where(metric_type: type)
         .group("DATE_TRUNC('hour', recorded_at)")
         .average(:value)
 
       # Transform keys to readable hour format
-      metrics.transform_keys { |k| k.strftime('%H:00') }.sort
+      metrics.transform_keys { |k| k.strftime("%H:00") }.sort
     end
   end
 end

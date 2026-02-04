@@ -29,7 +29,7 @@ class PerformanceMetric < ApplicationRecord
   validates :recorded_at, presence: true
 
   # Scopes for querying recent metrics
-  scope :recent, ->(duration = 1.hour) { where('recorded_at > ?', duration.ago) }
+  scope :recent, ->(duration = 1.hour) { where("recorded_at > ?", duration.ago) }
   scope :by_type, ->(type) { where(metric_type: type) }
   scope :by_endpoint, ->(endpoint) { where(endpoint: endpoint) }
 

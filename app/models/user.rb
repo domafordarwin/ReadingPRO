@@ -3,7 +3,7 @@
 class User < ApplicationRecord
   has_secure_password
 
-  enum :role, { student: 'student', teacher: 'teacher', researcher: 'researcher', admin: 'admin', parent: 'parent', school_admin: 'school_admin', diagnostic_teacher: 'diagnostic_teacher' }
+  enum :role, { student: "student", teacher: "teacher", researcher: "researcher", admin: "admin", parent: "parent", school_admin: "school_admin", diagnostic_teacher: "diagnostic_teacher" }
 
   has_one :student, dependent: :destroy
   has_one :teacher, dependent: :destroy
@@ -25,14 +25,14 @@ class User < ApplicationRecord
   # 이름 표시 (학생/학부모/교사에 따라 다르게)
   def name
     case role
-    when 'student'
-      student&.name || email.split('@').first
-    when 'parent'
-      parent&.name || email.split('@').first
-    when 'teacher'
-      teacher&.name || email.split('@').first
+    when "student"
+      student&.name || email.split("@").first
+    when "parent"
+      parent&.name || email.split("@").first
+    when "teacher"
+      teacher&.name || email.split("@").first
     else
-      email.split('@').first
+      email.split("@").first
     end
   end
 end

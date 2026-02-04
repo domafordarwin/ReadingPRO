@@ -18,7 +18,7 @@ module ApiAuthentication
   end
 
   def require_api_user
-    raise ApiError::Unauthorized, 'Authentication required' unless user_signed_in?
+    raise ApiError::Unauthorized, "Authentication required" unless user_signed_in?
   end
 
   def require_role(role)
@@ -29,7 +29,7 @@ module ApiAuthentication
 
   def require_role_any(*roles)
     unless roles.any? { |r| current_user.send("#{r}?") }
-      raise ApiError::Forbidden, 'Access denied'
+      raise ApiError::Forbidden, "Access denied"
     end
   end
 end

@@ -29,7 +29,7 @@ class CreatePerformanceMetrics < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :performance_metrics, [:metric_type, :recorded_at], name: 'idx_performance_metrics_type_time'
-    add_index :performance_metrics, [:endpoint, :recorded_at], name: 'idx_performance_metrics_endpoint_time'
+    add_index :performance_metrics, [ :metric_type, :recorded_at ], name: 'idx_performance_metrics_type_time'
+    add_index :performance_metrics, [ :endpoint, :recorded_at ], name: 'idx_performance_metrics_endpoint_time'
   end
 end

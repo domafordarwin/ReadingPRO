@@ -13,6 +13,6 @@ class CreateEvaluationIndicators < ActiveRecord::Migration[8.1]
       t.text :description
       t.timestamps
     end
-    add_index :sub_indicators, [:evaluation_indicator_id, :name], unique: true
+    add_index :sub_indicators, [ :evaluation_indicator_id, :name ], unique: true
   end
 end

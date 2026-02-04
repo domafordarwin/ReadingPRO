@@ -22,8 +22,8 @@ class AddIndicatorReferencesToItems < ActiveRecord::Migration[8.1]
       add_index :items, :sub_indicator_id
     end
 
-    unless index_exists?(:items, [:evaluation_indicator_id, :sub_indicator_id])
-      add_index :items, [:evaluation_indicator_id, :sub_indicator_id]
+    unless index_exists?(:items, [ :evaluation_indicator_id, :sub_indicator_id ])
+      add_index :items, [ :evaluation_indicator_id, :sub_indicator_id ]
     end
   end
 end

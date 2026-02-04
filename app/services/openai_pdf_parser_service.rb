@@ -1,13 +1,13 @@
 # OpenAI PDF Parser Service
 # Uses GPT-4 to parse PDF documents and extract structured item data
 
-require 'pdf-reader'
-require 'openai'
+require "pdf-reader"
+require "openai"
 
 class OpenaiPdfParserService
   def initialize(pdf_file_path)
     @pdf_file_path = pdf_file_path
-    @client = OpenAI::Client.new(access_token: ENV['OPENAI_API_KEY'])
+    @client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
   end
 
   def parse

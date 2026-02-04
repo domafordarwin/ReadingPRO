@@ -5,5 +5,4 @@ class ReadingStimulus < ApplicationRecord
   has_many :items, foreign_key: 'stimulus_id', dependent: :destroy
 
   validates :body, presence: true
-
 end

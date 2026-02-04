@@ -2,8 +2,8 @@ class Parent::DashboardController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("parent") }
   before_action :set_role
-  before_action :set_students, except: [:index]
-  before_action :set_student_for_reports, only: [:reports, :show_report, :show_attempt]
+  before_action :set_students, except: [ :index ]
+  before_action :set_student_for_reports, only: [ :reports, :show_report, :show_attempt ]
 
   def index
     @current_page = "dashboard"
@@ -15,9 +15,9 @@ class Parent::DashboardController < ApplicationController
     selected_student_id = params[:student_id]
     @selected_student = if selected_student_id
                           @students.find { |s| s.id == selected_student_id.to_i }
-                        else
+    else
                           @students.first
-                        end
+    end
   end
 
   def children

@@ -2,8 +2,8 @@
 
 class Item < ApplicationRecord
   # Associations - Assessment Content
-  belongs_to :stimulus, class_name: 'ReadingStimulus', foreign_key: 'stimulus_id', optional: true, counter_cache: :items_count
-  belongs_to :teacher, foreign_key: 'created_by_id', optional: true
+  belongs_to :stimulus, class_name: "ReadingStimulus", foreign_key: "stimulus_id", optional: true, counter_cache: :items_count
+  belongs_to :teacher, foreign_key: "created_by_id", optional: true
 
   # Associations - Learning Standards (NEW)
   belongs_to :evaluation_indicator, optional: true
@@ -21,13 +21,13 @@ class Item < ApplicationRecord
   after_destroy :invalidate_item_caches
 
   # Update stimulus metadata when items change
-  after_commit :update_stimulus_metadata, on: [:create, :update, :destroy]
+  after_commit :update_stimulus_metadata, on: [ :create, :update, :destroy ]
   after_create :set_stimulus_code
 
   # Enums
-  enum :item_type, { mcq: 'mcq', constructed: 'constructed' }
-  enum :difficulty, { easy: 'easy', medium: 'medium', hard: 'hard' }
-  enum :status, { draft: 'draft', active: 'active', archived: 'archived' }
+  enum :item_type, { mcq: "mcq", constructed: "constructed" }
+  enum :difficulty, { easy: "easy", medium: "medium", hard: "hard" }
+  enum :status, { draft: "draft", active: "active", archived: "archived" }
 
   # Validations
   validates :code, presence: true, uniqueness: true
@@ -57,14 +57,14 @@ class Item < ApplicationRecord
   end
 
   def indicator_code
-    evaluation_indicator&.code || 'UNMAPPED'
+    evaluation_indicator&.code || "UNMAPPED"
   end
 
   private
 
   def sub_indicator_requires_evaluation_indicator
     if sub_indicator_id.present? && evaluation_indicator_id.blank?
-      errors.add(:evaluation_indicator_id, 'must be provided when sub_indicator is set')
+      errors.add(:evaluation_indicator_id, "must be provided when sub_indicator is set")
     end
   end
 

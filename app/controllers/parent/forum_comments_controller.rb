@@ -4,7 +4,7 @@ class Parent::ForumCommentsController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("parent") }
   before_action :set_forum
-  before_action :set_comment, only: [:destroy]
+  before_action :set_comment, only: [ :destroy ]
 
   def create
     @comment = @forum.parent_forum_comments.build(comment_params)

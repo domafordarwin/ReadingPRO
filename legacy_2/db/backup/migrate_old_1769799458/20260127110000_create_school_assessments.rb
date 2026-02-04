@@ -12,6 +12,6 @@ class CreateSchoolAssessments < ActiveRecord::Migration[8.1]
       t.text :assessment_overview
       t.timestamps
     end
-    add_index :school_assessments, [:school_id, :assessment_date]
+    add_index :school_assessments, [ :school_id, :assessment_date ]
   end
 end

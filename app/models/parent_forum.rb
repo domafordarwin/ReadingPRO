@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
 class ParentForum < ApplicationRecord
-  belongs_to :created_by, class_name: 'User', foreign_key: 'created_by_id'
+  belongs_to :created_by, class_name: "User", foreign_key: "created_by_id"
   has_many :parent_forum_comments, dependent: :destroy
 
   CATEGORIES = %w[general question information discussion other].freeze
 
   CATEGORY_LABELS = {
-    'general' => '일반',
-    'question' => '질문',
-    'information' => '정보 공유',
-    'discussion' => '토론',
-    'other' => '기타'
+    "general" => "일반",
+    "question" => "질문",
+    "information" => "정보 공유",
+    "discussion" => "토론",
+    "other" => "기타"
   }.freeze
 
   STATUS_LABELS = {
-    'open' => '진행중',
-    'answered' => '답변완료',
-    'closed' => '마감'
+    "open" => "진행중",
+    "answered" => "답변완료",
+    "closed" => "마감"
   }.freeze
 
   validates :title, presence: true, length: { maximum: 200 }
@@ -26,9 +26,9 @@ class ParentForum < ApplicationRecord
   validates :status, presence: true, inclusion: { in: STATUS_LABELS.keys }
 
   scope :recent, -> { order(created_at: :desc) }
-  scope :open_posts, -> { where(status: 'open') }
-  scope :answered_posts, -> { where(status: ['answered', 'closed']) }
-  scope :search, ->(query) { where('title ILIKE ? OR content ILIKE ?', "%#{query}%", "%#{query}%") }
+  scope :open_posts, -> { where(status: "open") }
+  scope :answered_posts, -> { where(status: [ "answered", "closed" ]) }
+  scope :search, ->(query) { where("title ILIKE ? OR content ILIKE ?", "%#{query}%", "%#{query}%") }
   scope :by_category, ->(cat) { where(category: cat) }
 
   def increment_views!
@@ -36,23 +36,23 @@ class ParentForum < ApplicationRecord
   end
 
   def mark_as_closed!
-    update(status: 'closed')
+    update(status: "closed")
   end
 
   def reopen!
-    update(status: 'open')
+    update(status: "open")
   end
 
   def closed?
-    status == 'closed'
+    status == "closed"
   end
 
   def answered?
-    status == 'answered'
+    status == "answered"
   end
 
   def open?
-    status == 'open'
+    status == "open"
   end
 
   def category_label
@@ -72,7 +72,7 @@ class ParentForum < ApplicationRecord
   end
 
   def last_activity_at
-    [updated_at, parent_forum_comments.maximum(:created_at)].compact.max
+    [ updated_at, parent_forum_comments.maximum(:created_at) ].compact.max
   end
 
   def can_edit?(user)

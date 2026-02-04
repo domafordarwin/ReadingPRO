@@ -33,7 +33,7 @@ class Researcher::ItemsController < ApplicationController
     end
 
     @total_count = @items.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @items = @items.offset((@page - 1) * @per_page).limit(@per_page)

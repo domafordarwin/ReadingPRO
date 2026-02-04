@@ -7,30 +7,30 @@ require "nokogiri"
 
 SHEET_CONFIG = {
   items: {
-    names: ["Items", "Item Bank"],
+    names: [ "Items", "Item Bank" ],
     required: %i[code item_type prompt],
     headers: {
-      code: ["code", "item_code"],
-      item_type: ["item_type", "type"],
-      status: ["status"],
-      difficulty: ["difficulty"],
-      prompt: ["prompt", "item_prompt"],
-      explanation: ["explanation", "item_explanation"],
-      stimulus_code: ["stimulus_code", "stimulus"],
-      stimulus_title: ["stimulus_title"],
-      stimulus_body: ["stimulus_body"]
+      code: [ "code", "item_code" ],
+      item_type: [ "item_type", "type" ],
+      status: [ "status" ],
+      difficulty: [ "difficulty" ],
+      prompt: [ "prompt", "item_prompt" ],
+      explanation: [ "explanation", "item_explanation" ],
+      stimulus_code: [ "stimulus_code", "stimulus" ],
+      stimulus_title: [ "stimulus_title" ],
+      stimulus_body: [ "stimulus_body" ]
     }
   },
   choices: {
-    names: ["Choices", "ItemChoices", "Choice Scores"],
+    names: [ "Choices", "ItemChoices", "Choice Scores" ],
     required: %i[item_code choice_no content],
     headers: {
-      item_code: ["item_code", "code"],
-      choice_no: ["choice_no", "choice"],
-      content: ["content", "choice_content"],
-      score_percent: ["score_percent", "score"],
-      rationale: ["rationale", "reason"],
-      is_key: ["is_key", "key"]
+      item_code: [ "item_code", "code" ],
+      choice_no: [ "choice_no", "choice" ],
+      content: [ "content", "choice_content" ],
+      score_percent: [ "score_percent", "score" ],
+      rationale: [ "rationale", "reason" ],
+      is_key: [ "is_key", "key" ]
     }
   }
 }.freeze
@@ -61,7 +61,7 @@ class XlsxReader
 
         values[column] = cell_value(cell)
       end
-      rows << [row_number, values]
+      rows << [ row_number, values ]
     end
     rows
   end

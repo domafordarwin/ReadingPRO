@@ -1,7 +1,7 @@
 namespace :pgweb do
   desc "Start pgweb PostgreSQL web UI with database connection"
   task :start do
-    require 'uri'
+    require "uri"
 
     # Get DATABASE_URL
     database_url = ENV["DATABASE_URL"]
@@ -11,13 +11,13 @@ namespace :pgweb do
       db_config = ActiveRecord::Base.connection.pool.db_config.configuration_hash
 
       adapter = db_config[:adapter]
-      host = db_config[:host] || 'localhost'
+      host = db_config[:host] || "localhost"
       port = db_config[:port] || 5432
       database = db_config[:database]
-      username = db_config[:username] || 'postgres'
+      username = db_config[:username] || "postgres"
       password = db_config[:password]
 
-      if adapter == 'postgresql'
+      if adapter == "postgresql"
         if password
           database_url = "postgres://#{username}:#{password}@#{host}:#{port}/#{database}"
         else
@@ -83,13 +83,13 @@ namespace :pgweb do
       db_config = ActiveRecord::Base.connection.pool.db_config.configuration_hash
 
       adapter = db_config[:adapter]
-      host = db_config[:host] || 'localhost'
+      host = db_config[:host] || "localhost"
       port = db_config[:port] || 5432
       database = db_config[:database]
-      username = db_config[:username] || 'postgres'
+      username = db_config[:username] || "postgres"
       password = db_config[:password]
 
-      if adapter == 'postgresql'
+      if adapter == "postgresql"
         if password
           database_url = "postgres://#{username}:#{password}@#{host}:#{port}/#{database}"
         else

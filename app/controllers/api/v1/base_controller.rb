@@ -23,7 +23,7 @@ module Api
       end
 
       def require_api_user
-        raise ApiError::Unauthorized, 'Please log in' unless current_user
+        raise ApiError::Unauthorized, "Please log in" unless current_user
       end
 
       def current_user
@@ -32,7 +32,7 @@ module Api
 
       def render_json(data, status = :ok, meta = nil)
         response = {
-          success: status.to_s.start_with?('2'),
+          success: status.to_s.start_with?("2"),
           data: data,
           meta: meta,
           errors: nil
@@ -41,7 +41,7 @@ module Api
       end
 
       def render_error(errors, status = :unprocessable_entity)
-        error_array = errors.is_a?(Array) ? errors : [errors]
+        error_array = errors.is_a?(Array) ? errors : [ errors ]
         response = {
           success: false,
           data: nil,
@@ -58,7 +58,7 @@ module Api
           error
         else
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: error.to_s,
             field: nil
           }

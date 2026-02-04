@@ -10,6 +10,6 @@ class CreateItemChoices < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :item_choices, [:item_id, :choice_no], unique: true
+    add_index :item_choices, [ :item_id, :choice_no ], unique: true
   end
 end

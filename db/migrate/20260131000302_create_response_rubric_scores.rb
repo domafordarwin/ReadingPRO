@@ -10,7 +10,7 @@ class CreateResponseRubricScores < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :response_rubric_scores, [:response_id, :rubric_criterion_id], unique: true
+    add_index :response_rubric_scores, [ :response_id, :rubric_criterion_id ], unique: true
     add_check_constraint :response_rubric_scores,
                          "level_score >= 0 AND level_score <= 4",
                          name: "response_rubric_scores_level_score_range"

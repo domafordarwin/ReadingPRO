@@ -23,7 +23,7 @@ class EvaluationIndicator < ApplicationRecord
 
   # Scopes
   scope :by_level, ->(level) { where(level: level) }
-  scope :by_code_pattern, ->(pattern) { where('code ILIKE ?', "%#{pattern}%") }
+  scope :by_code_pattern, ->(pattern) { where("code ILIKE ?", "%#{pattern}%") }
   scope :with_sub_indicators, -> { includes(:sub_indicators) }
   scope :top_level, -> { where(level: 1) }
 
@@ -33,7 +33,7 @@ class EvaluationIndicator < ApplicationRecord
   # Class methods
   class << self
     def search(query)
-      where('code ILIKE ? OR name ILIKE ? OR description ILIKE ?',
+      where("code ILIKE ? OR name ILIKE ? OR description ILIKE ?",
             "%#{query}%", "%#{query}%", "%#{query}%")
     end
 

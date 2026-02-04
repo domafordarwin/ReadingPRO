@@ -23,7 +23,7 @@ class SchoolAdmin::DashboardController < ApplicationController
 
     # 진단 참여 통계
     @total_attempts = StudentAttempt.count
-    @completed_attempts = StudentAttempt.where(status: 'completed').count
+    @completed_attempts = StudentAttempt.where(status: "completed").count
     @participation_rate = @total_students.zero? ? 0 : ((@total_attempts.to_f / @total_students) * 100).round(1)
 
     # 리포트 통계
@@ -59,7 +59,7 @@ class SchoolAdmin::DashboardController < ApplicationController
     @total_requests = ConsultationRequest.count
     @pending_count = ConsultationRequest.pending.count
     @approved_count = ConsultationRequest.approved.count
-    @rejected_count = ConsultationRequest.where(status: 'rejected').count
+    @rejected_count = ConsultationRequest.where(status: "rejected").count
     @completed_count = ConsultationRequest.completed.count
 
     # 상담 유형별 분류
@@ -70,10 +70,10 @@ class SchoolAdmin::DashboardController < ApplicationController
 
     # 상담 상태별 분류
     @by_status = [
-      { status: 'pending', label: '대기 중', count: @pending_count, color: 'warning' },
-      { status: 'approved', label: '승인됨', count: @approved_count, color: 'success' },
-      { status: 'rejected', label: '거절됨', count: @rejected_count, color: 'danger' },
-      { status: 'completed', label: '완료됨', count: @completed_count, color: 'secondary' }
+      { status: "pending", label: "대기 중", count: @pending_count, color: "warning" },
+      { status: "approved", label: "승인됨", count: @approved_count, color: "success" },
+      { status: "rejected", label: "거절됨", count: @rejected_count, color: "danger" },
+      { status: "completed", label: "완료됨", count: @completed_count, color: "secondary" }
     ]
 
     # 최근 상담 신청
@@ -128,7 +128,7 @@ class SchoolAdmin::DashboardController < ApplicationController
   end
 
   def calculate_grade_scores
-    grades = [1, 2, 3]
+    grades = [ 1, 2, 3 ]
     grades.map do |grade|
       students_in_grade = @students.select { |s| s.grade == grade }
       if students_in_grade.any?

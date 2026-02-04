@@ -10,6 +10,6 @@ class CreateRubricLevels < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :rubric_levels, [:rubric_criterion_id, :level], unique: true
+    add_index :rubric_levels, [ :rubric_criterion_id, :level ], unique: true
   end
 end

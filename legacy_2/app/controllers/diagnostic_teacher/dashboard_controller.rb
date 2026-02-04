@@ -2,14 +2,14 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("diagnostic_teacher") }
   before_action :set_role
-  before_action :set_all_students, only: [:reports]
-  before_action :set_student_for_detail, only: [:show_student_report]
+  before_action :set_all_students, only: [ :reports ]
+  before_action :set_student_for_detail, only: [ :show_student_report ]
 
   def index
     @current_page = "dashboard"
 
     # 모든 학생과 진단 데이터 로드
-    @students_with_attempts = Student.joins(:attempts).includes(attempts: [:report, :responses]).distinct
+    @students_with_attempts = Student.joins(:attempts).includes(attempts: [ :report, :responses ]).distinct
 
     # 대시보드 통계
     @total_diagnoses = Attempt.count
@@ -65,7 +65,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
       :literacy_achievements,
       :guidance_directions,
       :reader_tendency,
-      responses: [:item, :selected_choice, :response_feedbacks, :response_rubric_scores]
+      responses: [ :item, :selected_choice, :response_feedbacks, :response_rubric_scores ]
     ).find(params[:attempt_id])
     @report = @attempt.report
 
@@ -171,7 +171,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     # 학생별 배정 현황
     @students_with_assignments = all_students.map do |student|
       attempt = student.attempts.order(created_at: :desc).first
-      [student, attempt]
+      [ student, attempt ]
     end
   end
 
@@ -300,7 +300,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def set_all_students
     # 모든 학생 조회
-    @all_students = Student.joins(:attempts).includes(attempts: [:responses, :report]).distinct
+    @all_students = Student.joins(:attempts).includes(attempts: [ :responses, :report ]).distinct
   end
 
   def set_student_for_detail

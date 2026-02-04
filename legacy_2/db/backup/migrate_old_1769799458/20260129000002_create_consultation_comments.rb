@@ -12,7 +12,7 @@ class CreateConsultationComments < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :consultation_comments, [:consultation_post_id, :is_best_answer]
-    add_index :consultation_comments, [:consultation_post_id, :created_at]
+    add_index :consultation_comments, [ :consultation_post_id, :is_best_answer ]
+    add_index :consultation_comments, [ :consultation_post_id, :created_at ]
   end
 end

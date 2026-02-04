@@ -24,7 +24,7 @@ class CreateSchoolAnalysisTables < ActiveRecord::Migration[8.1]
       t.integer :priority
       t.timestamps
     end
-    add_index :school_guidance_directions, [:school_assessment_id, :priority],
+    add_index :school_guidance_directions, [ :school_assessment_id, :priority ],
               name: 'idx_school_guidance_assessment_priority'
 
     # 학교 단위 개선점
@@ -37,7 +37,7 @@ class CreateSchoolAnalysisTables < ActiveRecord::Migration[8.1]
       t.integer :priority
       t.timestamps
     end
-    add_index :school_improvement_areas, [:school_assessment_id, :priority],
+    add_index :school_improvement_areas, [ :school_assessment_id, :priority ],
               name: 'idx_school_improvement_assessment_priority'
   end
 end

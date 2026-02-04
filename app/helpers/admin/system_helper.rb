@@ -16,17 +16,17 @@ module Admin
     # Yellow (warn):  value <= yellow_threshold
     # Red (critical): value > yellow_threshold
     def status_class(value, green_threshold, yellow_threshold)
-      return 'status-green' if value <= green_threshold
-      return 'status-yellow' if value <= yellow_threshold
-      'status-red'
+      return "status-green" if value <= green_threshold
+      return "status-yellow" if value <= yellow_threshold
+      "status-red"
     end
 
     # Color code cache hit rate
     # Returns CSS class name for status styling
     def cache_status_class(rate)
-      return 'status-green' if rate >= 90
-      return 'status-yellow' if rate >= 70
-      'status-red'
+      return "status-green" if rate >= 90
+      return "status-yellow" if rate >= 70
+      "status-red"
     end
 
     # Color code Cumulative Layout Shift (CLS)
@@ -35,20 +35,20 @@ module Admin
     # - Needs Improvement: > 0.1 and <= 0.25
     # - Poor: > 0.25
     def cls_status_class(value)
-      return 'status-green' if value <= 0.1
-      return 'status-yellow' if value <= 0.25
-      'status-red'
+      return "status-green" if value <= 0.1
+      return "status-yellow" if value <= 0.25
+      "status-red"
     end
 
     # Get human-readable performance category
     def performance_rating(value, green_threshold, yellow_threshold)
       case status_class(value, green_threshold, yellow_threshold)
-      when 'status-green'
-        '좋음 (Good)'
-      when 'status-yellow'
-        '개선 필요 (Needs Improvement)'
+      when "status-green"
+        "좋음 (Good)"
+      when "status-yellow"
+        "개선 필요 (Needs Improvement)"
       else
-        '나쁨 (Poor)'
+        "나쁨 (Poor)"
       end
     end
 

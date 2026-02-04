@@ -13,7 +13,7 @@ class CreateFeedbackPrompts < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :feedback_prompts, [:prompt_type, :active]
+    add_index :feedback_prompts, [ :prompt_type, :active ]
     add_index :feedback_prompts, :name, unique: true
     add_index :feedback_prompts, :active
   end

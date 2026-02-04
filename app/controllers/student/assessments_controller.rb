@@ -3,8 +3,8 @@ class Student::AssessmentsController < ApplicationController
   before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_student
-  before_action :set_attempt, only: [:show]
-  before_action :verify_json_csrf, only: [:submit_response, :submit_attempt]
+  before_action :set_attempt, only: [ :show ]
+  before_action :verify_json_csrf, only: [ :submit_response, :submit_attempt ]
   rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
 
   def create
@@ -43,7 +43,7 @@ class Student::AssessmentsController < ApplicationController
     end
 
     @diagnostic_form_items = @diagnostic_form.diagnostic_form_items
-      .includes(item: [:stimulus, :item_choices])
+      .includes(item: [ :stimulus, :item_choices ])
       .order(:position)
 
     unless @diagnostic_form_items.any?
@@ -169,7 +169,7 @@ class Student::AssessmentsController < ApplicationController
 
   def verify_json_csrf
     # Verify CSRF token for JSON endpoints
-    token = request.headers['X-CSRF-Token'] || params[:authenticity_token]
+    token = request.headers["X-CSRF-Token"] || params[:authenticity_token]
     unless valid_authenticity_token?(session, token)
       render json: { success: false, error: "CSRF token validation failed" }, status: :unprocessable_entity
     end

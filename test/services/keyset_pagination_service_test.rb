@@ -8,7 +8,7 @@ class KeysetPaginationServiceTest < ActiveSupport::TestCase
     10.times do |i|
       Item.create!(
         code: "ITEM#{i.to_s.rjust(3, '0')}",
-        item_type: 'mcq',
+        item_type: "mcq",
         prompt: "Test prompt #{i}",
         created_at: Time.current - (10 - i).days
       )

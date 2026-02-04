@@ -9,11 +9,11 @@ class WelcomeController < ApplicationController
   def db_status
     ActiveRecord::Base.connection_pool.with_connection do |conn|
       result = conn.select_value("SELECT 1")
-      return [true, "connected"] if result.to_s == "1"
+      return [ true, "connected" ] if result.to_s == "1"
 
-      [false, "unexpected response: #{result.inspect}"]
+      [ false, "unexpected response: #{result.inspect}" ]
     end
   rescue StandardError => e
-    [false, e.class.to_s]
+    [ false, e.class.to_s ]
   end
 end

@@ -42,39 +42,39 @@ data['test_items'].each_with_index do |item_data, idx|
   begin
     item_number = item_data['number'].to_i
     student_answer_no = item_data['student_answer'].to_i
-    
+
     item = mcq_items[idx]
     unless item
       error_count += 1
       next
     end
-    
+
     # ItemChoice 찾기
     choice = item.item_choices.find_by(choice_no: student_answer_no)
     unless choice
       error_count += 1
       next
     end
-    
+
     # Response 생성
     response = attempt.responses.create!(
       item_id: item.id,
       selected_choice_id: choice.id
     )
-    
+
     # 점수 계산
     ScoreResponseService.call(response.id)
-    
+
     is_correct = choice.choice_score&.is_key
     choice_letter = choice.choice_letter
-    
+
     if is_correct
       puts "✅ 문항 #{item_number.to_s.rjust(2)}: #{choice_letter}(#{student_answer_no}) - 정답"
       correct_count += 1
     else
       puts "❌ 문항 #{item_number.to_s.rjust(2)}: #{choice_letter}(#{student_answer_no}) - 오답"
     end
-    
+
   rescue => e
     puts "⚠️ 문항 처리 오류: #{e.message}"
     error_count += 1

@@ -4,8 +4,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("diagnostic_teacher") }
   before_action :set_role
-  before_action :set_student, only: [:show]
-  before_action :set_response, only: [:generate_feedback, :refine_feedback]
+  before_action :set_student, only: [ :show ]
+  before_action :set_response, only: [ :generate_feedback, :refine_feedback ]
 
   def index
     @current_page = "feedback"
@@ -641,13 +641,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       Rails.logger.error("[optimize_prompt] Backtrace: #{e.backtrace.first(10).join("\n")}")
 
       error_message = case e.class.name
-                      when 'Faraday::ClientError', 'Faraday::ServerError'
+      when 'Faraday::ClientError', 'Faraday::ServerError'
                         "OpenAI API 연결 오류: #{e.message}"
-                      when 'OpenAI::APIError'
+      when 'OpenAI::APIError'
                         "OpenAI API 오류: #{e.message}"
-                      else
+      else
                         "프롬프트 최적화 중 오류: #{e.message}"
-                      end
+      end
 
       render json: { success: false, error: error_message }, status: :unprocessable_entity
     end
@@ -663,7 +663,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @student = Student.find_by(id: params[:student_id])
     unless @student
       redirect_to diagnostic_teacher_feedbacks_path, alert: "학생을 찾을 수 없습니다."
-      return
+      nil
     end
   end
 
@@ -671,7 +671,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @response = Response.find_by(id: params[:response_id])
     unless @response
       render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
-      return
+      nil
     end
   end
 

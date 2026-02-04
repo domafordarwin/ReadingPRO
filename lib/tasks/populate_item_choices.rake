@@ -1,7 +1,7 @@
 namespace :items do
   desc "Populate ItemChoices for Items 119-136 from Excel file"
   task populate_choices: :environment do
-    require 'json'
+    require "json"
 
     puts "\n" + "="*80
     puts "📝 POPULATING ItemChoices FOR Items 119-136"
@@ -75,9 +75,9 @@ PYEOF
       puts "   Correct answer: Choice #{data['correct_choice_no']}"
 
       # Create ItemChoice records
-      data['choices'].each do |choice_data|
-        choice_no = choice_data['choice_no']
-        choice_text = choice_data['choice_text']
+      data["choices"].each do |choice_data|
+        choice_no = choice_data["choice_no"]
+        choice_text = choice_data["choice_text"]
 
         # Check if already exists
         existing = ItemChoice.find_by(item_id: db_item_id, choice_no: choice_no)
@@ -94,7 +94,7 @@ PYEOF
         )
 
         # Create ChoiceScore (mark correct answer)
-        is_correct = (choice_no == data['correct_choice_no'])
+        is_correct = (choice_no == data["correct_choice_no"])
         ChoiceScore.create!(
           item_choice_id: item_choice.id,
           score_percent: is_correct ? 100 : 0,

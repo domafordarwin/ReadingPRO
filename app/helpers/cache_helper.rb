@@ -25,7 +25,7 @@ module CacheHelper
 
   def cache_key_for_item(item)
     [
-      'item_row',           # Namespace for item rows
+      "item_row",           # Namespace for item rows
       item.id,              # Item identifier
       item.updated_at,      # Item cache buster
       item.stimulus&.updated_at,              # Related stimulus changes
@@ -52,7 +52,7 @@ module CacheHelper
 
   def cache_key_for_pagination
     [
-      'items_pagination',
+      "items_pagination",
       @search_query,
       @item_type_filter,
       @status_filter,

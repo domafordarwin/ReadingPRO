@@ -354,12 +354,12 @@ class StudentReportImporter
 
         # Extract grade
         grade = case block
-                when /적\s*절/ then "적절"
-                when /보\s*완\s*필\s*요|보완/ then "보완필요"
-                when /부\s*족/ then "부족"
-                when /미\s*응\s*답|미응답/ then "미응답"
-                else "미응답"
-                end
+        when /적\s*절/ then "적절"
+        when /보\s*완\s*필\s*요|보완/ then "보완필요"
+        when /부\s*족/ then "부족"
+        when /미\s*응\s*답|미응답/ then "미응답"
+        else "미응답"
+        end
 
         # Extract strengths (장점)
         strengths = ""
@@ -405,10 +405,10 @@ class StudentReportImporter
         accuracy = Regexp.last_match(1).to_i
 
         db_indicator = case indicator_name
-                       when "이해력" then "이해력"
-                       when "의사소통" then "의사소통능력"
-                       when "심미적" then "심미적감수성"
-                       end
+        when "이해력" then "이해력"
+        when "의사소통" then "의사소통능력"
+        when "심미적" then "심미적감수성"
+        end
 
         achievements << {
           indicator: db_indicator,
@@ -516,11 +516,11 @@ class StudentReportImporter
         next if idx == 0 # Skip header
 
         indicator_name = case bullet
-                         when /이해력/ then "이해력"
-                         when /의사소통/ then "의사소통능력"
-                         when /심미적/ then "심미적감수성"
-                         else nil
-                         end
+        when /이해력/ then "이해력"
+        when /의사소통/ then "의사소통능력"
+        when /심미적/ then "심미적감수성"
+        else nil
+        end
 
         if indicator_name
           directions << {

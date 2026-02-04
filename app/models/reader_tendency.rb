@@ -13,8 +13,8 @@ class ReaderTendency < ApplicationRecord
 
   scope :for_student, ->(student) { where(student: student) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :with_high_scores, -> { where('critical_thinking_score >= 70') }
-  scope :needs_improvement, -> { where('critical_thinking_score < 60') }
+  scope :with_high_scores, -> { where("critical_thinking_score >= 70") }
+  scope :needs_improvement, -> { where("critical_thinking_score < 60") }
 
   # Average scores across all attempts for a student
   def self.average_scores_for_student(student)

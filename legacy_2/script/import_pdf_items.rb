@@ -94,20 +94,20 @@ class PdfItemImporter
       # Calculate constructed item numbers
       cr_nums = if cr_start && cr_end
                   (cr_start.to_i..cr_end.to_i).to_a
-                elsif cr_start
-                  [cr_start.to_i]
-                else
+      elsif cr_start
+                  [ cr_start.to_i ]
+      else
                   []
-                end
+      end
 
       # Build regex to find this exact section
       cr_pattern = if cr_start && cr_end
                      ",\\s*서술형\\s*#{cr_start}~#{cr_end}"
-                   elsif cr_start
+      elsif cr_start
                      ",\\s*서술형\\s*#{cr_start}"
-                   else
+      else
                      ""
-                   end
+      end
 
       header_regex = /\[#{start_num}~#{end_num}#{cr_pattern}\]\s*다음\s*(?:글|시|공익광고와\s*글)[을를]?\s*(?:읽고|보고)[^\n]*/
 
@@ -119,9 +119,9 @@ class PdfItemImporter
       section_end = if next_header
                       next_pattern = /\[#{next_header[0]}~#{next_header[1]}/
                       text.index(next_pattern, header_match.end(0)) || text.length
-                    else
+      else
                       text.length
-                    end
+      end
 
       section_text = text[header_match.end(0)...section_end]
 
@@ -198,7 +198,7 @@ class PdfItemImporter
       match = section_text[q_text_start..].match(pattern)
       if match
         end_pos = q_text_start + match.begin(0)
-        q_text_end = [q_text_end, end_pos].min
+        q_text_end = [ q_text_end, end_pos ].min
       end
     end
 
@@ -221,7 +221,7 @@ class PdfItemImporter
 
   def extract_choices_from_text(text)
     choices = []
-    markers = ['①', '②', '③', '④', '⑤']
+    markers = [ '①', '②', '③', '④', '⑤' ]
 
     markers.each_with_index do |marker, idx|
       next_marker = markers[idx + 1]

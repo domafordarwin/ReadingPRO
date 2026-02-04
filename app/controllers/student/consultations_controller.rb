@@ -4,10 +4,10 @@ class Student::ConsultationsController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role_any("student", "school_admin") }
   before_action :set_role
-  before_action :set_student, only: [:index, :show, :edit, :update, :destroy, :close, :reopen, :create]
-  before_action :set_consultation_post, only: [:show, :edit, :update, :destroy, :close, :reopen]
-  before_action :authorize_consultation_post, only: [:show, :edit, :update, :destroy, :close]
-  before_action :authorize_post_author, only: [:reopen]
+  before_action :set_student, only: [ :index, :show, :edit, :update, :destroy, :close, :reopen, :create ]
+  before_action :set_consultation_post, only: [ :show, :edit, :update, :destroy, :close, :reopen ]
+  before_action :authorize_consultation_post, only: [ :show, :edit, :update, :destroy, :close ]
+  before_action :authorize_post_author, only: [ :reopen ]
 
   def index
     @current_page = "consultations"
@@ -17,14 +17,14 @@ class Student::ConsultationsController < ApplicationController
     @category_filter = params[:category].presence
     @visibility_filter = params[:visibility].presence
     @status_filter = params[:status].presence
-    @show_my_posts = params[:my_posts] == '1'
+    @show_my_posts = params[:my_posts] == "1"
 
     # 기본 쿼리: 학생 본인의 글 + 공개 글
     @posts = if @show_my_posts
                @student.consultation_posts
-             else
-               ::ConsultationPost.where("student_id = ? OR visibility = ?", @student.id, 'public')
-             end
+    else
+               ::ConsultationPost.where("student_id = ? OR visibility = ?", @student.id, "public")
+    end
 
     # 필터 적용
     @posts = @posts.search(@search_query) if @search_query.present?

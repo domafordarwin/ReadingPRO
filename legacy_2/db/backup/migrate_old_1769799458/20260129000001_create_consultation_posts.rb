@@ -19,7 +19,7 @@ class CreateConsultationPosts < ActiveRecord::Migration[8.1]
     add_index :consultation_posts, :category
     add_index :consultation_posts, :visibility
     add_index :consultation_posts, :status
-    add_index :consultation_posts, [:visibility, :status]
+    add_index :consultation_posts, [ :visibility, :status ]
     add_index :consultation_posts, :last_activity_at
     add_index :consultation_posts, :created_at
 

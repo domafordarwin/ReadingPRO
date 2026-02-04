@@ -3,8 +3,8 @@
 module Api
   module V1
     class ResponsesController < BaseController
-      before_action :set_response, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [:create, :update, :destroy]
+      before_action :set_response, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/responses
       def index
@@ -17,7 +17,7 @@ module Api
         end
 
         # Apply sorting
-        responses = responses.order(params[:sort] || 'created_at desc')
+        responses = responses.order(params[:sort] || "created_at desc")
 
         # Eager load associations
         responses = responses.includes(:item, :selected_choice, :student_attempt)
@@ -72,7 +72,7 @@ module Api
       def set_response
         @response = Response.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Response not found'
+        raise ApiError::NotFound, "Response not found"
       end
 
       def response_params
@@ -120,7 +120,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

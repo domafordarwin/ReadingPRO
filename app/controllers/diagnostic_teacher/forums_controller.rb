@@ -4,7 +4,7 @@ class DiagnosticTeacher::ForumsController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
-  before_action :set_forum, only: [:show]
+  before_action :set_forum, only: [ :show ]
 
   def index
     @current_page = "forums"

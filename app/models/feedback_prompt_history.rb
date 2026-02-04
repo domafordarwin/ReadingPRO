@@ -8,13 +8,13 @@ class FeedbackPromptHistory < ApplicationRecord
 
   scope :recent, -> { order(created_at: :desc) }
   scope :for_prompt, ->(prompt_id) { where(feedback_prompt_id: prompt_id) }
-  scope :recent_days, ->(days) { where('created_at > ?', days.days.ago) }
+  scope :recent_days, ->(days) { where("created_at > ?", days.days.ago) }
 
   def total_cost
     api_cost.to_f
   end
 
   def model_version
-    model_used || 'gpt-4o-mini'
+    model_used || "gpt-4o-mini"
   end
 end

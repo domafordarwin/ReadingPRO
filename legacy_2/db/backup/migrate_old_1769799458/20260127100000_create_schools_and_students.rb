@@ -16,7 +16,7 @@ class CreateSchoolsAndStudents < ActiveRecord::Migration[8.1]
       t.integer :student_number
       t.timestamps
     end
-    add_index :students, [:school_id, :grade, :class_number, :student_number],
+    add_index :students, [ :school_id, :grade, :class_number, :student_number ],
               name: 'idx_students_school_grade_class_number'
   end
 end

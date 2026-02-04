@@ -3,7 +3,7 @@ class Student::DashboardController < ApplicationController
   before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_role
-  before_action :set_student, except: [:index]
+  before_action :set_student, except: [ :index ]
 
   def index
     @current_page = "dashboard"
@@ -100,7 +100,7 @@ class Student::DashboardController < ApplicationController
 
     unless @report
       redirect_to student_reports_path, alert: "리포트를 찾을 수 없습니다."
-      return
+      nil
     end
   end
 

@@ -30,10 +30,10 @@ class CreateHourlyPerformanceAggregates < ActiveRecord::Migration[8.1]
     end
 
     # Indexes for efficient querying
-    add_index :hourly_performance_aggregates, [:metric_type, :hour],
+    add_index :hourly_performance_aggregates, [ :metric_type, :hour ],
       unique: true, name: 'index_hourly_agg_type_hour'
     add_index :hourly_performance_aggregates, :hour
     add_index :hourly_performance_aggregates, :metric_type
-    add_index :hourly_performance_aggregates, [:metric_type, :alert_sent]
+    add_index :hourly_performance_aggregates, [ :metric_type, :alert_sent ]
   end
 end

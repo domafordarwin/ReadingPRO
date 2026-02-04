@@ -3,9 +3,9 @@
 module Api
   module V1
     class SubIndicatorsController < BaseController
-      before_action :set_evaluation_indicator, only: [:index]
-      before_action :set_sub_indicator, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [:create, :update, :destroy]
+      before_action :set_evaluation_indicator, only: [ :index ]
+      before_action :set_sub_indicator, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/evaluation_indicators/:evaluation_indicator_id/sub_indicators
       # GET /api/v1/sub_indicators
@@ -19,7 +19,7 @@ module Api
 
         # Apply search if provided
         if params[:search].present?
-          sub_indicators = sub_indicators.where('name ILIKE ? OR description ILIKE ? OR code ILIKE ?',
+          sub_indicators = sub_indicators.where("name ILIKE ? OR description ILIKE ? OR code ILIKE ?",
                                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
         end
 
@@ -29,7 +29,7 @@ module Api
         end
 
         # Apply sorting
-        sub_indicators = sub_indicators.order(params[:sort] || 'code asc')
+        sub_indicators = sub_indicators.order(params[:sort] || "code asc")
 
         # Paginate
         paginated, meta = paginate_collection(sub_indicators)
@@ -78,13 +78,13 @@ module Api
       def set_evaluation_indicator
         @evaluation_indicator = EvaluationIndicator.find(params[:evaluation_indicator_id]) if params[:evaluation_indicator_id].present?
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Evaluation indicator not found'
+        raise ApiError::NotFound, "Evaluation indicator not found"
       end
 
       def set_sub_indicator
         @sub_indicator = SubIndicator.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Sub indicator not found'
+        raise ApiError::NotFound, "Sub indicator not found"
       end
 
       def sub_indicator_params
@@ -124,7 +124,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

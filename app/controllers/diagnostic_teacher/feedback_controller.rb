@@ -4,8 +4,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
-  before_action :set_student, only: [:show]
-  before_action :set_response, only: [:generate_feedback, :refine_feedback]
+  before_action :set_student, only: [ :show ]
+  before_action :set_response, only: [ :generate_feedback, :refine_feedback ]
 
   def index
     @current_page = "feedback"
@@ -182,7 +182,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
     @response_feedback = @response.response_feedbacks.build(
       feedback: feedback_text,
-      source: 'ai',
+      source: "ai",
       created_by: current_user
     )
 
@@ -198,8 +198,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     prompt = params[:prompt]
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
 
-    category = params[:category] || 'general'
-    save_as_template = params[:save_as_template] == 'true'
+    category = params[:category] || "general"
+    save_as_template = params[:save_as_template] == "true"
 
     # 프롬프트 저장 (템플릿으로 저장 여부에 따라)
     if save_as_template
@@ -231,13 +231,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     )
 
     # 새로운 피드백 생성 또는 업데이트
-    existing_feedback = @response.response_feedbacks.where(source: 'teacher').last
+    existing_feedback = @response.response_feedbacks.where(source: "teacher").last
     if existing_feedback
       existing_feedback.update!(feedback: refined_feedback)
     else
       @response.response_feedbacks.create!(
         feedback: refined_feedback,
-        source: 'teacher',
+        source: "teacher",
         created_by: current_user
       )
     end
@@ -313,14 +313,14 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # ResponseFeedback 저장
       response_feedback = response.response_feedbacks.create!(
         feedback: feedback_text,
-        source: 'ai',
+        source: "ai",
         created_by: current_user
       )
 
       render json: {
         success: true,
         feedback: feedback_text,
-        source: 'ai',
+        source: "ai",
         created_at: response_feedback.created_at.strftime("%Y-%m-%d %H:%M")
       }
     rescue ActiveRecord::RecordNotFound => e
@@ -409,13 +409,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     return render json: { success: false, error: "피드백 내용을 입력하세요" }, status: :bad_request if feedback_text.blank?
 
     # 교사 피드백 생성 또는 업데이트
-    existing_feedback = response.response_feedbacks.where(source: 'teacher').last
+    existing_feedback = response.response_feedbacks.where(source: "teacher").last
     if existing_feedback
       existing_feedback.update!(feedback: feedback_text)
     else
       response.response_feedbacks.create!(
         feedback: feedback_text,
-        source: 'teacher',
+        source: "teacher",
         created_by: current_user
       )
     end
@@ -450,7 +450,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         feedback_text = FeedbackAiService.generate_feedback(response)
         response.response_feedbacks.create!(
           feedback: feedback_text,
-          source: 'ai',
+          source: "ai",
           created_by: current_user
         )
         generated_count += 1
@@ -556,8 +556,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
 
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
 
-    category = params[:category] || 'general'
-    save_as_template = params[:save_as_template] == 'true'
+    category = params[:category] || "general"
+    save_as_template = params[:save_as_template] == "true"
 
     # 프롬프트 저장
     if save_as_template
@@ -592,19 +592,19 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
   def optimize_prompt
     # OpenAI API를 사용하여 프롬프트 최적화
     prompt = params[:prompt]
-    category = params[:category] || 'general'
+    category = params[:category] || "general"
 
     return render json: { success: false, error: "프롬프트를 입력하세요" }, status: :bad_request if prompt.blank?
 
     # OPENAI_API_KEY 확인
-    unless ENV['OPENAI_API_KEY'].present?
+    unless ENV["OPENAI_API_KEY"].present?
       Rails.logger.error("[optimize_prompt] OPENAI_API_KEY is not set")
       return render json: { success: false, error: "OpenAI API 키가 설정되지 않았습니다. 관리자에게 문의하세요." }, status: :internal_server_error
     end
 
     begin
       # OpenAI API를 호출하여 프롬프트 최적화
-      client = OpenAI::Client.new(access_token: ENV['OPENAI_API_KEY'])
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
       optimization_prompt = <<~PROMPT
         다음은 학생의 읽기 진단 평가 피드백 생성을 위한 프롬프트입니다.
@@ -651,13 +651,13 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       Rails.logger.error("[optimize_prompt] Backtrace: #{e.backtrace.first(10).join("\n")}")
 
       error_message = case e.class.name
-                      when 'Faraday::ClientError', 'Faraday::ServerError'
+      when "Faraday::ClientError", "Faraday::ServerError"
                         "OpenAI API 연결 오류: #{e.message}"
-                      when 'OpenAI::APIError'
+      when "OpenAI::APIError"
                         "OpenAI API 오류: #{e.message}"
-                      else
+      else
                         "프롬프트 최적화 중 오류: #{e.message}"
-                      end
+      end
 
       render json: { success: false, error: error_message }, status: :unprocessable_entity
     end
@@ -673,7 +673,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @student = Student.find_by(id: params[:student_id])
     unless @student
       redirect_to diagnostic_teacher_feedbacks_path, alert: "학생을 찾을 수 없습니다."
-      return
+      nil
     end
   end
 
@@ -681,7 +681,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @response = Response.find_by(id: params[:response_id])
     unless @response
       render json: { success: false, error: "응답을 찾을 수 없습니다" }, status: :not_found
-      return
+      nil
     end
   end
 

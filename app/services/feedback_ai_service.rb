@@ -241,7 +241,7 @@ class FeedbackAiService
 
     # 난이도별 정답률
     summary += "[난이도별 정답률]\n"
-    difficulty_stats = responses.group_by { |r| r.item.difficulty || '미지정' }
+    difficulty_stats = responses.group_by { |r| r.item.difficulty || "미지정" }
     difficulty_stats.each do |difficulty, responses_by_difficulty|
       correct_count = responses_by_difficulty.count { |r| r.selected_choice&.choice_score&.is_key }
       total_count = responses_by_difficulty.length

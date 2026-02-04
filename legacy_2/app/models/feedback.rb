@@ -7,5 +7,4 @@ class Feedback < ApplicationRecord
   enum :feedback_type, { auto: 'auto', manual: 'manual' }
 
   validates :content, presence: true
-
 end

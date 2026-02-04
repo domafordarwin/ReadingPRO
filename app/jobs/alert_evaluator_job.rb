@@ -34,7 +34,7 @@ class AlertEvaluatorJob < ApplicationJob
   }.freeze
 
   def perform
-    Rails.logger.info('[AlertEvaluatorJob] Starting performance evaluation'
+    Rails.logger.info("[AlertEvaluatorJob] Starting performance evaluation"
     )
 
     # Check each metric type
@@ -43,9 +43,9 @@ class AlertEvaluatorJob < ApplicationJob
     end
 
     # Check CLS separately (different units)
-    check_metric('cls')
+    check_metric("cls")
 
-    Rails.logger.info('[AlertEvaluatorJob] Performance evaluation complete')
+    Rails.logger.info("[AlertEvaluatorJob] Performance evaluation complete")
   rescue => e
     Rails.logger.error(
       "[AlertEvaluatorJob] Error during evaluation: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}"
@@ -113,12 +113,12 @@ class AlertEvaluatorJob < ApplicationJob
   # Get unit for metric display
   def metric_unit(metric)
     case metric
-    when 'cache_hit_rate'
-      '%'
-    when 'cls'
-      ''
+    when "cache_hit_rate"
+      "%"
+    when "cls"
+      ""
     else
-      'ms'
+      "ms"
     end
   end
 

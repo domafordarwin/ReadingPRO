@@ -76,7 +76,7 @@ class PdfItemParserService
     stimulus = ReadingStimulus.create(
       title: title,
       body: body,
-      bundle_status: 'draft'
+      bundle_status: "draft"
       # code는 모델의 before_validation 콜백에서 자동 생성됨
     )
 
@@ -144,7 +144,7 @@ class PdfItemParserService
 
         # Create levels
         if criterion.persisted?
-          [3, 2, 1, 0].each do |level|
+          [ 3, 2, 1, 0 ].each do |level|
             RubricLevel.create(
               rubric_criterion_id: criterion.id,
               level: level,

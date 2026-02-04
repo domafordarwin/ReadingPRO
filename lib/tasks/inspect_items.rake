@@ -31,8 +31,8 @@ namespace :inspect do
 
     items_with_few_choices = Item.where(item_type: Item.item_types[:mcq])
       .joins(:item_choices)
-      .group('items.id')
-      .having('COUNT(item_choices.id) < 3')
+      .group("items.id")
+      .having("COUNT(item_choices.id) < 3")
 
     if items_with_few_choices.any?
       puts "⚠️  FOUND #{items_with_few_choices.count} items with < 3 choices:\n"
@@ -142,7 +142,7 @@ namespace :inspect do
       .distinct.count
 
     total_choices = ItemChoice.count
-    choices_with_scores = ChoiceScore.distinct.count('item_choice_id')
+    choices_with_scores = ChoiceScore.distinct.count("item_choice_id")
 
     total_responses = Response.count
     mcq_responses = Response.joins(:item).where("items.item_type = ?", Item.item_types[:mcq]).count

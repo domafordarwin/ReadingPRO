@@ -10,6 +10,6 @@ class CreateGuardianStudents < ActiveRecord::Migration[8.1]
       t.timestamp :created_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :guardian_students, [:guardian_user_id, :student_id], unique: true
+    add_index :guardian_students, [ :guardian_user_id, :student_id ], unique: true
   end
 end

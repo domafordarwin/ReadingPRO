@@ -14,6 +14,6 @@ class CreateResponses < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :responses, [:student_attempt_id, :item_id], unique: true
+    add_index :responses, [ :student_attempt_id, :item_id ], unique: true
   end
 end

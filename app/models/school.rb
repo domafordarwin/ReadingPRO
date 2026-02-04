@@ -6,5 +6,4 @@ class School < ApplicationRecord
   has_one :school_portfolio, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true
-
 end

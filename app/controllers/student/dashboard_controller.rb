@@ -3,7 +3,7 @@ class Student::DashboardController < ApplicationController
   before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_role
-  before_action :set_student, except: [:index]
+  before_action :set_student, except: [ :index ]
 
   def index
     @current_page = "dashboard"
@@ -68,7 +68,7 @@ class Student::DashboardController < ApplicationController
 
     if @attempt.attempt_report.nil?
       # 새로운 리포트 생성 (draft 상태)
-      @report = @attempt.build_attempt_report(status: 'draft')
+      @report = @attempt.build_attempt_report(status: "draft")
       if @report.save
         render json: { success: true, message: "리포트가 생성되었습니다.", report: format_report_json(@report) }
       else

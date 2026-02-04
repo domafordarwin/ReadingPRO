@@ -6,7 +6,7 @@ Rails.application.config.after_initialize do
       puts "🌱 Loading seed data on first boot..."
       puts "="*50
       begin
-        load Rails.root.join('db/seeds.rb')
+        load Rails.root.join("db/seeds.rb")
         puts "✅ Seed data loaded successfully"
         puts "📧 Test accounts created:"
         puts "   - admin@readingpro.kr"

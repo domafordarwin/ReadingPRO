@@ -3,8 +3,8 @@
 module Api
   module V1
     class StudentAttemptsController < BaseController
-      before_action :set_student_attempt, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [:create, :update, :destroy]
+      before_action :set_student_attempt, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/student_attempts
       def index
@@ -18,7 +18,7 @@ module Api
         end
 
         # Apply sorting
-        attempts = attempts.order(params[:sort] || 'created_at desc')
+        attempts = attempts.order(params[:sort] || "created_at desc")
 
         # Eager load associations
         attempts = attempts.includes(:student, :diagnostic_form, :responses)
@@ -72,7 +72,7 @@ module Api
       def set_student_attempt
         @student_attempt = StudentAttempt.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Student attempt not found'
+        raise ApiError::NotFound, "Student attempt not found"
       end
 
       def student_attempt_params
@@ -132,7 +132,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

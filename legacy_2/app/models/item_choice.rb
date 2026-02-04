@@ -6,5 +6,4 @@ class ItemChoice < ApplicationRecord
 
   validates :choice_no, presence: true, uniqueness: { scope: :item_id }
   validates :content, presence: true
-
 end

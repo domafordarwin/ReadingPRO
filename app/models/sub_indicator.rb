@@ -24,7 +24,7 @@ class SubIndicator < ApplicationRecord
 
   # Scopes
   scope :by_indicator, ->(indicator_id) { where(evaluation_indicator_id: indicator_id) }
-  scope :by_code_pattern, ->(pattern) { where('code ILIKE ?', "%#{pattern}%") }
+  scope :by_code_pattern, ->(pattern) { where("code ILIKE ?", "%#{pattern}%") }
   scope :with_items, -> { where.not(id: Item.where(sub_indicator_id: nil).select(:sub_indicator_id).distinct) }
 
   # Callbacks
@@ -34,7 +34,7 @@ class SubIndicator < ApplicationRecord
   class << self
     def search_by_indicator_and_name(indicator_id, query)
       by_indicator(indicator_id)
-        .where('name ILIKE ? OR description ILIKE ? OR code ILIKE ?',
+        .where("name ILIKE ? OR description ILIKE ? OR code ILIKE ?",
                "%#{query}%", "%#{query}%", "%#{query}%")
     end
 

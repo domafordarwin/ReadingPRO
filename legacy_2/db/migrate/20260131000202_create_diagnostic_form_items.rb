@@ -11,7 +11,7 @@ class CreateDiagnosticFormItems < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :diagnostic_form_items, [:diagnostic_form_id, :position], unique: true
-    add_index :diagnostic_form_items, [:diagnostic_form_id, :item_id], unique: true
+    add_index :diagnostic_form_items, [ :diagnostic_form_id, :position ], unique: true
+    add_index :diagnostic_form_items, [ :diagnostic_form_id, :item_id ], unique: true
   end
 end

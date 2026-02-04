@@ -3,7 +3,7 @@ class Student::AssessmentsController < ApplicationController
   before_action :require_login
   before_action -> { require_role("student") }
   before_action :set_student
-  before_action :set_attempt, only: [:show]
+  before_action :set_attempt, only: [ :show ]
   rescue_from ActiveRecord::RecordNotFound, with: :handle_not_found
 
   def create
@@ -42,7 +42,7 @@ class Student::AssessmentsController < ApplicationController
     end
 
     @diagnostic_form_items = @diagnostic_form.diagnostic_form_items
-      .includes(item: [:stimulus, :item_choices])
+      .includes(item: [ :stimulus, :item_choices ])
       .order(:position)
 
     unless @diagnostic_form_items.any?

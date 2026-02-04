@@ -10,7 +10,7 @@ class CreateSchoolReaderTables < ActiveRecord::Migration[8.1]
       t.text :characteristics
       t.timestamps
     end
-    add_index :school_reader_type_distributions, [:school_assessment_id, :type_code],
+    add_index :school_reader_type_distributions, [ :school_assessment_id, :type_code ],
               unique: true, name: 'idx_school_reader_dist_assessment_type'
 
     # 독자 유형별 맞춤 교육 제언
@@ -22,7 +22,7 @@ class CreateSchoolReaderTables < ActiveRecord::Migration[8.1]
       t.integer :priority
       t.timestamps
     end
-    add_index :school_reader_type_recommendations, [:school_assessment_id, :type_code, :category],
+    add_index :school_reader_type_recommendations, [ :school_assessment_id, :type_code, :category ],
               name: 'idx_school_reader_rec_assessment_type_cat'
   end
 end

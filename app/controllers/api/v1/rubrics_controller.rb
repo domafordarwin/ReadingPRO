@@ -3,8 +3,8 @@
 module Api
   module V1
     class RubricsController < BaseController
-      before_action :set_rubric, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[researcher admin]) }, only: [:create, :update, :destroy]
+      before_action :set_rubric, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[researcher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/rubrics
       def index
@@ -17,11 +17,11 @@ module Api
 
         # Apply search
         if params[:search].present?
-          rubrics = rubrics.where('name ILIKE ?', "%#{params[:search]}%")
+          rubrics = rubrics.where("name ILIKE ?", "%#{params[:search]}%")
         end
 
         # Apply sorting
-        rubrics = rubrics.order(params[:sort] || 'created_at desc')
+        rubrics = rubrics.order(params[:sort] || "created_at desc")
 
         # Eager load associations
         rubrics = rubrics.includes(:rubric_criteria)
@@ -72,7 +72,7 @@ module Api
       def set_rubric
         @rubric = Rubric.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Rubric not found'
+        raise ApiError::NotFound, "Rubric not found"
       end
 
       def rubric_params
@@ -80,7 +80,7 @@ module Api
           :name, :item_id,
           rubric_criteria_attributes: [
             :id, :criterion_name, :_destroy,
-            rubric_levels_attributes: [:id, :level, :score, :_destroy]
+            rubric_levels_attributes: [ :id, :level, :score, :_destroy ]
           ]
         )
       end
@@ -123,7 +123,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

@@ -2,8 +2,8 @@ class Parent::DashboardController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("parent") }
   before_action :set_role
-  before_action :set_students, except: [:index]
-  before_action :set_student_for_reports, only: [:reports, :show_report, :show_attempt]
+  before_action :set_students, except: [ :index ]
+  before_action :set_student_for_reports, only: [ :reports, :show_report, :show_attempt ]
 
   def index
     @current_page = "dashboard"
@@ -16,7 +16,7 @@ class Parent::DashboardController < ApplicationController
 
     # 현재 로그인한 부모의 자녀 목록 (필요한 데이터만 eager load)
     @children = current_user.parent.students
-      .includes(student_attempts: [:diagnostic_form, :attempt_report])
+      .includes(student_attempts: [ :diagnostic_form, :attempt_report ])
       .to_a
 
     # 대시보드 통계
@@ -188,8 +188,8 @@ class Parent::DashboardController < ApplicationController
   def calculate_dashboard_stats
     {
       total_children: @children.count,
-      active_children: @children.select { |c| c.student_attempts.where('submitted_at > ?', 30.days.ago).any? }.count,
-      total_assessments: StudentAttempt.where(student: @children, status: 'completed').count,
+      active_children: @children.select { |c| c.student_attempts.where("submitted_at > ?", 30.days.ago).any? }.count,
+      total_assessments: StudentAttempt.where(student: @children, status: "completed").count,
       avg_score: calculate_average_score,
       pending_consultations: 0  # ConsultationRequest 모델 미구현
     }
@@ -198,7 +198,7 @@ class Parent::DashboardController < ApplicationController
   def calculate_average_score
     # 이미 @children으로 eager-loaded된 데이터 사용
     # 루프를 통해 계산 (필요시 SQL로 변경 가능)
-    completed_attempts = @children.flat_map(&:student_attempts).select { |a| a.status == 'completed' }
+    completed_attempts = @children.flat_map(&:student_attempts).select { |a| a.status == "completed" }
     return 0 if completed_attempts.empty?
 
     total_percentage = completed_attempts.sum do |a|
@@ -214,7 +214,7 @@ class Parent::DashboardController < ApplicationController
 
     # 최근 평가 기록 (Eager load diagnostic_form and attempt_report to prevent N+1)
     StudentAttempt.where(student: @children)
-      .where('submitted_at > ?', 7.days.ago)
+      .where("submitted_at > ?", 7.days.ago)
       .includes(:diagnostic_form, :student, :attempt_report)
       .order(submitted_at: :desc)
       .limit(10)
@@ -223,7 +223,7 @@ class Parent::DashboardController < ApplicationController
         report = attempt.attempt_report
         score_pct = report && report.max_score.to_f > 0 ? (report.total_score / report.max_score.to_f * 100).round(1) : 0
         activities << {
-          type: 'assessment',
+          type: "assessment",
           student: attempt.student,
           title: "#{attempt.diagnostic_form.name} 완료",
           score: "#{score_pct}%",
@@ -240,7 +240,7 @@ class Parent::DashboardController < ApplicationController
     @children.map do |child|
       # Use pre-loaded student_attempts (already includes from index action)
       attempts = child.student_attempts
-        .select { |a| a.status == 'completed' }
+        .select { |a| a.status == "completed" }
         .sort_by { |a| a.submitted_at || Time.at(0) }
 
       {
@@ -262,22 +262,22 @@ class Parent::DashboardController < ApplicationController
   end
 
   def calculate_trend(attempts)
-    return 'neutral' if attempts.count < 2
+    return "neutral" if attempts.count < 2
 
     recent_attempts = attempts.last(3)
     recent_avg = calculate_average_scores(recent_attempts)
 
     # Calculate previous average (up to 3 attempts before recent)
-    previous_attempts_count = [attempts.count - 3, 1].max
+    previous_attempts_count = [ attempts.count - 3, 1 ].max
     previous_attempts = attempts.first(previous_attempts_count)
     previous_avg = calculate_average_scores(previous_attempts)
 
     if recent_avg > previous_avg + 0.05
-      'improving'
+      "improving"
     elsif recent_avg < previous_avg - 0.05
-      'declining'
+      "declining"
     else
-      'stable'
+      "stable"
     end
   end
 

@@ -3,8 +3,8 @@
 module Api
   module V1
     class StimuliController < BaseController
-      before_action :set_stimulus, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[researcher admin]) }, only: [:create, :update, :destroy]
+      before_action :set_stimulus, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[researcher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/stimuli
       def index
@@ -17,11 +17,11 @@ module Api
 
         # Apply search
         if params[:search].present?
-          stimuli = stimuli.where('title ILIKE ? OR body ILIKE ?', "%#{params[:search]}%", "%#{params[:search]}%")
+          stimuli = stimuli.where("title ILIKE ? OR body ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")
         end
 
         # Apply sorting
-        stimuli = stimuli.order(params[:sort] || 'created_at desc')
+        stimuli = stimuli.order(params[:sort] || "created_at desc")
 
         # Eager load associations
         stimuli = stimuli.includes(:items)
@@ -72,7 +72,7 @@ module Api
       def set_stimulus
         @stimulus = ReadingStimulus.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Stimulus not found'
+        raise ApiError::NotFound, "Stimulus not found"
       end
 
       def stimulus_params
@@ -117,7 +117,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

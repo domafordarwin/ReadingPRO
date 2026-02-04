@@ -8,7 +8,7 @@ class CreateMediumDiagnosticForm < ActiveRecord::Migration[8.1]
 
     # 중등 난이도 문항 15개 조회 후 연결
     medium_items = Item.where(difficulty: :medium).order(:id).limit(15)
-    
+
     medium_items.each_with_index do |item, index|
       FormItem.create!(
         form_id: form.id,

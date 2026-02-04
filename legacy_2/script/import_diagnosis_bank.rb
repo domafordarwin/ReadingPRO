@@ -34,7 +34,7 @@ class XlsxReader
 
         values[column] = cell_value(cell)
       end
-      rows << [row_number, values]
+      rows << [ row_number, values ]
     end
     rows
   end
@@ -392,7 +392,7 @@ class DiagnosisBankImporter
           end
 
           # Add levels
-          [[3, level3_desc], [2, level2_desc], [1, level1_desc]].each do |score, desc|
+          [ [ 3, level3_desc ], [ 2, level2_desc ], [ 1, level1_desc ] ].each do |score, desc|
             next if desc.blank?
 
             level = RubricLevel.find_or_initialize_by(

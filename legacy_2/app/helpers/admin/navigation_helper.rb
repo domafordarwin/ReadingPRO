@@ -1,7 +1,7 @@
 module Admin
   module NavigationHelper
     def nav_link_class(path)
-      classes = ["admin-nav-link"]
+      classes = [ "admin-nav-link" ]
       if current_page?(path)
         classes << "active"
       elsif path == admin_system_path && request.path == "/admin"

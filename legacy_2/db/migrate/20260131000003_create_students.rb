@@ -13,6 +13,6 @@ class CreateStudents < ActiveRecord::Migration[8.1]
     end
 
     add_index :students, :student_number
-    add_index :students, [:school_id, :student_number], unique: true
+    add_index :students, [ :school_id, :student_number ], unique: true
   end
 end

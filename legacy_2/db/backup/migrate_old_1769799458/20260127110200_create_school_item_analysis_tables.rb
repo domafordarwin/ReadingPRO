@@ -19,7 +19,7 @@ class CreateSchoolItemAnalysisTables < ActiveRecord::Migration[8.1]
       t.text :analysis_comment
       t.timestamps
     end
-    add_index :school_mcq_analyses, [:school_assessment_id, :question_number],
+    add_index :school_mcq_analyses, [ :school_assessment_id, :question_number ],
               unique: true, name: 'idx_school_mcq_assessment_question'
 
     # 학교 단위 서술형 문항 분석
@@ -43,7 +43,7 @@ class CreateSchoolItemAnalysisTables < ActiveRecord::Migration[8.1]
       t.text :analysis_comment
       t.timestamps
     end
-    add_index :school_essay_analyses, [:school_assessment_id, :question_number],
+    add_index :school_essay_analyses, [ :school_assessment_id, :question_number ],
               unique: true, name: 'idx_school_essay_assessment_question'
   end
 end

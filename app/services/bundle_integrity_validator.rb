@@ -29,10 +29,10 @@ class BundleIntegrityValidator
     fixes_applied = []
 
     # Try to fix metadata issues
-    if @errors.any? { |e| e.include?('메타데이터') || e.include?('코드 배열') }
+    if @errors.any? { |e| e.include?("메타데이터") || e.include?("코드 배열") }
       begin
         @stimulus.recalculate_bundle_metadata!
-        fixes_applied << '메타데이터 재계산 완료'
+        fixes_applied << "메타데이터 재계산 완료"
 
         # Re-validate after fix
         @errors = []
@@ -95,46 +95,46 @@ class BundleIntegrityValidator
     items = @stimulus.items
 
     # Check counts
-    actual_mcq = items.where(item_type: 'mcq').count
-    actual_constructed = items.where(item_type: 'constructed').count
+    actual_mcq = items.where(item_type: "mcq").count
+    actual_constructed = items.where(item_type: "constructed").count
     actual_total = items.count
 
-    if meta['mcq_count'] != actual_mcq
+    if meta["mcq_count"] != actual_mcq
       @errors << "객관식 개수 불일치 - meta: #{meta['mcq_count']}, actual: #{actual_mcq}"
     end
 
-    if meta['constructed_count'] != actual_constructed
+    if meta["constructed_count"] != actual_constructed
       @errors << "서술형 개수 불일치 - meta: #{meta['constructed_count']}, actual: #{actual_constructed}"
     end
 
-    if meta['total_count'] != actual_total
+    if meta["total_count"] != actual_total
       @errors << "전체 문항 개수 불일치 - meta: #{meta['total_count']}, actual: #{actual_total}"
     end
 
     # Check difficulty distribution
-    if meta['difficulty_distribution'].present?
-      dist = meta['difficulty_distribution']
-      actual_easy = items.where(difficulty: 'easy').count
-      actual_medium = items.where(difficulty: 'medium').count
-      actual_hard = items.where(difficulty: 'hard').count
+    if meta["difficulty_distribution"].present?
+      dist = meta["difficulty_distribution"]
+      actual_easy = items.where(difficulty: "easy").count
+      actual_medium = items.where(difficulty: "medium").count
+      actual_hard = items.where(difficulty: "hard").count
 
-      if dist['easy'] != actual_easy
+      if dist["easy"] != actual_easy
         @errors << "난이도(하) 개수 불일치 - meta: #{dist['easy']}, actual: #{actual_easy}"
       end
 
-      if dist['medium'] != actual_medium
+      if dist["medium"] != actual_medium
         @errors << "난이도(중) 개수 불일치 - meta: #{dist['medium']}, actual: #{actual_medium}"
       end
 
-      if dist['hard'] != actual_hard
+      if dist["hard"] != actual_hard
         @errors << "난이도(상) 개수 불일치 - meta: #{dist['hard']}, actual: #{actual_hard}"
       end
     end
 
     # Check estimated time
-    if meta['estimated_time_minutes'].present?
+    if meta["estimated_time_minutes"].present?
       expected_time = (actual_mcq * 2) + (actual_constructed * 5)
-      if meta['estimated_time_minutes'] != expected_time
+      if meta["estimated_time_minutes"] != expected_time
         @errors << "예상 시간 불일치 - meta: #{meta['estimated_time_minutes']}분, expected: #{expected_time}분"
       end
     end

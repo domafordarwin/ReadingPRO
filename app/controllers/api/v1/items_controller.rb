@@ -3,8 +3,8 @@
 module Api
   module V1
     class ItemsController < BaseController
-      before_action :set_item, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [:create, :update, :destroy]
+      before_action :set_item, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/items
       def index
@@ -21,11 +21,11 @@ module Api
 
         # Apply search if provided
         if params[:search].present?
-          items = items.where('code ILIKE ? OR prompt ILIKE ?', "%#{params[:search]}%", "%#{params[:search]}%")
+          items = items.where("code ILIKE ? OR prompt ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")
         end
 
         # Apply sorting
-        items = items.order(params[:sort] || 'code asc')
+        items = items.order(params[:sort] || "code asc")
 
         # Eager load associations
         items = items.includes(:evaluation_indicator, :sub_indicator, :stimulus, :rubric, :item_choices)
@@ -76,7 +76,7 @@ module Api
       def set_item
         @item = Item.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Item not found'
+        raise ApiError::NotFound, "Item not found"
       end
 
       def item_params
@@ -166,7 +166,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

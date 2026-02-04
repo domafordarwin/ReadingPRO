@@ -1,6 +1,6 @@
 sql_paths = ARGV.map(&:to_s)
 if sql_paths.empty?
-  sql_paths = [Rails.root.join("raw_Data", "reading_pro_insert.sql").to_s]
+  sql_paths = [ Rails.root.join("raw_Data", "reading_pro_insert.sql").to_s ]
 end
 
 resolved_paths = sql_paths.map do |path|
@@ -161,7 +161,7 @@ parsed_files.each do |data|
 
     mcq_question_ids << question_id
     choice_no = student_answer.to_i
-    question_choice_max[question_id] = [question_choice_max[question_id], choice_no].max
+    question_choice_max[question_id] = [ question_choice_max[question_id], choice_no ].max
   end
 
   data[:essay_rows].each do |_assessment_id, question_id, _question_number, _student_answer, _evaluation_grade, _strengths, _feedback|
@@ -269,7 +269,7 @@ ActiveRecord::Base.transaction do
         puts "Warning: assessment_id count (#{assessment_id_order.size}) does not match assessment rows (#{assessment_rows.size}) in #{data[:path]}"
       end
 
-      map_count = [assessment_id_order.size, assessment_rows.size].min
+      map_count = [ assessment_id_order.size, assessment_rows.size ].min
       map_count.times do |index|
         attempt = attempts[index]
         assessment_map[assessment_id_order[index]] = attempt if attempt

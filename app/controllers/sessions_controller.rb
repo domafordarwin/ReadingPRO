@@ -30,7 +30,7 @@ class SessionsController < ApplicationController
       begin
         target_path = role_redirect_path(current_user.role)
         redirect_to target_path
-        return
+        nil
       rescue => e
         # role_redirect_path에서 에러 발생 시 세션 초기화
         Rails.logger.error "❌ Error in role_redirect_path: #{e.message}"
@@ -60,7 +60,7 @@ class SessionsController < ApplicationController
     if User.count == 0 && User.table_exists?
       Rails.logger.info "🌱 Auto-loading seed data on first login attempt..."
       begin
-        load Rails.root.join('db/seeds.rb')
+        load Rails.root.join("db/seeds.rb")
         Rails.logger.info "✅ Seed data loaded successfully"
       rescue => e
         Rails.logger.error "❌ Error loading seed data: #{e.message}"

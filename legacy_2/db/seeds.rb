@@ -38,7 +38,7 @@ puts "Creating sample reading stimuli..."
     stimulus.body = "이것은 샘플 읽기 지문입니다. 이 지문은 학생들의 독해 능력을 평가하기 위해 설계되었습니다. " * 3
     stimulus.source = "교과서 #{i + 1}"
     stimulus.word_count = 250
-    stimulus.reading_level = ['easy', 'medium', 'hard'].sample
+    stimulus.reading_level = [ 'easy', 'medium', 'hard' ].sample
     stimulus.created_by_id = teacher.id
   end
 end
@@ -50,9 +50,9 @@ stimuli = ReadingStimulus.all
 20.times do |i|
   item = Item.find_or_create_by!(code: "ITEM_#{format('%03d', i + 1)}") do |it|
     it.item_type = i % 2 == 0 ? :mcq : :constructed
-    it.difficulty = ['easy', 'medium', 'hard'].sample
-    it.category = ['어휘', '문법', '읽기', '추론'].sample
-    it.tags = ['기본', '심화'].sample(rand(1..2))
+    it.difficulty = [ 'easy', 'medium', 'hard' ].sample
+    it.category = [ '어휘', '문법', '읽기', '추론' ].sample
+    it.tags = [ '기본', '심화' ].sample(rand(1..2))
     it.prompt = "문제 #{i + 1}: 위 지문에서 다음 질문에 답하세요."
     it.explanation = "해설: 이것은 문제 #{i + 1}의 설명입니다."
     it.stimulus_id = stimuli.sample.id
@@ -193,7 +193,7 @@ puts "Creating announcements..."
 3.times do |i|
   Announcement.find_or_create_by!(title: "공지사항 #{i + 1}") do |ann|
     ann.content = "이것은 공지사항 #{i + 1}입니다."
-    ann.priority = ['low', 'medium', 'high'].sample
+    ann.priority = [ 'low', 'medium', 'high' ].sample
     ann.published_by_id = teacher.id
     ann.published_at = Time.current
   end

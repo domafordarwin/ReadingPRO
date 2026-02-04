@@ -13,7 +13,7 @@ class CreateConsultationRequests < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :consultation_requests, [:user_id, :student_id]
+    add_index :consultation_requests, [ :user_id, :student_id ]
     add_index :consultation_requests, :status
     add_index :consultation_requests, :created_at
   end

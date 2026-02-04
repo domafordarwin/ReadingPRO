@@ -26,10 +26,10 @@ class HourlyPerformanceAggregate < ApplicationRecord
   validates :sample_count, presence: true, numericality: { greater_than: 0 }
 
   # Scopes
-  scope :recent, ->(duration = 24.hours) { where('hour > ?', duration.ago) }
+  scope :recent, ->(duration = 24.hours) { where("hour > ?", duration.ago) }
   scope :by_type, ->(type) { where(metric_type: type) }
   scope :by_hour_range, ->(start_time, end_time) {
-    where('hour >= ? AND hour <= ?', start_time, end_time)
+    where("hour >= ? AND hour <= ?", start_time, end_time)
   }
 
   # Mark hour as checked for alerts (prevent duplicate notifications)

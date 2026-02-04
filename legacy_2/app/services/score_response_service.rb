@@ -65,9 +65,9 @@ class ScoreResponseService
     max_score = points_missing ? 0.to_d : points
     raw_score = if points_missing
                   0.to_d
-                else
+    else
                   points * level_sum / max_level_sum
-                end
+    end
 
     meta = {
       "mode" => "rubric_weighted",
@@ -86,8 +86,8 @@ class ScoreResponseService
 
   def points_for_response
     form_item = response.attempt&.form&.form_items&.find_by(item_id: response.item_id)
-    return [0.to_d, true] if form_item.nil?
+    return [ 0.to_d, true ] if form_item.nil?
 
-    [form_item.points.to_d, false]
+    [ form_item.points.to_d, false ]
   end
 end

@@ -67,7 +67,7 @@ class Researcher::DashboardController < ApplicationController
 
     # 통계
     @total_count = @stimuli.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @stimuli = @stimuli.offset((@page - 1) * @per_page).limit(@per_page)
@@ -107,7 +107,7 @@ class Researcher::DashboardController < ApplicationController
 
     # 통계
     @total_count = @items.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @items = @items.offset((@page - 1) * @per_page).limit(@per_page)
@@ -115,7 +115,7 @@ class Researcher::DashboardController < ApplicationController
     # 필터링 옵션
     @available_item_types = Item.item_types.keys
     @available_statuses = Item.statuses.keys
-    @available_difficulties = ['상', '중', '하']
+    @available_difficulties = [ '상', '중', '하' ]
   end
 
   def load_forms_with_filters
@@ -137,7 +137,7 @@ class Researcher::DashboardController < ApplicationController
 
     # 통계
     @total_count = @forms.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @forms = @forms.offset((@page - 1) * @per_page).limit(@per_page)

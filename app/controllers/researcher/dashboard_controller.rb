@@ -14,7 +14,7 @@ class Researcher::DashboardController < ApplicationController
     @total_items = Item.count
     @complete_items = Item.where.not(stimulus_id: nil).count
     @total_stimuli = ReadingStimulus.count
-    @active_items = Item.where(status: 'active').count
+    @active_items = Item.where(status: "active").count
 
     # 최근 생성된 문항
     @recent_items = Item.includes(:stimulus).order(created_at: :desc).limit(5)
@@ -32,8 +32,8 @@ class Researcher::DashboardController < ApplicationController
     # Calculate statistics
     @total_indicators = @indicators.count
     @active_indicators = @indicators.count { |ind| ind.items.any? }
-    @review_indicators = @indicators.count { |ind| ind.items.any? && ind.items.all? { |item| item.status != 'active' } }
-    @average_items = @indicators.sum { |ind| ind.items.count } / [@indicators.count, 1].max
+    @review_indicators = @indicators.count { |ind| ind.items.any? && ind.items.all? { |item| item.status != "active" } }
+    @average_items = @indicators.sum { |ind| ind.items.count } / [ @indicators.count, 1 ].max
     @last_updated = Item.maximum(:updated_at) || Time.current
   end
 
@@ -142,7 +142,7 @@ class Researcher::DashboardController < ApplicationController
     end
 
     @total_count = @items.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @items = @items.offset((@page - 1) * @per_page).limit(@per_page)
@@ -153,9 +153,9 @@ class Researcher::DashboardController < ApplicationController
       uploaded_file = params[:pdf_file]
 
       # Save uploaded file temporarily
-      temp_path = Rails.root.join('tmp', 'uploads', uploaded_file.original_filename)
+      temp_path = Rails.root.join("tmp", "uploads", uploaded_file.original_filename)
       FileUtils.mkdir_p(File.dirname(temp_path))
-      File.open(temp_path, 'wb') do |file|
+      File.open(temp_path, "wb") do |file|
         file.write(uploaded_file.read)
       end
 
@@ -199,7 +199,7 @@ class Researcher::DashboardController < ApplicationController
 
     # 통계
     @total_count = @stimuli.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @stimuli = @stimuli.offset((@page - 1) * @per_page).limit(@per_page)
@@ -343,12 +343,12 @@ class Researcher::DashboardController < ApplicationController
 
   # Generate cache key for bundle filters
   def bundle_filter_cache_key
-    [@search_query, @bundle_status_filter].join(":")
+    [ @search_query, @bundle_status_filter ].join(":")
   end
 
   # Generate cache key for current filter combination
   def filter_cache_key
-    [@search_query, @item_type_filter, @status_filter, @difficulty_filter].join(":")
+    [ @search_query, @item_type_filter, @status_filter, @difficulty_filter ].join(":")
   end
 
   def load_forms_with_filters
@@ -370,7 +370,7 @@ class Researcher::DashboardController < ApplicationController
 
     # 통계
     @total_count = @forms.count
-    @page = [params[:page].to_i, 1].max
+    @page = [ params[:page].to_i, 1 ].max
     @per_page = 25
     @total_pages = (@total_count.to_f / @per_page).ceil
     @forms = @forms.offset((@page - 1) * @per_page).limit(@per_page)

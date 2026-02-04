@@ -7,8 +7,8 @@ class CacheWarmerServiceTest < ActiveSupport::TestCase
     Rails.cache.clear
 
     # Create test data
-    Item.create!(code: "ITEM001", item_type: 'mcq', prompt: "Test MCQ", status: 'draft')
-    Item.create!(code: "ITEM002", item_type: 'constructed', prompt: "Test Constructed", status: 'active')
+    Item.create!(code: "ITEM001", item_type: "mcq", prompt: "Test MCQ", status: "draft")
+    Item.create!(code: "ITEM002", item_type: "constructed", prompt: "Test Constructed", status: "active")
   end
 
   teardown do
@@ -50,7 +50,7 @@ class CacheWarmerServiceTest < ActiveSupport::TestCase
     CacheWarmerService.warm_all
 
     difficulties = CacheWarmerService.get_item_difficulties
-    assert_equal ['상', '중', '하'], difficulties
+    assert_equal [ "상", "중", "하" ], difficulties
   end
 
   test "invalidate_item_caches clears item caches" do
@@ -95,7 +95,7 @@ class CacheWarmerServiceTest < ActiveSupport::TestCase
     CacheWarmerService.warm_all
 
     # Manually set cache entry with very short expiration
-    Rails.cache.write("item_types", ["test"], expires_in: 0.seconds)
+    Rails.cache.write("item_types", [ "test" ], expires_in: 0.seconds)
     sleep 0.1
 
     # Value might be expired (depends on cache implementation)

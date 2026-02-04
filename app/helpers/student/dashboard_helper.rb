@@ -1,12 +1,12 @@
 module Student::DashboardHelper
   def translate_report_status(status)
     case status
-    when 'draft'
-      '준비중'
-    when 'generated'
-      '생성완료'
-    when 'published'
-      '발행됨'
+    when "draft"
+      "준비중"
+    when "generated"
+      "생성완료"
+    when "published"
+      "발행됨"
     else
       status
     end

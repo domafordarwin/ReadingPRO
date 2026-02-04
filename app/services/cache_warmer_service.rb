@@ -24,7 +24,7 @@ class CacheWarmerService
   def self.warm_item_filters
     Rails.cache.write("item_types", Item.item_types.keys, expires_in: CACHE_DURATION)
     Rails.cache.write("item_statuses", Item.statuses.keys, expires_in: CACHE_DURATION)
-    Rails.cache.write("item_difficulties", ['상', '중', '하'], expires_in: CACHE_DURATION)
+    Rails.cache.write("item_difficulties", [ "상", "중", "하" ], expires_in: CACHE_DURATION)
 
     Rails.logger.info("[CacheWarmer] Item filters cached")
   end
@@ -58,7 +58,7 @@ class CacheWarmerService
 
   def self.get_item_difficulties
     Rails.cache.fetch("item_difficulties", expires_in: CACHE_DURATION) do
-      ['상', '중', '하']
+      [ "상", "중", "하" ]
     end
   end
 

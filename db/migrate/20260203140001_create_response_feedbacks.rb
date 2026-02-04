@@ -12,7 +12,7 @@ class CreateResponseFeedbacks < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :response_feedbacks, [:response_id, :source]
+    add_index :response_feedbacks, [ :response_id, :source ]
     add_index :response_feedbacks, :source
     add_index :response_feedbacks, :created_at
   end

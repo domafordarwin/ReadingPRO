@@ -2,7 +2,7 @@
 
 class ParentForumComment < ApplicationRecord
   belongs_to :parent_forum
-  belongs_to :created_by, class_name: 'User', foreign_key: 'created_by_id'
+  belongs_to :created_by, class_name: "User", foreign_key: "created_by_id"
 
   validates :content, presence: true, length: { maximum: 2000 }
 
@@ -25,7 +25,7 @@ class ParentForumComment < ApplicationRecord
   def update_forum_status
     # 답변이 달리면 상태를 answered로 변경
     if parent_forum.open?
-      parent_forum.update(status: 'answered')
+      parent_forum.update(status: "answered")
     end
   end
 end

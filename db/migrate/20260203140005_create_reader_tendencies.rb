@@ -31,6 +31,6 @@ class CreateReaderTendencies < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :reader_tendencies, [:student_id, :created_at]
+    add_index :reader_tendencies, [ :student_id, :created_at ]
   end
 end

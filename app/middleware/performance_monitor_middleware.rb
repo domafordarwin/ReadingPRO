@@ -24,8 +24,8 @@
 class PerformanceMonitorMiddleware
   # Endpoints to skip monitoring (static assets, health checks)
   SKIP_PATHS = [
-    '/up',
-    '/health',
+    "/up",
+    "/health",
     %r{^/assets/},
     %r{^/cable},
     %r{^/rails/}
@@ -44,7 +44,7 @@ class PerformanceMonitorMiddleware
     render_start_time = nil
 
     # Capture render start
-    original_render_callback = env.delete('action_controller.instance')&.method(:render)
+    original_render_callback = env.delete("action_controller.instance")&.method(:render)
 
     # Process request
     status, headers, response = @app.call(env)
@@ -56,15 +56,15 @@ class PerformanceMonitorMiddleware
 
     # Queue async metric recording (non-blocking)
     record_metric(
-      endpoint: env['PATH_INFO'],
-      http_method: env['REQUEST_METHOD'],
+      endpoint: env["PATH_INFO"],
+      http_method: env["REQUEST_METHOD"],
       total_time: total_time_ms,
       query_count: query_count_executed,
       status: status,
       env: env
     )
 
-    [status, headers, response]
+    [ status, headers, response ]
   rescue => e
     # Log error but don't break the request
     Rails.logger.error(
@@ -76,7 +76,7 @@ class PerformanceMonitorMiddleware
   private
 
   def skip_monitoring?(env)
-    path = env['PATH_INFO']
+    path = env["PATH_INFO"]
     SKIP_PATHS.any? { |skip_path| skip_path === path }
   end
 
@@ -91,7 +91,7 @@ class PerformanceMonitorMiddleware
     return if status < 200 || status >= 300
 
     PerformanceMetricRecorderJob.perform_later(
-      metric_type: 'page_load',
+      metric_type: "page_load",
       endpoint: endpoint,
       http_method: http_method,
       value: total_time,
@@ -102,10 +102,10 @@ class PerformanceMonitorMiddleware
 
   def extract_metadata(env)
     {
-      http_status: env['action_dispatch.request']&.response_status,
-      user_agent: env['HTTP_USER_AGENT']&.truncate(200),
-      ip: env['REMOTE_ADDR'],
-      referer: env['HTTP_REFERER']&.truncate(200)
+      http_status: env["action_dispatch.request"]&.response_status,
+      user_agent: env["HTTP_USER_AGENT"]&.truncate(200),
+      ip: env["REMOTE_ADDR"],
+      referer: env["HTTP_REFERER"]&.truncate(200)
     }
   end
 end

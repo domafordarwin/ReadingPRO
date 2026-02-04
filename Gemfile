@@ -43,6 +43,9 @@ gem "image_processing", "~> 1.2"
 # Pagination
 gem "kaminari"
 
+# Version control for models (audit trail)
+gem "paper_trail", "~> 15.0"
+
 # PDF parsing for importing test items
 gem "pdf-reader"
 

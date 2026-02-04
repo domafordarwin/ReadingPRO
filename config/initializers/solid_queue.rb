@@ -15,7 +15,7 @@
 
 Rails.application.config.after_initialize do
   if defined?(SolidQueue)
-    Rails.logger.info '[SolidQueue] Initialized for background job processing'
+    Rails.logger.info "[SolidQueue] Initialized for background job processing"
 
     # Error handling
     SolidQueue.on_thread_error do |exception|

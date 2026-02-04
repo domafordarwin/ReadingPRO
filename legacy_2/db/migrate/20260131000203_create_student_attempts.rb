@@ -13,7 +13,7 @@ class CreateStudentAttempts < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :student_attempts, [:student_id, :diagnostic_form_id]
+    add_index :student_attempts, [ :student_id, :diagnostic_form_id ]
     add_index :student_attempts, :status
   end
 end

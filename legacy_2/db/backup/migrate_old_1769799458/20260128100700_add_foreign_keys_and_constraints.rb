@@ -42,7 +42,7 @@ class AddForeignKeysAndConstraints < ActiveRecord::Migration[8.1]
     end
 
     # Add partial unique index for students with student_number
-    add_index :students, [:school_id, :student_number],
+    add_index :students, [ :school_id, :student_number ],
               unique: true,
               where: "student_number IS NOT NULL",
               name: "ux_students_school_student_number",

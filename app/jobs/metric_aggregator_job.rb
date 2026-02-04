@@ -25,13 +25,13 @@ class MetricAggregatorJob < ApplicationJob
   queue_as :low
 
   def perform
-    Rails.logger.info('[MetricAggregatorJob] Starting metric aggregation')
+    Rails.logger.info("[MetricAggregatorJob] Starting metric aggregation")
 
     aggregate_hourly_metrics
     cleanup_old_raw_metrics
     cleanup_old_aggregates
 
-    Rails.logger.info('[MetricAggregatorJob] Aggregation complete')
+    Rails.logger.info("[MetricAggregatorJob] Aggregation complete")
   rescue => e
     Rails.logger.error(
       "[MetricAggregatorJob] Error during aggregation: #{e.class} - #{e.message}\n#{e.backtrace.first(5).join("\n")}"
@@ -109,7 +109,7 @@ class MetricAggregatorJob < ApplicationJob
     cutoff_time = 7.days.ago
 
     deleted_count = PerformanceMetric
-      .where('recorded_at < ?', cutoff_time)
+      .where("recorded_at < ?", cutoff_time)
       .delete_all
 
     if deleted_count > 0
@@ -125,7 +125,7 @@ class MetricAggregatorJob < ApplicationJob
     cutoff_time = 90.days.ago
 
     deleted_count = HourlyPerformanceAggregate
-      .where('hour < ?', cutoff_time)
+      .where("hour < ?", cutoff_time)
       .delete_all
 
     if deleted_count > 0

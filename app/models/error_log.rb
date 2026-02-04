@@ -7,7 +7,7 @@ class ErrorLog < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
   scope :by_type, ->(type) { where(error_type: type) }
   scope :by_page, ->(page) { where(page_path: page) }
-  scope :today, -> { where('created_at > ?', 24.hours.ago) }
+  scope :today, -> { where("created_at > ?", 24.hours.ago) }
   scope :unresolved, -> { where(resolved: false) }
 
   def self.log_error(error, request = nil)
@@ -31,7 +31,7 @@ class ErrorLog < ApplicationRecord
       total_errors: count,
       unresolved_count: unresolved.count,
       today_count: today.count,
-      most_common: by_type(group(:error_type).order('count(*) DESC').limit(5).pluck(:error_type))
+      most_common: by_type(group(:error_type).order("count(*) DESC").limit(5).pluck(:error_type))
     }
   end
 end

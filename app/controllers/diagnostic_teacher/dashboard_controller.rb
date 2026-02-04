@@ -2,8 +2,8 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
-  before_action :set_all_students, only: [:reports]
-  before_action :set_student_for_detail, only: [:show_student_report]
+  before_action :set_all_students, only: [ :reports ]
+  before_action :set_student_for_detail, only: [ :show_student_report ]
 
   def index
     # Debug logging for teacher dashboard access
@@ -15,11 +15,11 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @current_page = "dashboard"
 
     # 모든 학생과 진단 데이터 로드
-    @students_with_attempts = Student.joins(:student_attempts).includes(student_attempts: [:attempt_report, :responses]).distinct
+    @students_with_attempts = Student.joins(:student_attempts).includes(student_attempts: [ :attempt_report, :responses ]).distinct
 
     # 대시보드 통계
     @total_diagnoses = StudentAttempt.count
-    @pending_diagnoses = StudentAttempt.where.not(status: 'completed').count
+    @pending_diagnoses = StudentAttempt.where.not(status: "completed").count
     @completed_feedback = 0
     @pending_feedback = 0
 
@@ -68,7 +68,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @attempt = @student.student_attempts.includes(
       :attempt_report,
       :reader_tendency,
-      responses: [:item, :selected_choice, :response_feedbacks, :response_rubric_scores]
+      responses: [ :item, :selected_choice, :response_feedbacks, :response_rubric_scores ]
     ).find(params[:attempt_id])
     @report = @attempt.attempt_report
 
@@ -105,7 +105,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @total_requests = ConsultationRequest.count
     @pending_count = ConsultationRequest.pending.count
     @approved_count = ConsultationRequest.approved.count
-    @rejected_count = ConsultationRequest.where(status: 'rejected').count
+    @rejected_count = ConsultationRequest.where(status: "rejected").count
     @completed_count = ConsultationRequest.completed.count
 
     # 상담 유형별 분류
@@ -116,10 +116,10 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 상담 상태별 분류
     @by_status = [
-      { status: 'pending', label: '대기 중', count: @pending_count, color: 'warning' },
-      { status: 'approved', label: '승인됨', count: @approved_count, color: 'success' },
-      { status: 'rejected', label: '거절됨', count: @rejected_count, color: 'danger' },
-      { status: 'completed', label: '완료됨', count: @completed_count, color: 'secondary' }
+      { status: "pending", label: "대기 중", count: @pending_count, color: "warning" },
+      { status: "approved", label: "승인됨", count: @approved_count, color: "success" },
+      { status: "rejected", label: "거절됨", count: @rejected_count, color: "danger" },
+      { status: "completed", label: "완료됨", count: @completed_count, color: "secondary" }
     ]
 
     # 최근 상담 신청 (최근 10개)
@@ -146,7 +146,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @page_title = "학교 담당자 관리"
 
     # school_admin 역할 사용자 조회
-    @managers = User.where(role: 'school_admin').includes(:student).order(created_at: :desc)
+    @managers = User.where(role: "school_admin").includes(:student).order(created_at: :desc)
     @total_managers = @managers.count
     @active_managers_count = @managers.count # 현재 모든 사용자가 활성이라고 가정
 
@@ -167,13 +167,13 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @unassigned_count = @total_students - @assigned_count
 
     # 활성 폼 현황
-    @active_forms = DiagnosticForm.where(status: 'active').includes(:items)
+    @active_forms = DiagnosticForm.where(status: "active").includes(:items)
     @active_forms_count = @active_forms.count
 
     # 학생별 배정 현황
     @students_with_assignments = all_students.map do |student|
       attempt = student.student_attempts.order(created_at: :desc).first
-      [student, attempt]
+      [ student, attempt ]
     end
   end
 
@@ -191,14 +191,14 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 통계 계산
     @total_attempts = StudentAttempt.count
-    @in_progress_count = StudentAttempt.where(status: 'in_progress').count
-    @completed_count = StudentAttempt.where(status: 'completed').count
+    @in_progress_count = StudentAttempt.where(status: "in_progress").count
+    @completed_count = StudentAttempt.where(status: "completed").count
 
     # 채점 대기 (응답이 있지만 채점되지 않은 항목)
     @pending_scoring_count = Response
       .where(selected_choice_id: nil)
       .joins(:item)
-      .where(items: { item_type: 'mcq' })
+      .where(items: { item_type: "mcq" })
       .count
 
     # 학생별 응시 현황 (최근 순서대로, 페이지네이션)
@@ -243,7 +243,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   # 피드백 프롬프트 - 프롬프트 생성
   def generate_prompt
-    return render json: { success: false, error: "API 키가 설정되지 않았습니다" }, status: 400 unless ENV['OPENAI_API_KEY'].present?
+    return render json: { success: false, error: "API 키가 설정되지 않았습니다" }, status: 400 unless ENV["OPENAI_API_KEY"].present?
 
     category = params[:category]
     description = params[:description]
@@ -307,7 +307,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
       .includes(
         student_attempts: [
           :attempt_report,
-          { responses: [:item, :selected_choice, :response_rubric_scores] }
+          { responses: [ :item, :selected_choice, :response_rubric_scores ] }
         ]
       )
       .distinct
@@ -334,9 +334,9 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
         total_questions += 1
         # enum 직접 비교 (메서드 호출 대신)
-        if item.item_type == 'mcq'
+        if item.item_type == "mcq"
           total_score += 1 if response.selected_choice&.correct?
-        elsif item.item_type == 'constructed'
+        elsif item.item_type == "constructed"
           # response_rubric_scores도 eager load되어 있음
           response.response_rubric_scores.sum { |score| score.score || 0 }.tap do |sum|
             total_score += sum
@@ -358,9 +358,9 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   end
 
   def calculate_attempt_status(attempt)
-    return '진행중' if attempt.status == 'in_progress'
-    return '피드백 대기' if attempt.attempt_report&.generated_at.nil?
-    return '완료' if attempt.status == 'completed'
-    '완료'
+    return "진행중" if attempt.status == "in_progress"
+    return "피드백 대기" if attempt.attempt_report&.generated_at.nil?
+    return "완료" if attempt.status == "completed"
+    "완료"
   end
 end

@@ -12,7 +12,7 @@ class CreateSchoolStatsTables < ActiveRecord::Migration[8.1]
       t.text :analysis_summary
       t.timestamps
     end
-    add_index :school_literacy_stats, [:school_assessment_id, :evaluation_indicator_id],
+    add_index :school_literacy_stats, [ :school_assessment_id, :evaluation_indicator_id ],
               unique: true, name: 'idx_school_literacy_stats_assessment_indicator'
 
     # 학교 단위 하위 지표별 정답률
@@ -24,7 +24,7 @@ class CreateSchoolStatsTables < ActiveRecord::Migration[8.1]
       t.text :analysis_summary
       t.timestamps
     end
-    add_index :school_sub_indicator_stats, [:school_assessment_id, :sub_indicator_id],
+    add_index :school_sub_indicator_stats, [ :school_assessment_id, :sub_indicator_id ],
               unique: true, name: 'idx_school_sub_stats_assessment_sub'
   end
 end

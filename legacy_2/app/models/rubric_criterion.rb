@@ -6,5 +6,4 @@ class RubricCriterion < ApplicationRecord
   has_many :response_rubric_scores, dependent: :destroy
 
   validates :criterion_name, presence: true, uniqueness: { scope: :rubric_id }
-
 end

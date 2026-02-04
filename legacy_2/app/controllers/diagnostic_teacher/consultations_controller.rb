@@ -4,7 +4,7 @@ class DiagnosticTeacher::ConsultationsController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("diagnostic_teacher") }
   before_action :set_role
-  before_action :set_consultation_post, only: [:show, :mark_as_answered]
+  before_action :set_consultation_post, only: [ :show, :mark_as_answered ]
 
   def index
     @current_page = "consultations"

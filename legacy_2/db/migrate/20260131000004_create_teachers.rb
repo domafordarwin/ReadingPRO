@@ -11,6 +11,6 @@ class CreateTeachers < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :teachers, [:school_id, :user_id], unique: true
+    add_index :teachers, [ :school_id, :user_id ], unique: true
   end
 end

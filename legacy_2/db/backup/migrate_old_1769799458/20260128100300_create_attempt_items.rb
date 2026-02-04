@@ -12,7 +12,7 @@ class CreateAttemptItems < ActiveRecord::Migration[8.1]
       t.timestamp :created_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :attempt_items, [:attempt_id, :item_id], unique: true
-    add_index :attempt_items, [:attempt_id, :position], unique: true
+    add_index :attempt_items, [ :attempt_id, :item_id ], unique: true
+    add_index :attempt_items, [ :attempt_id, :position ], unique: true
   end
 end

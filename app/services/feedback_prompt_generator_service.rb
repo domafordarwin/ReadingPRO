@@ -28,7 +28,7 @@ class FeedbackPromptGeneratorService
   end
 
   def call
-    return { success: false, error: "API 키가 설정되지 않았습니다" } unless ENV['OPENAI_API_KEY'].present?
+    return { success: false, error: "API 키가 설정되지 않았습니다" } unless ENV["OPENAI_API_KEY"].present?
 
     begin
       prompt_text = generate_prompt_via_openai
@@ -94,7 +94,7 @@ class FeedbackPromptGeneratorService
       프롬프트 텍스트만 제공하고 다른 설명은 하지 마세요.
     MSG
 
-    client = OpenAI::Client.new(access_token: ENV['OPENAI_API_KEY'])
+    client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
 
     response = client.chat(
       model: "gpt-3.5-turbo",

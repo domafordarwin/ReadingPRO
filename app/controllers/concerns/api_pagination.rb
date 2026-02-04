@@ -7,7 +7,7 @@ module ApiPagination
 
   def paginate_collection(collection)
     page = params[:page].to_i.positive? ? params[:page].to_i : 1
-    per_page = [params[:per_page].to_i.positive? ? params[:per_page].to_i : 25, 100].min
+    per_page = [ params[:per_page].to_i.positive? ? params[:per_page].to_i : 25, 100 ].min
 
     paginated = collection.page(page).per(per_page)
 
@@ -18,6 +18,6 @@ module ApiPagination
       total_pages: (collection.count.to_f / per_page).ceil
     }
 
-    [paginated, meta]
+    [ paginated, meta ]
   end
 end

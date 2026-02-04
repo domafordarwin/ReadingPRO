@@ -33,7 +33,7 @@ attempts_sql.each_with_index do |row, idx|
     responses = Response.where(attempt_id: attempt_id)
       .joins(:item)
       .where('items.id BETWEEN ? AND ?', 1, 18)
-      .where.not(feedback: [nil, ''])
+      .where.not(feedback: [ nil, '' ])
       .order('items.id')
 
     if responses.empty?

@@ -10,7 +10,7 @@ class AddUniqueConstraintToGuardianStudents < ActiveRecord::Migration[7.0]
 
     # Try using add_unique_constraint (Rails 7.1+), fall back to raw SQL if needed
     begin
-      add_unique_constraint :guardian_students, [:parent_id, :student_id],
+      add_unique_constraint :guardian_students, [ :parent_id, :student_id ],
                             name: :unique_guardian_student_pair,
                             deferrable: :deferred
     rescue NotImplementedError

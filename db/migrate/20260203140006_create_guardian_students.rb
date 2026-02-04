@@ -13,7 +13,7 @@ class CreateGuardianStudents < ActiveRecord::Migration[7.0]
       t.timestamps
     end
 
-    add_index :guardian_students, [:parent_id, :student_id], unique: true
+    add_index :guardian_students, [ :parent_id, :student_id ], unique: true
     add_index :guardian_students, :primary_contact
   end
 end

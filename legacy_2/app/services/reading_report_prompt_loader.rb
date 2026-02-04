@@ -155,15 +155,15 @@ class ReadingReportPromptLoader
   # 서술형 문항 분석 프롬프트 생성
   def generate_essay_analysis_prompt(item_number, evaluation_indicator, sub_indicator, evaluation_level, advantages = [], improvements = [], comprehensive_feedback = "")
     template = case evaluation_level
-               when '적절'
+    when '적절'
                  essay_appropriate_prompt
-               when '부족'
+    when '부족'
                  essay_partial_prompt
-               when '보완 필요', '보완필요'
+    when '보완 필요', '보완필요'
                  essay_insufficient_prompt
-               else
+    else
                  essay_partial_prompt
-               end
+    end
 
     variables = {
       item_number: item_number,

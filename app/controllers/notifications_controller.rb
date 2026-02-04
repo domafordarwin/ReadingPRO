@@ -16,7 +16,7 @@ class NotificationsController < ApplicationController
     @notification.mark_as_read! if @notification.unread?
 
     case @notification.notifiable_type
-    when 'ConsultationRequest'
+    when "ConsultationRequest"
       redirect_to diagnostic_teacher_consultation_request_path(@notification.notifiable)
     else
       redirect_to notifications_path
@@ -33,5 +33,4 @@ class NotificationsController < ApplicationController
     current_user.notifications.unread.update_all(read: true, read_at: Time.current)
     redirect_back fallback_location: notifications_path, notice: "모든 알림이 읽음 처리되었습니다."
   end
-
 end

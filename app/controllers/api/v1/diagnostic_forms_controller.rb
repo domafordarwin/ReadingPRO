@@ -3,8 +3,8 @@
 module Api
   module V1
     class DiagnosticFormsController < BaseController
-      before_action :set_diagnostic_form, only: [:show, :update, :destroy]
-      before_action -> { require_role_any(%w[researcher admin diagnostic_teacher]) }, only: [:create, :update, :destroy]
+      before_action :set_diagnostic_form, only: [ :show, :update, :destroy ]
+      before_action -> { require_role_any(%w[researcher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/diagnostic_forms
       def index
@@ -18,11 +18,11 @@ module Api
 
         # Apply search
         if params[:search].present?
-          forms = forms.where('name ILIKE ?', "%#{params[:search]}%")
+          forms = forms.where("name ILIKE ?", "%#{params[:search]}%")
         end
 
         # Apply sorting
-        forms = forms.order(params[:sort] || 'created_at desc')
+        forms = forms.order(params[:sort] || "created_at desc")
 
         # Eager load associations
         forms = forms.includes(:diagnostic_form_items, :teacher)
@@ -74,13 +74,13 @@ module Api
       def set_diagnostic_form
         @diagnostic_form = DiagnosticForm.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Diagnostic form not found'
+        raise ApiError::NotFound, "Diagnostic form not found"
       end
 
       def diagnostic_form_params
         params.require(:diagnostic_form).permit(
           :name, :status,
-          diagnostic_form_items_attributes: [:id, :item_id, :position, :_destroy]
+          diagnostic_form_items_attributes: [ :id, :item_id, :position, :_destroy ]
         )
       end
 
@@ -124,7 +124,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

@@ -22,7 +22,7 @@ class SchoolAdmin::DashboardController < ApplicationController
 
     # 리포트 통계
     @completed_reports = Report.where(status: 'completed').count
-    @pending_feedback = Report.where(status: ['draft', 'generated']).count
+    @pending_feedback = Report.where(status: [ 'draft', 'generated' ]).count
 
     # 학년별 진단 결과
     @grade_scores = calculate_grade_scores
@@ -122,7 +122,7 @@ class SchoolAdmin::DashboardController < ApplicationController
   end
 
   def calculate_grade_scores
-    grades = [1, 2, 3]
+    grades = [ 1, 2, 3 ]
     grades.map do |grade|
       students_in_grade = @students.select { |s| s.grade == grade }
       if students_in_grade.any?

@@ -3,8 +3,8 @@
 module Api
   module V1
     class EvaluationIndicatorsController < BaseController
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [:create, :update, :destroy]
-      before_action :set_evaluation_indicator, only: [:show, :update, :destroy]
+      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
+      before_action :set_evaluation_indicator, only: [ :show, :update, :destroy ]
 
       # GET /api/v1/evaluation_indicators
       def index
@@ -21,7 +21,7 @@ module Api
         end
 
         # Apply sorting
-        indicators = indicators.order(params[:sort] || 'code asc')
+        indicators = indicators.order(params[:sort] || "code asc")
 
         # Paginate
         paginated, meta = paginate_collection(indicators)
@@ -69,7 +69,7 @@ module Api
       def set_evaluation_indicator
         @evaluation_indicator = EvaluationIndicator.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        raise ApiError::NotFound, 'Evaluation indicator not found'
+        raise ApiError::NotFound, "Evaluation indicator not found"
       end
 
       def indicator_params
@@ -109,7 +109,7 @@ module Api
       def build_validation_errors(record)
         record.errors.map do |attribute, message|
           {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: message,
             field: attribute.to_s
           }

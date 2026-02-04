@@ -6,5 +6,4 @@ class DiagnosticFormItem < ApplicationRecord
 
   validates :position, presence: true, uniqueness: { scope: :diagnostic_form_id }
   validates :item_id, uniqueness: { scope: :diagnostic_form_id }
-
 end

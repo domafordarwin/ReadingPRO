@@ -14,6 +14,6 @@ class ResponseFeedback < ApplicationRecord
   scope :by_source, ->(source) { where(source: source) }
   scope :by_type, ->(type) { where(feedback_type: type) }
   scope :recent, -> { order(created_at: :desc) }
-  scope :ai_generated, -> { by_source('ai') }
-  scope :teacher_written, -> { by_source('teacher') }
+  scope :ai_generated, -> { by_source("ai") }
+  scope :teacher_written, -> { by_source("teacher") }
 end

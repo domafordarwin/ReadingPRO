@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class ReadingStimulus < ApplicationRecord
-  belongs_to :teacher, foreign_key: 'created_by_id', optional: true
-  has_many :items, foreign_key: 'stimulus_id', dependent: :destroy
+  belongs_to :teacher, foreign_key: "created_by_id", optional: true
+  has_many :items, foreign_key: "stimulus_id", dependent: :destroy
 
   # Validations
   validates :body, presence: true
@@ -10,9 +10,9 @@ class ReadingStimulus < ApplicationRecord
   validates :bundle_status, inclusion: { in: %w[draft active archived] }, allow_blank: true
 
   # Bundle status enum-like behavior
-  scope :draft, -> { where(bundle_status: 'draft') }
-  scope :active, -> { where(bundle_status: 'active') }
-  scope :archived, -> { where(bundle_status: 'archived') }
+  scope :draft, -> { where(bundle_status: "draft") }
+  scope :active, -> { where(bundle_status: "active") }
+  scope :archived, -> { where(bundle_status: "archived") }
 
   # Generate code before validation if not present
   before_validation :generate_code, on: :create
@@ -28,14 +28,14 @@ class ReadingStimulus < ApplicationRecord
     items_relation = Item.where(stimulus_id: id)
 
     self.bundle_metadata = {
-      mcq_count: items_relation.where(item_type: 'mcq').count,
-      constructed_count: items_relation.where(item_type: 'constructed').count,
+      mcq_count: items_relation.where(item_type: "mcq").count,
+      constructed_count: items_relation.where(item_type: "constructed").count,
       total_count: items_relation.count,
       key_concepts: extract_key_concepts,
       difficulty_distribution: {
-        easy: items_relation.where(difficulty: 'easy').count,
-        medium: items_relation.where(difficulty: 'medium').count,
-        hard: items_relation.where(difficulty: 'hard').count
+        easy: items_relation.where(difficulty: "easy").count,
+        medium: items_relation.where(difficulty: "medium").count,
+        hard: items_relation.where(difficulty: "hard").count
       },
       estimated_time_minutes: calculate_estimated_time(items_relation)
     }
@@ -51,27 +51,27 @@ class ReadingStimulus < ApplicationRecord
 
   # Get MCQ count from metadata
   def mcq_count
-    bundle_metadata['mcq_count'] || 0
+    bundle_metadata["mcq_count"] || 0
   end
 
   # Get constructed count from metadata
   def constructed_count
-    bundle_metadata['constructed_count'] || 0
+    bundle_metadata["constructed_count"] || 0
   end
 
   # Get total count from metadata
   def total_count
-    bundle_metadata['total_count'] || 0
+    bundle_metadata["total_count"] || 0
   end
 
   # Get key concepts from metadata
   def key_concepts
-    bundle_metadata['key_concepts'] || []
+    bundle_metadata["key_concepts"] || []
   end
 
   # Get estimated time from metadata
   def estimated_time_minutes
-    bundle_metadata['estimated_time_minutes'] || 0
+    bundle_metadata["estimated_time_minutes"] || 0
   end
 
   private
@@ -86,21 +86,94 @@ class ReadingStimulus < ApplicationRecord
   end
 
   # Extract key concepts from title and body
+  # Uses AI extraction if available, falls back to simple text splitting
   def extract_key_concepts
+    # If AI analysis is already stored, use it
+    if bundle_metadata["key_concepts"].present?
+      return bundle_metadata["key_concepts"]
+    end
+
+    # Fallback: Split by common delimiters and take first 5 words
     return [] if title.blank?
-
-    # Split by common delimiters and take first 5 words
     concepts = title.split(/[,\s\-–—]+/).reject(&:blank?).take(5)
-
-    # Remove common Korean particles if needed
     concepts.reject { |c| c.length < 2 }
+  end
+
+  # Perform AI-based analysis and update metadata
+  # Options:
+  #   - type: :concepts, :difficulty, or :full (default: :full)
+  #   - save: true/false (default: true)
+  def analyze_with_ai!(type: :full, save: true)
+    extractor = KeyConceptExtractorService.new(self)
+
+    analysis = case type
+               when :concepts then extractor.extract_concepts
+               when :difficulty then extractor.analyze_difficulty
+               else extractor.full_analysis
+               end
+
+    # Merge AI analysis into bundle_metadata
+    self.bundle_metadata = (bundle_metadata || {}).merge(
+      "ai_analysis" => analysis,
+      "key_concepts" => analysis[:key_concepts] || extract_key_concepts,
+      "main_topic" => analysis[:main_topic],
+      "domain" => analysis[:domain],
+      "difficulty_level" => analysis[:difficulty_level],
+      "difficulty_score" => analysis[:difficulty_score],
+      "target_grade" => analysis[:target_grade],
+      "summary" => analysis[:summary],
+      "analyzed_at" => Time.current.iso8601
+    )
+
+    save! if save
+    analysis
+  end
+
+  # Get AI analysis results
+  def ai_analysis
+    bundle_metadata["ai_analysis"] || {}
+  end
+
+  # Check if AI analysis has been performed
+  def ai_analyzed?
+    bundle_metadata["analyzed_at"].present?
+  end
+
+  # Get difficulty level (from AI or default)
+  def difficulty_level
+    bundle_metadata["difficulty_level"] || "medium"
+  end
+
+  # Get difficulty score (1-10)
+  def difficulty_score
+    bundle_metadata["difficulty_score"] || 5
+  end
+
+  # Get target grade
+  def target_grade
+    bundle_metadata["target_grade"]
+  end
+
+  # Get domain/category
+  def domain
+    bundle_metadata["domain"] || "일반"
+  end
+
+  # Get main topic
+  def main_topic
+    bundle_metadata["main_topic"]
+  end
+
+  # Get AI-generated summary
+  def ai_summary
+    bundle_metadata["summary"]
   end
 
   # Calculate estimated time based on item types
   # MCQ: 2 minutes, Constructed: 5 minutes
   def calculate_estimated_time(items_relation)
-    mcq_time = items_relation.where(item_type: 'mcq').count * 2
-    constructed_time = items_relation.where(item_type: 'constructed').count * 5
+    mcq_time = items_relation.where(item_type: "mcq").count * 2
+    constructed_time = items_relation.where(item_type: "constructed").count * 5
     mcq_time + constructed_time
   end
 

@@ -41,7 +41,7 @@ module Student
 
     def calculate_difficulty_breakdown
       @attempt.responses.joins(:item)
-        .group('items.difficulty')
+        .group("items.difficulty")
         .select(
           'items.difficulty,
            COUNT(*) as total,
@@ -49,7 +49,7 @@ module Student
            SUM(responses.raw_score) as earned,
            SUM(responses.max_score) as possible'
         )
-        .order('items.difficulty DESC')
+        .order("items.difficulty DESC")
         .map do |r|
           {
             difficulty: r.difficulty,
@@ -63,7 +63,7 @@ module Student
 
     def calculate_indicator_breakdown
       @attempt.responses.joins(item: :evaluation_indicator)
-        .group('evaluation_indicators.id', 'evaluation_indicators.name')
+        .group("evaluation_indicators.id", "evaluation_indicators.name")
         .select(
           'evaluation_indicators.id,
            evaluation_indicators.name,
@@ -71,7 +71,7 @@ module Student
            SUM(responses.raw_score) as earned,
            SUM(responses.max_score) as possible'
         )
-        .order('evaluation_indicators.name')
+        .order("evaluation_indicators.name")
         .map do |r|
           {
             id: r.id,
@@ -101,12 +101,12 @@ module Student
 
     def difficulty_label(difficulty)
       case difficulty&.downcase
-      when 'easy'
-        '쉬움'
-      when 'medium'
-        '중간'
-      when 'hard'
-        '어려움'
+      when "easy"
+        "쉬움"
+      when "medium"
+        "중간"
+      when "hard"
+        "어려움"
       else
         difficulty
       end

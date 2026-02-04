@@ -11,7 +11,7 @@ class CreateAssessmentAnalysisTables < ActiveRecord::Migration[8.1]
       t.text :analysis_summary
       t.timestamps
     end
-    add_index :literacy_achievements, [:attempt_id, :evaluation_indicator_id],
+    add_index :literacy_achievements, [ :attempt_id, :evaluation_indicator_id ],
               unique: true, name: 'idx_literacy_achievements_attempt_indicator'
 
     # 독자 성향 분석
@@ -48,7 +48,7 @@ class CreateAssessmentAnalysisTables < ActiveRecord::Migration[8.1]
       t.integer :priority
       t.timestamps
     end
-    add_index :educational_recommendations, [:attempt_id, :category]
+    add_index :educational_recommendations, [ :attempt_id, :category ]
 
     # 지도 방향
     create_table :guidance_directions do |t|
@@ -59,6 +59,6 @@ class CreateAssessmentAnalysisTables < ActiveRecord::Migration[8.1]
       t.integer :priority
       t.timestamps
     end
-    add_index :guidance_directions, [:attempt_id, :priority]
+    add_index :guidance_directions, [ :attempt_id, :priority ]
   end
 end

@@ -13,8 +13,8 @@ Rails.application.routes.draw do
   get "/internal/hwpx_ping", to: "internal#hwpx_ping"
 
   # Phase 5.4: Style Guide (authenticated only)
-  get '/styleguide', to: 'styleguide#index', as: 'styleguide'
-  get '/styleguide/:id', to: 'styleguide#show', as: 'styleguide_component'
+  get "/styleguide", to: "styleguide#index", as: "styleguide"
+  get "/styleguide/:id", to: "styleguide#show", as: "styleguide_component"
 
   namespace :admin do
     root to: "system#show"
@@ -30,7 +30,7 @@ Rails.application.routes.draw do
     end
 
     # Error analysis and monitoring
-    resources :error_logs, only: [:index, :show] do
+    resources :error_logs, only: [ :index, :show ] do
       member do
         patch :mark_resolved
       end
@@ -55,7 +55,7 @@ Rails.application.routes.draw do
     patch "update_report_status", to: "dashboard#update_report_status"
 
     # Assessments
-    resources :assessments, only: [:show, :create] do
+    resources :assessments, only: [ :show, :create ] do
       collection do
         post :submit_response
         post :submit_attempt
@@ -63,7 +63,7 @@ Rails.application.routes.draw do
     end
 
     # Phase 6: Student Results & Responses
-    resources :results, only: [:show]
+    resources :results, only: [ :show ]
     resources :responses, only: [] do
       member do
         patch :toggle_flag
@@ -75,7 +75,7 @@ Rails.application.routes.draw do
         patch :close
         patch :reopen
       end
-      resources :comments, controller: 'consultation_comments', only: [:create, :destroy], foreign_key: 'consultation_post_id'
+      resources :comments, controller: "consultation_comments", only: [ :create, :destroy ], foreign_key: "consultation_post_id"
     end
   end
 
@@ -94,7 +94,7 @@ Rails.application.routes.draw do
         patch :close
         patch :reopen
       end
-      resources :comments, controller: 'forum_comments', only: [:create, :destroy], foreign_key: 'parent_forum_id'
+      resources :comments, controller: "forum_comments", only: [ :create, :destroy ], foreign_key: "parent_forum_id"
     end
   end
 
@@ -157,20 +157,20 @@ Rails.application.routes.draw do
 
     # 기타
     get "guide", to: "dashboard#guide"
-    resources :consultation_requests, only: [:index, :show] do
+    resources :consultation_requests, only: [ :index, :show ] do
       member do
         patch :approve
         patch :reject
       end
     end
-    resources :consultations, only: [:index, :show] do
+    resources :consultations, only: [ :index, :show ] do
       member do
         patch :mark_as_answered
       end
-      resources :comments, controller: 'consultation_comments', only: [:create, :destroy], foreign_key: 'consultation_post_id'
+      resources :comments, controller: "consultation_comments", only: [ :create, :destroy ], foreign_key: "consultation_post_id"
     end
-    resources :forums, only: [:index, :show] do
-      resources :comments, controller: 'forum_comments', only: [:create, :destroy], foreign_key: 'parent_forum_id'
+    resources :forums, only: [ :index, :show ] do
+      resources :comments, controller: "forum_comments", only: [ :create, :destroy ], foreign_key: "parent_forum_id"
     end
   end
 
@@ -198,7 +198,7 @@ Rails.application.routes.draw do
   post "login", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
 
-  resources :notifications, only: [:index, :show] do
+  resources :notifications, only: [ :index, :show ] do
     member do
       patch :mark_as_read
     end
@@ -210,21 +210,21 @@ Rails.application.routes.draw do
   # API v1 Namespace
   namespace :api do
     namespace :v1 do
-      resources :evaluation_indicators, only: [:index, :show, :create, :update, :destroy] do
-        resources :sub_indicators, only: [:index, :show, :create]
+      resources :evaluation_indicators, only: [ :index, :show, :create, :update, :destroy ] do
+        resources :sub_indicators, only: [ :index, :show, :create ]
       end
-      resources :sub_indicators, only: [:index, :show, :update, :destroy]
-      resources :items, only: [:index, :show, :create, :update, :destroy]
-      resources :stimuli, only: [:index, :show, :create, :update, :destroy]
-      resources :rubrics, only: [:index, :show, :create, :update, :destroy]
-      resources :diagnostic_forms, only: [:index, :show, :create, :update, :destroy]
-      resources :student_attempts, only: [:index, :show, :create, :update, :destroy]
-      resources :responses, only: [:index, :show, :create, :update, :destroy]
+      resources :sub_indicators, only: [ :index, :show, :update, :destroy ]
+      resources :items, only: [ :index, :show, :create, :update, :destroy ]
+      resources :stimuli, only: [ :index, :show, :create, :update, :destroy ]
+      resources :rubrics, only: [ :index, :show, :create, :update, :destroy ]
+      resources :diagnostic_forms, only: [ :index, :show, :create, :update, :destroy ]
+      resources :student_attempts, only: [ :index, :show, :create, :update, :destroy ]
+      resources :responses, only: [ :index, :show, :create, :update, :destroy ]
     end
 
     # Phase 3.5.3: Web Vitals metrics collection endpoint
     namespace :metrics do
-      post 'web_vitals', to: 'web_vitals#create'
+      post "web_vitals", to: "web_vitals#create"
     end
   end
 

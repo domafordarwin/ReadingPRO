@@ -51,15 +51,15 @@ class ReadingReportService
   # 영역별 분석 생성 (이해력, 의사소통능력, 심미적감수성)
   def generate_area_analysis(area_name, total_items, correct_items, sub_indicators_analysis, comprehensive_assessment)
     template = case area_name
-               when '이해력', 'comprehension'
+    when "이해력", "comprehension"
                  @prompt_loader.area_comprehension_prompt
-               when '의사소통능력', 'communication'
+    when "의사소통능력", "communication"
                  @prompt_loader.area_communication_prompt
-               when '심미적감수성', 'aesthetic_sensitivity'
+    when "심미적감수성", "aesthetic_sensitivity"
                  @prompt_loader.area_aesthetic_sensitivity_prompt
-               else
+    else
                  @prompt_loader.area_comprehension_prompt
-               end
+    end
 
     incorrect_items = total_items - correct_items
     correct_rate = total_items.zero? ? 0 : (correct_items.to_f / total_items * 100).round(1)
@@ -81,13 +81,13 @@ class ReadingReportService
   # 독자성향 타입별 설명 조회
   def get_reader_tendency_info(type)
     case type
-    when 'A'
+    when "A"
       @prompt_loader.reader_tendency_type_a
-    when 'B'
+    when "B"
       @prompt_loader.reader_tendency_type_b
-    when 'C'
+    when "C"
       @prompt_loader.reader_tendency_type_c
-    when 'D'
+    when "D"
       @prompt_loader.reader_tendency_type_d
     else
       @prompt_loader.reader_tendency_type_b
@@ -97,15 +97,15 @@ class ReadingReportService
   # 지도 방향 프롬프트 생성
   def generate_teaching_direction(area_name, current_level, target_goal, specific_directions = {})
     template = case area_name
-               when '이해력', 'comprehension'
+    when "이해력", "comprehension"
                  @prompt_loader.teaching_direction_comprehension
-               when '의사소통능력', 'communication'
+    when "의사소통능력", "communication"
                  @prompt_loader.teaching_direction_communication
-               when '심미적감수성', 'aesthetic_sensitivity'
+    when "심미적감수성", "aesthetic_sensitivity"
                  @prompt_loader.teaching_direction_aesthetic_sensitivity
-               else
+    else
                  @prompt_loader.teaching_direction_comprehension
-               end
+    end
 
     variables = {
       current_level: current_level,
@@ -114,15 +114,15 @@ class ReadingReportService
 
     # 특정 지도 방향 추가
     case area_name
-    when '이해력', 'comprehension'
+    when "이해력", "comprehension"
       variables[:factual_understanding_direction] = specific_directions[:factual] || "기본 이해력 강화"
       variables[:inferential_understanding_direction] = specific_directions[:inferential] || "추론 능력 개발"
       variables[:critical_understanding_direction] = specific_directions[:critical] || "비판적 사고력 육성"
-    when '의사소통능력', 'communication'
+    when "의사소통능력", "communication"
       variables[:expression_delivery_direction] = specific_directions[:expression] || "표현력 개선"
       variables[:social_interaction_direction] = specific_directions[:interaction] || "상호작용 능력 강화"
       variables[:creative_problem_solving_direction] = specific_directions[:creative] || "창의적 문제해결력 발전"
-    when '심미적감수성', 'aesthetic_sensitivity'
+    when "심미적감수성", "aesthetic_sensitivity"
       variables[:literary_expression_direction] = specific_directions[:literary] || "문학적 표현 이해"
       variables[:emotional_empathy_direction] = specific_directions[:empathy] || "정서적 공감 능력"
       variables[:literary_value_direction] = specific_directions[:value] || "문학적 가치 인식"
@@ -134,7 +134,7 @@ class ReadingReportService
 
   # 전체 보고서 기본 정보 조회
   def get_report_config
-    @prompt_loader.base_prompts.dig('report_config') || {}
+    @prompt_loader.base_prompts.dig("report_config") || {}
   end
 
   # 기본 프레임워크의 섹션별 제목과 지침 조회

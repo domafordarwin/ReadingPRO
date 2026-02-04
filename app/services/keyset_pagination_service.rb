@@ -20,7 +20,7 @@ class KeysetPaginationService
 
   attr_reader :relation, :per_page, :order_fields
 
-  def initialize(relation, per_page: 25, order_fields: [:created_at, :id])
+  def initialize(relation, per_page: 25, order_fields: [ :created_at, :id ])
     @relation = relation
     @per_page = per_page
     @order_fields = order_fields

@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   # hwpx file viewer
   get "/internal/hwpx_ping", to: "internal#hwpx_ping"
 
-  
+
   namespace :admin do
     root to: "system#show"
     get "system", to: "system#show"
@@ -41,7 +41,7 @@ Rails.application.routes.draw do
     patch "update_report_status", to: "dashboard#update_report_status"
 
     # Assessments
-    resources :assessments, only: [:show, :create] do
+    resources :assessments, only: [ :show, :create ] do
       collection do
         post :submit_response
         post :submit_attempt
@@ -53,7 +53,7 @@ Rails.application.routes.draw do
         patch :close
         patch :reopen
       end
-      resources :comments, controller: 'consultation_comments', only: [:create, :destroy], foreign_key: 'consultation_post_id'
+      resources :comments, controller: 'consultation_comments', only: [ :create, :destroy ], foreign_key: 'consultation_post_id'
     end
   end
 
@@ -72,7 +72,7 @@ Rails.application.routes.draw do
         patch :close
         patch :reopen
       end
-      resources :comments, controller: 'forum_comments', only: [:create, :destroy], foreign_key: 'parent_forum_id'
+      resources :comments, controller: 'forum_comments', only: [ :create, :destroy ], foreign_key: 'parent_forum_id'
     end
   end
 
@@ -135,20 +135,20 @@ Rails.application.routes.draw do
 
     # 기타
     get "guide", to: "dashboard#guide"
-    resources :consultation_requests, only: [:index, :show] do
+    resources :consultation_requests, only: [ :index, :show ] do
       member do
         patch :approve
         patch :reject
       end
     end
-    resources :consultations, only: [:index, :show] do
+    resources :consultations, only: [ :index, :show ] do
       member do
         patch :mark_as_answered
       end
-      resources :comments, controller: 'consultation_comments', only: [:create, :destroy], foreign_key: 'consultation_post_id'
+      resources :comments, controller: 'consultation_comments', only: [ :create, :destroy ], foreign_key: 'consultation_post_id'
     end
-    resources :forums, only: [:index, :show] do
-      resources :comments, controller: 'forum_comments', only: [:create, :destroy], foreign_key: 'parent_forum_id'
+    resources :forums, only: [ :index, :show ] do
+      resources :comments, controller: 'forum_comments', only: [ :create, :destroy ], foreign_key: 'parent_forum_id'
     end
   end
 
@@ -173,7 +173,7 @@ Rails.application.routes.draw do
   post "login", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
 
-  resources :notifications, only: [:index, :show] do
+  resources :notifications, only: [ :index, :show ] do
     member do
       patch :mark_as_read
     end
