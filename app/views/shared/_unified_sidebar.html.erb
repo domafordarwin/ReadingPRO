@@ -214,12 +214,8 @@
       "E" => {
         label: "시스템",
         items: [
-          { id: "roles", label: "권한/역할 관리", icon: "shield" },
-          { id: "orgs", label: "조직(학교) 관리", icon: "building" },
-          { id: "notices", label: "공지사항 관리", icon: "bell" },
-          { id: "announcements", label: "랜딩 알림 관리", icon: "megaphone" },
-          { id: "settings", label: "설정", icon: "settings" },
-          { id: "audit_log", label: "감사 로그", icon: "file-text" }
+          { id: "settings", label: "시스템 관리", icon: "settings" },
+          { id: "orgs", label: "사용자 관리", icon: "users" }
         ]
       }
     }
@@ -232,7 +228,7 @@
     "school_admin" => ["B", "D"],
     "teacher" => ["T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
     "developer" => ["C", "D"],
-    "admin" => ["A", "B", "C", "D", "E"]
+    "admin" => ["E"]
   }
 
   visible_groups = role_menus[current_role.to_s] || ["A"]
