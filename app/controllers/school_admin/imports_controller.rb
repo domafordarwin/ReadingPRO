@@ -7,43 +7,36 @@ class SchoolAdmin::ImportsController < ApplicationController
   def new
     @current_page = "student_mgmt"
     @current_role = "school_admin"
+    @school = School.first
   end
 
   def create
     @current_page = "student_mgmt"
     @current_role = "school_admin"
+    @school = School.first
 
-    unless params[:file].present?
-      flash[:alert] = "파일을 선택해주세요."
+    unless @school
+      flash.now[:alert] = "등록된 학교가 없습니다."
       render :new, status: :unprocessable_entity
       return
     end
 
-    school = School.first
-    unless school
-      flash[:alert] = "등록된 학교가 없습니다."
-      render :new, status: :unprocessable_entity
-      return
-    end
-
-    service = StudentBulkImportService.new(params[:file], school)
+    service = StudentBatchCreationService.new(
+      school: @school,
+      grade: params[:grade].to_i,
+      class_name: params[:class_name],
+      count: params[:count].to_i,
+      include_parents: params[:include_parents] == "1"
+    )
 
     if service.call
-      flash[:notice] = "일괄 등록 완료! 학생 #{service.results[:students_created]}명, 학부모 #{service.results[:parents_created]}명 생성됨."
-      flash[:notice] += " (#{service.results[:skipped]}명 건너뜀)" if service.results[:skipped] > 0
-      redirect_to school_admin_students_path
+      @results = service.results
+      flash.now[:notice] = "#{service.results.count}명의 학생 계정이 생성되었습니다."
+      render :results
     else
       @errors = service.errors
-      flash.now[:alert] = "등록 중 오류가 발생했습니다."
+      flash.now[:alert] = "생성 중 오류가 발생했습니다."
       render :new, status: :unprocessable_entity
     end
-  end
-
-  def template
-    data = StudentBulkImportTemplateService.generate
-    send_data data,
-              filename: "학생_일괄등록_템플릿.xlsx",
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              disposition: "attachment"
   end
 end

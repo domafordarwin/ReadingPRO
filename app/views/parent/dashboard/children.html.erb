@@ -9,32 +9,21 @@
 <% end %>
 
 <section class="portal-card">
-  <h2 class="portal-card-title">학생 찾기</h2>
-  <form class="portal-form">
-    <label>
-      학생 이름
-      <input type="text" placeholder="이름을 입력하세요">
-    </label>
-    <label>
-      학교명
-      <input type="text" placeholder="학교명을 입력하세요">
-    </label>
-    <div class="portal-cta">
-      <button type="button" class="portal-button">검색</button>
-      <button type="button" class="portal-button secondary">초기화</button>
-    </div>
-  </form>
-</section>
+  <h2 class="portal-card-title">연결된 학생</h2>
 
-<section class="portal-card" style="margin-top: 18px;">
-  <h2 class="portal-card-title">등록된 학생</h2>
-  <div class="portal-list">
-    <div class="portal-list-item">
-      <div>
-        <strong>김민준</strong>
-        <div class="portal-muted">리딩중학교 2학년 · A반</div>
-      </div>
-      <span class="portal-chip">연결됨</span>
+  <% if @students.present? %>
+    <div class="portal-list">
+      <% @students.each do |student| %>
+        <div class="portal-list-item">
+          <div>
+            <strong><%= student.name %></strong>
+            <div class="portal-muted"><%= student.school&.name || "학교" %> <%= student.grade %>학년 · <%= student.class_name %></div>
+          </div>
+          <span class="portal-chip">연결됨</span>
+        </div>
+      <% end %>
     </div>
-  </div>
+  <% else %>
+    <p style="color: #94a3b8; padding: 20px; text-align: center;">연결된 학생이 없습니다.</p>
+  <% end %>
 </section>

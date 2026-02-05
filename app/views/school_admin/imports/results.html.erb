@@ -1,0 +1,66 @@
+<% content_for :portal_title do %>
+  학생 생성 결과
+<% end %>
+<% content_for :portal_subtitle do %>
+  생성된 계정 정보입니다. 이 페이지를 벗어나면 비밀번호를 다시 확인할 수 없습니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "school_admin/shared/nav", current: :students %>
+<% end %>
+
+<div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+  <p style="margin: 0; font-size: 14px; color: #92400e; font-weight: 600;">
+    아래 정보를 반드시 저장하세요! 이 페이지를 벗어나면 비밀번호를 다시 확인할 수 없습니다.
+  </p>
+</div>
+
+<section class="portal-card" style="margin-bottom: 24px;" id="results-table">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 class="portal-card-title" style="margin: 0;">생성된 계정 (<%= @results.count %>명)</h2>
+    <button onclick="printResults()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">
+      인쇄하기
+    </button>
+  </div>
+
+  <table class="portal-table" style="font-size: 13px;">
+    <thead>
+      <tr>
+        <th>학생 ID</th>
+        <th>학생 이메일</th>
+        <th>학생 비밀번호</th>
+        <% if @results.first&.dig(:parent_id) %>
+          <th>학부모 ID</th>
+          <th>학부모 이메일</th>
+          <th>학부모 비밀번호</th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @results.each do |r| %>
+        <tr>
+          <td><strong><%= r[:student_id] %></strong></td>
+          <td><%= r[:student_email] %></td>
+          <td style="font-family: monospace; color: #dc2626; font-weight: 600;"><%= r[:student_password] %></td>
+          <% if r[:parent_id] %>
+            <td><strong><%= r[:parent_id] %></strong></td>
+            <td><%= r[:parent_email] %></td>
+            <td style="font-family: monospace; color: #dc2626; font-weight: 600;"><%= r[:parent_password] %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+
+<div style="display: flex; gap: 8px;">
+  <%= link_to "학생 목록으로", school_admin_students_path,
+        style: "padding: 10px 20px; background: #2f5bff; color: white; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none;" %>
+  <%= link_to "추가 생성", new_school_admin_import_path,
+        style: "padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none;" %>
+</div>
+
+<script>
+function printResults() {
+  window.print();
+}
+</script>

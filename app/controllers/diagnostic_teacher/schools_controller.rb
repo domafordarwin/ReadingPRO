@@ -57,7 +57,7 @@ class DiagnosticTeacher::SchoolsController < ApplicationController
   end
 
   def school_params
-    params.require(:school).permit(:name, :region, :district)
+    params.require(:school).permit(:name, :region, :district, :email_domain)
   end
 
   def generate_temp_password

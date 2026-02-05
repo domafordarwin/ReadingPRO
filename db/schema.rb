@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_050252) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -515,6 +515,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_050252) do
   create_table "schools", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "district"
+    t.string "email_domain"
     t.string "name", null: false
     t.string "region"
     t.datetime "updated_at", null: false

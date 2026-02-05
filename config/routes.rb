@@ -103,11 +103,7 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
     get "students", to: "dashboard#students"
     patch "students/:id/reset_password", to: "dashboard#reset_student_password", as: "reset_student_password"
-    resources :imports, only: [:new, :create] do
-      collection do
-        get :template
-      end
-    end
+    resources :imports, only: [:new, :create]
     get "diagnostics", to: "dashboard#diagnostics"
     post "diagnostics/assign_student", to: "dashboard#assign_to_student", as: "assign_to_student"
     post "diagnostics/bulk_assign", to: "dashboard#bulk_assign_to_students", as: "bulk_assign_to_students"
@@ -204,7 +200,12 @@ Rails.application.routes.draw do
     post "item_bank/upload_pdf", to: "dashboard#upload_pdf", as: "upload_pdf_item_bank"
 
     # Diagnostic forms (진단지) management
-    resources :diagnostic_forms, only: %i[show new create edit update destroy]
+    resources :diagnostic_forms, only: %i[show new create edit update destroy] do
+      member do
+        patch :publish
+        patch :unpublish
+      end
+    end
 
     resources :items, only: %i[index create edit update destroy] do
       patch "move_criterion", on: :member

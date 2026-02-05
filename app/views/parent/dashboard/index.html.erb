@@ -11,7 +11,7 @@
   <div class="rp-card rp-mb-6">
     <div class="rp-flex rp-items-center rp-justify-between">
       <div class="rp-flex rp-items-center rp-gap-4">
-        <div class="rp-avatar" style="width: 48px; height: 48px; font-size: 18px;"><%= @selected_student.name.first %></div>
+        <div class="rp-avatar" style="width: 48px; height: 48px; font-size: 18px;"><%= @selected_student.name[0..2] %></div>
         <div>
           <h3 style="margin: 0; font-weight: 600; color: var(--rp-text-title);"><%= @selected_student.name %></h3>
           <p class="rp-text-muted" style="margin: 0; font-size: 13px;"><%= @selected_student.school&.name || "학교" %> <%= @selected_student.grade || "학년" %></p>

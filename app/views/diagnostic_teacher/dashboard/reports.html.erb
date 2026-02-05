@@ -179,7 +179,7 @@
 <!-- 검색 바 -->
 <div class="search-bar">
   <form method="get" action="<%= diagnostic_teacher_reports_path %>" style="display: flex; gap: 12px; flex: 1;">
-    <input type="text" name="search" class="search-input" placeholder="학생 이름으로 검색..." value="<%= @search_query %>">
+    <input type="text" name="search" class="search-input" placeholder="학생 ID로 검색..." value="<%= @search_query %>">
     <button type="submit" class="search-btn">검색</button>
   </form>
 </div>
@@ -193,7 +193,7 @@
   <table class="students-table">
     <thead>
       <tr>
-        <th style="width: 15%;">학생 이름</th>
+        <th style="width: 15%;">학생 ID</th>
         <th style="width: 12%;">진단 횟수</th>
         <th style="width: 15%;">리포트 상태</th>
         <th style="width: 20%;">최근 진단</th>

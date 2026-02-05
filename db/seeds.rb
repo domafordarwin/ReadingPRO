@@ -7,7 +7,6 @@ DEFAULT_PASSWORD = "ReadingPro$12#"
 # =============================================================================
 # Phase 1: Domain Migration (old domains → @ReadingPro.com)
 # =============================================================================
-# Migrate existing accounts from old domains to new ones
 DOMAIN_MIGRATIONS = {
   "admin@readingpro.kr" => "admin@ReadingPro.com",
   "admin@readingpro.com" => "admin@ReadingPro.com",
@@ -23,6 +22,31 @@ DOMAIN_MIGRATIONS.each do |old_email, new_email|
     user.update!(email: new_email)
     puts "  -> Migrated #{old_email} => #{new_email}"
   end
+end
+
+# Migrate old personal-info accounts to anonymous IDs
+OLD_TO_NEW_EMAILS = {
+  "student_54@shinmyung.edu" => "rps_0001@shinmyung.edu",
+  "parent_54@shinmyung.edu" => "rpp_0001@shinmyung.edu"
+}.freeze
+
+OLD_TO_NEW_EMAILS.each do |old_email, new_email|
+  user = User.find_by(email: old_email)
+  if user && !User.exists?(email: new_email)
+    user.update!(email: new_email)
+    puts "  -> Migrated #{old_email} => #{new_email}"
+  end
+end
+
+# Migrate old student names/numbers to anonymous IDs
+Student.where(name: "소수환").update_all(name: "RPS_0001", student_number: "RPS_0001")
+# Update any parent with non-anonymous name
+Parent.where.not("name LIKE 'RPP_%'").update_all(name: "RPP_0001")
+5.times do |i|
+  Student.where(name: "학생_#{i + 1}").update_all(
+    name: "RPS_#{format('%04d', i + 2)}",
+    student_number: "RPS_#{format('%04d', i + 2)}"
+  )
 end
 
 # =============================================================================
@@ -50,8 +74,11 @@ end
 # =============================================================================
 school = School.find_or_create_by!(name: "신명중학교") do |s|
   s.region = "충북 충주시"
+  s.email_domain = "shinmyung.edu"
 end
-puts "  + School: #{school.name}"
+# Ensure email_domain is correct
+school.update!(email_domain: "shinmyung.edu") unless school.email_domain == "shinmyung.edu"
+puts "  + School: #{school.name} (domain: #{school.email_domain})"
 
 # =============================================================================
 # School-domain Accounts
@@ -80,18 +107,18 @@ if school_admin_user.new_record?
   puts "  + Created school_admin: school_admin@shinmyung.edu"
 end
 
-# Student (student_54)
-student_user = User.find_or_initialize_by(email: "student_54@shinmyung.edu")
+# Student (RPS_0001 - anonymous ID)
+student_user = User.find_or_initialize_by(email: "rps_0001@shinmyung.edu")
 if student_user.new_record?
   student_user.assign_attributes(role: "student", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
   student_user.save!
-  puts "  + Created student: student_54@shinmyung.edu"
+  puts "  + Created student: rps_0001@shinmyung.edu"
 end
 
 student = Student.find_or_create_by!(user_id: student_user.id) do |s|
   s.school_id = school.id
-  s.student_number = "2024054"
-  s.name = "소수환"
+  s.student_number = "RPS_0001"
+  s.name = "RPS_0001"
   s.grade = 2
   s.class_name = "A"
 end
@@ -102,42 +129,63 @@ StudentPortfolio.find_or_create_by!(student_id: student.id) do |sp|
   sp.average_score = 0
 end
 
-# Parent (parent_54)
-parent_user = User.find_or_initialize_by(email: "parent_54@shinmyung.edu")
+# Parent (RPP_0001 - anonymous ID, matched to RPS_0001)
+parent_user = User.find_or_initialize_by(email: "rpp_0001@shinmyung.edu")
 if parent_user.new_record?
   parent_user.assign_attributes(role: "parent", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
   parent_user.save!
-  puts "  + Created parent: parent_54@shinmyung.edu"
+  puts "  + Created parent: rpp_0001@shinmyung.edu"
 end
 
 parent_record = Parent.find_or_create_by!(user_id: parent_user.id) do |p|
-  p.name = "소수환 학부모"
+  p.name = "RPP_0001"
 end
+parent_record.update!(name: "RPP_0001") unless parent_record.name == "RPP_0001"
 
 # GuardianStudent relationship
 GuardianStudent.find_or_create_by!(parent_id: parent_record.id, student_id: student.id) do |gs|
-  gs.relationship = "부모"
+  gs.relationship = "guardian"
   gs.primary_contact = true
   gs.can_view_results = true
   gs.can_request_consultations = true
 end
 
 # =============================================================================
-# Sample Students (5명)
+# Sample Students (RPS_0002 ~ RPS_0006)
 # =============================================================================
 5.times do |i|
-  s_user = User.find_or_initialize_by(email: "student_#{i + 1}@shinmyung.edu")
-  if s_user.new_record?
-    s_user.assign_attributes(role: "student", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
-    s_user.save!
-  end
+  seq = i + 2
+  seq_str = format("%04d", seq)
+  student_id = "RPS_#{seq_str}"
+  student_email = "rps_#{seq_str}@shinmyung.edu"
+  old_email = "student_#{i + 1}@shinmyung.edu"
 
-  s = Student.find_or_create_by!(user_id: s_user.id) do |st|
-    st.school_id = school.id
-    st.student_number = "2024#{format('%03d', i + 1)}"
-    st.name = "학생_#{i + 1}"
-    st.grade = 2
-    st.class_name = "A"
+  # Find existing student by student_number first (most reliable)
+  existing_student = Student.find_by(school_id: school.id, student_number: student_id)
+
+  if existing_student
+    # Student already exists - clean up orphaned duplicate users first
+    s_user = existing_student.user
+    User.where(email: student_email).where.not(id: s_user.id).destroy_all
+    # Now safe to update email
+    s_user.update!(email: student_email) if s_user.email != student_email
+    s = existing_student
+  else
+    # No student with this ID exists yet
+    s_user = User.find_by(email: student_email) || User.find_by(email: old_email)
+    if s_user
+      s_user.update!(email: student_email) if s_user.email != student_email
+    else
+      s_user = User.create!(email: student_email, role: "student", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
+    end
+    s = Student.create!(
+      user_id: s_user.id,
+      school_id: school.id,
+      student_number: student_id,
+      name: student_id,
+      grade: 2,
+      class_name: "A"
+    )
   end
 
   StudentPortfolio.find_or_create_by!(student_id: s.id) do |sp|
@@ -315,12 +363,13 @@ puts "  Researcher:         researcher@ReadingPro.com"
 puts "  Diagnostic Teacher: teacher_diagnostic@ReadingPro.com"
 puts "  Teacher:            teacher@shinmyung.edu"
 puts "  School Admin:       school_admin@shinmyung.edu"
-puts "  Student:            student_54@shinmyung.edu"
-puts "  Parent:             parent_54@shinmyung.edu"
+puts "  Student (RPS_0001): rps_0001@shinmyung.edu"
+puts "  Parent (RPP_0001):  rpp_0001@shinmyung.edu"
 puts "  Password:           #{DEFAULT_PASSWORD}"
 puts ""
 puts "  Schools: #{School.count}"
 puts "  Users: #{User.count}"
+puts "  Students: #{Student.count} (RPS_0001 ~ RPS_0006)"
 puts "  Items: #{Item.count}"
 puts "  Diagnostic Forms: #{DiagnosticForm.count}"
 puts "  Feedback Prompts: #{FeedbackPrompt.count}"
