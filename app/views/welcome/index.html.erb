@@ -1,46 +1,56 @@
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<% end %>
-
-<div class="lp">
-  <!-- Header -->
-  <header class="lp-header">
-    <div class="lp-container lp-header__inner">
-      <a href="/" class="lp-header__brand">
-        <svg class="lp-header__logo-icon" viewBox="0 0 24 24" fill="none">
-          <path d="M3.5 6.5c4-2 7-.5 8.5.5v11.5c-1.5-1-4.5-2.5-8.5-.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M20.5 6.5c-4-2-7-.5-8.5.5v11.5c1.5-1 4.5-2.5 8.5-.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M12 7v11.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-        </svg>
-        <span class="lp-header__logo-text">ReadingPRO</span>
-      </a>
-      <nav class="lp-header__nav">
-        <a href="#features" class="lp-header__link">주요 기능</a>
-        <a href="#stats" class="lp-header__link">도입 효과</a>
-        <a href="#contact" class="lp-header__link">문의</a>
-        <a href="<%= login_path %>" class="lp-header__link">로그인</a>
-        <a href="#contact" class="lp-btn lp-btn--primary lp-btn--sm">도입 상담</a>
-      </nav>
-      <button class="lp-header__mobile-toggle" id="mobileMenuToggle" aria-label="메뉴">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
+<div class="landing-page">
+  <header class="landing-header">
+    <div class="landing-container landing-header-inner">
+      <div class="landing-logo">
+        <div class="landing-logo-main">
+          <svg class="landing-logo-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3.5 6.5c4-2 7-.5 8.5.5v11.5c-1.5-1-4.5-2.5-8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+            <path d="M20.5 6.5c-4-2-7-.5-8.5.5v11.5c1.5-1 4.5-2.5 8.5-.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+            <path d="M12 7v11.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
+          </svg>
+          <span class="landing-logo-text">ReadingPRO</span>
+        </div>
+        <div class="landing-logo-subtitle">(사)전국독서새물결모임</div>
+      </div>
+      <div class="landing-header-actions">
+        <div class="landing-toggle" role="group" aria-label="Landing variant toggle">
+          <button type="button" class="landing-toggle-button is-active" data-variant="v1">V1</button>
+          <button type="button" class="landing-toggle-button" data-variant="v2">V2</button>
+        </div>
+        <nav class="landing-actions landing-variant landing-variant-flex" data-variant="v1">
+          <a class="landing-link" href="<%= login_path %>">로그인</a>
+          <a class="landing-button landing-button-outline" href="#">기관용 대시보드</a>
+        </nav>
+        <nav class="landing-actions landing-variant landing-variant-flex" data-variant="v2">
+          <a class="landing-link" href="<%= login_path %>">로그인</a>
+          <a class="landing-button landing-button-outline" href="#">무료 샘플 받기</a>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <!-- Announcements -->
+  <!-- 알림 배너 -->
   <% if @announcements.any? %>
-    <div class="lp-announce">
-      <div class="lp-container">
+    <div class="landing-announcements">
+      <div class="landing-container">
         <% @announcements.each do |announcement| %>
-          <div class="lp-announce__item">
-            <span class="lp-announce__badge">NEW</span>
-            <span class="lp-announce__text"><%= announcement.content %></span>
+          <div class="landing-announcement-item">
+            <svg class="landing-announcement-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 2h4"></path>
+              <path d="M12 14v-4"></path>
+              <path d="M4 13a8 8 0 0 1 7.5-8.5"></path>
+              <path d="M20 13a8 8 0 0 0-7.5-8.5"></path>
+              <circle cx="12" cy="13" r="8"></circle>
+              <circle cx="12" cy="18" r="1"></circle>
+            </svg>
+            <span class="landing-announcement-text"><%= announcement.content %></span>
             <% if announcement.link_url.present? %>
-              <a href="<%= announcement.link_url %>" class="lp-announce__link" target="_blank">
-                <%= announcement.link_text || "자세히" %>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+              <a href="<%= announcement.link_url %>" class="landing-announcement-link" target="_blank">
+                <%= announcement.link_text || "자세히 보기" %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
               </a>
             <% end %>
           </div>
@@ -50,882 +60,328 @@
   <% end %>
 
   <main>
-    <!-- Hero -->
-    <section class="lp-hero">
-      <div class="lp-container lp-hero__grid">
-        <div class="lp-hero__content">
-          <div class="lp-hero__eyebrow">
-            <span class="lp-hero__eyebrow-dot"></span>
-            공공기관 &middot; 학교 &middot; 교육청 전용 진단 플랫폼
-          </div>
-          <h1 class="lp-hero__title">
-            읽기의 힘,<br>
-            <span class="lp-hero__title-accent">진단에서 시작됩니다</span>
-          </h1>
-          <p class="lp-hero__desc">
-            10분 진단으로 독서력과 독자 성향을 동시에 파악하고,
-            AI가 생성한 맞춤 리포트와 독서지도안을 즉시 받아보세요.
+    <section class="landing-hero landing-variant" data-variant="v1">
+      <div class="landing-container landing-hero-grid">
+        <div class="landing-hero-copy">
+          <span class="landing-eyebrow">공공기관 · 학교 · 교육청 전용</span>
+          <h1>ReadingPRO</h1>
+          <p class="landing-tagline">읽기의 힘, 진단에서 시작된다</p>
+          <p class="landing-description">
+            독서력 진단과 독자 성향 분석을 통해 학생의 읽기 역량을 정량·정성 데이터로 체계화합니다.
           </p>
-          <div class="lp-hero__actions">
-            <a href="<%= login_path %>" class="lp-btn lp-btn--primary lp-btn--lg">
-              진단 시작하기
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </a>
-            <a href="#features" class="lp-btn lp-btn--outline lp-btn--lg">기능 살펴보기</a>
-          </div>
-          <div class="lp-hero__metrics">
-            <div class="lp-hero__metric">
-              <span class="lp-hero__metric-value">10분</span>
-              <span class="lp-hero__metric-label">진단 완료</span>
-            </div>
-            <div class="lp-hero__metric-divider"></div>
-            <div class="lp-hero__metric">
-              <span class="lp-hero__metric-value">AI</span>
-              <span class="lp-hero__metric-label">자동 리포트</span>
-            </div>
-            <div class="lp-hero__metric-divider"></div>
-            <div class="lp-hero__metric">
-              <span class="lp-hero__metric-value">실시간</span>
-              <span class="lp-hero__metric-label">기관 대시보드</span>
-            </div>
-          </div>
-        </div>
-        <div class="lp-hero__visual">
-          <div class="lp-hero__card">
-            <div class="lp-hero__card-header">
-              <div class="lp-hero__card-dot lp-hero__card-dot--green"></div>
-              <span class="lp-hero__card-label">AI 리포트 미리보기</span>
-            </div>
-            <div class="lp-hero__chart">
-              <div class="lp-hero__chart-bar" style="--h: 68%"><span>어휘력</span></div>
-              <div class="lp-hero__chart-bar" style="--h: 82%"><span>이해력</span></div>
-              <div class="lp-hero__chart-bar" style="--h: 54%"><span>추론력</span></div>
-              <div class="lp-hero__chart-bar" style="--h: 72%"><span>비판력</span></div>
-              <div class="lp-hero__chart-bar" style="--h: 90%"><span>감상력</span></div>
-            </div>
-            <div class="lp-hero__card-tags">
-              <span>읽기 유창성 78%</span>
-              <span>문해 전략 A</span>
-              <span>독자 성향: 탐색형</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trusted By -->
-    <section class="lp-trust">
-      <div class="lp-container">
-        <p class="lp-trust__label">신뢰할 수 있는 교육 전문성</p>
-        <div class="lp-trust__items">
-          <span>(사)전국독서새물결모임</span>
-          <span class="lp-trust__sep"></span>
-          <span>퇴임 교사 집필진</span>
-          <span class="lp-trust__sep"></span>
-          <span>문학박사 해설</span>
-          <span class="lp-trust__sep"></span>
-          <span>사회적기업 공익 운영</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section class="lp-features" id="features">
-      <div class="lp-container">
-        <div class="lp-section-header">
-          <span class="lp-section-header__badge">Features</span>
-          <h2 class="lp-section-header__title">현장 진단부터 기관 운영까지</h2>
-          <p class="lp-section-header__desc">필요한 데이터 흐름을 하나의 플랫폼에서 제공합니다.</p>
-        </div>
-        <div class="lp-features__grid">
-          <article class="lp-feature-card">
-            <div class="lp-feature-card__icon lp-feature-card__icon--blue">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            </div>
-            <h3 class="lp-feature-card__title">독서력 &middot; 성향 통합 진단</h3>
-            <p class="lp-feature-card__desc">진단지와 성향 검사를 결합해 강점 &middot; 약점과 읽기 성향을 함께 분석합니다.</p>
-          </article>
-          <article class="lp-feature-card">
-            <div class="lp-feature-card__icon lp-feature-card__icon--purple">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <h3 class="lp-feature-card__title">AI 리포트 자동 생성</h3>
-            <p class="lp-feature-card__desc">결과를 요약하고 핵심 지표를 시각화하여 리포트를 자동으로 생성합니다.</p>
-          </article>
-          <article class="lp-feature-card">
-            <div class="lp-feature-card__icon lp-feature-card__icon--green">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>
-            </div>
-            <h3 class="lp-feature-card__title">맞춤 독서지도안 제공</h3>
-            <p class="lp-feature-card__desc">수준 &middot; 성향 기반의 실천 가능한 지도 전략과 활동안을 제시합니다.</p>
-          </article>
-          <article class="lp-feature-card">
-            <div class="lp-feature-card__icon lp-feature-card__icon--orange">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            </div>
-            <h3 class="lp-feature-card__title">기관 데이터 대시보드</h3>
-            <p class="lp-feature-card__desc">학년별 &middot; 지역별 비교, 하위역량 통계로 운영 의사결정을 지원합니다.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Stats -->
-    <section class="lp-stats" id="stats">
-      <div class="lp-container">
-        <div class="lp-section-header lp-section-header--center">
-          <span class="lp-section-header__badge">Why ReadingPRO</span>
-          <h2 class="lp-section-header__title">데이터 기반 읽기 교육의 새 기준</h2>
-        </div>
-        <div class="lp-stats__grid">
-          <div class="lp-stats__item">
-            <div class="lp-stats__number">6</div>
-            <div class="lp-stats__unit">개 하위역량</div>
-            <p class="lp-stats__detail">어휘, 이해, 추론, 비판, 감상, 속도를 체계적으로 진단</p>
-          </div>
-          <div class="lp-stats__item">
-            <div class="lp-stats__number">10</div>
-            <div class="lp-stats__unit">분 소요</div>
-            <p class="lp-stats__detail">짧은 시간 내 독서력 + 독자 성향 동시 파악</p>
-          </div>
-          <div class="lp-stats__item">
-            <div class="lp-stats__number">AI</div>
-            <div class="lp-stats__unit">자동 분석</div>
-            <p class="lp-stats__detail">요약 &middot; 시각화 &middot; 맞춤 처방을 즉시 생성</p>
-          </div>
-          <div class="lp-stats__item">
-            <div class="lp-stats__number">PDF</div>
-            <div class="lp-stats__unit">리포트 제공</div>
-            <p class="lp-stats__detail">디지털 + 인쇄본 병행 제공으로 전달 &middot; 공유 용이</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Checklist -->
-    <section class="lp-checklist">
-      <div class="lp-container">
-        <div class="lp-checklist__inner">
-          <div class="lp-checklist__header">
-            <h2 class="lp-checklist__title">공공기관이 신뢰할 수 있는<br>근거 자료를 제공합니다</h2>
-            <p class="lp-checklist__desc">교육청 &middot; 학교 &middot; 도서관 정기 진단 프로그램에<br>바로 적용할 수 있습니다.</p>
-          </div>
-          <div class="lp-checklist__items">
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>AI 요약 + 시각화 리포트 자동 생성</span>
-            </div>
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>학년 &middot; 지역 비교 분석 제공</span>
-            </div>
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>하위역량 통계화로 취약점 진단</span>
-            </div>
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>풍부한 해설 + 실천 독서지도안 포함</span>
-            </div>
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>디지털(PDF) + 인쇄본(옵션) 병행</span>
-            </div>
-            <div class="lp-checklist__item">
-              <div class="lp-checklist__check">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <span>사회적기업 기반 공익적 운영</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="lp-cta" id="contact">
-      <div class="lp-container">
-        <div class="lp-cta__inner">
-          <h2 class="lp-cta__title">지금, 데이터 기반 독서 교육을<br>시작하세요</h2>
-          <p class="lp-cta__desc">
-            상담 없이도 샘플 리포트로 결과 품질을 바로 확인할 수 있습니다.<br>
-            교사 체험단 &middot; 학교 시범 운영도 지원합니다.
+          <p class="landing-description">
+            AI 기반 요약·시각화 리포트와 개인별 실천 독서지도안을 자동 생성하여 현장 적용을 지원합니다.
           </p>
-          <div class="lp-cta__actions">
-            <a href="<%= login_path %>" class="lp-btn lp-btn--white lp-btn--lg">
-              무료 체험 시작
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </a>
-            <a href="#" class="lp-btn lp-btn--ghost-white lp-btn--lg">도입 문의하기</a>
+          <p class="landing-description">
+            기관에는 학년·지역 비교 및 하위역량 통계를 제공하여 프로그램 운영의 근거를 강화합니다.
+          </p>
+          <div class="landing-cta-group">
+            <a class="landing-button landing-button-primary" href="#">진단 시작하기</a>
+            <a class="landing-button landing-button-ghost" href="#">샘플 리포트 보기</a>
           </div>
+          <div class="landing-hero-stats">
+            <div>
+              <strong>10분</strong>
+              <span>진단 완료</span>
+            </div>
+            <div>
+              <strong>AI</strong>
+              <span>자동 리포트</span>
+            </div>
+            <div>
+              <strong>기관</strong>
+              <span>운영 인사이트</span>
+            </div>
+          </div>
+        </div>
+        <div class="landing-hero-panel">
+          <div class="landing-panel-card">
+            <h3>AI 리포트 미리보기</h3>
+            <p>학년별 분포, 읽기 성향, 하위역량 취약도를 한 장에 요약합니다.</p>
+            <div class="landing-panel-chart">
+              <span style="height: 68%"></span>
+              <span style="height: 44%"></span>
+              <span style="height: 82%"></span>
+              <span style="height: 58%"></span>
+              <span style="height: 72%"></span>
+            </div>
+            <div class="landing-panel-badges">
+              <span>읽기 유창성</span>
+              <span>문해 전략</span>
+              <span>성향 분석</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-variant" data-variant="v1">
+      <div class="landing-container">
+        <div class="landing-section-header">
+          <h2>주요 기능</h2>
+          <p>현장 진단부터 기관 운영까지, 필요한 데이터 흐름을 한 번에 제공합니다.</p>
+        </div>
+        <div class="landing-grid">
+          <article class="landing-card">
+            <h3>독서력·성향 통합 진단</h3>
+            <p>진단지와 성향 검사를 결합해 강점·약점과 읽기 성향을 함께 분석합니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>AI 리포트 자동 생성</h3>
+            <p>결과를 요약하고 핵심 지표를 시각화하여 PDF 리포트를 자동으로 제공합니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>개인별 독서지도안 제공</h3>
+            <p>수준·성향 기반으로 실천 가능한 지도 전략과 활동안을 제시합니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>기관용 데이터 분석 대시보드</h3>
+            <p>학년별/지역별 비교, 하위역량 통계, 집단 추이 분석으로 운영 의사결정을 지원합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-checklist-section landing-variant" data-variant="v1">
+      <div class="landing-container">
+        <div class="landing-section-header">
+          <h2>핵심 역량</h2>
+          <p>공공기관에서 신뢰할 수 있는 근거 자료를 안정적으로 제공합니다.</p>
+        </div>
+        <div class="landing-checklist">
+          <div>AI 요약 + 시각화 리포트 자동 생성</div>
+          <div>학년·지역 비교 분석 제공</div>
+          <div>하위역량 통계화로 취약점 진단</div>
+          <div>풍부한 해설 + 실천 독서지도안 포함</div>
+          <div>디지털(PDF) + 인쇄본(옵션) 병행 제공</div>
+          <div>사회적기업 기반 공익적 운영(공공사업 연계 용이)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-cta landing-variant" data-variant="v1">
+      <div class="landing-container landing-cta-inner">
+        <div>
+          <h2>지금, 독서 데이터 기반 운영을 시작하세요</h2>
+          <p>
+            교육청·학교·도서관 정기 진단 프로그램부터 학부모 상담 자료까지,
+            읽기 역량을 근거 기반으로 관리할 수 있는 표준 리포트를 제공합니다.
+          </p>
+        </div>
+        <a class="landing-button landing-button-primary landing-button-lg" href="#">도입 상담 신청하기</a>
+      </div>
+    </section>
+
+    <section class="landing-hero landing-variant" data-variant="v2">
+      <div class="landing-container landing-hero-grid">
+        <div class="landing-hero-copy">
+          <span class="landing-eyebrow">빠른 진단 · 즉시 리포트</span>
+          <h1>ReadingPRO</h1>
+          <p class="landing-tagline">우리 아이(우리 학교) 독서력, ‘감’이 아니라 ‘데이터’로</p>
+          <p class="landing-description">
+            10분 진단으로 독서력 + 독자 성향을 한 번에 파악하고,
+            AI가 요약·시각화한 리포트와 맞춤 독서지도안을 즉시 받아보세요.
+          </p>
+          <p class="landing-description">
+            학교/교육청은 학년·지역 비교와 하위역량 통계로 프로그램 효과를 숫자로 확인합니다.
+          </p>
+          <div class="landing-cta-group">
+            <a class="landing-button landing-button-primary" href="#">무료 샘플 리포트 보기</a>
+            <a class="landing-button landing-button-ghost" href="#">진단 시작하기</a>
+          </div>
+          <div class="landing-hero-stats">
+            <div>
+              <strong>10분</strong>
+              <span>진단 완료</span>
+            </div>
+            <div>
+              <strong>즉시</strong>
+              <span>리포트 생성</span>
+            </div>
+            <div>
+              <strong>비교</strong>
+              <span>학년·지역 분석</span>
+            </div>
+          </div>
+        </div>
+        <div class="landing-hero-panel">
+          <div class="landing-panel-card">
+            <h3>샘플 리포트 프리뷰</h3>
+            <p>AI가 요약한 핵심 지표와 그래프를 한 번에 제공합니다.</p>
+            <div class="landing-panel-chart">
+              <span style="height: 72%"></span>
+              <span style="height: 48%"></span>
+              <span style="height: 84%"></span>
+              <span style="height: 62%"></span>
+              <span style="height: 76%"></span>
+            </div>
+            <div class="landing-panel-badges">
+              <span>맞춤 처방</span>
+              <span>비교 분석</span>
+              <span>그래프</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-variant" data-variant="v2">
+      <div class="landing-container">
+        <div class="landing-section-header">
+          <h2>주요 기능</h2>
+          <p>진단부터 처방까지, 바로 사용할 수 있는 결과물을 제공합니다.</p>
+        </div>
+        <div class="landing-grid">
+          <article class="landing-card">
+            <h3>한 번의 진단으로 핵심만 딱</h3>
+            <p>독서력·성향을 함께 분석해 무엇이 문제인지 바로 보입니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>AI가 자동으로 리포트 완성</h3>
+            <p>요약 + 그래프 시각화로 설명하기 쉬운 결과지를 즉시 생성합니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>바로 실행 가능한 독서 처방</h3>
+            <p>학생별로 지금부터 무엇을 읽고 어떻게 지도할지 단계별로 제공합니다.</p>
+          </article>
+          <article class="landing-card">
+            <h3>기관 운영을 위한 대시보드</h3>
+            <p>학년/지역 비교, 하위역량 통계로 취약군·성과·추이가 한눈에 보입니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-section landing-checklist-section landing-variant" data-variant="v2">
+      <div class="landing-container">
+        <div class="landing-section-header">
+          <h2>핵심 역량</h2>
+          <p>설명 가능한 데이터로 전환을 빠르게 만듭니다.</p>
+        </div>
+        <div class="landing-checklist">
+          <div>AI 요약 + 그래프 시각화로 ‘설명 가능한’ 리포트</div>
+          <div>하위역량별 약점 진단 → 맞춤 처방 연결</div>
+          <div>학년·지역 비교로 우리 학생 위치 확인</div>
+          <div>교실/가정에서 바로 쓰는 실천 지도안</div>
+          <div>PDF + 인쇄본(옵션)로 전달/공유 쉬움</div>
+          <div>교육 전문성(퇴임 교사) + 문학박사 해설로 신뢰도 강화</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-cta landing-variant" data-variant="v2">
+      <div class="landing-container landing-cta-inner">
+        <div>
+          <h2>샘플 리포트로 먼저 확인해보세요</h2>
+          <p>
+            상담/설명회 없이도 결과 품질을 바로 확인할 수 있어요.
+            교사 체험단·학교 시범 운영도 지원합니다.
+          </p>
+        </div>
+        <div class="landing-cta-actions">
+          <a class="landing-button landing-button-primary landing-button-lg" href="#">샘플 무료로 받기</a>
+          <a class="landing-link" href="#">교육청/학교 도입 문의</a>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="lp-footer">
-    <div class="lp-container lp-footer__inner">
-      <div class="lp-footer__brand">
-        <div class="lp-footer__logo">
-          <svg width="20" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M3.5 6.5c4-2 7-.5 8.5.5v11.5c-1.5-1-4.5-2.5-8.5-.5z" stroke-linejoin="round"/>
-            <path d="M20.5 6.5c-4-2-7-.5-8.5.5v11.5c1.5-1 4.5-2.5 8.5-.5z" stroke-linejoin="round"/>
-            <path d="M12 7v11.5" stroke-linecap="round"/>
-          </svg>
-          <span>ReadingPRO</span>
-        </div>
-        <p class="lp-footer__org">(사)전국독서새물결모임</p>
-      </div>
-      <div class="lp-footer__copy">&copy; 2026 ReadingPRO. All rights reserved.</div>
-    </div>
+  <footer class="landing-footer">
+    © 2026 ReadingPRO. All rights reserved.
   </footer>
 </div>
 
 <style>
-/* ============================================================
-   ReadingPRO Landing Page — Gothic (Sans-serif) Clean Style
-   ============================================================ */
+  /* 알림 배너 스타일 */
+  .landing-announcements {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 12px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
-/* --- Base --- */
-.lp {
-  --lp-bg: #fafbfc;
-  --lp-surface: #ffffff;
-  --lp-ink: #111827;
-  --lp-muted: #6b7280;
-  --lp-border: #e5e7eb;
-  --lp-primary: #2563eb;
-  --lp-primary-dark: #1d4ed8;
-  --lp-primary-soft: #eff6ff;
-  --lp-accent: #7c3aed;
-  --lp-green: #059669;
-  --lp-green-soft: #ecfdf5;
-  --lp-orange: #ea580c;
-  --lp-orange-soft: #fff7ed;
-  --lp-radius: 12px;
-  --lp-radius-lg: 20px;
-  --lp-radius-full: 999px;
-  --lp-shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --lp-shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-  --lp-shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+  .landing-announcement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: white;
+  }
 
-  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--lp-ink);
-  background: var(--lp-bg);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.6;
-}
+  .landing-announcement-item:last-child {
+    margin-bottom: 0;
+  }
 
-.lp *, .lp *::before, .lp *::after { box-sizing: border-box; }
+  .landing-announcement-icon {
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
 
-.lp-container {
-  width: min(1140px, 90vw);
-  margin: 0 auto;
-}
+  .landing-announcement-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+  }
 
-/* --- Button --- */
-.lp-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: var(--lp-radius);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-.lp-btn:hover { transform: translateY(-1px); }
+  .landing-announcement-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
 
-.lp-btn--primary {
-  background: var(--lp-primary);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
-}
-.lp-btn--primary:hover { background: var(--lp-primary-dark); box-shadow: 0 4px 16px rgba(37,99,235,0.3); }
+  .landing-announcement-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(2px);
+  }
 
-.lp-btn--outline {
-  background: var(--lp-surface);
-  color: var(--lp-ink);
-  border-color: var(--lp-border);
-}
-.lp-btn--outline:hover { border-color: var(--lp-primary); color: var(--lp-primary); }
+  @media (max-width: 768px) {
+    .landing-announcement-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
 
-.lp-btn--white {
-  background: #fff;
-  color: var(--lp-primary-dark);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.lp-btn--white:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-
-.lp-btn--ghost-white {
-  background: rgba(255,255,255,0.12);
-  color: #fff;
-  border-color: rgba(255,255,255,0.3);
-}
-.lp-btn--ghost-white:hover { background: rgba(255,255,255,0.2); }
-
-.lp-btn--sm { padding: 8px 16px; font-size: 13px; }
-.lp-btn--lg { padding: 14px 28px; font-size: 15px; }
-
-/* --- Header --- */
-.lp-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(250,251,252,0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--lp-border);
-}
-.lp-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-}
-.lp-header__brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--lp-primary);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-.lp-header__logo-icon { width: 26px; height: 22px; }
-
-.lp-header__nav {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-.lp-header__link {
-  text-decoration: none;
-  color: var(--lp-muted);
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.15s;
-}
-.lp-header__link:hover { color: var(--lp-ink); }
-
-.lp-header__mobile-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--lp-ink);
-  padding: 4px;
-}
-
-/* --- Announce --- */
-.lp-announce {
-  background: var(--lp-primary-soft);
-  border-bottom: 1px solid #dbeafe;
-  padding: 10px 0;
-}
-.lp-announce__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-}
-.lp-announce__item + .lp-announce__item { margin-top: 6px; }
-.lp-announce__badge {
-  background: var(--lp-primary);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--lp-radius-full);
-  letter-spacing: 0.04em;
-}
-.lp-announce__text { flex: 1; color: var(--lp-ink); font-weight: 500; }
-.lp-announce__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--lp-primary);
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 12px;
-}
-.lp-announce__link:hover { text-decoration: underline; }
-
-/* --- Hero --- */
-.lp-hero {
-  padding: 80px 0 64px;
-}
-.lp-hero__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: center;
-}
-.lp-hero__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--lp-primary);
-  background: var(--lp-primary-soft);
-  padding: 6px 16px;
-  border-radius: var(--lp-radius-full);
-  margin-bottom: 24px;
-}
-.lp-hero__eyebrow-dot {
-  width: 6px; height: 6px;
-  background: var(--lp-primary);
-  border-radius: 50%;
-  animation: pulse-dot 2s ease infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.lp-hero__title {
-  font-size: clamp(32px, 4.5vw, 48px);
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
-  margin: 0 0 20px;
-  color: var(--lp-ink);
-}
-.lp-hero__title-accent {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.lp-hero__desc {
-  font-size: 16px;
-  color: var(--lp-muted);
-  line-height: 1.7;
-  margin: 0 0 32px;
-  max-width: 480px;
-}
-
-.lp-hero__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
-
-.lp-hero__metrics { display: flex; gap: 0; align-items: center; }
-.lp-hero__metric { text-align: center; padding: 0 20px; }
-.lp-hero__metric:first-child { padding-left: 0; }
-.lp-hero__metric-value {
-  display: block;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--lp-ink);
-  letter-spacing: -0.02em;
-}
-.lp-hero__metric-label {
-  font-size: 12px;
-  color: var(--lp-muted);
-  font-weight: 500;
-}
-.lp-hero__metric-divider {
-  width: 1px;
-  height: 32px;
-  background: var(--lp-border);
-}
-
-/* Hero Visual Card */
-.lp-hero__visual { position: relative; }
-.lp-hero__card {
-  background: var(--lp-surface);
-  border: 1px solid var(--lp-border);
-  border-radius: var(--lp-radius-lg);
-  padding: 24px;
-  box-shadow: var(--lp-shadow-lg);
-  animation: floatIn 0.8s ease;
-}
-@keyframes floatIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.lp-hero__card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.lp-hero__card-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-}
-.lp-hero__card-dot--green { background: var(--lp-green); }
-.lp-hero__card-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--lp-ink);
-}
-
-.lp-hero__chart {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  align-items: end;
-  height: 160px;
-  margin-bottom: 16px;
-  padding: 0 8px;
-}
-.lp-hero__chart-bar {
-  height: var(--h, 50%);
-  background: linear-gradient(180deg, #93c5fd 0%, var(--lp-primary) 100%);
-  border-radius: 8px 8px 4px 4px;
-  position: relative;
-  transition: height 0.6s ease;
-}
-.lp-hero__chart-bar span {
-  position: absolute;
-  bottom: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--lp-muted);
-  white-space: nowrap;
-}
-
-.lp-hero__card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 28px;
-}
-.lp-hero__card-tags span {
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 12px;
-  border-radius: var(--lp-radius-full);
-}
-
-/* --- Trust --- */
-.lp-trust {
-  padding: 32px 0;
-  border-bottom: 1px solid var(--lp-border);
-}
-.lp-trust__label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--lp-muted);
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin: 0 0 12px;
-}
-.lp-trust__items {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--lp-ink);
-}
-.lp-trust__sep {
-  width: 4px; height: 4px;
-  background: var(--lp-border);
-  border-radius: 50%;
-}
-
-/* --- Section Header --- */
-.lp-section-header { margin-bottom: 48px; }
-.lp-section-header--center { text-align: center; }
-.lp-section-header__badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--lp-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
-}
-.lp-section-header__title {
-  font-size: clamp(24px, 3vw, 34px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 10px;
-  color: var(--lp-ink);
-}
-.lp-section-header__desc {
-  font-size: 15px;
-  color: var(--lp-muted);
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* --- Features --- */
-.lp-features { padding: 80px 0; }
-.lp-features__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.lp-feature-card {
-  background: var(--lp-surface);
-  border: 1px solid var(--lp-border);
-  border-radius: var(--lp-radius-lg);
-  padding: 28px;
-  transition: all 0.25s ease;
-  box-shadow: var(--lp-shadow-sm);
-}
-.lp-feature-card:hover {
-  box-shadow: var(--lp-shadow-md);
-  border-color: #d1d5db;
-  transform: translateY(-2px);
-}
-.lp-feature-card__icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-.lp-feature-card__icon--blue { background: var(--lp-primary-soft); color: var(--lp-primary); }
-.lp-feature-card__icon--purple { background: #f5f3ff; color: var(--lp-accent); }
-.lp-feature-card__icon--green { background: var(--lp-green-soft); color: var(--lp-green); }
-.lp-feature-card__icon--orange { background: var(--lp-orange-soft); color: var(--lp-orange); }
-
-.lp-feature-card__title {
-  font-size: 17px;
-  font-weight: 700;
-  margin: 0 0 8px;
-  letter-spacing: -0.01em;
-}
-.lp-feature-card__desc {
-  font-size: 14px;
-  color: var(--lp-muted);
-  margin: 0;
-  line-height: 1.65;
-}
-
-/* --- Stats --- */
-.lp-stats {
-  padding: 80px 0;
-  background: var(--lp-surface);
-  border-top: 1px solid var(--lp-border);
-  border-bottom: 1px solid var(--lp-border);
-}
-.lp-stats__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-.lp-stats__item {
-  text-align: center;
-  padding: 28px 16px;
-  border: 1px solid var(--lp-border);
-  border-radius: var(--lp-radius-lg);
-  background: var(--lp-bg);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.lp-stats__item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--lp-shadow-md);
-}
-.lp-stats__number {
-  font-size: 40px;
-  font-weight: 800;
-  color: var(--lp-primary);
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-.lp-stats__unit {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--lp-ink);
-  margin-top: 4px;
-}
-.lp-stats__detail {
-  font-size: 13px;
-  color: var(--lp-muted);
-  margin: 12px 0 0;
-  line-height: 1.5;
-}
-
-/* --- Checklist --- */
-.lp-checklist { padding: 80px 0; }
-.lp-checklist__inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: center;
-}
-.lp-checklist__title {
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 14px;
-  line-height: 1.35;
-}
-.lp-checklist__desc {
-  font-size: 15px;
-  color: var(--lp-muted);
-  margin: 0;
-  line-height: 1.65;
-}
-.lp-checklist__items { display: grid; gap: 12px; }
-.lp-checklist__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: var(--lp-surface);
-  border: 1px solid var(--lp-border);
-  border-radius: var(--lp-radius);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--lp-ink);
-  transition: border-color 0.2s;
-}
-.lp-checklist__item:hover { border-color: var(--lp-primary); }
-.lp-checklist__check {
-  width: 24px; height: 24px;
-  background: var(--lp-primary);
-  color: #fff;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* --- CTA --- */
-.lp-cta { padding: 80px 0; }
-.lp-cta__inner {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-  border-radius: 24px;
-  padding: 64px 48px;
-  text-align: center;
-  box-shadow: 0 24px 48px rgba(15,23,42,0.2);
-}
-.lp-cta__title {
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 16px;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-}
-.lp-cta__desc {
-  font-size: 15px;
-  color: #94a3b8;
-  margin: 0 0 32px;
-  line-height: 1.7;
-}
-.lp-cta__actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* --- Footer --- */
-.lp-footer {
-  padding: 32px 0;
-  border-top: 1px solid var(--lp-border);
-}
-.lp-footer__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.lp-footer__logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--lp-ink);
-}
-.lp-footer__org {
-  font-size: 12px;
-  color: var(--lp-muted);
-  margin: 4px 0 0;
-}
-.lp-footer__copy {
-  font-size: 12px;
-  color: var(--lp-muted);
-}
-
-/* ============================================================
-   Responsive
-   ============================================================ */
-@media (max-width: 960px) {
-  .lp-hero__grid { grid-template-columns: 1fr; gap: 40px; }
-  .lp-features__grid { grid-template-columns: 1fr; }
-  .lp-stats__grid { grid-template-columns: repeat(2, 1fr); }
-  .lp-checklist__inner { grid-template-columns: 1fr; gap: 32px; }
-}
-
-@media (max-width: 700px) {
-  .lp-header__nav { display: none; }
-  .lp-header__mobile-toggle { display: flex; }
-
-  .lp-hero { padding: 48px 0 40px; }
-  .lp-hero__title { font-size: 28px; }
-  .lp-hero__metrics { flex-wrap: wrap; gap: 16px; }
-  .lp-hero__metric-divider { display: none; }
-  .lp-hero__metric { padding: 0; }
-
-  .lp-features, .lp-stats, .lp-checklist, .lp-cta { padding: 56px 0; }
-  .lp-stats__grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .lp-stats__number { font-size: 28px; }
-
-  .lp-cta__inner { padding: 40px 24px; }
-
-  .lp-footer__inner { flex-direction: column; gap: 12px; text-align: center; }
-
-  .lp-trust__items { gap: 12px; }
-  .lp-trust__sep { display: none; }
-}
+    .landing-announcement-link {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 
 <script>
-(function() {
-  var toggle = document.getElementById('mobileMenuToggle');
-  if (!toggle) return;
-  toggle.addEventListener('click', function() {
-    var nav = document.querySelector('.lp-header__nav');
-    if (!nav) return;
-    if (nav.style.display === 'flex') {
-      nav.style.display = 'none';
-    } else {
-      nav.style.display = 'flex';
-      nav.style.flexDirection = 'column';
-      nav.style.position = 'absolute';
-      nav.style.top = '64px';
-      nav.style.left = '0';
-      nav.style.right = '0';
-      nav.style.background = '#fff';
-      nav.style.padding = '16px 24px';
-      nav.style.borderBottom = '1px solid #e5e7eb';
-      nav.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
-      nav.style.gap = '12px';
-      nav.style.zIndex = '99';
+  (function () {
+    const page = document.querySelector(".landing-page")
+    const buttons = document.querySelectorAll(".landing-toggle-button")
+    if (!page || !buttons.length) return
+
+    function setVariant(variant) {
+      page.setAttribute("data-variant", variant)
+      buttons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.variant === variant)
+      })
     }
-  });
-})();
+
+    const params = new URLSearchParams(window.location.search)
+    const initial = params.get("variant") || "v1"
+    setVariant(initial)
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setVariant(button.dataset.variant)
+      })
+    })
+  })()
 </script>
