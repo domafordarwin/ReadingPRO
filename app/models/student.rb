@@ -4,6 +4,7 @@ class Student < ApplicationRecord
   belongs_to :user
   belongs_to :school
   has_many :student_attempts, dependent: :destroy
+  has_many :diagnostic_assignments, dependent: :destroy
   has_one :student_portfolio, dependent: :destroy
   has_many :guardian_students, dependent: :destroy
   has_many :parents, through: :guardian_students

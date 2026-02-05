@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   helper_method :current_role, :current_user
+  before_action :check_password_change
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   rescue_from ActionController::RoutingError, with: :render_not_found
@@ -64,6 +65,13 @@ class ApplicationController < ActionController::Base
     end
 
     redirect_to login_path
+  end
+
+  def check_password_change
+    return unless current_user&.must_change_password?
+    return if controller_name == "passwords" || controller_name == "sessions"
+
+    redirect_to change_password_path
   end
 
   def render_not_found

@@ -14,13 +14,24 @@ class Student::DashboardController < ApplicationController
     @current_page = "start_diagnosis"
 
     begin
-      # 모든 활성화된 진단 형식 조회
-      @available_forms = DiagnosticForm.where(status: :active)
-        .includes(:diagnostic_form_items)
-        .order(created_at: :desc)
-
-      # 현재 학생의 진행 중인 시도 조회
       if @student
+        # 배정된 진단만 표시 (학교 배정 + 개별 배정)
+        school = @student.school
+        assigned_form_ids = DiagnosticAssignment.active
+          .where("student_id = ? OR school_id = ?", @student.id, school&.id)
+          .pluck(:diagnostic_form_id)
+          .uniq
+
+        @available_forms = DiagnosticForm.where(id: assigned_form_ids, status: :active)
+          .includes(:diagnostic_form_items)
+          .order(created_at: :desc)
+
+        # 배정 정보 (마감일 표시용)
+        @assignments = DiagnosticAssignment.active
+          .where("student_id = ? OR school_id = ?", @student.id, school&.id)
+          .index_by(&:diagnostic_form_id)
+
+        # 현재 학생의 진행 중인 시도 조회
         @in_progress_attempts = @student.student_attempts
           .where(status: :in_progress)
           .includes(:diagnostic_form)
@@ -32,6 +43,8 @@ class Student::DashboardController < ApplicationController
           .includes(:diagnostic_form, :attempt_report)
           .order(created_at: :desc)
       else
+        @available_forms = []
+        @assignments = {}
         @in_progress_attempts = []
         @completed_attempts = []
       end
@@ -39,6 +52,7 @@ class Student::DashboardController < ApplicationController
       Rails.logger.error("Diagnostics Error: #{e.class} - #{e.message}")
       Rails.logger.error(e.backtrace.join("\n"))
       @available_forms = []
+      @assignments = {}
       @in_progress_attempts = []
       @completed_attempts = []
     end

@@ -2,28 +2,125 @@
   진단 관리
 <% end %>
 <% content_for :portal_subtitle do %>
-  학급별 진단 진행 현황을 확인합니다.
+  학교에 배정된 진단을 확인하고 학생별로 배정합니다.
 <% end %>
 <% content_for :portal_nav do %>
   <%= render "school_admin/shared/nav", current: :diagnostics %>
 <% end %>
 
+<!-- 학교에 배정된 진단 목록 -->
+<section class="portal-card" style="margin-bottom: 24px;">
+  <h2 class="portal-card-title">학교 배정 진단</h2>
+
+  <% if @school_assignments.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>진단지명</th>
+          <th>배정일</th>
+          <th>마감일</th>
+          <th>상태</th>
+          <th>학생 배정</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @school_assignments.each do |assignment| %>
+          <tr>
+            <td><strong><%= assignment.diagnostic_form.name %></strong></td>
+            <td><%= assignment.assigned_at.strftime("%Y-%m-%d") %></td>
+            <td><%= assignment.due_date&.strftime("%Y-%m-%d") || "-" %></td>
+            <td>
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #dbeafe; color: #1e40af;">
+                배정됨
+              </span>
+            </td>
+            <td>
+              <details style="cursor: pointer;">
+                <summary style="color: #2f5bff; font-size: 13px; font-weight: 500;">학생에게 배정</summary>
+                <div style="margin-top: 12px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <%= form_with url: school_admin_bulk_assign_to_students_path, method: :post, local: true, data: { turbo: false } do %>
+                    <input type="hidden" name="diagnostic_form_id" value="<%= assignment.diagnostic_form_id %>">
+
+                    <div style="margin-bottom: 12px;">
+                      <label style="display: block; font-weight: 500; font-size: 13px; color: #374151; margin-bottom: 6px;">마감일 (선택)</label>
+                      <input type="date" name="due_date" value="<%= assignment.due_date&.strftime('%Y-%m-%d') %>"
+                             style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px;">
+                    </div>
+
+                    <div style="margin-bottom: 12px; max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px;">
+                      <% @students.each do |student| %>
+                        <% already_assigned = DiagnosticAssignment.exists?(student: student, diagnostic_form: assignment.diagnostic_form, status: "assigned") %>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: <%= already_assigned ? '#94a3b8' : '#374151' %>;">
+                          <input type="checkbox" name="student_ids[]" value="<%= student.id %>"
+                                 <%= 'disabled checked' if already_assigned %>>
+                          <%= student.name %> (<%= student.grade %>학년 <%= student.class_name %>)
+                          <%= '(배정됨)' if already_assigned %>
+                        </label>
+                      <% end %>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                      <button type="submit"
+                              style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                        선택 학생 배정
+                      </button>
+                    </div>
+                  <% end %>
+                </div>
+              </details>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+      <p>학교에 배정된 진단이 없습니다.</p>
+      <p style="font-size: 13px;">진단담당교사가 진단을 배정하면 여기에 표시됩니다.</p>
+    </div>
+  <% end %>
+</section>
+
+<!-- 학생별 배정 현황 -->
 <section class="portal-card">
-  <h2 class="portal-card-title">진단 일정</h2>
-  <div class="portal-list">
-    <div class="portal-list-item">
-      <div>
-        <strong>2학년 종합 진단</strong>
-        <div class="portal-muted">완료율 76%</div>
-      </div>
-      <span class="portal-chip">진행 중</span>
+  <h2 class="portal-card-title">학생별 배정 현황</h2>
+
+  <% if @student_assignments.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>학생</th>
+          <th>진단지</th>
+          <th>배정일</th>
+          <th>마감일</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @student_assignments.each do |assignment| %>
+          <tr>
+            <td><strong><%= assignment.student&.name %></strong></td>
+            <td><%= assignment.diagnostic_form.name %></td>
+            <td><%= assignment.assigned_at.strftime("%Y-%m-%d") %></td>
+            <td><%= assignment.due_date&.strftime("%Y-%m-%d") || "-" %></td>
+            <td>
+              <% color = case assignment.status
+                         when "assigned" then "background: #dbeafe; color: #1e40af;"
+                         when "completed" then "background: #d1fae5; color: #065f46;"
+                         when "cancelled" then "background: #f1f5f9; color: #64748b;"
+                         else "background: #f1f5f9; color: #64748b;"
+                         end %>
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; <%= color %>">
+                <%= { "assigned" => "배정됨", "completed" => "완료", "cancelled" => "취소" }[assignment.status] || assignment.status %>
+              </span>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+      <p>학생별 배정 내역이 없습니다.</p>
     </div>
-    <div class="portal-list-item">
-      <div>
-        <strong>1학년 읽기 성향 진단</strong>
-        <div class="portal-muted">시작 예정</div>
-      </div>
-      <span class="portal-chip">예정</span>
-    </div>
-  </div>
+  <% end %>
 </section>

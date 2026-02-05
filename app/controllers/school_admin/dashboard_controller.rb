@@ -44,7 +44,69 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def diagnostics
     @current_page = "distribution"
-    @attempts = StudentAttempt.includes(:student).order(created_at: :desc).page(params[:page]).per(10)
+    @school = School.first
+
+    # 학교에 배정된 진단 목록
+    @school_assignments = DiagnosticAssignment.where(school: @school)
+                            .active
+                            .includes(:diagnostic_form)
+                            .order(assigned_at: :desc)
+
+    # 학생별 배정 현황
+    @student_assignments = DiagnosticAssignment.where(student: Student.where(school: @school))
+                             .includes(:diagnostic_form, :student)
+                             .order(created_at: :desc)
+
+    # 학교 학생 목록 (배정 UI용)
+    @students = Student.where(school: @school).order(:name)
+  end
+
+  def assign_to_student
+    school = School.first
+    student = Student.find(params[:student_id])
+    form = DiagnosticForm.find(params[:diagnostic_form_id])
+
+    if DiagnosticAssignment.exists?(student: student, diagnostic_form: form, status: "assigned")
+      flash[:alert] = "이미 배정된 진단입니다."
+    else
+      DiagnosticAssignment.create!(
+        diagnostic_form: form,
+        student: student,
+        assigned_by: current_user,
+        assigned_at: Time.current,
+        due_date: params[:due_date].present? ? Date.parse(params[:due_date]) : nil,
+        status: "assigned"
+      )
+      flash[:notice] = "#{student.name} 학생에게 '#{form.name}' 진단을 배정했습니다."
+    end
+    redirect_to school_admin_diagnostics_path
+  end
+
+  def bulk_assign_to_students
+    school = School.first
+    form = DiagnosticForm.find(params[:diagnostic_form_id])
+    student_ids = params[:student_ids] || []
+    due_date = params[:due_date].present? ? Date.parse(params[:due_date]) : nil
+    count = 0
+
+    student_ids.each do |sid|
+      student = Student.find_by(id: sid, school: school)
+      next unless student
+      next if DiagnosticAssignment.exists?(student: student, diagnostic_form: form, status: "assigned")
+
+      DiagnosticAssignment.create!(
+        diagnostic_form: form,
+        student: student,
+        assigned_by: current_user,
+        assigned_at: Time.current,
+        due_date: due_date,
+        status: "assigned"
+      )
+      count += 1
+    end
+
+    flash[:notice] = "#{count}명의 학생에게 '#{form.name}' 진단을 배정했습니다."
+    redirect_to school_admin_diagnostics_path
   end
 
   def reports
@@ -111,6 +173,19 @@ class SchoolAdmin::DashboardController < ApplicationController
                     )
                     .order(assessment_date: :desc)
                     .first
+  end
+
+  def reset_student_password
+    student = Student.find(params[:id])
+    user = student.user
+
+    temp_password = SecureRandom.alphanumeric(10)
+    user.update!(password: temp_password, password_confirmation: temp_password, must_change_password: true)
+
+    flash[:notice] = "#{student.name}의 비밀번호가 초기화되었습니다."
+    flash[:temp_password] = temp_password
+    flash[:reset_student_name] = student.name
+    redirect_to school_admin_students_path
   end
 
   def about

@@ -46,14 +46,35 @@ class Parent::DashboardController < ApplicationController
 
   def consult
     @current_page = "feedback"
-    # ConsultationRequest 모델이 아직 미구현이므로 빈 배열 반환
-    @consultation_requests = []
-    @new_request = nil
+    @consultation_requests = ConsultationRequest
+      .where(user: current_user)
+      .includes(:student)
+      .recent
+      .page(params[:page]).per(10)
+    @new_request = ConsultationRequest.new
   end
 
   def create_consultation_request
-    # ConsultationRequest 모델 미구현 - 추후 구현 예정
-    redirect_to parent_consult_path, alert: "상담 신청 기능은 준비 중입니다."
+    @new_request = ConsultationRequest.new(consultation_request_params)
+    @new_request.user = current_user
+
+    # Verify the student belongs to this parent
+    unless @students.map(&:id).include?(@new_request.student_id)
+      redirect_to parent_consult_path, alert: "올바른 자녀를 선택해주세요."
+      return
+    end
+
+    if @new_request.save
+      redirect_to parent_consult_path, notice: "상담 신청이 접수되었습니다."
+    else
+      @current_page = "feedback"
+      @consultation_requests = ConsultationRequest
+        .where(user: current_user)
+        .includes(:student)
+        .recent
+        .page(params[:page]).per(10)
+      render :consult, status: :unprocessable_entity
+    end
   end
 
   def show_report
@@ -191,7 +212,7 @@ class Parent::DashboardController < ApplicationController
       active_children: @children.select { |c| c.student_attempts.where("submitted_at > ?", 30.days.ago).any? }.count,
       total_assessments: StudentAttempt.where(student: @children, status: "completed").count,
       avg_score: calculate_average_score,
-      pending_consultations: 0  # ConsultationRequest 모델 미구현
+      pending_consultations: ConsultationRequest.where(user: current_user).pending.count
     }
   end
 
@@ -231,7 +252,21 @@ class Parent::DashboardController < ApplicationController
         }
       end
 
-    # ConsultationRequest 모델이 없으므로 상담 기록은 생략
+    # 최근 상담 신청 기록
+    ConsultationRequest.where(user: current_user)
+      .where("created_at > ?", 7.days.ago)
+      .includes(:student)
+      .order(created_at: :desc)
+      .limit(5)
+      .each do |req|
+        activities << {
+          type: "consultation",
+          student: req.student,
+          title: "#{req.category_label} 상담 신청 (#{req.status_label})",
+          score: nil,
+          timestamp: req.created_at
+        }
+      end
 
     activities.sort_by { |a| a[:timestamp] || Time.at(0) }.reverse.take(10)
   end

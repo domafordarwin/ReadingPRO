@@ -5,6 +5,7 @@ class DiagnosticForm < ApplicationRecord
   has_many :diagnostic_form_items, dependent: :destroy
   has_many :items, through: :diagnostic_form_items
   has_many :student_attempts, dependent: :destroy
+  has_many :diagnostic_assignments, dependent: :destroy
 
   accepts_nested_attributes_for :diagnostic_form_items, allow_destroy: true
 

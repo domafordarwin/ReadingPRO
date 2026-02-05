@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_04_155907) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_05_050252) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -83,6 +83,56 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_155907) do
     t.index ["student_id", "created_at"], name: "index_consultation_posts_on_student_id_and_created_at"
     t.index ["student_id"], name: "index_consultation_posts_on_student_id"
     t.index ["visibility"], name: "index_consultation_posts_on_visibility"
+  end
+
+  create_table "consultation_request_responses", force: :cascade do |t|
+    t.bigint "consultation_request_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["consultation_request_id"], name: "idx_on_consultation_request_id_477576d09e"
+    t.index ["created_at"], name: "index_consultation_request_responses_on_created_at"
+    t.index ["created_by_id"], name: "index_consultation_request_responses_on_created_by_id"
+  end
+
+  create_table "consultation_requests", force: :cascade do |t|
+    t.string "category", default: "academic", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "responded_at"
+    t.bigint "responded_by_id"
+    t.datetime "scheduled_at"
+    t.string "status", default: "pending", null: false
+    t.bigint "student_id", null: false
+    t.text "teacher_response"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_consultation_requests_on_created_at"
+    t.index ["status"], name: "index_consultation_requests_on_status"
+    t.index ["student_id"], name: "index_consultation_requests_on_student_id"
+    t.index ["user_id", "student_id"], name: "index_consultation_requests_on_user_id_and_student_id"
+    t.index ["user_id"], name: "index_consultation_requests_on_user_id"
+  end
+
+  create_table "diagnostic_assignments", force: :cascade do |t|
+    t.datetime "assigned_at", null: false
+    t.bigint "assigned_by_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "diagnostic_form_id", null: false
+    t.datetime "due_date"
+    t.text "notes"
+    t.bigint "school_id"
+    t.string "status", default: "assigned", null: false
+    t.bigint "student_id"
+    t.datetime "updated_at", null: false
+    t.index ["assigned_by_id"], name: "index_diagnostic_assignments_on_assigned_by_id"
+    t.index ["diagnostic_form_id", "school_id"], name: "idx_da_form_school"
+    t.index ["diagnostic_form_id", "student_id"], name: "idx_da_form_student"
+    t.index ["diagnostic_form_id"], name: "index_diagnostic_assignments_on_diagnostic_form_id"
+    t.index ["school_id"], name: "index_diagnostic_assignments_on_school_id"
+    t.index ["status"], name: "index_diagnostic_assignments_on_status"
+    t.index ["student_id"], name: "index_diagnostic_assignments_on_student_id"
   end
 
   create_table "diagnostic_form_items", force: :cascade do |t|
@@ -544,6 +594,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_155907) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.boolean "must_change_password", default: false, null: false
     t.string "password_digest", null: false
     t.string "role", default: "student", null: false
     t.datetime "updated_at", null: false
@@ -568,6 +619,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_04_155907) do
   add_foreign_key "consultation_comments", "users", column: "created_by_id"
   add_foreign_key "consultation_posts", "students"
   add_foreign_key "consultation_posts", "users", column: "created_by_id"
+  add_foreign_key "consultation_request_responses", "consultation_requests"
+  add_foreign_key "consultation_request_responses", "users", column: "created_by_id"
+  add_foreign_key "consultation_requests", "students"
+  add_foreign_key "consultation_requests", "users"
+  add_foreign_key "diagnostic_assignments", "diagnostic_forms"
+  add_foreign_key "diagnostic_assignments", "schools"
+  add_foreign_key "diagnostic_assignments", "students"
+  add_foreign_key "diagnostic_assignments", "users", column: "assigned_by_id"
   add_foreign_key "diagnostic_form_items", "diagnostic_forms"
   add_foreign_key "diagnostic_form_items", "items"
   add_foreign_key "diagnostic_forms", "teachers", column: "created_by_id"

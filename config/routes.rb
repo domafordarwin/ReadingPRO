@@ -102,7 +102,15 @@ Rails.application.routes.draw do
     root to: "dashboard#index"
     get "dashboard", to: "dashboard#index"
     get "students", to: "dashboard#students"
+    patch "students/:id/reset_password", to: "dashboard#reset_student_password", as: "reset_student_password"
+    resources :imports, only: [:new, :create] do
+      collection do
+        get :template
+      end
+    end
     get "diagnostics", to: "dashboard#diagnostics"
+    post "diagnostics/assign_student", to: "dashboard#assign_to_student", as: "assign_to_student"
+    post "diagnostics/bulk_assign", to: "dashboard#bulk_assign_to_students", as: "bulk_assign_to_students"
     get "reports", to: "dashboard#reports"
     get "report_template", to: "dashboard#report_template"
     get "about", to: "dashboard#about"
@@ -126,6 +134,8 @@ Rails.application.routes.draw do
     get "diagnostics/management", to: "dashboard#diagnostics", as: "diagnostics_management"
     get "managers", to: "dashboard#managers", as: "managers"
     get "assignments", to: "dashboard#assignments", as: "assignments"
+    post "assignments", to: "dashboard#create_assignment", as: "create_assignment"
+    delete "assignments/:id", to: "dashboard#cancel_assignment", as: "cancel_assignment"
     get "items", to: "dashboard#items", as: "items"
     get "reports", to: "dashboard#reports", as: "reports"
 
@@ -154,6 +164,9 @@ Rails.application.routes.draw do
     get "notices", to: "dashboard#notices", as: "notices"
     get "students/:student_id/reports/:attempt_id", to: "dashboard#show_student_report", as: "show_student_report"
     get "consultation_statistics", to: "dashboard#consultation_statistics"
+
+    # 학교 관리
+    resources :schools, only: [:new, :create]
 
     # 기타
     get "guide", to: "dashboard#guide"
@@ -212,6 +225,10 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  # 비밀번호 변경
+  get "change_password", to: "passwords#edit", as: "change_password"
+  patch "change_password", to: "passwords#update"
 
   get "login", to: "sessions#new"
   post "login", to: "sessions#create"

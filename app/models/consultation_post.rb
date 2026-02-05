@@ -26,6 +26,11 @@ class ConsultationPost < ApplicationRecord
   scope :public_posts, -> { where(visibility: "public") }
   scope :search, ->(query) { where("title ILIKE ? OR content ILIKE ?", "%#{query}%", "%#{query}%") }
   scope :by_category, ->(cat) { where(category: cat) }
+  scope :by_student, ->(student_id) { where(student_id: student_id) }
+
+  def mark_as_answered!
+    update(status: "answered")
+  end
 
   def increment_views!
     update(view_count: (view_count || 0) + 1)

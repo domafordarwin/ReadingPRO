@@ -1,9 +1,26 @@
 <% content_for :page_title, "학교 담당자 관리" %>
 
-<div class="rp-page-header">
-  <h1 class="rp-page-header__title">학교 담당자 관리</h1>
-  <p class="rp-page-header__subtitle">학교 담당자(school_admin)의 정보를 관리합니다</p>
+<div class="rp-page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+  <div>
+    <h1 class="rp-page-header__title">학교 담당자 관리</h1>
+    <p class="rp-page-header__subtitle">학교 담당자(school_admin)의 정보를 관리합니다</p>
+  </div>
+  <%= link_to "새 학교 등록", new_diagnostic_teacher_school_path, class: "rp-btn rp-btn--primary", style: "white-space: nowrap; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; background: #2f5bff; color: white; text-decoration: none;" %>
 </div>
+
+<% if flash[:temp_password].present? %>
+  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: 16px;">학교 관리자 계정이 생성되었습니다</h3>
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #166534;">
+      <strong>이메일:</strong> <%= flash[:admin_email] %>
+    </p>
+    <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">
+      <strong>임시 비밀번호:</strong>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+    </p>
+    <p style="margin: 0; font-size: 12px; color: #15803d;">이 비밀번호를 학교 관리자에게 전달해주세요. 첫 로그인 시 비밀번호 변경이 필요합니다.</p>
+  </div>
+<% end %>
 
 <!-- 담당자 통계 -->
 <div class="rp-stats-grid">

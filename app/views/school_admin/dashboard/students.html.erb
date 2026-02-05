@@ -8,36 +8,74 @@
   <%= render "school_admin/shared/nav", current: :students %>
 <% end %>
 
-<section class="portal-card">
-  <h2 class="portal-card-title">학생 목록</h2>
-  <table class="portal-table">
-    <thead>
-      <tr>
-        <th>이름</th>
-        <th>학년</th>
-        <th>반</th>
-        <th>진단 참여</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>김민준</td>
-        <td>2학년</td>
-        <td>3반</td>
-        <td>완료</td>
-      </tr>
-      <tr>
-        <td>이서연</td>
-        <td>2학년</td>
-        <td>1반</td>
-        <td>진행 중</td>
-      </tr>
-      <tr>
-        <td>박지후</td>
-        <td>1학년</td>
-        <td>4반</td>
-        <td>예정</td>
-      </tr>
-    </tbody>
-  </table>
+<% if flash[:temp_password].present? %>
+  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: 16px;">비밀번호가 초기화되었습니다</h3>
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #166534;">
+      <strong>학생:</strong> <%= flash[:reset_student_name] %>
+    </p>
+    <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">
+      <strong>임시 비밀번호:</strong>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+    </p>
+    <p style="margin: 0; font-size: 12px; color: #15803d;">이 비밀번호를 학생에게 전달해주세요. 다음 로그인 시 비밀번호 변경이 필요합니다.</p>
+  </div>
+<% end %>
+
+<section class="portal-card" style="margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 class="portal-card-title" style="margin: 0;">학생 목록 (<%= @students.total_count %>명)</h2>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <%= link_to "엑셀 일괄 등록", new_school_admin_import_path,
+            style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; white-space: nowrap;" %>
+      <%= form_with url: school_admin_students_path, method: :get, local: true, data: { turbo: false }, style: "display: flex; gap: 8px;" do %>
+        <input type="text" name="search" value="<%= @search_query %>" placeholder="이름으로 검색..."
+               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">검색</button>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @students.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>이름</th>
+          <th>학번</th>
+          <th>학년</th>
+          <th>반</th>
+          <th>이메일</th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @students.each do |student| %>
+          <tr>
+            <td><strong><%= student.name %></strong></td>
+            <td><%= student.student_number %></td>
+            <td><%= student.grade %>학년</td>
+            <td><%= student.class_name %></td>
+            <td style="font-size: 13px; color: #64748b;"><%= student.user&.email %></td>
+            <td>
+              <%= button_to "비밀번호 초기화",
+                    school_admin_reset_student_password_path(student),
+                    method: :patch,
+                    data: { turbo: false, confirm: "#{student.name} 학생의 비밀번호를 초기화하시겠습니까?" },
+                    style: "padding: 4px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if @students.total_pages > 1 %>
+      <div style="margin-top: 16px; text-align: center;">
+        <%= paginate @students %>
+      </div>
+    <% end %>
+  <% else %>
+    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+      <p>등록된 학생이 없습니다.</p>
+    </div>
+  <% end %>
 </section>

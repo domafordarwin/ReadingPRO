@@ -9,9 +9,11 @@ Rails.application.config.after_initialize do
         load Rails.root.join("db/seeds.rb")
         puts "✅ Seed data loaded successfully"
         puts "📧 Test accounts created:"
-        puts "   - admin@readingpro.kr"
+        puts "   - admin@ReadingPro.com"
+        puts "   - researcher@ReadingPro.com"
+        puts "   - teacher_diagnostic@ReadingPro.com"
         puts "   - teacher@shinmyung.edu"
-        puts "   - researcher@readingpro.kr"
+        puts "   - school_admin@shinmyung.edu"
         puts "   - student_54@shinmyung.edu"
         puts "   - parent_54@shinmyung.edu"
         puts "🔑 Password: ReadingPro$12#"

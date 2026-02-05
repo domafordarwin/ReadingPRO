@@ -39,6 +39,11 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def diagnostics
     @current_page = "distribution"
+    @schools = School.includes(:students).order(:name)
+    @active_forms = DiagnosticForm.where(status: "active").order(:name)
+    @assignments = DiagnosticAssignment.includes(:diagnostic_form, :school, :student, :assigned_by)
+                                        .active
+                                        .recent
   end
 
   def feedbacks
@@ -155,25 +160,45 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @role_statistics = User.group(:role).count.sort
   end
 
-  # 진단 관리 - 학생별 진단 배정
+  # 진단 관리 - 배정 현황
   def assignments
     @current_page = "assignments"
-    @page_title = "학생별 진단 배정"
+    @page_title = "진단 배정 현황"
 
-    # 학생 및 배정 현황
-    all_students = Student.includes(:student_attempts).all
-    @total_students = all_students.count
-    @assigned_count = all_students.select { |s| s.student_attempts.any? }.count
-    @unassigned_count = @total_students - @assigned_count
+    @assignments = DiagnosticAssignment.includes(:diagnostic_form, :school, :student, :assigned_by)
+                                        .recent
+                                        .page(params[:page]).per(20)
 
-    # 활성 폼 현황
-    @active_forms = DiagnosticForm.where(status: "active").includes(:items)
-    @active_forms_count = @active_forms.count
+    @total_assignments = DiagnosticAssignment.count
+    @active_assignments = DiagnosticAssignment.active.count
+    @cancelled_assignments = DiagnosticAssignment.where(status: "cancelled").count
+    @completed_assignments = DiagnosticAssignment.where(status: "completed").count
+  end
 
-    # 학생별 배정 현황
-    @students_with_assignments = all_students.map do |student|
-      attempt = student.student_attempts.order(created_at: :desc).first
-      [ student, attempt ]
+  def create_assignment
+    assignment = DiagnosticAssignment.new(
+      diagnostic_form_id: params[:diagnostic_form_id],
+      school_id: params[:school_id].presence,
+      student_id: params[:student_id].presence,
+      assigned_by: current_user,
+      assigned_at: Time.current,
+      due_date: params[:due_date].presence,
+      notes: params[:notes].presence
+    )
+
+    if assignment.save
+      redirect_to diagnostic_teacher_diagnostics_management_path, notice: "진단이 배정되었습니다."
+    else
+      redirect_to diagnostic_teacher_diagnostics_management_path, alert: "배정 실패: #{assignment.errors.full_messages.join(', ')}"
+    end
+  end
+
+  def cancel_assignment
+    assignment = DiagnosticAssignment.find(params[:id])
+    if assignment.cancel!
+      redirect_to diagnostic_teacher_assignments_path, notice: "배정이 취소되었습니다."
+    else
+      redirect_to diagnostic_teacher_assignments_path, alert: "배정 취소에 실패했습니다."
     end
   end
 
