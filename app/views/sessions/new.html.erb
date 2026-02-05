@@ -73,9 +73,9 @@
     </div>
 
     <!-- Test Accounts Section -->
-    <% if Rails.env.development? || Rails.env.test? %>
+    <% if true %> <!-- Temporarily enabled for production testing -->
       <div class="login-test-section">
-        <div class="login-test-title">테스트 계정 (개발용)</div>
+        <div class="login-test-title">테스트 계정</div>
         <div class="login-test-buttons-grid">
           <button type="button" class="login-test-btn" data-username="rps_0001@shinmyung.edu" data-usertype="student">
             <span class="test-icon">🧑‍🎓</span>
