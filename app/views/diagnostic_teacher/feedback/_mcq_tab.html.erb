@@ -31,7 +31,7 @@
             <tr>
               <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">정답</th>
               <% @responses.each_with_index do |response, index| %>
-                <% correct_choice = response&.item&.item_choices&.find { |c| c&.choice_score&.is_key } %>
+                <% correct_choice = response&.item&.item_choices&.find(&:is_correct) %>
                 <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f0f9ff; color: #0284c7; font-weight: 600;">
                   <%= correct_choice&.choice_no || '—' %>
                 </td>

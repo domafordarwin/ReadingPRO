@@ -62,7 +62,7 @@ class FeedbackAiService
       [문항 정보]
       - 문항 내용: #{item.prompt}
       - 학생 답변: #{selected_choice&.choice_text || '답변 없음'}
-      - 정답: #{item.item_choices.find(&:correct?)&.choice_text}
+      - 정답: #{item.item_choices.find(&:is_correct)&.choice_text}
 
       [기본 피드백]
       #{basic_feedback}
@@ -231,7 +231,7 @@ class FeedbackAiService
 
   def build_comprehensive_summary(responses)
     total = responses.length
-    correct = responses.count { |r| r.selected_choice&.choice_score&.is_key }
+    correct = responses.count { |r| r.selected_choice&.is_correct }
     incorrect = total - correct
     correct_rate = total.zero? ? 0 : (correct.to_f / total * 100).round(1)
 
@@ -243,7 +243,7 @@ class FeedbackAiService
     summary += "[난이도별 정답률]\n"
     difficulty_stats = responses.group_by { |r| r.item.difficulty || "미지정" }
     difficulty_stats.each do |difficulty, responses_by_difficulty|
-      correct_count = responses_by_difficulty.count { |r| r.selected_choice&.choice_score&.is_key }
+      correct_count = responses_by_difficulty.count { |r| r.selected_choice&.is_correct }
       total_count = responses_by_difficulty.length
       summary += "- #{difficulty}: #{correct_count}/#{total_count}\n"
     end
@@ -252,7 +252,7 @@ class FeedbackAiService
   end
 
   def build_feedback_prompt(item, selected_choice, response)
-    correct_choice = item.item_choices.find(&:correct?)
+    correct_choice = item.item_choices.find(&:is_correct)
 
     <<~PROMPT
       다음은 객관식 문항과 학생의 답변입니다. 학생의 답변을 분석하여 구체적이고 도움이 되는 피드백을 작성해주세요.
@@ -275,7 +275,7 @@ class FeedbackAiService
   end
 
   def fallback_feedback(item, selected_choice)
-    correct_choice = item.item_choices.find(&:correct?)
+    correct_choice = item.item_choices.find(&:is_correct)
     "정답은 '#{correct_choice&.choice_text}' 입니다. 문항을 다시 읽어보고 답을 재검토해보세요."
   end
 

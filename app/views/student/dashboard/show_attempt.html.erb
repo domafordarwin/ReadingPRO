@@ -328,7 +328,7 @@
     <div class="stat-number"><%= @constructed_responses.count %></div>
     <div class="stat-label">서술형 문항</div>
   </div>
-  <% correct_count = @mcq_responses.select { |r| r.selected_choice&.correct }.count %>
+  <% correct_count = @mcq_responses.select { |r| r.selected_choice&.is_correct }.count %>
   <div class="stat-card">
     <div class="stat-number"><%= correct_count %></div>
     <div class="stat-label">객관식 정답</div>
@@ -355,15 +355,15 @@
     </thead>
     <tbody>
       <% @mcq_responses.each_with_index do |response, idx| %>
-        <% is_correct = response.selected_choice&.correct? %>
+        <% is_correct = response.selected_choice&.is_correct %>
         <tr>
           <td class="cell-number"><%= idx + 1 %></td>
           <td class="cell-indicator"><%= response.item.evaluation_indicator&.name %></td>
           <td class="cell-sub-indicator"><%= response.item.sub_indicator&.name %></td>
           <td class="cell-answer">
-            <%= response.item.item_choices.find(&:correct)&.choice_letter %>.
+            <%= response.item.item_choices.find(&:is_correct)&.choice_letter %>.
             <span style="color: #666; font-size: 12px;">
-              <%= response.item.item_choices.find(&:correct)&.choice_text&.slice(0, 30) %>...
+              <%= response.item.item_choices.find(&:is_correct)&.choice_text&.slice(0, 30) %>...
             </span>
           </td>
           <td class="cell-answer">

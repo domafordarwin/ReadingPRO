@@ -359,7 +359,7 @@
         </thead>
         <tbody>
           <% @mcq_responses.each_with_index do |response, idx| %>
-            <% is_correct = response.selected_choice&.correct? %>
+            <% is_correct = response.selected_choice&.is_correct %>
             <tr>
               <td class="cell-number"><%= idx + 1 %></td>
               <td><%= response.item.evaluation_indicator&.name %></td>

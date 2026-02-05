@@ -13,8 +13,7 @@
 </div>
 
 <nav class="admin-nav">
-  <%= link_to "시스템 유지", admin_system_path, class: nav_link_class(admin_system_path) %>
+  <%= link_to "시스템 관리", admin_system_path, class: nav_link_class(admin_system_path) %>
   <%= link_to "사용자 관리", admin_users_path, class: nav_link_class(admin_users_path) %>
-  <%= link_to "역할 관리", admin_roles_path, class: nav_link_class(admin_roles_path) %>
   <%= button_to "로그아웃", logout_path, method: :delete, class: "admin-nav-link", form_class: "admin-logout-form" %>
 </nav>

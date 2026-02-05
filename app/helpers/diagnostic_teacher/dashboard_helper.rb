@@ -11,9 +11,9 @@ module DiagnosticTeacher::DashboardHelper
     total_score = 0
 
     # Calculate MCQ score: 1 point per correct answer
-    attempt.responses.includes(selected_choice: :choice_score, item: [ :item_choices ]).each do |response|
+    attempt.responses.includes(:selected_choice, item: [ :item_choices ]).each do |response|
       if response.item.mcq?
-        total_score += 1 if response.selected_choice&.correct?
+        total_score += 1 if response.selected_choice&.is_correct
       end
     end
 

@@ -82,7 +82,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         .joins(:item)
         .where(attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:mcq])
-        .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: { item_choices: :choice_score } })
+        .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: :item_choices })
         .order(:created_at)
 
       # 학생의 서술형 응답들 (constructed responses)
@@ -389,7 +389,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: {
       success: true,
       new_score: response.raw_score,
-      is_correct: selected_choice.choice_score&.is_key,
+      is_correct: selected_choice.is_correct,
       choice_label: selected_choice.choice_letter,
       choice_text: selected_choice.choice_text
     }

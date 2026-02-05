@@ -64,7 +64,7 @@
             </td>
             <td><%= attempt.responses.count %></td>
             <td>
-              <% scored = attempt.responses.select { |r| r.selected_choice&.correct? || r.response_rubric_scores.any? }.count %>
+              <% scored = attempt.responses.select { |r| r.selected_choice.present? || r.response_rubric_scores.any? }.count %>
               <% total = attempt.responses.count %>
               <span class="rp-progress-text"><%= scored %> / <%= total %></span>
             </td>

@@ -10,7 +10,7 @@ class ScoreResponseService
 
     responses = Response
       .where(id: response_ids)
-      .includes(item: :rubric, attempt: :form, selected_choice: :choice_score)
+      .includes(:student_attempt, item: [:item_choices, rubric: { rubric_criteria: :rubric_levels }])
       .to_a
 
     responses.each { |response| new(response).call }
@@ -39,67 +39,63 @@ class ScoreResponseService
 
   def score_mcq
     choice = response.selected_choice
-    raise Error, "Selected choice missing for response #{response.id}" if choice.nil?
 
-    choice_score = choice.choice_score
-    raise Error, "Choice score missing for item_choice #{choice.id}" if choice_score.nil?
+    if choice.nil?
+      response.update!(is_correct: false, auto_score: 0)
+      return
+    end
 
-    points, points_missing = points_for_response
-    max_score = points_missing ? 0.to_d : points
-    raw_score = points_missing ? 0.to_d : (points * choice_score.score_percent / 100)
+    points = points_for_response
+    is_correct = choice.is_correct?
 
-    meta = {
-      "mode" => "mcq_auto",
-      "score_percent" => choice_score.score_percent,
-      "choice_no" => choice.choice_no,
-      "is_key" => choice_score.is_key
-    }
-    meta["points_missing"] = true if points_missing
+    auto_score = if is_correct
+                   points
+                 elsif choice.proximity_score.present? && choice.proximity_score > 0
+                   (points * choice.proximity_score / 100.0).round(2)
+                 else
+                   0
+                 end
 
-    response.update!(
-      raw_score: raw_score,
-      max_score: max_score,
-      scoring_meta: meta
-    )
+    response.update!(is_correct: is_correct, auto_score: auto_score)
   end
 
   def score_constructed
     rubric = response.item.rubric
-    raise Error, "Rubric missing for item #{response.item_id}" if rubric.nil?
+
+    if rubric.nil?
+      response.update!(auto_score: 0)
+      return
+    end
 
     criteria_count = rubric.rubric_criteria.count
-    raise Error, "Rubric criteria missing for rubric #{rubric.id}" if criteria_count.zero?
+    if criteria_count.zero?
+      response.update!(auto_score: 0)
+      return
+    end
 
     level_sum = response.response_rubric_scores.sum(:level_score)
     max_level_sum = criteria_count * 3
-    points, points_missing = points_for_response
+    points = points_for_response
 
-    max_score = points_missing ? 0.to_d : points
-    raw_score = if points_missing
-                  0.to_d
-    else
-                  points * level_sum / max_level_sum
-    end
+    auto_score = if max_level_sum > 0
+                   (points * level_sum.to_f / max_level_sum).round(2)
+                 else
+                   0
+                 end
 
-    meta = {
-      "mode" => "rubric_weighted",
-      "criteria_count" => criteria_count,
-      "level_sum" => level_sum,
-      "max_level_sum" => max_level_sum
-    }
-    meta["points_missing"] = true if points_missing
-
-    response.update!(
-      raw_score: raw_score,
-      max_score: max_score,
-      scoring_meta: meta
-    )
+    response.update!(auto_score: auto_score)
   end
 
   def points_for_response
-    form_item = response.attempt&.form&.form_items&.find_by(item_id: response.item_id)
-    return [ 0.to_d, true ] if form_item.nil?
+    attempt = response.student_attempt
+    return 0 if attempt.nil?
 
-    [ form_item.points.to_d, false ]
+    form = attempt.diagnostic_form
+    return 0 if form.nil?
+
+    form_item = form.diagnostic_form_items.find_by(item_id: response.item_id)
+    return 0 if form_item.nil?
+
+    form_item.points.to_f
   end
 end

@@ -203,155 +203,29 @@ SchoolPortfolio.find_or_create_by!(school: school) do |sp|
 end
 
 # =============================================================================
-# Sample Reading Stimuli
+# Sample Reading Stimuli - REMOVED (2026-02-05)
 # =============================================================================
-puts "Creating sample reading stimuli..."
-
-10.times do |i|
-  ReadingStimulus.find_or_create_by!(title: "샘플 지문 #{i + 1}") do |stimulus|
-    stimulus.code = "STIM_SEED_#{format('%03d', i + 1)}"
-    stimulus.body = "이것은 샘플 읽기 지문입니다. 이 지문은 학생들의 독해 능력을 평가하기 위해 설계되었습니다. " * 3
-    stimulus.source = "교과서 #{i + 1}"
-    stimulus.word_count = 250
-    stimulus.reading_level = %w[easy medium hard].sample
-    stimulus.created_by_id = teacher.id
-  end
-end
+# Sample data removed per user request
 
 # =============================================================================
-# Sample Items
+# Sample Items - REMOVED (2026-02-05)
 # =============================================================================
-puts "Creating sample items..."
-
-stimuli = ReadingStimulus.all
-20.times do |i|
-  item = Item.find_or_create_by!(code: "ITEM_#{format('%03d', i + 1)}") do |it|
-    it.item_type = i.even? ? :mcq : :constructed
-    it.difficulty = %w[easy medium hard].sample
-    it.category = %w[어휘 문법 읽기 추론].sample
-    it.tags = %w[기본 심화].sample(rand(1..2))
-    it.prompt = "문제 #{i + 1}: 위 지문에서 다음 질문에 답하세요."
-    it.explanation = "해설: 이것은 문제 #{i + 1}의 설명입니다."
-    it.stimulus_id = stimuli.sample&.id
-    it.status = :active
-    it.created_by_id = teacher.id
-  end
-
-  # MCQ choices
-  if item.mcq? && item.item_choices.empty?
-    4.times do |j|
-      ItemChoice.create!(
-        item: item,
-        choice_no: j + 1,
-        content: "선택지 #{j + 1}",
-        is_correct: j == 0
-      )
-    end
-  end
-
-  # Constructed response rubric
-  if item.constructed? && item.rubric.nil?
-    rubric = Rubric.create!(
-      item: item,
-      name: "채점 기준 #{i + 1}",
-      description: "구성형 응답의 채점 기준"
-    )
-
-    criterion = RubricCriterion.create!(
-      rubric: rubric,
-      criterion_name: "내용",
-      description: "답변의 정확성과 완전성",
-      max_score: 4
-    )
-
-    (0..4).each do |level|
-      RubricLevel.find_or_create_by!(rubric_criterion: criterion, level: level) do |rl|
-        rl.score = level
-        rl.description = "레벨 #{level}"
-      end
-    end
-  end
-end
+# Sample data removed per user request
 
 # =============================================================================
-# Diagnostic Form
+# Diagnostic Form - REMOVED (2026-02-05)
 # =============================================================================
-puts "Creating diagnostic form..."
-
-diagnostic_form = DiagnosticForm.find_or_create_by!(name: "2025 중등 읽기 진단") do |df|
-  df.description = "중학교 학생의 읽기 능력을 진단하는 평가"
-  df.item_count = 15
-  df.time_limit_minutes = 60
-  df.difficulty_distribution = { easy: 3, medium: 5, hard: 2 }
-  df.status = :active
-  df.created_by_id = teacher.id
-end
-
-if diagnostic_form.diagnostic_form_items.empty?
-  Item.limit(15).each_with_index do |item, index|
-    DiagnosticFormItem.create!(
-      diagnostic_form: diagnostic_form,
-      item: item,
-      position: index + 1,
-      points: 1
-    )
-  end
-end
+# Sample data removed per user request
 
 # =============================================================================
-# Announcements
+# Announcements - REMOVED (2026-02-05)
 # =============================================================================
-puts "Creating announcements..."
-
-3.times do |i|
-  Announcement.find_or_create_by!(title: "공지사항 #{i + 1}") do |ann|
-    ann.content = "이것은 공지사항 #{i + 1}입니다."
-    ann.priority = %w[low medium high].sample
-    ann.published_by_id = teacher.id
-    ann.published_at = Time.current
-  end
-end
+# Sample data removed per user request
 
 # =============================================================================
-# Feedback Prompt Templates
+# Feedback Prompt Templates - REMOVED (2026-02-05)
 # =============================================================================
-puts "Creating feedback prompt templates..."
-
-feedback_templates = [
-  {
-    name: "MCQ 이해력 피드백",
-    prompt_type: "mcq",
-    template: "학생이 선택한 답: {selected_answer}\n정답: {correct_answer}\n\n이 문항은 글의 주요 내용을 정확하게 이해하는 능력을 평가합니다. 학생의 선택이 정답인지 확인하고, 선택한 이유를 설명해주세요."
-  },
-  {
-    name: "MCQ 추론 피드백",
-    prompt_type: "mcq",
-    template: "학생이 선택한 답: {selected_answer}\n정답: {correct_answer}\n\n이 문항은 글에 직접 명시되지 않은 내용을 추론하는 능력을 평가합니다. 올바른 추론 과정이 무엇인지 설명해주세요."
-  },
-  {
-    name: "서술형 설명 피드백",
-    prompt_type: "constructed",
-    template: "학생의 답변: {student_answer}\n\n학생의 답변을 평가하고, 논리적 근거가 충분한지 검토해주세요. 더 나은 논증을 만들기 위해 개선할 점을 제시해주세요."
-  },
-  {
-    name: "서술형 상세 해설",
-    prompt_type: "constructed",
-    template: "학생의 답변: {student_answer}\n\n이 문항의 정답과 그 이유를 단계별로 설명해주세요. 학생의 답변에서 잘한 점과 부족한 점을 구분하여 피드백해주세요."
-  },
-  {
-    name: "종합 평가 피드백",
-    prompt_type: "comprehensive",
-    template: "진단지: {form_name}\n총점: {total_score}/{max_score}\n\n학생의 전체 응답을 종합적으로 평가하고, 강점과 약점을 분석해주세요. 향후 학습 방향을 제시해주세요."
-  }
-]
-
-feedback_templates.each do |attrs|
-  FeedbackPrompt.find_or_create_by!(name: attrs[:name]) do |fp|
-    fp.prompt_type = attrs[:prompt_type]
-    fp.template = attrs[:template]
-    fp.active = true
-  end
-end
+# Sample data removed per user request
 
 # =============================================================================
 # Summary
@@ -370,7 +244,6 @@ puts ""
 puts "  Schools: #{School.count}"
 puts "  Users: #{User.count}"
 puts "  Students: #{Student.count} (RPS_0001 ~ RPS_0006)"
-puts "  Items: #{Item.count}"
-puts "  Diagnostic Forms: #{DiagnosticForm.count}"
-puts "  Feedback Prompts: #{FeedbackPrompt.count}"
+puts ""
+puts "  Note: Sample data (items, forms, announcements) removed as of 2026-02-05"
 puts "======================================="

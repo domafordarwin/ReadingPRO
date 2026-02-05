@@ -108,14 +108,11 @@ class Student::AssessmentsController < ApplicationController
     constructed_response_ids = attempt.responses.joins(:item).where(items: { item_type: :constructed }).pluck(:id)
     constructed_response_ids.each { |response_id| ScoreResponseService.call(response_id) } if constructed_response_ids.any?
 
-    # Calculate and store total scores
-    total_score = attempt.responses.sum(&:raw_score).to_f
-    max_score = attempt.responses.sum(&:max_score).to_f
-    attempt.update!(total_score: total_score, max_score: max_score)
-
-    # TODO: Auto-generate feedback for responses
-
     render json: { success: true, redirect_url: student_show_attempt_path(attempt.id) }
+  rescue StandardError => e
+    Rails.logger.error("[submit_attempt] Error: #{e.class} - #{e.message}")
+    Rails.logger.error(e.backtrace.first(10).join("\n"))
+    render json: { success: false, error: "제출 처리 중 오류가 발생했습니다: #{e.message}" }, status: :internal_server_error
   end
 
   private

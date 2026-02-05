@@ -64,6 +64,30 @@
     background: #fef2f2;
   }
 
+  .action-btn-publish {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .action-btn-publish:hover {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+
+  .action-btn-unpublish {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  .action-btn-unpublish:hover {
+    background: #ffc107;
+    color: #333;
+    border-color: #ffc107;
+  }
+
   .diagnostic-search {
     margin-bottom: 24px;
     display: flex;
@@ -94,7 +118,7 @@
 
   .diagnostic-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 24px;
   }
@@ -256,6 +280,11 @@
       grid-template-columns: repeat(2, 1fr);
     }
 
+    .action-btn-publish,
+    .action-btn-unpublish {
+      flex: 1;
+    }
+
     .diagnostic-list-item {
       flex-direction: column;
       align-items: flex-start;
@@ -296,12 +325,16 @@
     <div class="diagnostic-stat__value"><%= @total_count %></div>
   </div>
   <div class="diagnostic-stat">
-    <div class="diagnostic-stat__label">활성 진단지</div>
-    <div class="diagnostic-stat__value"><%= @forms.select { |f| f.active? }.count %></div>
+    <div class="diagnostic-stat__label">배포됨</div>
+    <div class="diagnostic-stat__value" style="color: #28a745;"><%= DiagnosticForm.active.count %></div>
   </div>
   <div class="diagnostic-stat">
-    <div class="diagnostic-stat__label">준비 중인 진단지</div>
-    <div class="diagnostic-stat__value"><%= @forms.select { |f| f.draft? }.count %></div>
+    <div class="diagnostic-stat__label">준비중</div>
+    <div class="diagnostic-stat__value" style="color: #856404;"><%= DiagnosticForm.draft.count %></div>
+  </div>
+  <div class="diagnostic-stat">
+    <div class="diagnostic-stat__label">배정된 학교 수</div>
+    <div class="diagnostic-stat__value" style="color: #667eea;"><%= DiagnosticAssignment.where.not(school_id: nil).select(:school_id).distinct.count %></div>
   </div>
 </div>
 
@@ -328,11 +361,33 @@
                 문항 수: <strong><%= form.item_count || 0 %></strong>개
               </div>
               <span class="diagnostic-status diagnostic-status--<%= form.status %>">
-                <%= form.status == 'draft' ? '준비중' : '확정' %>
+                <%= form.status == 'draft' ? '준비중' : '배포됨' %>
               </span>
             </div>
           </div>
           <div class="diagnostic-list-item__actions">
+            <% if form.draft? %>
+              <%= button_to publish_researcher_diagnostic_form_path(form), method: :patch,
+                  data: { turbo_confirm: "'#{form.name}' 진단지를 배포하시겠습니까?\n배포 후 진단교사가 학교에 배정할 수 있습니다." },
+                  class: "action-btn action-btn-sm action-btn-publish" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <span>배포</span>
+              <% end %>
+            <% elsif form.active? %>
+              <%= button_to unpublish_researcher_diagnostic_form_path(form), method: :patch,
+                  data: { turbo_confirm: "'#{form.name}' 진단지 배포를 취소하시겠습니까?" },
+                  class: "action-btn action-btn-sm action-btn-unpublish" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span>배포취소</span>
+              <% end %>
+            <% end %>
             <%= link_to researcher_diagnostic_form_path(form), class: "action-btn action-btn-outline action-btn-sm" do %>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

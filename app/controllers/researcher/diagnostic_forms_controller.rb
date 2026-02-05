@@ -3,7 +3,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
   before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_role
-  before_action :set_diagnostic_form, only: %i[show edit update destroy]
+  before_action :set_diagnostic_form, only: %i[show edit update destroy publish unpublish]
 
   def show
     @current_page = "scoring"
@@ -82,6 +82,28 @@ class Researcher::DiagnosticFormsController < ApplicationController
   def destroy
     @diagnostic_form.destroy
     flash[:notice] = "진단지가 삭제되었습니다."
+    redirect_to researcher_diagnostic_eval_path
+  end
+
+  def publish
+    if @diagnostic_form.items.empty?
+      flash[:alert] = "문항이 없는 진단지는 배포할 수 없습니다."
+    elsif @diagnostic_form.update(status: :active)
+      flash[:notice] = "'#{@diagnostic_form.name}' 진단지가 배포되었습니다."
+    else
+      flash[:alert] = "배포에 실패했습니다."
+    end
+    redirect_to researcher_diagnostic_eval_path
+  end
+
+  def unpublish
+    if @diagnostic_form.diagnostic_assignments.exists?
+      flash[:alert] = "이미 학교에 배정된 진단지입니다. 배정을 먼저 해제해주세요."
+    elsif @diagnostic_form.update(status: :draft)
+      flash[:notice] = "'#{@diagnostic_form.name}' 진단지가 배포 취소되었습니다."
+    else
+      flash[:alert] = "배포 취소에 실패했습니다."
+    end
     redirect_to researcher_diagnostic_eval_path
   end
 

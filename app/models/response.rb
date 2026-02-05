@@ -2,6 +2,8 @@
 
 class Response < ApplicationRecord
   belongs_to :student_attempt
+  alias_method :attempt, :student_attempt
+
   belongs_to :item
   belongs_to :selected_choice, class_name: "ItemChoice", optional: true
   belongs_to :feedback, optional: true
