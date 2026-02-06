@@ -329,7 +329,7 @@
           <div class="step-content">
             <h4>정답지 템플릿 다운로드</h4>
             <p>문항 ID가 포함된 Excel 템플릿을 다운로드합니다. 작성 안내 시트도 포함되어 있습니다.</p>
-            <%= link_to download_answer_template_researcher_passage_path(@stimulus), class: "action-btn action-btn-outline" do %>
+            <%= link_to download_answer_template_researcher_passage_path(@stimulus), class: "action-btn action-btn-outline", data: { turbo: false } do %>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -1656,7 +1656,8 @@
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  // Turbo Drive 호환성을 위해 turbo:load 사용
+  document.addEventListener('turbo:load', function() {
     // 문항 타입 필터링 기능
     const filterBtns = document.querySelectorAll('.filter-btn');
     const itemCards = document.querySelectorAll('.item-card');

@@ -43,7 +43,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
       add_modules_to_form(params[:module_ids])
 
       flash[:notice] = "진단지가 성공적으로 생성되었습니다."
-      redirect_to researcher_diagnostic_eval_path
+      redirect_to researcher_diagnostic_eval_path, status: :see_other
     else
       load_available_modules
       render :new
@@ -72,7 +72,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
       end
 
       flash[:notice] = "진단지가 성공적으로 업데이트되었습니다."
-      redirect_to researcher_diagnostic_eval_path
+      redirect_to researcher_diagnostic_eval_path, status: :see_other
     else
       load_available_modules
       render :edit
@@ -82,7 +82,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
   def destroy
     @diagnostic_form.destroy
     flash[:notice] = "진단지가 삭제되었습니다."
-    redirect_to researcher_diagnostic_eval_path
+    redirect_to researcher_diagnostic_eval_path, status: :see_other
   end
 
   def publish
@@ -93,7 +93,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
     else
       flash[:alert] = "배포에 실패했습니다."
     end
-    redirect_to researcher_diagnostic_eval_path
+    redirect_to researcher_diagnostic_eval_path, status: :see_other
   end
 
   def unpublish
@@ -104,7 +104,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
     else
       flash[:alert] = "배포 취소에 실패했습니다."
     end
-    redirect_to researcher_diagnostic_eval_path
+    redirect_to researcher_diagnostic_eval_path, status: :see_other
   end
 
   private

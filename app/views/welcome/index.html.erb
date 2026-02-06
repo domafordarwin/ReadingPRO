@@ -44,15 +44,6 @@
               <circle cx="12" cy="18" r="1"></circle>
             </svg>
             <span class="landing-announcement-text"><%= announcement.content %></span>
-            <% if announcement.link_url.present? %>
-              <a href="<%= announcement.link_url %>" class="landing-announcement-link" target="_blank">
-                <%= announcement.link_text || "자세히 보기" %>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                  <polyline points="7 7 17 7 17 17"></polyline>
-                </svg>
-              </a>
-            <% end %>
           </div>
         <% end %>
       </div>
