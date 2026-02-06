@@ -9,6 +9,17 @@
 <% end %>
 
 <section class="portal-card">
+  <% if flash[:alert] %>
+    <div class="alert alert-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span><%= flash[:alert] %></span>
+    </div>
+  <% end %>
+
   <%= form_with model: @diagnostic_form, url: researcher_diagnostic_form_path(@diagnostic_form), method: :patch, local: true, class: "diagnostic-form" do |f| %>
     <!-- 기본 정보 -->
     <div class="form-section">
@@ -40,17 +51,24 @@
     <!-- 모듈 선택 -->
     <div class="form-section">
       <h3 class="form-section-title">평가 모듈 선택</h3>
-      <p class="form-section-description">진단지에 포함할 모듈을 선택하세요. 변경 시 기존 선택이 대체됩니다.</p>
+      <p class="form-section-description">진단지에 포함할 모듈을 선택하세요. 각 모듈은 하나의 지문과 연결된 문항들을 포함합니다.</p>
 
       <% if @available_modules.any? %>
         <div class="module-selection">
           <% @available_modules.each do |stimulus| %>
-            <div class="module-card">
+            <div class="module-card" data-module-id="<%= stimulus.id %>" data-module-title="<%= stimulus.title %>" data-module-level="<%= stimulus.grade_level_short if stimulus.grade_level_set? %>" data-module-level-color="<%= stimulus.grade_level_color if stimulus.grade_level_set? %>" data-module-mcq="<%= stimulus.mcq_count %>" data-module-constructed="<%= stimulus.constructed_count %>" data-module-time="<%= stimulus.estimated_time_minutes %>">
               <label class="module-card-label">
-                <%= check_box_tag "module_ids[]", stimulus.id, @selected_module_ids.include?(stimulus.id), class: "module-checkbox", id: "module_#{stimulus.id}" %>
+                <input type="checkbox" class="module-checkbox" data-module-id="<%= stimulus.id %>" id="module_select_<%= stimulus.id %>" <%= 'checked' if @selected_module_ids.include?(stimulus.id) %>>
                 <div class="module-card-content">
                   <div class="module-card-header">
-                    <h4 class="module-title"><%= stimulus.title %></h4>
+                    <div class="module-header-left">
+                      <% if stimulus.grade_level_set? %>
+                        <span class="module-level-badge" style="background: <%= stimulus.grade_level_color %>;">
+                          <%= stimulus.grade_level_short %>
+                        </span>
+                      <% end %>
+                      <h4 class="module-title"><%= stimulus.title %></h4>
+                    </div>
                     <span class="module-code"><%= stimulus.code %></span>
                   </div>
                   <div class="module-stats">
@@ -81,8 +99,28 @@
       <% else %>
         <div class="empty-state">
           <p>사용 가능한 모듈이 없습니다.</p>
+          <p class="empty-state-hint">먼저 <%= link_to "모듈 관리", researcher_item_bank_path, class: "link" %> 페이지에서 모듈을 생성해주세요.</p>
         </div>
       <% end %>
+    </div>
+
+    <!-- 선택된 모듈 순서 -->
+    <div class="form-section" id="selected-modules-section" style="<%= @selected_modules_ordered.any? ? '' : 'display: none;' %>">
+      <h3 class="form-section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        선택된 모듈 순서
+      </h3>
+      <p class="form-section-description">드래그하여 모듈 순서를 변경하세요. 순서대로 학생에게 제시됩니다.</p>
+
+      <div id="selected-modules-list" class="selected-modules-list">
+        <!-- 선택된 모듈이 여기에 동적으로 추가됨 -->
+      </div>
+
+      <!-- 순서 정보를 hidden input으로 전송 -->
+      <div id="module-order-inputs"></div>
     </div>
 
     <!-- 액션 버튼 -->
@@ -201,11 +239,35 @@
     margin-bottom: 0.75rem;
   }
 
+  .module-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .module-level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: white;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .module-title {
     font-size: 0.9375rem;
     font-weight: 600;
     color: #111827;
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .module-code {
@@ -236,6 +298,11 @@
     text-align: center;
     padding: 3rem 1rem;
     color: #6b7280;
+  }
+
+  .empty-state-hint {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
   }
 
   .form-actions {
@@ -279,4 +346,356 @@
   .btn-secondary:hover {
     background: #f9fafb;
   }
+
+  .link {
+    color: #667eea;
+    text-decoration: underline;
+  }
+
+  .link:hover {
+    color: #764ba2;
+  }
+
+  .alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+
+  .alert svg {
+    flex-shrink: 0;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+
+  /* 선택된 모듈 순서 섹션 */
+  #selected-modules-section .form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #selected-modules-section .form-section-title svg {
+    color: #667eea;
+  }
+
+  .selected-modules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 60px;
+    padding: 1rem;
+    background: #f9fafb;
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+  }
+
+  .selected-module-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: grab;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .selected-module-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+  }
+
+  .selected-module-item:active {
+    cursor: grabbing;
+  }
+
+  .selected-module-item.dragging {
+    opacity: 0.5;
+    background: #f0f4ff;
+  }
+
+  .selected-module-item.drag-over {
+    border-color: #667eea;
+    border-style: dashed;
+    background: #f0f4ff;
+  }
+
+  .module-order-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .module-drag-handle {
+    color: #9ca3af;
+    cursor: grab;
+    flex-shrink: 0;
+  }
+
+  .module-drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .selected-module-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .selected-module-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .selected-module-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+
+  .selected-module-level {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: white;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .module-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .module-remove-btn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+  }
+
+  .selected-modules-empty {
+    text-align: center;
+    padding: 1.5rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+  }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const moduleCheckboxes = document.querySelectorAll('.module-checkbox');
+  const selectedModulesSection = document.getElementById('selected-modules-section');
+  const selectedModulesList = document.getElementById('selected-modules-list');
+  const moduleOrderInputs = document.getElementById('module-order-inputs');
+
+  // 초기 선택된 모듈 데이터 (순서 유지)
+  let selectedModules = [];
+  <% @selected_modules_ordered.each do |stimulus| %>
+  selectedModules.push({
+    id: '<%= stimulus.id %>',
+    title: '<%= j stimulus.title %>',
+    level: '<%= stimulus.grade_level_short if stimulus.grade_level_set? %>',
+    levelColor: '<%= stimulus.grade_level_color if stimulus.grade_level_set? %>',
+    mcq: '<%= stimulus.mcq_count %>',
+    constructed: '<%= stimulus.constructed_count %>',
+    time: '<%= stimulus.estimated_time_minutes %>'
+  });
+  <% end %>
+
+  let draggedItem = null;
+
+  // 초기 목록 렌더링
+  updateSelectedModulesList();
+
+  // 체크박스 변경 이벤트
+  moduleCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const moduleId = this.dataset.moduleId;
+      const moduleCard = this.closest('.module-card');
+
+      if (this.checked) {
+        // 모듈 추가 (이미 없는 경우만)
+        if (!selectedModules.find(m => m.id === moduleId)) {
+          const moduleData = {
+            id: moduleId,
+            title: moduleCard.dataset.moduleTitle,
+            level: moduleCard.dataset.moduleLevel,
+            levelColor: moduleCard.dataset.moduleLevelColor,
+            mcq: moduleCard.dataset.moduleMcq,
+            constructed: moduleCard.dataset.moduleConstructed,
+            time: moduleCard.dataset.moduleTime
+          };
+          selectedModules.push(moduleData);
+        }
+      } else {
+        // 모듈 제거
+        selectedModules = selectedModules.filter(m => m.id !== moduleId);
+      }
+
+      updateSelectedModulesList();
+    });
+  });
+
+  // 선택된 모듈 목록 업데이트
+  function updateSelectedModulesList() {
+    if (selectedModules.length === 0) {
+      selectedModulesSection.style.display = 'none';
+      selectedModulesList.innerHTML = '';
+      moduleOrderInputs.innerHTML = '';
+      return;
+    }
+
+    selectedModulesSection.style.display = 'block';
+
+    // 목록 렌더링
+    selectedModulesList.innerHTML = selectedModules.map((module, index) => `
+      <div class="selected-module-item" draggable="true" data-module-id="${module.id}">
+        <span class="module-order-number">${index + 1}</span>
+        <span class="module-drag-handle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
+            <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
+          </svg>
+        </span>
+        <div class="selected-module-info">
+          <h5 class="selected-module-title">
+            ${module.level ? `<span class="selected-module-level" style="background: ${module.levelColor}">${module.level}</span>` : ''}
+            ${module.title}
+          </h5>
+          <div class="selected-module-meta">
+            객관식 ${module.mcq}개 · 서술형 ${module.constructed}개 · 예상 ${module.time}분
+          </div>
+        </div>
+        <button type="button" class="module-remove-btn" data-module-id="${module.id}" title="제거">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    `).join('');
+
+    // hidden inputs 업데이트
+    moduleOrderInputs.innerHTML = selectedModules.map(module =>
+      `<input type="hidden" name="module_ids[]" value="${module.id}">`
+    ).join('');
+
+    // 드래그 이벤트 등록
+    setupDragEvents();
+
+    // 제거 버튼 이벤트 등록
+    setupRemoveButtons();
+  }
+
+  // 드래그 이벤트 설정
+  function setupDragEvents() {
+    const items = selectedModulesList.querySelectorAll('.selected-module-item');
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', handleDragStart);
+      item.addEventListener('dragend', handleDragEnd);
+      item.addEventListener('dragover', handleDragOver);
+      item.addEventListener('drop', handleDrop);
+      item.addEventListener('dragleave', handleDragLeave);
+    });
+  }
+
+  function handleDragStart(e) {
+    draggedItem = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.selected-module-item').forEach(item => {
+      item.classList.remove('drag-over');
+    });
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    if (this !== draggedItem) {
+      this.classList.add('drag-over');
+    }
+  }
+
+  function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+
+    if (this !== draggedItem) {
+      const draggedId = draggedItem.dataset.moduleId;
+      const targetId = this.dataset.moduleId;
+
+      const draggedIndex = selectedModules.findIndex(m => m.id === draggedId);
+      const targetIndex = selectedModules.findIndex(m => m.id === targetId);
+
+      // 순서 변경
+      const [removed] = selectedModules.splice(draggedIndex, 1);
+      selectedModules.splice(targetIndex, 0, removed);
+
+      updateSelectedModulesList();
+    }
+  }
+
+  // 제거 버튼 설정
+  function setupRemoveButtons() {
+    const removeButtons = selectedModulesList.querySelectorAll('.module-remove-btn');
+
+    removeButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const moduleId = this.dataset.moduleId;
+
+        // 체크박스 해제
+        const checkbox = document.querySelector(`.module-checkbox[data-module-id="${moduleId}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+        }
+
+        // 목록에서 제거
+        selectedModules = selectedModules.filter(m => m.id !== moduleId);
+        updateSelectedModulesList();
+      });
+    });
+  }
+});
+</script>

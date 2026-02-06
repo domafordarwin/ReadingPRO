@@ -53,11 +53,16 @@ class Researcher::DiagnosticFormsController < ApplicationController
   def edit
     @current_page = "scoring"
     load_available_modules
-    @selected_module_ids = @diagnostic_form.items.includes(:stimulus)
-                                           .map(&:stimulus)
-                                           .compact
-                                           .uniq
-                                           .map(&:id)
+
+    # Load selected modules in order (by first item position in each stimulus)
+    @selected_modules_ordered = @diagnostic_form.diagnostic_form_items
+                                                .includes(item: :stimulus)
+                                                .order(:position)
+                                                .map { |dfi| dfi.item.stimulus }
+                                                .compact
+                                                .uniq
+
+    @selected_module_ids = @selected_modules_ordered.map(&:id)
   end
 
   def update
