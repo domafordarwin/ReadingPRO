@@ -151,7 +151,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @page_title = "학교 담당자 관리"
 
     # school_admin 역할 사용자 조회
-    @managers = User.where(role: "school_admin").includes(:school).order(created_at: :desc)
+    @managers = User.where(role: "school_admin").order(created_at: :desc)
     @total_managers = @managers.count
     @active_managers_count = @managers.count
 

@@ -103,7 +103,6 @@
           <th>이메일 도메인</th>
           <th>학생 수</th>
           <th>학부모 수</th>
-          <th>담당자</th>
         </tr>
       </thead>
       <tbody>
@@ -113,14 +112,6 @@
             <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;"><%= school.email_domain %></code></td>
             <td><%= school.students.count %>명</td>
             <td><%= school.parents.count %>명</td>
-            <td>
-              <% admin = @managers.find { |m| m.school_id == school.id } %>
-              <% if admin %>
-                <span class="rp-badge rp-badge--active"><%= admin.name %></span>
-              <% else %>
-                <span class="rp-badge rp-badge--inactive">미지정</span>
-              <% end %>
-            </td>
           </tr>
         <% end %>
       </tbody>
