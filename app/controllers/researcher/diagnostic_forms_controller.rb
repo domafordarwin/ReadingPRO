@@ -28,7 +28,8 @@ class Researcher::DiagnosticFormsController < ApplicationController
 
   def create
     @diagnostic_form = DiagnosticForm.new(diagnostic_form_params)
-    @diagnostic_form.created_by_id = current_user.id if current_user
+    # Note: created_by_id references teachers table, researchers don't have teacher records
+    # so we leave it nil (column is nullable)
 
     # Validate that at least one module is selected
     if params[:module_ids].blank?
