@@ -14,7 +14,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     mcq_responses = Response
       .joins(:item)
       .where("items.item_type = ?", Item.item_types[:mcq])
-      .includes(:item, attempt: :student)
+      .includes(:item, student_attempt: :student)
       .order(created_at: :desc)
 
     # 학생별로 그룹화 (Ruby group_by 사용 - 메모리 효율)
@@ -80,17 +80,17 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # 학생의 MCQ 응답들 (eager loading으로 N+1 방지)
       @responses = Response
         .joins(:item)
-        .where(attempt_id: @student.student_attempts.pluck(:id))
+        .where(student_attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:mcq])
-        .includes(:response_feedbacks, :feedback_prompts, :attempt, { item: :item_choices })
+        .includes(:response_feedbacks, :feedback_prompts, :student_attempt, { item: :item_choices })
         .order(:created_at)
 
       # 학생의 서술형 응답들 (constructed responses)
       @constructed_responses = Response
         .joins(:item)
-        .where(attempt_id: @student.student_attempts.pluck(:id))
+        .where(student_attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:constructed])
-        .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :attempt,
+        .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :student_attempt,
                   { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
         .order(:created_at)
 
