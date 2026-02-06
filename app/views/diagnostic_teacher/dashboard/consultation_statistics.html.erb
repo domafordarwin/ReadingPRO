@@ -1,176 +1,216 @@
-<div class="rp-dashboard-container">
-  <div class="rp-dashboard-header">
-    <h1>상담 통계 대시보드</h1>
-    <p class="rp-subtitle">상담 신청 현황 및 통계</p>
+<% content_for :page_title, "상담 통계" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">상담 통계 대시보드</h1>
+  <p class="rp-page-header__subtitle">상담 신청 현황 및 통계</p>
+</div>
+
+<!-- 담당자 통계 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 신청</div>
+    <div class="rp-stat-value"><%= @total_requests %></div>
   </div>
 
-  <!-- 주요 통계 카드 -->
-  <div class="rp-stats-grid">
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">📋</div>
-      <div class="rp-stat-value"><%= @total_requests %></div>
-      <div class="rp-stat-label">전체 신청</div>
-    </div>
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">⏳</div>
-      <div class="rp-stat-value"><%= @pending_count %></div>
-      <div class="rp-stat-label">대기 중</div>
-    </div>
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">✅</div>
-      <div class="rp-stat-value"><%= @approved_count %></div>
-      <div class="rp-stat-label">승인됨</div>
-    </div>
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">❌</div>
-      <div class="rp-stat-value"><%= @rejected_count %></div>
-      <div class="rp-stat-label">거절됨</div>
-    </div>
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">🏁</div>
-      <div class="rp-stat-value"><%= @completed_count %></div>
-      <div class="rp-stat-label">완료됨</div>
-    </div>
-    <div class="rp-stat-card">
-      <div class="rp-stat-icon">⏱️</div>
-      <div class="rp-stat-value"><%= @avg_response_time %><span class="rp-stat-unit">시간</span></div>
-      <div class="rp-stat-label">평균 응답 시간</div>
-    </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">대기 중</div>
+    <div class="rp-stat-value rp-stat-value--warning"><%= @pending_count %></div>
   </div>
 
-  <!-- 상태별 분포 차트 -->
-  <div class="rp-section">
-    <h2>상담 신청 상태별 분포</h2>
-    <div class="rp-chart-grid">
-      <% @by_status.each do |status| %>
-        <div class="rp-chart-item">
-          <div class="rp-chart-bar">
-            <div class="rp-chart-bar-fill rp-chart-bar--<%= status[:color] %>"
-                 style="width: <%= @total_requests > 0 ? (status[:count].to_f / @total_requests * 100).round(1) : 0 %>%">
-            </div>
-          </div>
-          <div class="rp-chart-label">
-            <span class="rp-label"><%= status[:label] %></span>
-            <span class="rp-value"><%= status[:count] %> (<%= @total_requests > 0 ? (status[:count].to_f / @total_requests * 100).round(1) : 0 %>%)</span>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">승인됨</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @approved_count %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">거절됨</div>
+    <div class="rp-stat-value rp-stat-value--danger"><%= @rejected_count %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">완료됨</div>
+    <div class="rp-stat-value"><%= @completed_count %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">평균 응답 시간</div>
+    <div class="rp-stat-value rp-stat-value--primary"><%= @avg_response_time %><span class="rp-stat-unit">시간</span></div>
+  </div>
+</div>
+
+<!-- 상태별 분포 -->
+<div class="rp-section-card">
+  <h2 class="rp-section-title">상담 신청 상태별 분포</h2>
+  <div class="rp-chart-grid">
+    <% @by_status.each do |status| %>
+      <div class="rp-chart-item">
+        <div class="rp-chart-bar">
+          <div class="rp-chart-bar-fill rp-chart-bar--<%= status[:color] %>"
+               style="width: <%= @total_requests > 0 ? (status[:count].to_f / @total_requests * 100).round(1) : 0 %>%">
           </div>
         </div>
-      <% end %>
-    </div>
-  </div>
-
-  <!-- 상담 유형별 분류 -->
-  <div class="rp-section">
-    <h2>상담 유형별 분류</h2>
-    <% if @by_category.any? %>
-      <table class="rp-table">
-        <thead>
-          <tr>
-            <th>상담 유형</th>
-            <th>신청 건수</th>
-            <th>비율</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @by_category.each do |category| %>
-            <tr>
-              <td><strong><%= category[:label] %></strong></td>
-              <td><%= category[:count] %></td>
-              <td>
-                <div class="rp-progress-bar">
-                  <div class="rp-progress-fill" style="width: <%= @total_requests > 0 ? (category[:count].to_f / @total_requests * 100).round(1) : 0 %>%"></div>
-                </div>
-                <span class="rp-percentage"><%= @total_requests > 0 ? (category[:count].to_f / @total_requests * 100).round(1) : 0 %>%</span>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="rp-empty-state">상담 신청이 없습니다.</p>
-    <% end %>
-  </div>
-
-  <!-- 최근 상담 신청 -->
-  <div class="rp-section">
-    <h2>최근 상담 신청</h2>
-    <% if @recent_requests.any? %>
-      <table class="rp-table">
-        <thead>
-          <tr>
-            <th>학생명</th>
-            <th>학부모</th>
-            <th>상담 유형</th>
-            <th>희망 일정</th>
-            <th>상태</th>
-            <th>신청일</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @recent_requests.each do |req| %>
-            <tr onclick="window.location='<%= diagnostic_teacher_consultation_request_path(req) %>' ">
-              <td><strong><%= req.student.name %></strong></td>
-              <td><%= req.user.email %></td>
-              <td>
-                <span class="rp-badge rp-badge-info">
-                  <%= req.category_label %>
-                </span>
-              </td>
-              <td><%= req.scheduled_at.strftime("%Y-%m-%d %H:%M") %></td>
-              <td>
-                <% case req.status %>
-                  <% when 'pending' %>
-                    <span class="rp-badge rp-badge-warning">대기 중</span>
-                  <% when 'approved' %>
-                    <span class="rp-badge rp-badge-success">승인됨</span>
-                  <% when 'rejected' %>
-                    <span class="rp-badge rp-badge-danger">거절됨</span>
-                  <% when 'completed' %>
-                    <span class="rp-badge rp-badge-secondary">완료됨</span>
-                <% end %>
-              </td>
-              <td><%= req.created_at.strftime("%Y-%m-%d") %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% else %>
-      <p class="rp-empty-state">최근 상담 신청이 없습니다.</p>
+        <div class="rp-chart-label">
+          <span class="rp-label"><%= status[:label] %></span>
+          <span class="rp-value"><%= status[:count] %> (<%= @total_requests > 0 ? (status[:count].to_f / @total_requests * 100).round(1) : 0 %>%)</span>
+        </div>
+      </div>
     <% end %>
   </div>
 </div>
 
+<!-- 상담 유형별 분류 -->
+<div class="rp-section-card">
+  <h2 class="rp-section-title">상담 유형별 분류</h2>
+  <% if @by_category.any? %>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>상담 유형</th>
+          <th>신청 건수</th>
+          <th>비율</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @by_category.each do |category| %>
+          <tr>
+            <td><strong><%= category[:label] %></strong></td>
+            <td><%= category[:count] %>건</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="rp-progress-bar">
+                  <div class="rp-progress-fill" style="width: <%= @total_requests > 0 ? (category[:count].to_f / @total_requests * 100).round(1) : 0 %>%"></div>
+                </div>
+                <span class="rp-percentage"><%= @total_requests > 0 ? (category[:count].to_f / @total_requests * 100).round(1) : 0 %>%</span>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <p>상담 신청이 없습니다.</p>
+    </div>
+  <% end %>
+</div>
+
+<!-- 최근 상담 신청 -->
+<div class="rp-section-card">
+  <h2 class="rp-section-title">최근 상담 신청</h2>
+  <% if @recent_requests.any? %>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>학생명</th>
+          <th>학부모</th>
+          <th>상담 유형</th>
+          <th>희망 일정</th>
+          <th>상태</th>
+          <th>신청일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recent_requests.each do |req| %>
+          <tr class="rp-table-row--clickable" onclick="window.location='<%= diagnostic_teacher_consultation_request_path(req) %>'">
+            <td><strong><%= req.student.name %></strong></td>
+            <td><%= req.user.email %></td>
+            <td>
+              <span class="rp-badge rp-badge--category"><%= req.category_label %></span>
+            </td>
+            <td><%= req.scheduled_at&.strftime("%Y-%m-%d %H:%M") || '-' %></td>
+            <td>
+              <% case req.status %>
+              <% when 'pending' %>
+                <span class="rp-badge rp-badge--warning">대기 중</span>
+              <% when 'approved' %>
+                <span class="rp-badge rp-badge--success">승인됨</span>
+              <% when 'rejected' %>
+                <span class="rp-badge rp-badge--danger">거절됨</span>
+              <% when 'completed' %>
+                <span class="rp-badge rp-badge--secondary">완료됨</span>
+              <% end %>
+            </td>
+            <td><%= req.created_at.strftime("%Y-%m-%d") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <p>최근 상담 신청이 없습니다.</p>
+    </div>
+  <% end %>
+</div>
+
 <style>
+  .rp-page-header {
+    margin-bottom: 24px;
+  }
+
+  .rp-page-header__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+  }
+
+  .rp-page-header__subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
   .rp-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px;
     margin-bottom: 32px;
   }
 
   .rp-stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
   }
 
-  .rp-stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .rp-stat-icon {
-    font-size: 32px;
+  .rp-stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
     margin-bottom: 8px;
+    letter-spacing: 0.5px;
   }
 
   .rp-stat-value {
     font-size: 28px;
-    font-weight: bold;
+    font-weight: 700;
+    color: #0f172a;
     margin-bottom: 4px;
+  }
+
+  .rp-stat-value--success {
+    color: #10b981;
+  }
+
+  .rp-stat-value--primary {
+    color: #2f5bff;
+  }
+
+  .rp-stat-value--warning {
+    color: #f59e0b;
+  }
+
+  .rp-stat-value--danger {
+    color: #ef4444;
   }
 
   .rp-stat-unit {
@@ -179,18 +219,25 @@
     font-weight: normal;
   }
 
-  .rp-stat-label {
-    font-size: 12px;
-    opacity: 0.9;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  .rp-section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+  }
+
+  .rp-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 0 20px 0;
   }
 
   .rp-chart-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 24px;
-    margin-top: 16px;
   }
 
   .rp-chart-item {
@@ -201,31 +248,31 @@
 
   .rp-chart-bar {
     height: 24px;
-    background: #f0f0f0;
-    border-radius: 4px;
+    background: #f1f5f9;
+    border-radius: 6px;
     overflow: hidden;
   }
 
   .rp-chart-bar-fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: width 0.3s;
   }
 
   .rp-chart-bar--warning {
-    background: #ff9800;
+    background: #f59e0b;
   }
 
   .rp-chart-bar--success {
-    background: #4caf50;
+    background: #10b981;
   }
 
   .rp-chart-bar--danger {
-    background: #f44336;
+    background: #ef4444;
   }
 
   .rp-chart-bar--secondary {
-    background: #9e9e9e;
+    background: #94a3b8;
   }
 
   .rp-chart-label {
@@ -237,74 +284,121 @@
 
   .rp-label {
     font-weight: 600;
-    color: #333;
+    color: #0f172a;
   }
 
   .rp-value {
-    color: #666;
-  }
-
-  .rp-progress-bar {
-    height: 8px;
-    background: #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-    flex: 1;
-    margin-right: 12px;
-  }
-
-  .rp-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    border-radius: 4px;
-  }
-
-  .rp-percentage {
-    font-size: 12px;
-    color: #666;
-    min-width: 40px;
-    text-align: right;
+    color: #64748b;
   }
 
   .rp-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 16px;
   }
 
-  .rp-table thead tr {
-    background: #f5f5f5;
-    border-bottom: 2px solid #ddd;
+  .rp-table thead {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
   }
 
   .rp-table th {
-    padding: 12px;
+    padding: 12px 16px;
     text-align: left;
-    font-weight: 600;
     font-size: 13px;
-    color: #333;
+    font-weight: 600;
+    color: #475569;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   .rp-table td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .rp-table tbody tr {
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #475569;
   }
 
   .rp-table tbody tr:hover {
-    background-color: #f9f9f9;
+    background: #f8fafc;
+  }
+
+  .rp-table-row--clickable {
+    cursor: pointer;
+  }
+
+  .rp-progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .rp-progress-fill {
+    height: 100%;
+    background: #2f5bff;
+    border-radius: 4px;
+  }
+
+  .rp-percentage {
+    font-size: 12px;
+    color: #64748b;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .rp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .rp-badge--category {
+    background: #e0e7ff;
+    color: #3730a3;
+  }
+
+  .rp-badge--warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .rp-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .rp-badge--danger {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .rp-badge--secondary {
+    background: #f1f5f9;
+    color: #475569;
   }
 
   .rp-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
     text-align: center;
-    padding: 32px;
-    color: #999;
-    font-size: 15px;
+  }
+
+  .rp-empty-state svg {
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .rp-empty-state p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
   }
 </style>
