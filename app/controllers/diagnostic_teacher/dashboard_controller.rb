@@ -151,13 +151,15 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @page_title = "학교 담당자 관리"
 
     # school_admin 역할 사용자 조회
-    @managers = User.where(role: "school_admin").includes(:student).order(created_at: :desc)
+    @managers = User.where(role: "school_admin").includes(:school).order(created_at: :desc)
     @total_managers = @managers.count
-    @active_managers_count = @managers.count # 현재 모든 사용자가 활성이라고 가정
+    @active_managers_count = @managers.count
 
-    # 전체 사용자 통계
-    @total_users = User.count
-    @role_statistics = User.group(:role).count.sort
+    # 학교별 학생/학부모 현황
+    @schools = School.includes(:students, :parents).order(:name)
+    @total_schools = @schools.count
+    @total_students = Student.count
+    @total_parents = Parent.count
   end
 
   # 진단 관리 - 배정 현황

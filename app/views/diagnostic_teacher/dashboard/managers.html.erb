@@ -25,18 +25,23 @@
 <!-- 담당자 통계 -->
 <div class="rp-stats-grid">
   <div class="rp-stat-card">
-    <div class="rp-stat-label">전체 담당자</div>
+    <div class="rp-stat-label">학교 담당자</div>
     <div class="rp-stat-value"><%= @total_managers %></div>
   </div>
 
   <div class="rp-stat-card">
-    <div class="rp-stat-label">활성 담당자</div>
-    <div class="rp-stat-value rp-stat-value--success"><%= @active_managers_count %></div>
+    <div class="rp-stat-label">등록 학교</div>
+    <div class="rp-stat-value"><%= @total_schools %></div>
   </div>
 
   <div class="rp-stat-card">
-    <div class="rp-stat-label">전체 사용자</div>
-    <div class="rp-stat-value"><%= @total_users %></div>
+    <div class="rp-stat-label">전체 학생</div>
+    <div class="rp-stat-value rp-stat-value--primary"><%= @total_students %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 학부모</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @total_parents %></div>
   </div>
 </div>
 
@@ -86,30 +91,49 @@
   <% end %>
 </div>
 
-<!-- 전체 사용자 현황 -->
+<!-- 학교별 학생/학부모 현황 -->
 <div class="rp-users-overview">
-  <h2 class="rp-section-title">전체 사용자 현황</h2>
+  <h2 class="rp-section-title">학교별 학생/학부모 현황</h2>
 
-  <div class="rp-roles-grid">
-    <% @role_statistics.each do |role, count| %>
-      <div class="rp-role-card">
-        <div class="rp-role-name"><%= role %></div>
-        <div class="rp-role-count"><%= count %></div>
-        <div class="rp-role-label">
-          <% label_map = {
-            "admin" => "시스템 관리자",
-            "school_admin" => "학교 담당자",
-            "diagnostic_teacher" => "진단담당교사",
-            "teacher" => "교사",
-            "student" => "학생",
-            "parent" => "학부모",
-            "researcher" => "연구원"
-          } %>
-          <%= label_map[role] %>
-        </div>
-      </div>
-    <% end %>
-  </div>
+  <% if @schools.any? %>
+    <table class="rp-table">
+      <thead>
+        <tr>
+          <th>학교명</th>
+          <th>이메일 도메인</th>
+          <th>학생 수</th>
+          <th>학부모 수</th>
+          <th>담당자</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @schools.each do |school| %>
+          <tr>
+            <td><strong><%= school.name %></strong></td>
+            <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;"><%= school.email_domain %></code></td>
+            <td><%= school.students.count %>명</td>
+            <td><%= school.parents.count %>명</td>
+            <td>
+              <% admin = @managers.find { |m| m.school_id == school.id } %>
+              <% if admin %>
+                <span class="rp-badge rp-badge--active"><%= admin.name %></span>
+              <% else %>
+                <span class="rp-badge rp-badge--inactive">미지정</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="rp-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <p>등록된 학교가 없습니다.</p>
+    </div>
+  <% end %>
 </div>
 
 <style>
@@ -146,6 +170,10 @@
 
   .rp-stat-value--success {
     color: #10b981;
+  }
+
+  .rp-stat-value--primary {
+    color: #2f5bff;
   }
 
   .rp-managers-section,
@@ -219,39 +247,9 @@
     color: #065f46;
   }
 
-  .rp-roles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
-  }
-
-  .rp-role-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    background: #f8fafc;
-  }
-
-  .rp-role-name {
-    font-size: 12px;
-    text-transform: uppercase;
+  .rp-badge--inactive {
+    background: #f1f5f9;
     color: #94a3b8;
-    font-weight: 600;
-    margin-bottom: 8px;
-    letter-spacing: 0.5px;
-  }
-
-  .rp-role-count {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2f5bff;
-    margin-bottom: 4px;
-  }
-
-  .rp-role-label {
-    font-size: 12px;
-    color: #475569;
   }
 
   .rp-empty-state {
