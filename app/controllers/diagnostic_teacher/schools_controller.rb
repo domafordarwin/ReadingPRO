@@ -4,10 +4,15 @@ class DiagnosticTeacher::SchoolsController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role_any(%w[diagnostic_teacher teacher]) }
   before_action :set_role
+  before_action :set_school, only: %i[edit update destroy]
 
   def new
     @current_page = "managers"
     @school = School.new
+  end
+
+  def edit
+    @current_page = "managers"
   end
 
   def create
@@ -50,7 +55,34 @@ class DiagnosticTeacher::SchoolsController < ApplicationController
     render :new, status: :unprocessable_entity
   end
 
+  def update
+    @current_page = "managers"
+
+    if @school.update(school_params)
+      flash[:notice] = "학교 정보가 수정되었습니다."
+      redirect_to diagnostic_teacher_managers_path
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    school_name = @school.name
+
+    # 학교에 연결된 school_admin 사용자들 삭제
+    User.where(role: "school_admin", email: /@#{Regexp.escape(@school.email_domain)}$/).destroy_all
+
+    @school.destroy
+
+    flash[:notice] = "학교 '#{school_name}'이(가) 삭제되었습니다."
+    redirect_to diagnostic_teacher_managers_path
+  end
+
   private
+
+  def set_school
+    @school = School.find(params[:id])
+  end
 
   def set_role
     @current_role = "teacher"

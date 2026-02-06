@@ -28,7 +28,7 @@ class StudentBatchCreationService
         seq_str = format("%04d", seq)
         student_id = "RPS_#{seq_str}"
         student_email = "rps_#{seq_str}@#{domain}"
-        student_password = generate_password
+        student_password = generate_password(domain)
 
         student_user = User.create!(
           email: student_email,
@@ -58,7 +58,7 @@ class StudentBatchCreationService
         if @include_parents
           parent_id = "RPP_#{seq_str}"
           parent_email = "rpp_#{seq_str}@#{domain}"
-          parent_password = generate_password
+          parent_password = generate_password(domain)
 
           parent_user = User.create!(
             email: parent_email,
@@ -96,8 +96,8 @@ class StudentBatchCreationService
 
   private
 
-  def generate_password
-    "RP#{SecureRandom.alphanumeric(8)}!"
+  def generate_password(domain)
+    "#{domain}_$12#"
   end
 
   def add_error(msg)

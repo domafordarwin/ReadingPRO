@@ -22,8 +22,8 @@
   </div>
 <% end %>
 
-<!-- 담당자 통계 -->
-<div class="rp-stats-grid">
+<!-- 담당자 통계 (가로 배열) -->
+<div class="rp-stats-row">
   <div class="rp-stat-card">
     <div class="rp-stat-label">학교 담당자</div>
     <div class="rp-stat-value"><%= @total_managers %></div>
@@ -37,6 +37,11 @@
   <div class="rp-stat-card">
     <div class="rp-stat-label">전체 학생</div>
     <div class="rp-stat-value rp-stat-value--primary"><%= @total_students %></div>
+  </div>
+
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 학부모</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @total_parents %></div>
   </div>
 </div>
 
@@ -53,12 +58,13 @@
           <th>역할</th>
           <th>가입 일시</th>
           <th>상태</th>
+          <th>관리</th>
         </tr>
       </thead>
       <tbody>
         <% @managers.each do |manager| %>
           <tr>
-            <td><strong><%= manager.name %></strong></td>
+            <td><strong><%= manager.name.presence || "-" %></strong></td>
             <td><%= manager.email %></td>
             <td>
               <span class="rp-role-badge">
@@ -68,6 +74,36 @@
             <td><%= manager.created_at.strftime("%Y-%m-%d") %></td>
             <td>
               <span class="rp-badge rp-badge--active">활성</span>
+            </td>
+            <td class="rp-action-cell">
+              <div class="rp-action-group">
+                <%= link_to edit_diagnostic_teacher_school_admin_path(manager), class: "rp-icon-btn rp-icon-btn--edit", title: "편집" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                <% end %>
+                <%= button_to reset_password_diagnostic_teacher_school_admin_path(manager),
+                    method: :patch,
+                    data: { turbo: false, confirm: "#{manager.name.presence || manager.email}의 비밀번호를 초기화하시겠습니까?" },
+                    class: "rp-icon-btn rp-icon-btn--warning",
+                    title: "비밀번호 초기화" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                <% end %>
+                <%= button_to diagnostic_teacher_school_admin_path(manager),
+                    method: :delete,
+                    data: { turbo: false, confirm: "학교 관리자 '#{manager.name.presence || manager.email}'을(를) 삭제하시겠습니까?" },
+                    class: "rp-icon-btn rp-icon-btn--danger",
+                    title: "삭제" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                <% end %>
+              </div>
             </td>
           </tr>
         <% end %>
@@ -97,14 +133,20 @@
           <th>학교명</th>
           <th>이메일 도메인</th>
           <th>학생 수</th>
+          <th>학부모 수</th>
         </tr>
       </thead>
       <tbody>
         <% @schools.each do |school| %>
+          <%
+            student_count = school.students.count
+            parent_count = GuardianStudent.joins(:student).where(students: { school_id: school.id }).distinct.count(:parent_id)
+          %>
           <tr>
             <td><strong><%= school.name %></strong></td>
-            <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;"><%= school.email_domain %></code></td>
-            <td><%= school.students.count %>명</td>
+            <td><code class="rp-domain-badge"><%= school.email_domain %></code></td>
+            <td><span class="rp-count-badge rp-count-badge--blue"><%= student_count %>명</span></td>
+            <td><span class="rp-count-badge rp-count-badge--green"><%= parent_count %>명</span></td>
           </tr>
         <% end %>
       </tbody>
@@ -121,14 +163,16 @@
 </div>
 
 <style>
-  .rp-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  .rp-stats-row {
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 32px;
   }
 
   .rp-stat-card {
+    flex: 1;
+    min-width: 140px;
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -271,5 +315,91 @@
     font-size: 14px;
     color: #94a3b8;
     margin: 0;
+  }
+
+  /* 도메인 배지 */
+  .rp-domain-badge {
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: #475569;
+  }
+
+  /* 수치 배지 */
+  .rp-count-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .rp-count-badge--blue {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .rp-count-badge--green {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  /* 액션 버튼 그룹 */
+  .rp-action-cell {
+    padding: 8px 16px !important;
+  }
+
+  .rp-action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .rp-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .rp-icon-btn svg {
+    pointer-events: none;
+  }
+
+  .rp-icon-btn--edit {
+    background: #eff6ff;
+    color: #3b82f6;
+  }
+
+  .rp-icon-btn--edit:hover {
+    background: #dbeafe;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  }
+
+  .rp-icon-btn--warning {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .rp-icon-btn--warning:hover {
+    background: #fde68a;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+  }
+
+  .rp-icon-btn--danger {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .rp-icon-btn--danger:hover {
+    background: #fee2e2;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
   }
 </style>

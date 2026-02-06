@@ -165,7 +165,14 @@ Rails.application.routes.draw do
     get "consultation_statistics", to: "dashboard#consultation_statistics"
 
     # 학교 관리
-    resources :schools, only: [:new, :create]
+    resources :schools, only: [:new, :create, :edit, :update, :destroy]
+
+    # 학교 관리자(school_admin) 사용자 관리
+    resources :school_admins, only: [:edit, :update, :destroy] do
+      member do
+        patch :reset_password
+      end
+    end
 
     # 기타
     get "guide", to: "dashboard#guide"
