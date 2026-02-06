@@ -132,9 +132,9 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 평균 응답 시간 (승인된 상담 기준) - SQL에서 계산
     avg_result = ConsultationRequest.approved
-      .select("AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600) as avg_hours")
-      .first
-    @avg_response_time = avg_result&.avg_hours&.round(1) || 0
+      .reorder(nil)
+      .pick(Arel.sql("AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 3600)"))
+    @avg_response_time = avg_result&.round(1) || 0
 
     # 월별 상담 신청 추이 (최근 12개월) - SQL GROUP BY 사용
     @monthly_trends = ConsultationRequest
