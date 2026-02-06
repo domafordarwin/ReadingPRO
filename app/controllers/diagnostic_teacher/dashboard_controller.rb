@@ -241,28 +241,23 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @current_page = "feedback_prompts"
     @page_title = "피드백 프롬프트 관리"
 
-    # 모든 프롬프트 (템플릿 + 커스텀)
-    @prompts = FeedbackPrompt.includes(:user, :feedback_prompt_histories).recent
+    # 모든 프롬프트
+    @prompts = FeedbackPrompt.includes(:feedback_prompt_histories).order(created_at: :desc)
 
     # 검색 기능
     @search_query = params[:search].to_s.strip
     if @search_query.present?
       search_term = "%#{@search_query}%"
-      @prompts = @prompts.where("prompt_text ILIKE ?", search_term)
+      @prompts = @prompts.where("name ILIKE ? OR template ILIKE ?", search_term, search_term)
     end
 
-    # 카테고리 필터
-    @category_filter = params[:category].to_s.strip
-    @prompts = @prompts.by_category(@category_filter) if @category_filter.present?
-
-    # 유형 필터
+    # 유형 필터 (prompt_type: mcq, constructed, comprehensive)
     @type_filter = params[:type].to_s.strip
-    case @type_filter
-    when "template"
-      @prompts = @prompts.templates
-    when "custom"
-      @prompts = @prompts.custom
-    end
+    @prompts = @prompts.by_type(@type_filter) if @type_filter.present?
+
+    # 활성 필터
+    @active_filter = params[:active]
+    @prompts = @prompts.active if @active_filter == "true"
 
     # 페이지네이션
     @prompts = @prompts.page(params[:page]).per(20)
