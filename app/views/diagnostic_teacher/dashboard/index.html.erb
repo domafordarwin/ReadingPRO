@@ -55,38 +55,38 @@
         <h3 class="rp-card__title">진단 대기 목록</h3>
         <p class="rp-card__subtitle">학생별 진단 완료 대기 현황</p>
       </div>
-      <span class="rp-badge rp-badge--warning">8건</span>
+      <span class="rp-badge rp-badge--warning"><%= @pending_diagnoses %>건</span>
     </div>
     <div class="rp-card__body">
       <div class="rp-table-wrapper">
         <table class="rp-table">
           <thead>
             <tr>
-              <th>학생 ID</th>
+              <th>학생</th>
               <th>진단명</th>
-              <th>기한</th>
+              <th>시작일</th>
               <th>상태</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>RPS_0001</strong></td>
-              <td>읽기 성향 진단</td>
-              <td>02/05</td>
-              <td><span class="rp-badge rp-badge--warning">진행중</span></td>
-            </tr>
-            <tr>
-              <td><strong>RPS_0002</strong></td>
-              <td>독서력 종합 진단</td>
-              <td>02/07</td>
-              <td><span class="rp-badge rp-badge--draft">대기</span></td>
-            </tr>
-            <tr>
-              <td><strong>RPS_0003</strong></td>
-              <td>읽기 이해력 진단</td>
-              <td>02/10</td>
-              <td><span class="rp-badge rp-badge--draft">대기</span></td>
-            </tr>
+            <% pending_statuses = @student_statuses.select { |s| s[:status] != '완료' }.first(5) %>
+            <% if pending_statuses.any? %>
+              <% pending_statuses.each do |status| %>
+                <tr>
+                  <td><strong><%= status[:student].name %></strong></td>
+                  <td>진단 평가</td>
+                  <td><%= status[:attempt].started_at&.strftime("%m/%d") || '-' %></td>
+                  <td>
+                    <% badge_class = status[:status] == '진행중' ? 'rp-badge--warning' : 'rp-badge--draft' %>
+                    <span class="rp-badge <%= badge_class %>"><%= status[:status] %></span>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="4" style="text-align: center; color: #999; padding: 24px;">대기 중인 진단이 없습니다.</td>
+              </tr>
+            <% end %>
           </tbody>
         </table>
       </div>
@@ -102,42 +102,44 @@
   <div class="rp-card">
     <div class="rp-card__header">
       <h3 class="rp-card__title">피드백 현황</h3>
-      <span class="rp-badge rp-badge--danger">5건 대기</span>
+      <span class="rp-badge rp-badge--<%= @pending_feedback > 0 ? 'danger' : 'success' %>"><%= @pending_feedback > 0 ? "#{@pending_feedback}건 대기" : '모두 완료' %></span>
     </div>
     <div class="rp-card__body">
-      <div class="rp-table-wrapper">
-        <table class="rp-table">
-          <tbody>
-            <tr>
-              <td>
-                <strong>요약문 피드백</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">4건 대기</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--danger">긴급</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>감상문 피드백</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">1건 대기</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--default">보통</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>논술형 피드백</strong>
-                <div class="rp-text-muted" style="font-size: 12px;">완료</div>
-              </td>
-              <td class="rp-text-right">
-                <span class="rp-badge rp-badge--success">완료</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <% feedback_waiting = @student_statuses.select { |s| s[:status] == '피드백 대기' } %>
+      <% if feedback_waiting.any? || @completed_feedback > 0 %>
+        <div class="rp-table-wrapper">
+          <table class="rp-table">
+            <tbody>
+              <% if feedback_waiting.any? %>
+                <tr>
+                  <td>
+                    <strong>서술형 피드백</strong>
+                    <div class="rp-text-muted" style="font-size: 12px;"><%= feedback_waiting.count %>건 대기</div>
+                  </td>
+                  <td class="rp-text-right">
+                    <span class="rp-badge rp-badge--warning">대기</span>
+                  </td>
+                </tr>
+              <% end %>
+              <% if @completed_feedback > 0 %>
+                <tr>
+                  <td>
+                    <strong>피드백 완료</strong>
+                    <div class="rp-text-muted" style="font-size: 12px;"><%= @completed_feedback %>건 완료</div>
+                  </td>
+                  <td class="rp-text-right">
+                    <span class="rp-badge rp-badge--success">완료</span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div style="text-align: center; color: #999; padding: 24px;">
+          피드백 데이터가 없습니다.
+        </div>
+      <% end %>
     </div>
     <div class="rp-card__footer">
       <a href="/diagnostic_teacher/feedbacks" class="rp-btn rp-btn--primary rp-btn--sm">
