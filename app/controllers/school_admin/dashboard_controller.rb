@@ -194,6 +194,10 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def managers
     @current_page = "student_mgmt"
+
+    # 학교 관리자와 교사 목록 조회
+    @school_admins = User.where(role: "school_admin").order(created_at: :desc)
+    @teachers = User.where(role: "teacher").order(created_at: :desc)
   end
 
   private

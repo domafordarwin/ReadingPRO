@@ -16,34 +16,92 @@
   <div class="portal-cta" style="margin-bottom: 12px;">
     <%= link_to "보고서 양식 보기", school_admin_report_template_path, class: "portal-button secondary" %>
   </div>
-  <table class="portal-table">
-    <thead>
-      <tr>
-        <th>학년</th>
-        <th>평균 점수</th>
-        <th>취약 영역</th>
-        <th>완료율</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1학년</td>
-        <td>68점</td>
-        <td>의사소통</td>
-        <td>88%</td>
-      </tr>
-      <tr>
-        <td>2학년</td>
-        <td>72점</td>
-        <td>심미적 감수성</td>
-        <td>82%</td>
-      </tr>
-      <tr>
-        <td>3학년</td>
-        <td>70점</td>
-        <td>이해력</td>
-        <td>79%</td>
-      </tr>
-    </tbody>
-  </table>
+
+  <% if @reports.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>학생명</th>
+          <th>진단일</th>
+          <th>총점</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @reports.each do |report| %>
+          <tr>
+            <td><%= report.student_attempt&.student&.name || '-' %></td>
+            <td><%= report.generated_at&.strftime("%Y-%m-%d") || report.created_at.strftime("%Y-%m-%d") %></td>
+            <td><%= report.student_attempt&.total_score || '-' %>점</td>
+            <td>
+              <% if report.generated_at.present? %>
+                <span class="portal-badge portal-badge--success">완료</span>
+              <% else %>
+                <span class="portal-badge portal-badge--warning">생성중</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= paginate @reports %>
+  <% else %>
+    <div class="portal-empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <p>진단 결과 리포트가 없습니다.</p>
+      <p class="portal-empty-state__sub">학생들의 진단이 완료되면 여기에 리포트가 표시됩니다.</p>
+    </div>
+  <% end %>
 </section>
+
+<style>
+  .portal-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .portal-badge--success {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .portal-badge--warning {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .portal-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .portal-empty-state svg {
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .portal-empty-state p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .portal-empty-state__sub {
+    font-size: 12px;
+    margin-top: 8px !important;
+  }
+</style>

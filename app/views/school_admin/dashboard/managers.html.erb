@@ -8,30 +8,93 @@
   <%= render "school_admin/shared/nav", current: :managers %>
 <% end %>
 
-<section class="portal-card">
-  <h2 class="portal-card-title">담당자 목록</h2>
-  <table class="portal-table">
-    <thead>
-      <tr>
-        <th>이름</th>
-        <th>역할</th>
-        <th>연락처</th>
-        <th>상태</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>최은정</td>
-        <td>학교 관리자</td>
-        <td>010-2222-3344</td>
-        <td>활성</td>
-      </tr>
-      <tr>
-        <td>박성민</td>
-        <td>담당 교사</td>
-        <td>010-3333-4455</td>
-        <td>활성</td>
-      </tr>
-    </tbody>
-  </table>
+<section class="portal-card" style="margin-bottom: 24px;">
+  <h2 class="portal-card-title">학교 관리자</h2>
+  <% if @school_admins.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>역할</th>
+          <th>등록일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @school_admins.each do |admin| %>
+          <tr>
+            <td><strong><%= admin.name %></strong></td>
+            <td><%= admin.email %></td>
+            <td><span class="portal-badge portal-badge--primary">학교 관리자</span></td>
+            <td><%= admin.created_at.strftime("%Y-%m-%d") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="portal-empty-state">
+      <p>등록된 학교 관리자가 없습니다.</p>
+    </div>
+  <% end %>
 </section>
+
+<section class="portal-card">
+  <h2 class="portal-card-title">담당 교사</h2>
+  <% if @teachers.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>역할</th>
+          <th>등록일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @teachers.each do |teacher| %>
+          <tr>
+            <td><strong><%= teacher.name %></strong></td>
+            <td><%= teacher.email %></td>
+            <td><span class="portal-badge portal-badge--info">담당 교사</span></td>
+            <td><%= teacher.created_at.strftime("%Y-%m-%d") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="portal-empty-state">
+      <p>등록된 담당 교사가 없습니다.</p>
+    </div>
+  <% end %>
+</section>
+
+<style>
+  .portal-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .portal-badge--primary {
+    background: #e0e7ff;
+    color: #3730a3;
+  }
+
+  .portal-badge--info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .portal-empty-state {
+    text-align: center;
+    padding: 40px;
+  }
+
+  .portal-empty-state p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin: 0;
+  }
+</style>
