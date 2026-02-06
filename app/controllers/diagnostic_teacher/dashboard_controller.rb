@@ -155,11 +155,10 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @total_managers = @managers.count
     @active_managers_count = @managers.count
 
-    # 학교별 학생/학부모 현황
-    @schools = School.includes(:students, :parents).order(:name)
+    # 학교별 학생 현황
+    @schools = School.includes(:students).order(:name)
     @total_schools = @schools.count
     @total_students = Student.count
-    @total_parents = Parent.count
   end
 
   # 진단 관리 - 배정 현황

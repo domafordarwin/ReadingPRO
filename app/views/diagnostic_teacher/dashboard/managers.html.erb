@@ -38,11 +38,6 @@
     <div class="rp-stat-label">전체 학생</div>
     <div class="rp-stat-value rp-stat-value--primary"><%= @total_students %></div>
   </div>
-
-  <div class="rp-stat-card">
-    <div class="rp-stat-label">전체 학부모</div>
-    <div class="rp-stat-value rp-stat-value--success"><%= @total_parents %></div>
-  </div>
 </div>
 
 <!-- 담당자 목록 -->
@@ -102,7 +97,6 @@
           <th>학교명</th>
           <th>이메일 도메인</th>
           <th>학생 수</th>
-          <th>학부모 수</th>
         </tr>
       </thead>
       <tbody>
@@ -111,7 +105,6 @@
             <td><strong><%= school.name %></strong></td>
             <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px;"><%= school.email_domain %></code></td>
             <td><%= school.students.count %>명</td>
-            <td><%= school.parents.count %>명</td>
           </tr>
         <% end %>
       </tbody>
