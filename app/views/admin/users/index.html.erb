@@ -30,7 +30,7 @@
         <div class="rp-filter-group">
           <%= select_tag :role,
               options_for_select(
-                [["모든 역할", ""]] + User::ROLES.map { |r| [role_label(r), r] },
+                [["모든 역할", ""]] + User.roles.keys.map { |r| [role_label(r), r] },
                 params[:role]
               ),
               class: "rp-filter-select" %>
@@ -121,7 +121,7 @@
           <label class="rp-form-label">새로운 역할 선택</label>
           <select name="role" class="rp-form-select" required>
             <option value="">역할을 선택하세요</option>
-            <% User::ROLES.each do |role| %>
+            <% User.roles.keys.each do |role| %>
               <option value="<%= role %>"><%= role_label(role) %></option>
             <% end %>
           </select>
