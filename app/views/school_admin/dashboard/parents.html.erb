@@ -1,0 +1,111 @@
+<% content_for :portal_title do %>
+  학부모 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  학부모 등록 현황 및 정보를 관리합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "school_admin/shared/nav", current: :parents %>
+<% end %>
+
+<% if flash[:temp_password].present? %>
+  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: 16px;">비밀번호가 초기화되었습니다</h3>
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #166534;">
+      <strong>학부모:</strong> <%= flash[:reset_parent_name] %>
+    </p>
+    <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">
+      <strong>임시 비밀번호:</strong>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+    </p>
+    <p style="margin: 0; font-size: 12px; color: #15803d;">이 비밀번호를 학부모에게 전달해주세요. 다음 로그인 시 비밀번호 변경이 필요합니다.</p>
+  </div>
+<% end %>
+
+<section class="portal-card" style="margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 class="portal-card-title" style="margin: 0;">학부모 목록 (<%= @parents.total_count %>명)</h2>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <%= form_with url: school_admin_parents_path, method: :get, local: true, data: { turbo: false }, style: "display: flex; gap: 8px;" do %>
+        <input type="text" name="search" value="<%= @search_query %>" placeholder="학부모 ID로 검색..."
+               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">검색</button>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @parents.any? %>
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>학부모 ID</th>
+          <th>이메일</th>
+          <th>연결 학생</th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @parents.each do |parent| %>
+          <tr>
+            <td><strong><%= parent.name %></strong></td>
+            <td style="font-size: 13px; color: #64748b;"><%= parent.user&.email %></td>
+            <td>
+              <% parent.students.each do |student| %>
+                <span class="rp-count-badge rp-count-badge--green"><%= student.name %></span>
+              <% end %>
+            </td>
+            <td>
+              <div class="rp-action-group">
+                <%= link_to school_admin_edit_parent_path(parent), class: "rp-icon-btn rp-icon-btn--edit", title: "편집" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <% end %>
+                <%= button_to school_admin_reset_parent_password_path(parent),
+                    method: :patch,
+                    data: { turbo: false, confirm: "#{parent.name}의 비밀번호를 초기화하시겠습니까?" },
+                    class: "rp-icon-btn rp-icon-btn--warning",
+                    title: "비밀번호 초기화" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <% end %>
+                <%= button_to school_admin_destroy_parent_path(parent),
+                    method: :delete,
+                    data: { turbo: false, confirm: "#{parent.name} 학부모를 삭제하시겠습니까?" },
+                    class: "rp-icon-btn rp-icon-btn--danger",
+                    title: "삭제" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if @parents.total_pages > 1 %>
+      <div style="margin-top: 16px; text-align: center;">
+        <%= paginate @parents %>
+      </div>
+    <% end %>
+  <% else %>
+    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+      <p>등록된 학부모가 없습니다.</p>
+    </div>
+  <% end %>
+</section>
+
+<style>
+  .rp-action-group { display: flex; gap: 6px; align-items: center; }
+  .rp-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    cursor: pointer; transition: all 0.2s ease; text-decoration: none;
+  }
+  .rp-icon-btn svg { pointer-events: none; }
+  .rp-icon-btn--edit { background: #eff6ff; color: #3b82f6; }
+  .rp-icon-btn--edit:hover { background: #dbeafe; box-shadow: 0 2px 4px rgba(59,130,246,0.2); }
+  .rp-icon-btn--warning { background: #fef3c7; color: #d97706; }
+  .rp-icon-btn--warning:hover { background: #fde68a; box-shadow: 0 2px 4px rgba(217,119,6,0.2); }
+  .rp-icon-btn--danger { background: #fef2f2; color: #dc2626; }
+  .rp-icon-btn--danger:hover { background: #fee2e2; box-shadow: 0 2px 4px rgba(220,38,38,0.2); }
+  .rp-count-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .rp-count-badge--green { background: #dcfce7; color: #166534; }
+</style>

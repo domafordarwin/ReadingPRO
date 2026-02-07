@@ -5,7 +5,7 @@ class ResponseFeedback < ApplicationRecord
   has_many :feedback_prompt_histories, dependent: :destroy
 
   SOURCES = %w[ai teacher system parent].freeze
-  FEEDBACK_TYPES = %w[strength weakness suggestion].freeze
+  FEEDBACK_TYPES = %w[strength weakness suggestion item].freeze
 
   validates :source, inclusion: { in: SOURCES }
   validates :feedback, presence: true

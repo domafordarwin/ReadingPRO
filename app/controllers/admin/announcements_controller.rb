@@ -38,7 +38,7 @@ module Admin
     def destroy
       @announcement.destroy
       flash[:notice] = "알림이 성공적으로 삭제되었습니다."
-      redirect_to admin_announcements_path
+      redirect_to admin_announcements_path, status: :see_other
     end
 
     def toggle_active

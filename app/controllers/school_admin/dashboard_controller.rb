@@ -10,7 +10,7 @@ class SchoolAdmin::DashboardController < ApplicationController
     Rails.logger.info "🔍 Session: user_id=#{session[:user_id]}, role=#{session[:role]}"
     Rails.logger.info "🔍 current_role method returns: #{current_role.inspect}"
 
-    @current_page = "school_reports"
+    @current_page = "dashboard"
 
     # 학교 기본 정보
     @school = School.first
@@ -111,7 +111,16 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def reports
     @current_page = "school_reports"
-    @reports = AttemptReport.includes(:student_attempt).order(created_at: :desc).page(params[:page]).per(10)
+    @reports = AttemptReport.includes(student_attempt: :student).order(created_at: :desc).page(params[:page]).per(10)
+  end
+
+  def show_report
+    @current_page = "school_reports"
+    @student = Student.find(params[:student_id])
+    @attempt = @student.student_attempts
+                       .includes(:attempt_report, :diagnostic_form)
+                       .find(params[:attempt_id])
+    @report = @attempt.attempt_report
   end
 
   def consultation_statistics
@@ -144,42 +153,59 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def report_template
     @current_page = "school_reports"
-    @assessment = SchoolAssessment
-                  .includes(
-                    :school,
-                    { school_literacy_stats: :evaluation_indicator },
-                    { school_sub_indicator_stats: %i[evaluation_indicator sub_indicator] },
-                    :school_reader_type_distributions,
-                    :school_reader_type_recommendations,
-                    :school_comprehensive_analysis,
-                    { school_guidance_directions: %i[evaluation_indicator sub_indicator] },
-                    :school_improvement_areas,
-                    { school_mcq_analyses: %i[evaluation_indicator sub_indicator] },
-                    { school_essay_analyses: %i[evaluation_indicator sub_indicator] }
-                  )
-                  .find_by(id: params[:assessment_id])
-    @assessment ||= SchoolAssessment
-                    .includes(
-                      :school,
-                      { school_literacy_stats: :evaluation_indicator },
-                      { school_sub_indicator_stats: %i[evaluation_indicator sub_indicator] },
-                      :school_reader_type_distributions,
-                      :school_reader_type_recommendations,
-                      :school_comprehensive_analysis,
-                      { school_guidance_directions: %i[evaluation_indicator sub_indicator] },
-                      :school_improvement_areas,
-                      { school_mcq_analyses: %i[evaluation_indicator sub_indicator] },
-                      { school_essay_analyses: %i[evaluation_indicator sub_indicator] }
-                    )
-                    .order(assessment_date: :desc)
-                    .first
+    # SchoolAssessment 모델은 아직 구현되지 않았습니다
+    @assessment = nil
+  end
+
+  def edit_student
+    @current_page = "student_mgmt"
+    @student = Student.find(params[:id])
+  end
+
+  def update_student
+    @current_page = "student_mgmt"
+    @student = Student.find(params[:id])
+
+    if @student.update(student_params)
+      flash[:notice] = "#{@student.name} 학생 정보가 수정되었습니다."
+      redirect_to school_admin_students_path
+    else
+      render :edit_student, status: :unprocessable_entity
+    end
+  end
+
+  def destroy_student
+    student = Student.find(params[:id])
+    name = student.name
+    user = student.user
+
+    # 이 학생에게만 연결된 부모(다른 자녀가 없는 경우)를 함께 삭제
+    parents_to_delete = student.parents.select { |parent| parent.students.count == 1 }
+
+    student.destroy
+    user&.destroy
+
+    # 부모 및 부모의 User 계정 삭제
+    deleted_parents = 0
+    parents_to_delete.each do |parent|
+      parent_user = parent.user
+      parent.destroy
+      parent_user&.destroy
+      deleted_parents += 1
+    end
+
+    msg = "#{name} 학생이 삭제되었습니다."
+    msg += " (연결된 학부모 #{deleted_parents}명도 함께 삭제)" if deleted_parents > 0
+    flash[:notice] = msg
+    redirect_to school_admin_students_path
   end
 
   def reset_student_password
     student = Student.find(params[:id])
     user = student.user
+    school = student.school
 
-    temp_password = SecureRandom.alphanumeric(10)
+    temp_password = generate_school_password(school)
     user.update!(password: temp_password, password_confirmation: temp_password, must_change_password: true)
 
     flash[:notice] = "#{student.name}의 비밀번호가 초기화되었습니다."
@@ -188,12 +214,73 @@ class SchoolAdmin::DashboardController < ApplicationController
     redirect_to school_admin_students_path
   end
 
+  # --- 학부모 관리 ---
+
+  def parents
+    @current_page = "parent_mgmt"
+    @school = School.first
+    @search_query = params[:search].to_s.strip
+
+    parent_ids = GuardianStudent.joins(:student)
+                   .where(students: { school_id: @school&.id })
+                   .distinct.pluck(:parent_id)
+
+    @parents = Parent.includes(:user, :students).where(id: parent_ids).order(:name)
+    @parents = @parents.where("parents.name ILIKE ?", "%#{@search_query}%") if @search_query.present?
+    @parents = @parents.page(params[:page]).per(20)
+  end
+
+  def edit_parent
+    @current_page = "parent_mgmt"
+    @parent = Parent.find(params[:id])
+  end
+
+  def update_parent
+    @current_page = "parent_mgmt"
+    @parent = Parent.find(params[:id])
+
+    if @parent.update(parent_params)
+      flash[:notice] = "#{@parent.name} 학부모 정보가 수정되었습니다."
+      redirect_to school_admin_parents_path
+    else
+      render :edit_parent, status: :unprocessable_entity
+    end
+  end
+
+  def destroy_parent
+    parent = Parent.find(params[:id])
+    name = parent.name
+    user = parent.user
+    parent.destroy
+    user&.destroy
+    flash[:notice] = "#{name} 학부모가 삭제되었습니다."
+    redirect_to school_admin_parents_path
+  end
+
+  def reset_parent_password
+    parent = Parent.find(params[:id])
+    user = parent.user
+    school = parent.students.first&.school
+
+    temp_password = generate_school_password(school)
+    user.update!(password: temp_password, password_confirmation: temp_password, must_change_password: true)
+
+    flash[:notice] = "#{parent.name}의 비밀번호가 초기화되었습니다."
+    flash[:temp_password] = temp_password
+    flash[:reset_parent_name] = parent.name
+    redirect_to school_admin_parents_path
+  end
+
   def about
     @current_page = "notice"
+
+    @notices = Notice.active.recent
+    @notices = @notices.for_role("school_admin").or(Notice.active.recent.where(target_roles: []))
+    @notices = @notices.distinct.order(important: :desc, published_at: :desc)
   end
 
   def managers
-    @current_page = "student_mgmt"
+    @current_page = "managers"
 
     # 학교 관리자와 교사 목록 조회
     @school_admins = User.where(role: "school_admin").order(created_at: :desc)
@@ -204,6 +291,21 @@ class SchoolAdmin::DashboardController < ApplicationController
 
   def set_role
     @current_role = "school_admin"
+  end
+
+  def student_params
+    params.require(:student).permit(:name, :grade, :class_name)
+  end
+
+  def parent_params
+    params.require(:parent).permit(:name, :phone, :email)
+  end
+
+  def generate_school_password(school)
+    return "ReadingPro_$12#" unless school&.email_domain.present?
+
+    school_name = school.email_domain.split(".").first
+    "#{school_name}_$12#"
   end
 
   def calculate_grade_scores

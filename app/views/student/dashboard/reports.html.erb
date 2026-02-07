@@ -233,7 +233,7 @@
 
     <div class="stat-card">
       <div class="stat-label">제점 완료</div>
-      <div class="stat-number"><%= @attempts.count { |a| a.report&.published? } %></div>
+      <div class="stat-number"><%= @attempts.count { |a| a.attempt_report.present? } %></div>
       <div class="stat-unit">건</div>
     </div>
 
@@ -248,16 +248,17 @@
   <div class="reports-list">
     <% @attempts.each do |attempt| %>
       <% attempt_score = calculate_attempt_score(attempt) %>
-      <% if attempt.report %>
+      <% if attempt.attempt_report %>
         <a href="<%= student_show_report_path(attempt.id) %>" class="report-card report-card-link">
           <div class="report-card-left">
             <div class="report-title">
-              2025학년도 중등 저학년 문해력 진단 평가
+              <%= attempt.diagnostic_form&.name || "진단 평가" %>
             </div>
 
             <div class="report-meta">
-              <span class="status-badge status-<%= attempt.report.status %>">
-                <%= translate_report_status(attempt.report.status) %>
+              <% report_status = attempt.attempt_report.generated_at.present? ? "generated" : "draft" %>
+              <span class="status-badge status-<%= report_status %>">
+                <%= translate_report_status(report_status) %>
               </span>
 
               <span class="meta-item">
@@ -292,7 +293,7 @@
         <div class="report-card" data-attempt-id="<%= attempt.id %>">
           <div class="report-card-left">
             <div class="report-title">
-              2025학년도 중등 저학년 문해력 진단 평가
+              <%= attempt.diagnostic_form&.name || "진단 평가" %>
             </div>
 
             <div class="report-meta">

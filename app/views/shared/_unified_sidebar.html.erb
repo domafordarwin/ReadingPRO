@@ -9,9 +9,11 @@
     "student" => {
       "dashboard" => "/student",
       "start_diagnosis" => "/student/diagnostics",
+      "comprehensive_report" => "/student/comprehensive_report",
       "diagnosis_status" => "/student/reports",
       "reports" => "/student/latest_report",
-      "feedback" => "/student/consultations"
+      "feedback" => "/student/consultations",
+      "notice" => "/student/about"
     },
     "parent" => {
       "dashboard" => "/parent",
@@ -21,11 +23,18 @@
       "feedback" => "/parent/forums"
     },
     "school_admin" => {
+      "dashboard" => "/school_admin",
       "student_mgmt" => "/school_admin/students",
+      "parent_mgmt" => "/school_admin/parents",
       "distribution" => "/school_admin/diagnostics",
       "school_reports" => "/school_admin/reports",
       "notice" => "/school_admin/about",
-      "statistics" => "/school_admin/reports",
+      "managers" => "/school_admin/managers",
+      "consultation_statistics" => "/school_admin/consultation_statistics",
+      "report_template" => "/school_admin/report_template",
+      "student_consultations" => "/school_admin/student_consultations",
+      "parent_forums" => "/school_admin/parent_forums",
+      "statistics" => "/school_admin/consultation_statistics",
       "sub_analysis" => "/school_admin/reports",
       "scoring_status" => "/school_admin/diagnostics"
     },
@@ -38,6 +47,7 @@
       "diagnostics_status" => "/diagnostic_teacher/diagnostics/status",
       "feedback_prompts" => "/diagnostic_teacher/feedback_prompts",
       "feedback" => "/diagnostic_teacher/feedbacks",
+      "comprehensive_reports" => "/diagnostic_teacher/comprehensive_reports",
       "notices" => "/diagnostic_teacher/notices",
       "consultations" => "/diagnostic_teacher/consultations",
       "consultation_requests" => "/diagnostic_teacher/consultation_requests",
@@ -96,18 +106,10 @@
     { id: "dashboard", label: "대시보드", icon: "home" },
   ]
 
-  # Add literacy test submenu for student role, regular items for others
+  # Student: 문해력 검사 → 진단 페이지, 종합보고서 보기 → 개발중
   if current_role.to_s == "student"
-    menu_a_items << {
-      id: "literacy_test",
-      label: "문해력 검사",
-      icon: "book-open",
-      hasSubmenu: true,
-      children: [
-        { id: "start_diagnosis", label: "진단 바로가기", icon: "play-circle" },
-        { id: "diagnosis_status", label: "진단 현황", icon: "list" }
-      ]
-    }
+    menu_a_items << { id: "start_diagnosis", label: "문해력 검사", icon: "book-open" }
+    menu_a_items << { id: "comprehensive_report", label: "종합보고서 보기", icon: "bar-chart" }
   elsif current_role.to_s == "parent"
     # Parent only sees reports and feedback, no diagnosis menu
   elsif current_role.to_s == "teacher"
@@ -118,8 +120,14 @@
     menu_a_items << { id: "diagnosis_status", label: "진단 현황", icon: "list" }
   end
 
-  menu_a_items << { id: "reports", label: "결과 리포트", icon: "bar-chart" } if current_role.to_s != "teacher"
-  menu_a_items << { id: "feedback", label: "피드백/상담", icon: "message-circle" } if current_role.to_s != "teacher"
+  # 학생: 결과 리포트는 문해력 검사 페이지에서 확인 가능하므로 별도 메뉴 불필요
+  menu_a_items << { id: "reports", label: "결과 리포트", icon: "bar-chart" } if current_role.to_s == "parent"
+  if current_role.to_s == "student"
+    menu_a_items << { id: "feedback", label: "상담 신청", icon: "message-circle" }
+  elsif current_role.to_s != "teacher"
+    menu_a_items << { id: "feedback", label: "피드백/상담", icon: "message-circle" }
+  end
+  menu_a_items << { id: "notice", label: "공지사항", icon: "bell" } if current_role.to_s == "student"
 
   # Teacher role has a special menu structure
   if current_role.to_s == "teacher"
@@ -152,7 +160,8 @@
             children: [
               { id: "diagnostics_status", label: "응시/채점 현황", icon: "clipboard" },
               { id: "feedback_prompts", label: "피드백 프롬프트", icon: "file-text" },
-              { id: "feedback", label: "학생별 피드백", icon: "message-circle" }
+              { id: "feedback", label: "학생별 피드백", icon: "message-circle" },
+              { id: "comprehensive_reports", label: "종합 결과 보고서", icon: "file-text" }
             ]
           }
         ]
@@ -181,13 +190,21 @@
         label: "학습/진단",
         items: menu_a_items
       },
+      "SA" => {
+        label: "메인",
+        items: [
+          { id: "dashboard", label: "대시보드", icon: "home" }
+        ]
+      },
       "B" => {
         label: "학교 운영",
         items: [
           { id: "student_mgmt", label: "학생/학급 관리", icon: "users" },
+          { id: "parent_mgmt", label: "학부모 관리", icon: "heart" },
           { id: "distribution", label: "진단 배포/운영", icon: "send" },
           { id: "school_reports", label: "리포트 대시보드", icon: "pie-chart" },
-          { id: "notice", label: "공지/가이드", icon: "file-text" }
+          { id: "notice", label: "공지사항", icon: "bell" },
+          { id: "managers", label: "담당자 정보 관리", icon: "shield" }
         ]
       },
       "C" => {
@@ -225,7 +242,7 @@
   role_menus = {
     "student" => ["A"],
     "parent" => ["A"],
-    "school_admin" => ["B", "D"],
+    "school_admin" => ["SA", "B", "D"],
     "teacher" => ["T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
     "developer" => ["C", "D"],
     "admin" => ["E"]
@@ -342,6 +359,7 @@
       "activity" => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
       "clipboard" => '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>',
       "shield" => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+      "heart" => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
       "building" => '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"></path>',
       "bell" => '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>',
       "megaphone" => '<path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path>',

@@ -52,6 +52,7 @@ Rails.application.routes.draw do
     get "latest_report", to: "dashboard#latest_report", as: "latest_report"
     get "reports/:attempt_id", to: "dashboard#show_report", as: "show_report"
     get "attempts/:attempt_id", to: "dashboard#show_attempt", as: "show_attempt"
+    get "comprehensive_report", to: "dashboard#comprehensive_report"
     get "about", to: "dashboard#about"
     get "profile", to: "dashboard#profile"
     post "generate_report", to: "dashboard#generate_report"
@@ -70,6 +71,7 @@ Rails.application.routes.draw do
     resources :responses, only: [] do
       member do
         patch :toggle_flag
+        patch :update_answer
       end
     end
 
@@ -105,12 +107,24 @@ Rails.application.routes.draw do
     root to: "dashboard#index"
     get "dashboard", to: "dashboard#index"
     get "students", to: "dashboard#students"
+    get "students/:id/edit", to: "dashboard#edit_student", as: "edit_student"
+    patch "students/:id", to: "dashboard#update_student", as: "update_student"
+    delete "students/:id", to: "dashboard#destroy_student", as: "destroy_student"
     patch "students/:id/reset_password", to: "dashboard#reset_student_password", as: "reset_student_password"
     resources :imports, only: [:new, :create]
+
+    # 학부모 관리
+    get "parents", to: "dashboard#parents"
+    get "parents/:id/edit", to: "dashboard#edit_parent", as: "edit_parent"
+    patch "parents/:id", to: "dashboard#update_parent", as: "update_parent"
+    delete "parents/:id", to: "dashboard#destroy_parent", as: "destroy_parent"
+    patch "parents/:id/reset_password", to: "dashboard#reset_parent_password", as: "reset_parent_password"
+
     get "diagnostics", to: "dashboard#diagnostics"
     post "diagnostics/assign_student", to: "dashboard#assign_to_student", as: "assign_to_student"
     post "diagnostics/bulk_assign", to: "dashboard#bulk_assign_to_students", as: "bulk_assign_to_students"
     get "reports", to: "dashboard#reports"
+    get "reports/:student_id/:attempt_id", to: "dashboard#show_report", as: "show_report"
     get "report_template", to: "dashboard#report_template"
     get "about", to: "dashboard#about"
     get "managers", to: "dashboard#managers"
@@ -130,13 +144,18 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
 
     # 진단 관리
+    get "diagnostics", to: redirect("/diagnostic_teacher/diagnostics/management")
     get "diagnostics/management", to: "dashboard#diagnostics", as: "diagnostics_management"
     get "managers", to: "dashboard#managers", as: "managers"
     get "assignments", to: "dashboard#assignments", as: "assignments"
     post "assignments", to: "dashboard#create_assignment", as: "create_assignment"
     delete "assignments/:id", to: "dashboard#cancel_assignment", as: "cancel_assignment"
+    post "assignments/:id/reassign", to: "dashboard#reassign", as: "reassign_assignment"
     get "items", to: "dashboard#items", as: "items"
     get "reports", to: "dashboard#reports", as: "reports"
+
+    # 진단 시도 삭제
+    delete "attempts/:id", to: "dashboard#destroy_attempt", as: "destroy_attempt"
 
     # 진단 분석
     get "diagnostics/status", to: "dashboard#diagnostics_status", as: "diagnostics_status"
@@ -154,13 +173,27 @@ Rails.application.routes.draw do
     get "feedback_prompts/templates", to: "feedback#prompt_templates", as: "feedback_prompt_templates"
     get "feedbacks/:response_id/histories", to: "feedback#prompt_histories", as: "feedback_prompt_histories"
     post "feedbacks/histories/:history_id/load", to: "feedback#load_prompt_history", as: "load_prompt_history"
+    post "feedbacks/:student_id/generate_mcq_feedbacks", to: "feedback#generate_mcq_feedbacks", as: "feedback_generate_mcq_feedbacks"
+    post "feedbacks/:student_id/generate_constructed_feedbacks", to: "feedback#generate_constructed_feedbacks", as: "feedback_generate_constructed_feedbacks"
     post "feedbacks/:student_id/generate_comprehensive", to: "feedback#generate_comprehensive", as: "feedback_generate_comprehensive"
     post "feedbacks/:student_id/save_comprehensive", to: "feedback#save_comprehensive", as: "feedback_save_comprehensive"
     post "feedbacks/:student_id/refine_comprehensive", to: "feedback#refine_comprehensive", as: "feedback_refine_comprehensive"
     post "feedbacks/optimize_prompt", to: "feedback#optimize_prompt", as: "feedback_optimize_prompt"
+    post "feedbacks/:student_id/publish_feedback", to: "feedback#publish_feedback", as: "feedback_publish"
+    post "feedbacks/:student_id/unpublish_feedback", to: "feedback#unpublish_feedback", as: "feedback_unpublish"
 
-    # 공지사항 및 상담 관리
-    get "notices", to: "dashboard#notices", as: "notices"
+    # 종합 결과 보고서
+    get "comprehensive_reports", to: "comprehensive_reports#index", as: "comprehensive_reports"
+    get "comprehensive_reports/:student_id/:attempt_id", to: "comprehensive_reports#show", as: "comprehensive_report"
+    get "comprehensive_reports/:student_id/:attempt_id/generate", to: "comprehensive_reports#generate", as: "comprehensive_report_generate"
+    post "comprehensive_reports/:student_id/:attempt_id/create_report", to: "comprehensive_reports#create_report", as: "comprehensive_report_create"
+    patch "comprehensive_reports/:student_id/:attempt_id/update_section", to: "comprehensive_reports#update_section", as: "comprehensive_report_update_section"
+    post "comprehensive_reports/:student_id/:attempt_id/regenerate_section", to: "comprehensive_reports#regenerate_section", as: "comprehensive_report_regenerate_section"
+    post "comprehensive_reports/:student_id/:attempt_id/publish", to: "comprehensive_reports#publish", as: "comprehensive_report_publish"
+    post "comprehensive_reports/:student_id/:attempt_id/unpublish", to: "comprehensive_reports#unpublish", as: "comprehensive_report_unpublish"
+
+    # 공지사항 CRUD
+    resources :notices, only: [:index, :new, :create, :edit, :update, :destroy]
     get "students/:student_id/reports/:attempt_id", to: "dashboard#show_student_report", as: "show_student_report"
     get "consultation_statistics", to: "dashboard#consultation_statistics"
 
@@ -221,6 +254,10 @@ Rails.application.routes.draw do
       patch "move_criterion", on: :member
     end
     resources :stimuli, only: %i[new create edit update destroy]
+
+    # AJAX endpoints for creating evaluation indicators/sub-indicators
+    resources :evaluation_indicators, only: [:create], defaults: { format: :json }
+    resources :sub_indicators, only: [:create], defaults: { format: :json }
 
     # Passage management with AI analysis
     resources :passages, only: %i[show edit update destroy], controller: "stimuli" do

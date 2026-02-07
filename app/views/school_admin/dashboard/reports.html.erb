@@ -25,6 +25,7 @@
           <th>진단일</th>
           <th>총점</th>
           <th>상태</th>
+          <th>보기</th>
         </tr>
       </thead>
       <tbody>
@@ -32,12 +33,23 @@
           <tr>
             <td><%= report.student_attempt&.student&.name || '-' %></td>
             <td><%= report.generated_at&.strftime("%Y-%m-%d") || report.created_at.strftime("%Y-%m-%d") %></td>
-            <td><%= report.student_attempt&.total_score || '-' %>점</td>
+            <td><%= report.total_score || '-' %>점</td>
             <td>
               <% if report.generated_at.present? %>
                 <span class="portal-badge portal-badge--success">완료</span>
               <% else %>
                 <span class="portal-badge portal-badge--warning">생성중</span>
+              <% end %>
+            </td>
+            <td>
+              <% if report.student_attempt.present? && report.comprehensive_report_generated? %>
+                <%= link_to school_admin_show_report_path(report.student_attempt.student_id, report.student_attempt_id), class: "portal-badge portal-badge--info" do %>
+                  종합보고서
+                <% end %>
+              <% elsif report.student_attempt.present? %>
+                <span class="portal-badge portal-badge--secondary">미생성</span>
+              <% else %>
+                -
               <% end %>
             </td>
           </tr>
@@ -78,6 +90,26 @@
   .portal-badge--warning {
     background: #fef3c7;
     color: #92400e;
+  }
+
+  .portal-badge--info {
+    background: #dbeafe;
+    color: #1e40af;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .portal-badge--info:hover {
+    background: #bfdbfe;
+  }
+
+  .portal-badge--secondary {
+    background: #f1f5f9;
+    color: #475569;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .portal-badge--secondary:hover {
+    background: #e2e8f0;
   }
 
   .portal-empty-state {

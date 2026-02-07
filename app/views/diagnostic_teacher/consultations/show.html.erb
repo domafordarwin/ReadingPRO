@@ -62,7 +62,7 @@
         <% if @post.open? %>
           <%= button_to "답변 완료 표시", mark_as_answered_diagnostic_teacher_consultation_path(@post),
               method: :patch,
-              data: { confirm: "답변 완료로 표시하시겠습니까?" },
+              data: { turbo_confirm: "답변 완료로 표시하시겠습니까?" },
               class: "rp-btn rp-btn--success" %>
         <% end %>
         <%= link_to "목록으로", diagnostic_teacher_consultations_path, class: "rp-btn rp-btn--outline" %>
@@ -94,7 +94,7 @@
                   <%= button_to "삭제",
                       diagnostic_teacher_consultation_comment_path(@post, comment),
                       method: :delete,
-                      data: { confirm: "답변을 삭제하시겠습니까?" },
+                      data: { turbo_confirm: "답변을 삭제하시겠습니까?" },
                       class: "rp-comment__delete" %>
                 <% end %>
               </div>

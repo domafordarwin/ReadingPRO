@@ -56,10 +56,12 @@
         <tbody>
           <% @student_responses.each do |student_id, responses| %>
             <% student = responses.first.attempt.student %>
-            <% feedback_count = responses.select { |r| r.feedback_prompts.empty? }.count %>
+            <% latest_attempt = responses.first.attempt %>
+            <% feedback_count = responses.select { |r| r.response_feedbacks.empty? }.count %>
+            <% is_published = latest_attempt.feedback_published_at.present? %>
             <tr class="rp-table__row">
               <td class="rp-table__td"><strong><%= student.name %></strong></td>
-              <td class="rp-table__td"><%= "#{student.grade}학년 #{student.class_number}반" %></td>
+              <td class="rp-table__td"><%= "#{student.grade}학년 #{student.class_name}반" %></td>
               <td class="rp-table__td"><%= student.school.name %></td>
               <td class="rp-table__td">
                 <span class="rp-feedback-count">
@@ -70,7 +72,9 @@
                 <%= time_ago_in_words(responses.max_by { |r| r.created_at }.created_at) %> 전
               </td>
               <td class="rp-table__td">
-                <% if feedback_count > 0 %>
+                <% if is_published %>
+                  <span class="rp-badge rp-badge--published">피드백 완료</span>
+                <% elsif feedback_count > 0 %>
                   <span class="rp-badge rp-badge--warning">피드백필요</span>
                 <% else %>
                   <span class="rp-badge rp-badge--success">완료</span>
@@ -223,6 +227,11 @@
   .rp-badge--warning {
     background: #fef3c7;
     color: #b45309;
+  }
+
+  .rp-badge--published {
+    background: #dbeafe;
+    color: #1e40af;
   }
 
   .rp-btn {

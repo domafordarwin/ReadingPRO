@@ -14,6 +14,24 @@ class Student::AssessmentsController < ApplicationController
       return
     end
 
+    # 이미 완료된 진단인지 확인 (재배정 없이는 재시도 불가)
+    latest_completed = @student.student_attempts
+      .where(diagnostic_form_id: diagnostic_form.id, status: [ :completed, :submitted ])
+      .maximum(:submitted_at)
+
+    if latest_completed.present?
+      school = @student.school
+      latest_assignment = DiagnosticAssignment.active
+        .where("student_id = ? OR school_id = ?", @student.id, school&.id)
+        .where(diagnostic_form_id: diagnostic_form.id)
+        .maximum(:assigned_at)
+
+      unless latest_assignment.present? && latest_assignment > latest_completed
+        redirect_to student_diagnostics_path, alert: "이미 완료한 진단입니다. 재검사가 필요한 경우 담당 교사에게 문의하세요."
+        return
+      end
+    end
+
     @attempt = @student.student_attempts.build(
       diagnostic_form: diagnostic_form,
       status: :in_progress,

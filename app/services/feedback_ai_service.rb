@@ -1,6 +1,40 @@
 # frozen_string_literal: true
 
 class FeedbackAiService
+  # ===== 프롬프트 카테고리 =====
+  PROMPT_CATEGORIES = {
+    "mcq_feedback" => "객관식 답안 확인 피드백",
+    "constructed_feedback" => "서술형 피드백",
+    "reading_tendency" => "독서력 피드백",
+    "comprehensive_report" => "종합 보고서 생성 프롬프트"
+  }.freeze
+
+  # ===== 기본 프롬프트 =====
+  MCQ_DEFAULT_PROMPT = <<~PROMPT.strip
+    각 오답 문항에 대해 다음 내용을 포함한 피드백을 작성하세요:
+    1. 학생이 선택한 오답의 원인을 "오답 근접 이유"를 활용하여 분석
+    2. 정답과 그 근거를 명확히 설명
+    3. 유사한 문제를 풀 때 도움이 되는 문제 풀이 전략과 팁을 반드시 제안
+    4. 친절하고 격려적인 톤으로 각 문항 300자 이내로 작성
+  PROMPT
+
+  CONSTRUCTED_DEFAULT_PROMPT = <<~PROMPT.strip
+    각 서술형 문항에 대해 루브릭 채점 기준에 따라 채점하고, 다음 4가지 항목을 포함한 피드백을 작성하세요:
+    - 도달점: 학생이 현재 도달한 수준을 간결하게 기술
+    - 장점: 답안에서 잘한 부분을 구체적으로 언급
+    - 보완점: 부족한 부분과 그 이유를 설명
+    - 개선 방향: 구체적인 개선 조언과 문제 풀이 전략 제안
+    학생 답안을 모범 답안 및 루브릭 채점 기준과 비교 분석하여 채점 후 500자 이내로 피드백을 작성하세요.
+  PROMPT
+
+  COMPREHENSIVE_DEFAULT_PROMPT = <<~PROMPT.strip
+    학생의 전체 성과를 분석하고 종합 피드백을 작성하세요:
+    1. 학생의 강점을 구체적으로 언급
+    2. 개선이 필요한 영역을 명확히 지적
+    3. 향후 학습 방향에 대한 조언 제시
+    4. 격려적이고 건설적인 톤으로 500-800자로 작성
+  PROMPT
+
   def self.generate_feedback(response)
     new.generate_feedback(response)
   end
@@ -19,6 +53,14 @@ class FeedbackAiService
 
   def self.refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
     new.refine_with_existing_feedback(responses, existing_feedback, custom_prompt)
+  end
+
+  def self.generate_mcq_item_feedbacks(responses, custom_prompt: nil)
+    new.generate_mcq_item_feedbacks(responses, custom_prompt: custom_prompt)
+  end
+
+  def self.generate_constructed_item_feedbacks(responses, custom_prompt: nil)
+    new.generate_constructed_item_feedbacks(responses, custom_prompt: custom_prompt)
   end
 
   def generate_feedback(response)
@@ -227,6 +269,172 @@ class FeedbackAiService
     end
   end
 
+  def generate_mcq_item_feedbacks(responses, custom_prompt: nil)
+    return {} if responses.empty?
+
+    # 문항별 정보 구성
+    items_info = responses.map.with_index(1) do |response, idx|
+      item = response.item
+      selected = response.selected_choice
+      correct = item.item_choices.find(&:is_correct?)
+
+      info = "문항 #{idx} (response_id: #{response.id}):\n"
+      info += "  문항내용: #{item.prompt}\n"
+      info += "  정답: #{correct&.choice_no}번 - #{correct&.content}\n"
+      info += "  학생답: #{selected&.choice_no}번 - #{selected&.content}\n"
+      if selected&.proximity_reason.present?
+        info += "  오답 근접 이유: #{selected.proximity_reason}\n"
+      end
+      if selected&.proximity_score.present?
+        info += "  근접도 점수: #{selected.proximity_score}\n"
+      end
+      if item.explanation.present?
+        info += "  해설: #{item.explanation}\n"
+      end
+      info
+    end.join("\n")
+
+    rules = custom_prompt.presence || MCQ_DEFAULT_PROMPT
+
+    prompt_text = <<~PROMPT
+      학생이 객관식 문항을 풀었습니다. 아래 오답 문항들에 대해 각각 개별 피드백을 작성해주세요.
+
+      [오답 문항 목록]
+      #{items_info}
+
+      [피드백 작성 규칙]
+      #{rules}
+
+      반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+      {"response_id1": "피드백1", "response_id2": "피드백2"}
+    PROMPT
+
+    begin
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+
+      api_response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "당신은 읽기 진단 평가 전문가입니다. 학생의 오답에 대해 교육적이고 건설적인 피드백을 JSON 형식으로 작성합니다." },
+            { role: "user", content: prompt_text }
+          ],
+          max_tokens: responses.size * 200,
+          temperature: 0.7,
+          response_format: { type: "json_object" }
+        }
+      )
+
+      raw = api_response.dig("choices", 0, "message", "content")
+      JSON.parse(raw || "{}")
+    rescue JSON::ParserError => e
+      Rails.logger.error("[generate_mcq_item_feedbacks] JSON parse error: #{e.message}")
+      # Fallback: 개별 생성
+      fallback_individual_feedbacks(responses)
+    rescue StandardError => e
+      Rails.logger.error("[generate_mcq_item_feedbacks] Error: #{e.class} - #{e.message}")
+      fallback_individual_feedbacks(responses)
+    end
+  end
+
+  def generate_constructed_item_feedbacks(responses, custom_prompt: nil)
+    return {} if responses.empty?
+
+    # 실제 response_id 목록 수집 (JSON 예시에 사용)
+    response_ids = responses.map { |r| r.id.to_s }
+
+    items_info = responses.map.with_index(1) do |response, idx|
+      item = response.item
+      rubric = item&.rubric
+      criteria = rubric&.rubric_criteria || []
+
+      info = "문항 #{idx} (response_id: #{response.id}):\n"
+      info += "  문항내용: #{item.prompt}\n"
+      info += "  학생답안: #{response.answer_text || '(답변 없음)'}\n"
+
+      if item.model_answer.present?
+        info += "  모범답안: #{item.model_answer}\n"
+      end
+
+      if criteria.any?
+        info += "  [채점 기준 (루브릭)]\n"
+        criteria.each do |criterion|
+          levels = criterion.rubric_levels.order(:level)
+          max_level = criterion.max_score || levels.maximum(:level) || 4
+          info += "    기준 (criterion_id: #{criterion.id}): #{criterion.criterion_name} (최대 #{max_level}점)\n"
+          if criterion.description.present?
+            info += "      설명: #{criterion.description}\n"
+          end
+          # 각 수준별 설명 제공
+          levels.each do |rl|
+            info += "      #{rl.level}점: #{rl.description}\n"
+          end
+        end
+      end
+
+      if item.explanation.present?
+        info += "  해설: #{item.explanation}\n"
+      end
+      info
+    end.join("\n")
+
+    rules = custom_prompt.presence || CONSTRUCTED_DEFAULT_PROMPT
+
+    # JSON 예시를 실제 response_id로 생성
+    json_example = response_ids.map do |rid|
+      "\"#{rid}\": {\"scores\": {\"criterion_id\": 점수}, \"feedback\": \"피드백\"}"
+    end.join(", ")
+
+    prompt_text = <<~PROMPT
+      학생이 서술형 문항을 풀었습니다. 아래 문항들에 대해 루브릭 채점 기준을 참고하여 학생 답안을 채점하고, 각각 개별 피드백을 작성해주세요.
+
+      [서술형 문항 목록]
+      #{items_info}
+
+      [피드백 작성 규칙]
+      #{rules}
+
+      반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이).
+      키는 반드시 위 문항 목록의 response_id 숫자(#{response_ids.join(', ')})를 사용하세요:
+      {#{json_example}}
+
+      scores의 키는 위에 표시된 criterion_id 숫자, 값은 해당 기준의 점수(정수)입니다.
+      feedback은 피드백 텍스트(문자열)입니다.
+    PROMPT
+
+    Rails.logger.info("[generate_constructed_item_feedbacks] Sending #{responses.size} responses to AI, IDs: #{response_ids}")
+
+    begin
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+
+      api_response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "당신은 서술형 문항 평가 전문가입니다. 루브릭 채점 기준을 토대로 학생 답안을 채점하고, 도달점, 장점, 보완점, 개선 방향을 포함한 교육적 피드백을 JSON 형식으로 작성합니다. 각 기준별 점수와 피드백을 함께 제공합니다." },
+            { role: "user", content: prompt_text }
+          ],
+          max_tokens: responses.size * 500,
+          temperature: 0.7,
+          response_format: { type: "json_object" }
+        }
+      )
+
+      raw = api_response.dig("choices", 0, "message", "content")
+      Rails.logger.info("[generate_constructed_item_feedbacks] AI raw response: #{raw&.truncate(500)}")
+      parsed = JSON.parse(raw || "{}")
+      Rails.logger.info("[generate_constructed_item_feedbacks] Parsed keys: #{parsed.keys}")
+      parsed
+    rescue JSON::ParserError => e
+      Rails.logger.error("[generate_constructed_item_feedbacks] JSON parse error: #{e.message}")
+      fallback_constructed_feedbacks(responses)
+    rescue StandardError => e
+      Rails.logger.error("[generate_constructed_item_feedbacks] Error: #{e.class} - #{e.message}")
+      Rails.logger.error("[generate_constructed_item_feedbacks] Backtrace: #{e.backtrace.first(3).join("\n")}")
+      fallback_constructed_feedbacks(responses)
+    end
+  end
+
   private
 
   def build_comprehensive_summary(responses)
@@ -282,5 +490,36 @@ class FeedbackAiService
   def fallback_comprehensive_feedback(responses)
     summary = build_comprehensive_summary(responses)
     "#{summary}\n\n학생의 강점과 개선 영역을 파악하고, 향후 학습 계획을 수립하는 것이 중요합니다."
+  end
+
+  def fallback_individual_feedbacks(responses)
+    result = {}
+    responses.each do |response|
+      correct = response.item.item_choices.find(&:is_correct?)
+      result[response.id.to_s] = "정답은 #{correct&.choice_no}번 '#{correct&.content}'입니다. 문항을 다시 읽어보고 정답의 근거를 확인해보세요."
+    end
+    result
+  end
+
+  def fallback_constructed_feedbacks(responses)
+    result = {}
+    responses.each do |response|
+      criteria = response.item&.rubric&.rubric_criteria || []
+
+      # 기본 점수: 각 기준의 최대 점수의 절반
+      scores_hash = {}
+      criteria.each do |criterion|
+        max = criterion.max_score || criterion.rubric_levels.maximum(:level) || 4
+        scores_hash[criterion.id.to_s] = (max / 2.0).ceil
+      end
+
+      feedback = "[도달점] 자동 채점을 수행할 수 없어 기본 점수가 부여되었습니다.\n"
+      feedback += "[장점] 문항에 대해 답안을 작성하였습니다.\n"
+      feedback += "[보완점] 채점 기준을 참고하여 답안을 보완해보세요.\n"
+      feedback += "[개선 방향] 모범 답안과 비교하며 핵심 내용을 정리해보세요."
+
+      result[response.id.to_s] = { "scores" => scores_hash, "feedback" => feedback }
+    end
+    result
   end
 end

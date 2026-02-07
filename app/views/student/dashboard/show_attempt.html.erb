@@ -1,522 +1,886 @@
-<% content_for :portal_title do %>
-  시험 결과 상세
-<% end %>
-
-<% content_for :portal_subtitle do %>
-  객관식 및 서술형 문항별 답변 및 평가 피드백
-<% end %>
-
-<% content_for :portal_nav do %>
-  <%= render "student/shared/nav", current: :reports %>
-<% end %>
+<% content_for :page_title do %>시험 결과 상세<% end %>
 
 <style>
-  .attempt-header {
+  /* ===== 페이지 헤더 ===== */
+  .sa-header {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-
-  .attempt-header h1 {
-    margin: 0 0 12px 0;
-    font-size: 24px;
+  .sa-header__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 16px 0;
   }
-
-  .attempt-info {
+  .sa-header__info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
+    gap: 12px;
   }
-
-  .info-item {
-    background: rgba(255, 255, 255, 0.15);
-    padding: 12px;
-    border-radius: 4px;
+  .sa-info-item {
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 8px;
   }
-
-  .info-label {
-    font-size: 12px;
-    opacity: 0.9;
+  .sa-info-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
-
-  .info-value {
-    font-size: 16px;
+  .sa-info-value {
+    font-size: 15px;
     font-weight: 600;
+    color: #0f172a;
   }
 
-  .section-header {
+  /* ===== 통계 그리드 ===== */
+  .sa-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .sa-stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: box-shadow 0.15s;
+  }
+  .sa-stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .sa-stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2f5bff;
+    margin-bottom: 2px;
+  }
+  .sa-stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  /* ===== 섹션 헤더 ===== */
+  .sa-section-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 32px 0 16px 0;
+    gap: 10px;
+    margin: 28px 0 16px 0;
   }
-
-  .section-title {
-    font-size: 20px;
+  .sa-section-title {
+    font-size: 18px;
     font-weight: 600;
-    color: #333;
+    color: #0f172a;
   }
-
-  .section-count {
-    background: #667eea;
-    color: white;
+  .sa-section-count {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
   }
 
-  /* 테이블 스타일 */
-  .result-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 24px;
+  /* ===== 공통 문항 카드 ===== */
+  .sa-card {
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 16px;
     overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .sa-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .sa-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .sa-card-number {
+    font-weight: 700;
+    font-size: 14px;
+    color: #2f5bff;
+  }
+  .sa-card-prompt {
+    font-size: 13px;
+    color: #64748b;
+    flex: 1;
+    margin: 0 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .result-table thead {
-    background: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  .result-table th {
-    padding: 16px 12px;
-    text-align: left;
-    font-weight: 600;
+  /* 정답/오답 배지 */
+  .sa-badge-correct {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-size: 12px;
-    color: #333;
+    font-weight: 600;
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sa-badge-incorrect {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  .sa-badge-scored {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .sa-badge-pending {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* ===== 3열 레이아웃 ===== */
+  .sa-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    min-height: 120px;
+  }
+  .sa-col {
+    padding: 16px 20px;
+  }
+  .sa-col:not(:last-child) {
+    border-right: 1px solid #f1f5f9;
+  }
+
+  /* 문항 정보 컬럼 */
+  .sa-meta-group { margin-bottom: 12px; }
+  .sa-meta-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 4px;
   }
-
-  .result-table td {
-    padding: 16px 12px;
-    border-bottom: 1px solid #dee2e6;
+  .sa-meta-value {
     font-size: 13px;
-  }
-
-  .result-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .result-table tbody tr:hover {
-    background: #f8f9fa;
-  }
-
-  /* 테이블 셀 스타일 */
-  .cell-number {
-    font-weight: 600;
-    color: #667eea;
-    width: 60px;
-  }
-
-  .cell-indicator {
     font-weight: 500;
-    color: #333;
-    min-width: 100px;
+    color: #334155;
+  }
+  .sa-indicator-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .sa-sub-indicator-badge {
+    display: inline-block;
+    background: #f0fdf4;
+    color: #166534;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
   }
 
-  .cell-sub-indicator {
-    color: #666;
+  /* 답안 비교 */
+  .sa-answer-compare {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .sa-answer-box {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
     font-size: 12px;
   }
-
-  .cell-answer {
-    max-width: 300px;
-    line-height: 1.5;
+  .sa-answer-box--correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
   }
-
-  .cell-question {
-    max-width: 400px;
-    line-height: 1.5;
-    color: #333;
+  .sa-answer-box--correct .sa-answer-box__label { color: #15803d; }
+  .sa-answer-box--correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box--student {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
   }
-
-  .cell-feedback {
-    max-width: 350px;
-    line-height: 1.5;
-    color: #333;
+  .sa-answer-box--student.is-correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
   }
-
-  .correct-badge {
-    display: inline-block;
-    background: #d4edda;
-    color: #155724;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
+  .sa-answer-box--student .sa-answer-box__label { color: #dc2626; }
+  .sa-answer-box--student.is-correct .sa-answer-box__label { color: #15803d; }
+  .sa-answer-box--student .sa-answer-box__value { color: #991b1b; font-weight: 600; }
+  .sa-answer-box--student.is-correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box__label {
+    font-size: 10px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
   }
 
-  .incorrect-badge {
-    display: inline-block;
-    background: #f8d7da;
-    color: #721c24;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .score-badge {
-    display: inline-block;
-    background: #d1ecf1;
-    color: #0c5460;
-    padding: 4px 8px;
-    border-radius: 4px;
+  /* 선택지 리스트 */
+  .sa-choice-list { list-style: none; padding: 0; margin: 0; }
+  .sa-choice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
     font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .sa-choice-item.is-correct-choice {
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 500;
+  }
+  .sa-choice-item.is-student-wrong {
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  .sa-choice-no {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
     font-weight: 600;
+    color: #64748b;
+  }
+  .sa-choice-item.is-correct-choice .sa-choice-no {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sa-choice-item.is-student-wrong .sa-choice-no {
+    background: #fecaca;
+    color: #991b1b;
+  }
+  .sa-choice-marker {
+    flex-shrink: 0;
+    font-size: 11px;
+    margin-left: auto;
+    white-space: nowrap;
   }
 
-  .feedback-expand {
+  /* 피드백/해설 컬럼 */
+  .sa-explanation {
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.6;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 3px solid #2f5bff;
+  }
+  .sa-feedback-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
     cursor: pointer;
-    color: #667eea;
-    text-decoration: underline;
+    transition: background 0.15s;
+  }
+  .sa-feedback-btn:hover { background: #dbeafe; }
+  .sa-no-feedback { font-size: 12px; color: #94a3b8; }
+
+  /* ===== 서술형 중간열 ===== */
+  .sa-col-middle {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #f1f5f9;
+  }
+  .sa-question-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .sa-question-text {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.7;
+    background: #fffbeb;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #f59e0b;
+    margin-top: 6px;
+  }
+  .sa-answer-section {
+    padding: 16px 20px;
+    flex: 1;
+  }
+  .sa-answer-display {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #334155;
+    margin-top: 8px;
+  }
+  .sa-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background 0.15s;
+  }
+  .sa-edit-btn:hover { background: #dbeafe; }
+  .sa-edit-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #334155;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .sa-edit-textarea:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+  .sa-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .sa-btn-save {
+    background: #2f5bff;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
     font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .sa-btn-save:hover { background: #254ccb; }
+  .sa-btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .sa-btn-cancel:hover { background: #e2e8f0; }
+
+  /* 채점 결과 */
+  .sa-score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .sa-score-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .sa-score-label {
+    font-size: 11px;
+    color: #94a3b8;
   }
 
-  .feedback-modal {
+  /* ===== 모달 ===== */
+  .sa-modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
   }
-
-  .feedback-modal-content {
-    background-color: white;
+  .sa-modal-content {
+    background: white;
     margin: 5% auto;
     padding: 24px;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 80%;
     max-width: 600px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
   }
-
-  .feedback-modal-header {
+  .sa-modal-header {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: #333;
+    color: #0f172a;
   }
-
-  .feedback-modal-body {
+  .sa-modal-body {
     font-size: 13px;
     line-height: 1.6;
-    color: #666;
+    color: #475569;
     margin-bottom: 16px;
     max-height: 400px;
     overflow-y: auto;
   }
-
-  .feedback-modal-footer {
-    text-align: right;
-  }
-
-  .close-btn {
-    background: #667eea;
+  .sa-modal-footer { text-align: right; }
+  .sa-modal-close {
+    background: #2f5bff;
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
+    padding: 8px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
   }
+  .sa-modal-close:hover { background: #254ccb; }
 
-  .close-btn:hover {
-    background: #764ba2;
-  }
-
-  .back-link {
-    display: inline-block;
+  /* ===== 네비게이션 ===== */
+  .sa-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 16px;
-    color: #667eea;
+    color: #2f5bff;
     text-decoration: none;
     font-size: 14px;
+    font-weight: 500;
   }
+  .sa-back-link:hover { text-decoration: underline; }
 
-  .back-link:hover {
-    text-decoration: underline;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .stat-card {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
+  /* ===== 빈 상태 ===== */
+  .sa-empty {
     text-align: center;
+    padding: 60px 16px;
+    color: #94a3b8;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
   }
 
-  .stat-number {
-    font-size: 28px;
-    font-weight: 700;
-    color: #667eea;
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 12px;
-    color: #999;
-  }
-
-  @media (max-width: 768px) {
-    .result-table {
-      font-size: 11px;
+  /* ===== 반응형 ===== */
+  @media (max-width: 900px) {
+    .sa-card-body {
+      grid-template-columns: 1fr;
     }
-
-    .result-table th,
-    .result-table td {
-      padding: 12px 8px;
+    .sa-col, .sa-col-middle {
+      border-right: none !important;
+      border-bottom: 1px solid #f1f5f9;
     }
-
-    .cell-question,
-    .cell-answer,
-    .cell-feedback {
-      max-width: 200px;
+    .sa-col:last-child {
+      border-bottom: none !important;
     }
   }
 </style>
 
-<a href="<%= student_show_report_path(@attempt.id) %>" class="back-link">← 리포트로 돌아가기</a>
+<div style="padding: 20px;">
+  <a href="<%= student_diagnostics_path %>" class="sa-back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    문해력 검사로 돌아가기
+  </a>
 
-<div class="attempt-header">
-  <h1>시험 결과 상세</h1>
-  <div class="attempt-info">
-    <div class="info-item">
-      <div class="info-label">진단 번호</div>
-      <div class="info-value">#<%= @attempt.id %></div>
+  <!-- ===== 헤더 ===== -->
+  <div class="sa-header">
+    <h1 class="sa-header__title"><%= @attempt.diagnostic_form&.name || "진단 ##{@attempt.id}" %> - 결과 상세</h1>
+    <div class="sa-header__info">
+      <div class="sa-info-item">
+        <div class="sa-info-label">시험 상태</div>
+        <div class="sa-info-value"><%= @attempt.status == 'completed' ? '완료' : '진행중' %></div>
+      </div>
+      <div class="sa-info-item">
+        <div class="sa-info-label">응시일</div>
+        <div class="sa-info-value"><%= @attempt.started_at&.strftime("%Y년 %m월 %d일") %></div>
+      </div>
+      <div class="sa-info-item">
+        <div class="sa-info-label">제출일</div>
+        <div class="sa-info-value"><%= @attempt.submitted_at&.strftime("%Y년 %m월 %d일 %H:%M") || "-" %></div>
+      </div>
+      <div class="sa-info-item">
+        <div class="sa-info-label">총 문항</div>
+        <div class="sa-info-value"><%= @responses.count %>문항</div>
+      </div>
     </div>
-    <div class="info-item">
-      <div class="info-label">시험 상태</div>
-      <div class="info-value"><%= @attempt.status == 'completed' ? '완료' : '진행중' %></div>
-    </div>
-    <div class="info-item">
-      <div class="info-label">시작일시</div>
-      <div class="info-value"><%= @attempt.started_at&.strftime("%m월 %d일") %></div>
-    </div>
-    <div class="info-item">
-      <div class="info-label">총 문항</div>
-      <div class="info-value"><%= @responses.count %></div>
-    </div>
-  </div>
-</div>
-
-<!-- 통계 -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-number"><%= @mcq_responses.count %></div>
-    <div class="stat-label">객관식 문항</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-number"><%= @constructed_responses.count %></div>
-    <div class="stat-label">서술형 문항</div>
-  </div>
-  <% correct_count = @mcq_responses.select { |r| r.selected_choice&.is_correct }.count %>
-  <div class="stat-card">
-    <div class="stat-number"><%= correct_count %></div>
-    <div class="stat-label">객관식 정답</div>
-  </div>
-</div>
-
-<!-- 객관식 섹션 -->
-<% if @mcq_responses.any? %>
-  <div class="section-header">
-    <h2 class="section-title">📋 객관식 문항</h2>
-    <span class="section-count"><%= @mcq_responses.count %>문항</span>
   </div>
 
-  <table class="result-table">
-    <thead>
-      <tr>
-        <th style="width: 60px;">문항번호</th>
-        <th style="width: 120px;">평가지표</th>
-        <th style="width: 120px;">하위지표</th>
-        <th style="width: 100px;">정답</th>
-        <th style="width: 100px;">학생정오</th>
-        <th>해석 및 피드백</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @mcq_responses.each_with_index do |response, idx| %>
-        <% is_correct = response.selected_choice&.is_correct %>
-        <tr>
-          <td class="cell-number"><%= idx + 1 %></td>
-          <td class="cell-indicator"><%= response.item.evaluation_indicator&.name %></td>
-          <td class="cell-sub-indicator"><%= response.item.sub_indicator&.name %></td>
-          <td class="cell-answer">
-            <%= response.item.item_choices.find(&:is_correct)&.choice_letter %>.
-            <span style="color: #666; font-size: 12px;">
-              <%= response.item.item_choices.find(&:is_correct)&.choice_text&.slice(0, 30) %>...
-            </span>
-          </td>
-          <td class="cell-answer">
-            <% if is_correct %>
-              <span class="correct-badge">✓ 정답</span>
-            <% else %>
-              <span class="incorrect-badge">✗ 오답</span>
-              <br>
-              <span style="color: #999; font-size: 11px;">
-                선택: <%= response.selected_choice&.choice_letter %>
+  <!-- ===== 통계 ===== -->
+  <% correct_count = @mcq_responses.count { |r| r.selected_choice&.is_correct? } %>
+  <% mcq_total = @mcq_responses.count %>
+  <% accuracy = mcq_total > 0 ? (correct_count * 100.0 / mcq_total).round(0) : 0 %>
+
+  <div class="sa-stats">
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= mcq_total %></div>
+      <div class="sa-stat-label">객관식 문항</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= @constructed_responses.count %></div>
+      <div class="sa-stat-label">서술형 문항</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= correct_count %> / <%= mcq_total %></div>
+      <div class="sa-stat-label">객관식 정답</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number" style="color: <%= accuracy >= 80 ? '#10b981' : accuracy >= 60 ? '#f59e0b' : '#ef4444' %>;"><%= accuracy %>%</div>
+      <div class="sa-stat-label">정답률</div>
+    </div>
+  </div>
+
+  <!-- ===== 객관식 섹션 ===== -->
+  <% if @mcq_responses.any? %>
+    <div class="sa-section-header">
+      <h2 class="sa-section-title">객관식 문항</h2>
+      <span class="sa-section-count"><%= @mcq_responses.count %>문항</span>
+    </div>
+
+    <% @mcq_responses.each_with_index do |response, idx| %>
+      <%
+        item = response.item
+        choices = item.item_choices.sort_by(&:choice_no)
+        correct_choice = choices.find(&:is_correct?)
+        student_choice = response.selected_choice
+        is_correct = student_choice&.is_correct?
+      %>
+
+      <div class="sa-card">
+        <div class="sa-card-header">
+          <span class="sa-card-number">문항 <%= idx + 1 %></span>
+          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <% if is_correct %>
+            <span class="sa-badge-correct">&#10003; 정답</span>
+          <% else %>
+            <span class="sa-badge-incorrect">&#10007; 오답</span>
+          <% end %>
+        </div>
+
+        <div class="sa-card-body">
+          <!-- 1열: 문항 정보 -->
+          <div class="sa-col">
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">평가 영역</span>
+              <span class="sa-indicator-badge"><%= item.evaluation_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">하위 영역</span>
+              <span class="sa-sub-indicator-badge"><%= item.sub_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">난이도</span>
+              <span class="sa-meta-value">
+                <%= case item.difficulty
+                    when "easy" then "하"
+                    when "medium" then "중"
+                    when "hard" then "상"
+                    else item.difficulty || "-"
+                    end %>
               </span>
+            </div>
+          </div>
+
+          <!-- 2열: 답안 비교 -->
+          <div class="sa-col">
+            <div class="sa-answer-compare">
+              <div class="sa-answer-box sa-answer-box--correct">
+                <div class="sa-answer-box__label">정답</div>
+                <div class="sa-answer-box__value">
+                  <% if correct_choice %>
+                    <%= correct_choice.choice_no %>번 <%= correct_choice.content&.truncate(25) %>
+                  <% else %>
+                    -
+                  <% end %>
+                </div>
+              </div>
+              <div class="sa-answer-box sa-answer-box--student <%= 'is-correct' if is_correct %>">
+                <div class="sa-answer-box__label">학생 답</div>
+                <div class="sa-answer-box__value">
+                  <% if student_choice %>
+                    <%= student_choice.choice_no %>번 <%= student_choice.content&.truncate(25) %>
+                  <% else %>
+                    미응답
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <ul class="sa-choice-list">
+              <% choices.each do |choice| %>
+                <%
+                  is_this_correct = choice.is_correct?
+                  is_student_pick = student_choice && student_choice.id == choice.id
+                  is_wrong_pick = is_student_pick && !is_this_correct
+                  css_class = []
+                  css_class << "is-correct-choice" if is_this_correct
+                  css_class << "is-student-wrong" if is_wrong_pick
+                %>
+                <li class="sa-choice-item <%= css_class.join(' ') %>">
+                  <span class="sa-choice-no"><%= choice.choice_no %></span>
+                  <span><%= choice.content&.truncate(50) %></span>
+                  <span class="sa-choice-marker">
+                    <% if is_this_correct && is_student_pick %>
+                      &#10003; 정답
+                    <% elsif is_this_correct %>
+                      &#10003; 정답
+                    <% elsif is_wrong_pick %>
+                      &#10007; 선택
+                    <% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
+          <!-- 3열: 해설/피드백 -->
+          <div class="sa-col">
+            <% if item.explanation.present? %>
+              <span class="sa-meta-label">문항 해설</span>
+              <div class="sa-explanation" style="margin-top: 4px;"><%= item.explanation %></div>
             <% end %>
-          </td>
-          <td class="cell-feedback">
-            <% if response.response_feedbacks.any? %>
-              <span class="feedback-expand" onclick="showFeedback(<%= idx %>, 'mcq')">
-                💬 피드백보기
-              </span>
-              <div id="feedback-modal-<%= idx %>-mcq" class="feedback-modal">
-                <div class="feedback-modal-content">
-                  <div class="feedback-modal-header">
-                    문항 <%= idx + 1 %> - 피드백
-                  </div>
-                  <div class="feedback-modal-body">
-                    <% response.response_feedbacks.each do |feedback| %>
-                      <p><strong><%= feedback.source %></strong></p>
-                      <%= simple_format(feedback.feedback_text) %>
-                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #ddd;">
+
+            <% if @attempt.feedback_published_at.present? && response.response_feedbacks.any? %>
+              <span class="sa-meta-label" style="margin-top: 8px; display: block;">AI 피드백</span>
+              <button class="sa-feedback-btn" onclick="showFeedback(<%= idx %>, 'mcq')" style="margin-top: 4px;">
+                &#128172; 피드백 보기
+              </button>
+
+              <div id="feedback-modal-<%= idx %>-mcq" class="sa-modal">
+                <div class="sa-modal-content">
+                  <div class="sa-modal-header">문항 <%= idx + 1 %> - 피드백</div>
+                  <div class="sa-modal-body">
+                    <% response.response_feedbacks.each do |fb| %>
+                      <p><strong><%= fb.source %></strong></p>
+                      <%= simple_format(fb.feedback) %>
+                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;">
                     <% end %>
                   </div>
-                  <div class="feedback-modal-footer">
-                    <button class="close-btn" onclick="closeFeedback(<%= idx %>, 'mcq')">닫기</button>
+                  <div class="sa-modal-footer">
+                    <button class="sa-modal-close" onclick="closeFeedback(<%= idx %>, 'mcq')">닫기</button>
                   </div>
                 </div>
               </div>
-            <% else %>
-              <span style="color: #999; font-size: 12px;">피드백 없음</span>
+            <% elsif @attempt.feedback_published_at.blank? && response.response_feedbacks.any? %>
+              <span class="sa-no-feedback" style="color: #f59e0b;">피드백 준비 중입니다.</span>
+            <% elsif item.explanation.blank? %>
+              <span class="sa-no-feedback">해설/피드백 없음</span>
             <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 
-<!-- 서술형 섹션 -->
-<% if @constructed_responses.any? %>
-  <div class="section-header">
-    <h2 class="section-title">✍️ 서술형 문항</h2>
-    <span class="section-count"><%= @constructed_responses.count %>문항</span>
-  </div>
+  <!-- ===== 서술형 섹션 ===== -->
+  <% if @constructed_responses.any? %>
+    <div class="sa-section-header">
+      <h2 class="sa-section-title">서술형 문항</h2>
+      <span class="sa-section-count"><%= @constructed_responses.count %>문항</span>
+    </div>
 
-  <table class="result-table">
-    <thead>
-      <tr>
-        <th style="width: 60px;">문항번호</th>
-        <th style="width: 150px;">의사소통능력</th>
-        <th style="width: 150px;">표현과 전달능력</th>
-        <th style="width: 100px;">평가기준</th>
-        <th style="width: 80px;">평가점</th>
-        <th>종합 피드백</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @constructed_responses.each_with_index do |response, idx| %>
-        <tr>
-          <td class="cell-number"><%= @mcq_responses.count + idx + 1 %></td>
-          <td class="cell-indicator"><%= response.item.evaluation_indicator&.name %></td>
-          <td class="cell-sub-indicator"><%= response.item.sub_indicator&.name %></td>
-          <td class="cell-question">
-            <strong>Q:</strong>
-            <br>
-            <%= response.item.prompt&.slice(0, 100) %>...
-          </td>
-          <td class="cell-answer">
-            <% if response.response_rubric_scores.any? %>
-              <% response.response_rubric_scores.each do |score| %>
-                <span class="score-badge">
-                  <%= score.score %> / <%= score.rubric_criterion&.rubric&.max_score || 5 %>
-                </span>
-                <br>
-              <% end %>
-            <% else %>
-              <span style="color: #999; font-size: 12px;">평가 대기</span>
-            <% end %>
-          </td>
-          <td class="cell-feedback">
-            <% if response.response_feedbacks.any? %>
-              <span class="feedback-expand" onclick="showFeedback(<%= idx %>, 'constructed')">
-                💬 피드백보기
+    <% @constructed_responses.each_with_index do |response, idx| %>
+      <% item = response.item %>
+
+      <div class="sa-card">
+        <div class="sa-card-header">
+          <span class="sa-card-number">문항 <%= @mcq_responses.count + idx + 1 %></span>
+          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <% if response.response_rubric_scores.any? %>
+            <span class="sa-badge-scored">채점 완료</span>
+          <% else %>
+            <span class="sa-badge-pending">채점 대기</span>
+          <% end %>
+        </div>
+
+        <div class="sa-card-body">
+          <!-- 1열: 문항 정보 + 채점 -->
+          <div class="sa-col">
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">평가 영역</span>
+              <span class="sa-indicator-badge"><%= item.evaluation_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">하위 영역</span>
+              <span class="sa-sub-indicator-badge"><%= item.sub_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">난이도</span>
+              <span class="sa-meta-value">
+                <%= case item.difficulty
+                    when "easy" then "하"
+                    when "medium" then "중"
+                    when "hard" then "상"
+                    else item.difficulty || "-"
+                    end %>
               </span>
-              <div id="feedback-modal-<%= idx %>-constructed" class="feedback-modal">
-                <div class="feedback-modal-content">
-                  <div class="feedback-modal-header">
-                    문항 <%= @mcq_responses.count + idx + 1 %> - 종합 피드백
+            </div>
+
+            <% if response.response_rubric_scores.any? %>
+              <div class="sa-meta-group" style="padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                <span class="sa-meta-label">채점 결과</span>
+                <% response.response_rubric_scores.each do |score| %>
+                  <div class="sa-score-row" style="margin-top: 4px;">
+                    <span class="sa-score-badge"><%= score.level_score %></span>
+                    <span class="sa-score-label"><%= score.rubric_criterion&.criterion_name || "기준" %></span>
                   </div>
-                  <div class="feedback-modal-body">
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- 2열: 질문 + 학생답안 -->
+          <div class="sa-col-middle">
+            <div class="sa-question-section">
+              <span class="sa-meta-label">질문</span>
+              <div class="sa-question-text"><%= item.prompt %></div>
+            </div>
+
+            <div class="sa-answer-section">
+              <span class="sa-meta-label">
+                학생 답안
+                <button class="sa-edit-btn" onclick="toggleEdit(<%= idx %>)">&#9998; 수정</button>
+              </span>
+
+              <div id="cr-answer-view-<%= idx %>" class="sa-answer-display">
+                <%= simple_format(response.answer_text.presence || "(미응답)") %>
+              </div>
+
+              <div id="cr-answer-edit-<%= idx %>" style="display: none;">
+                <%= form_with url: update_answer_student_response_path(response), method: :patch, data: { turbo: false } do |f| %>
+                  <textarea name="answer_text" class="sa-edit-textarea"><%= response.answer_text %></textarea>
+                  <div class="sa-edit-actions">
+                    <button type="submit" class="sa-btn-save">저장</button>
+                    <button type="button" class="sa-btn-cancel" onclick="toggleEdit(<%= idx %>)">취소</button>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3열: 해설/피드백 -->
+          <div class="sa-col">
+            <% if item.explanation.present? %>
+              <span class="sa-meta-label">문항 해설</span>
+              <div class="sa-explanation" style="margin-top: 4px;"><%= item.explanation %></div>
+            <% end %>
+
+            <% if @attempt.feedback_published_at.present? && response.response_feedbacks.any? %>
+              <span class="sa-meta-label" style="margin-top: 8px; display: block;">AI 피드백</span>
+              <button class="sa-feedback-btn" onclick="showFeedback(<%= idx %>, 'cr')" style="margin-top: 4px;">
+                &#128172; 피드백 보기
+              </button>
+
+              <div id="feedback-modal-<%= idx %>-cr" class="sa-modal">
+                <div class="sa-modal-content">
+                  <div class="sa-modal-header">문항 <%= @mcq_responses.count + idx + 1 %> - 종합 피드백</div>
+                  <div class="sa-modal-body">
                     <p><strong>학생 답변:</strong></p>
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 16px;">
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
                       <%= simple_format(response.answer_text || "(답변 없음)") %>
                     </div>
-
-                    <% response.response_feedbacks.each do |feedback| %>
-                      <p><strong><%= feedback.source %></strong></p>
-                      <%= simple_format(feedback.feedback_text) %>
-                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #ddd;">
+                    <% response.response_feedbacks.each do |fb| %>
+                      <p><strong><%= fb.source %></strong></p>
+                      <%= simple_format(fb.feedback) %>
+                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;">
                     <% end %>
                   </div>
-                  <div class="feedback-modal-footer">
-                    <button class="close-btn" onclick="closeFeedback(<%= idx %>, 'constructed')">닫기</button>
+                  <div class="sa-modal-footer">
+                    <button class="sa-modal-close" onclick="closeFeedback(<%= idx %>, 'cr')">닫기</button>
                   </div>
                 </div>
               </div>
-            <% else %>
-              <span style="color: #999; font-size: 12px;">피드백 없음</span>
+            <% elsif @attempt.feedback_published_at.blank? && response.response_feedbacks.any? %>
+              <span class="sa-no-feedback" style="color: #f59e0b;">피드백 준비 중입니다.</span>
+            <% elsif item.explanation.blank? %>
+              <span class="sa-no-feedback">해설/피드백 없음</span>
             <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 
-<% if @responses.empty? %>
-  <div style="text-align: center; padding: 48px 16px; color: #999;">
-    <p style="font-size: 48px; margin-bottom: 16px;">📝</p>
-    <p>답변 데이터가 없습니다.</p>
-  </div>
-<% end %>
+  <% if @responses.empty? %>
+    <div class="sa-empty">
+      <p style="font-size: 18px; font-weight: 600; color: #64748b; margin-bottom: 8px;">답변 데이터가 없습니다</p>
+      <p style="font-size: 14px;">아직 응답이 기록되지 않았습니다.</p>
+    </div>
+  <% end %>
+</div>
 
 <script>
   function showFeedback(idx, type) {
     const modal = document.getElementById(`feedback-modal-${idx}-${type}`);
-    if (modal) {
-      modal.style.display = 'block';
-    }
+    if (modal) modal.style.display = 'block';
   }
 
   function closeFeedback(idx, type) {
     const modal = document.getElementById(`feedback-modal-${idx}-${type}`);
-    if (modal) {
-      modal.style.display = 'none';
+    if (modal) modal.style.display = 'none';
+  }
+
+  function toggleEdit(idx) {
+    const view = document.getElementById(`cr-answer-view-${idx}`);
+    const edit = document.getElementById(`cr-answer-edit-${idx}`);
+    if (edit.style.display === 'none') {
+      view.style.display = 'none';
+      edit.style.display = 'block';
+    } else {
+      view.style.display = 'block';
+      edit.style.display = 'none';
     }
   }
 
-  // 모달 외부 클릭 시 닫기
   window.onclick = function(event) {
-    if (event.target.classList.contains('feedback-modal')) {
+    if (event.target.classList.contains('sa-modal')) {
       event.target.style.display = 'none';
     }
   }
 </script>
-
-<% content_for :portal_actions do %>
-  <a class="portal-button" href="<%= student_reports_path %>">리포트 목록</a>
-<% end %>

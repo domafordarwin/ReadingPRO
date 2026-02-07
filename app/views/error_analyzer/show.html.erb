@@ -75,9 +75,9 @@
       <!-- 행동 -->
       <div style="margin-top: 30px;">
         <% if !@error.resolved %>
-          <%= link_to '✅ 해결로 표시', mark_resolved_path(@error), method: :patch, class: 'rp-btn rp-btn--success' %>
+          <%= button_to '해결로 표시', mark_resolved_path(@error), method: :patch, class: 'rp-btn rp-btn--success' %>
         <% end %>
-        <%= link_to '삭제', @error, method: :delete, data: { confirm: '정말 삭제하시겠습니까?' }, class: 'rp-btn rp-btn--danger' %>
+        <%= button_to '삭제', @error, method: :delete, data: { turbo_confirm: '정말 삭제하시겠습니까?' }, class: 'rp-btn rp-btn--danger' %>
       </div>
     </div>
   </div>

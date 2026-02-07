@@ -31,6 +31,18 @@
     <%= link_to "새 배정", diagnostic_teacher_diagnostics_management_path, class: "rp-btn rp-btn--primary rp-btn--sm" %>
   </div>
 
+  <!-- 상태 필터 탭 -->
+  <div class="rp-filter-tabs">
+    <%= link_to "전체", diagnostic_teacher_assignments_path,
+        class: "rp-filter-tab #{@status_filter.blank? ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "활성", diagnostic_teacher_assignments_path(status: "active"),
+        class: "rp-filter-tab #{@status_filter == 'active' ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "완료", diagnostic_teacher_assignments_path(status: "completed"),
+        class: "rp-filter-tab #{@status_filter == 'completed' ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "취소", diagnostic_teacher_assignments_path(status: "cancelled"),
+        class: "rp-filter-tab #{@status_filter == 'cancelled' ? 'rp-filter-tab--active' : ''}" %>
+  </div>
+
   <% if @assignments.any? %>
     <div class="rp-table-wrapper">
       <table class="rp-table">
@@ -72,15 +84,23 @@
                 <% end %>
               </td>
               <td>
-                <% if assignment.status.in?(%w[assigned in_progress]) %>
-                  <%= button_to "취소",
-                      diagnostic_teacher_cancel_assignment_path(assignment),
-                      method: :delete,
-                      data: { turbo_confirm: "이 배정을 취소하시겠습니까?" },
-                      class: "rp-btn rp-btn--sm rp-btn--danger" %>
-                <% else %>
-                  <span style="color: #94a3b8;">-</span>
-                <% end %>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <% if assignment.status.in?(%w[assigned in_progress]) %>
+                    <%= button_to "취소",
+                        diagnostic_teacher_cancel_assignment_path(assignment),
+                        method: :delete,
+                        data: { turbo_confirm: "이 배정을 취소하시겠습니까?" },
+                        class: "rp-btn rp-btn--sm rp-btn--danger" %>
+                  <% elsif assignment.status == "completed" %>
+                    <%= button_to "재배정",
+                        diagnostic_teacher_reassign_assignment_path(assignment),
+                        method: :post,
+                        data: { turbo_confirm: "이 진단을 재배정하시겠습니까? 학생이 다시 응시할 수 있게 됩니다." },
+                        class: "rp-btn rp-btn--sm rp-btn--reassign" %>
+                  <% else %>
+                    <span style="color: #94a3b8;">-</span>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>
@@ -140,4 +160,10 @@
   .rp-badge--outline { background: transparent; border: 1px solid #cbd5e1; color: #475569; }
   .rp-badge--secondary { background: #e2e8f0; color: #475569; }
   .rp-empty-state { text-align: center; padding: 60px 40px; }
+  .rp-filter-tabs { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: #f1f5f9; border-radius: 8px; }
+  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
+  .rp-filter-tab:hover { color: #0f172a; background: rgba(255,255,255,0.5); }
+  .rp-filter-tab--active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .rp-btn--reassign { background: #dbeafe; color: #1e40af; }
+  .rp-btn--reassign:hover { background: #bfdbfe; }
 </style>

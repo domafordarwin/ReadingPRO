@@ -177,12 +177,20 @@
 
     <% if @stimulus.items.any? %>
       <div class="items-grid">
-        <% @stimulus.items.includes(:item_choices, rubric: { rubric_criteria: :rubric_levels }).each do |item| %>
+        <% sorted_items = @stimulus.items.sort_by { |i| [i.item_type == 'mcq' ? 0 : 1, i.code.to_s] } %>
+        <% sorted_items.each_with_index do |item, idx| %>
           <div class="item-card item-type-<%= item.item_type %>" data-item-type="<%= item.item_type %>">
             <div class="item-header">
+              <span class="item-number-badge"><%= idx + 1 %></span>
               <span class="item-code"><%= item.code %></span>
               <span class="item-type-badge item-type-badge-<%= item.item_type %>"><%= item.item_type == 'mcq' ? '객관식' : '서술형' %></span>
               <span class="difficulty-badge difficulty-<%= item.difficulty %>"><%= { 'easy' => '쉬움', 'medium' => '보통', 'hard' => '어려움' }[item.difficulty] %></span>
+              <% if item.evaluation_indicator %>
+                <span class="indicator-badge-sm"><%= item.evaluation_indicator.name %></span>
+              <% end %>
+              <% if item.sub_indicator %>
+                <span class="indicator-badge-sm indicator-badge-sm--sub"><%= item.sub_indicator.name %></span>
+              <% end %>
               <% if item.item_type == 'mcq' %>
                 <% if item.item_choices.none?(&:is_correct) %>
                   <span class="answer-status-badge answer-missing">정답 미설정</span>
@@ -197,9 +205,9 @@
 
             <% if item.item_type == 'mcq' && item.item_choices.any? %>
               <div class="item-choices">
-                <% item.item_choices.each_with_index do |choice, idx| %>
+                <% item.item_choices.order(:choice_no).each do |choice| %>
                   <div class="choice <%= 'correct' if choice.is_correct %>">
-                    <span class="choice-num"><%= (idx + 1).to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
+                    <span class="choice-num"><%= choice.choice_no.to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
                     <%= choice.content %>
                     <% if choice.is_correct %>
                       <span class="correct-marker">정답</span>
@@ -276,176 +284,7 @@
     </div>
   </div>
 
-  <!-- 정답지 업로드 섹션 -->
-  <% if @stimulus.items.any? %>
-  <div class="answer-key-section" id="answer-key-section">
-    <div class="section-header-full">
-      <h3>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-        </svg>
-        정답/채점기준 등록
-      </h3>
-      <p class="section-description">정답지 PDF를 업로드하면 AI가 자동으로 정답과 채점기준을 추출합니다.</p>
-    </div>
-
-    <!-- 정답 상태 요약 -->
-    <div class="answer-status-summary">
-      <%
-        mcq_items = @stimulus.items.where(item_type: 'mcq')
-        mcq_with_answer = mcq_items.joins(:item_choices).where(item_choices: { is_correct: true }).distinct.count
-        constructed_items = @stimulus.items.where(item_type: 'constructed')
-        constructed_with_rubric = constructed_items.joins(rubric: :rubric_criteria).distinct.count
-      %>
-      <div class="status-summary-item <%= mcq_with_answer == mcq_items.count ? 'complete' : 'incomplete' %>">
-        <span class="status-icon">
-          <% if mcq_with_answer == mcq_items.count && mcq_items.count > 0 %>✓<% else %>○<% end %>
-        </span>
-        <span class="status-text">객관식 정답: <%= mcq_with_answer %>/<%= mcq_items.count %>개 설정</span>
-      </div>
-      <div class="status-summary-item <%= constructed_with_rubric == constructed_items.count ? 'complete' : 'incomplete' %>">
-        <span class="status-icon">
-          <% if constructed_with_rubric == constructed_items.count && constructed_items.count > 0 %>✓<% else %>○<% end %>
-        </span>
-        <span class="status-text">서술형 채점기준: <%= constructed_with_rubric %>/<%= constructed_items.count %>개 설정</span>
-      </div>
-    </div>
-
-    <!-- 탭 메뉴 -->
-    <div class="answer-tabs">
-      <button class="answer-tab active" data-tab="template">템플릿 등록</button>
-      <button class="answer-tab" data-tab="bulk-edit">일괄 편집</button>
-    </div>
-
-    <!-- 템플릿 등록 탭 -->
-    <div class="answer-tab-content active" id="tab-template">
-      <div class="template-section">
-        <!-- Step 1: 템플릿 다운로드 -->
-        <div class="template-step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h4>정답지 템플릿 다운로드</h4>
-            <p>문항 ID가 포함된 Excel 템플릿을 다운로드합니다. 작성 안내 시트도 포함되어 있습니다.</p>
-            <%= link_to download_answer_template_researcher_passage_path(@stimulus), class: "action-btn action-btn-outline", data: { turbo: false } do %>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              <span>템플릿 다운로드 (Excel)</span>
-            <% end %>
-          </div>
-        </div>
-
-        <!-- Step 2: 정답 입력 안내 -->
-        <div class="template-step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h4>정답 입력</h4>
-            <p>다운로드한 Excel 파일을 열어 "정답" 열(F열)에 값을 입력합니다. "작성 안내" 시트를 참고하세요.</p>
-            <div class="template-guide">
-              <div class="guide-item">
-                <span class="guide-label">객관식:</span>
-                <span class="guide-value">정답 번호 (예: 3)</span>
-              </div>
-              <div class="guide-item">
-                <span class="guide-label">서술형:</span>
-                <span class="guide-value">채점기준명:점수 (예: 내용이해:3, 표현력:3)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: 템플릿 업로드 -->
-        <div class="template-step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h4>정답지 업로드</h4>
-            <p>정답을 입력한 Excel 파일을 업로드합니다. (CSV도 지원)</p>
-            <%= form_with url: upload_answer_template_researcher_passage_path(@stimulus), method: :post, multipart: true, class: "template-upload-form", data: { turbo: false } do |f| %>
-              <div class="upload-area-compact" id="templateDropZone">
-                <input type="file" name="answer_template" id="templateFile" accept=".xlsx,.xls,.csv" class="file-input-hidden">
-                <label for="templateFile" class="upload-label-compact">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="12" y1="18" x2="12" y2="12"></line>
-                    <polyline points="9 15 12 12 15 15"></polyline>
-                  </svg>
-                  <span>Excel 파일 선택</span>
-                </label>
-                <span class="selected-template-name" id="templateFileName"></span>
-              </div>
-              <div class="template-upload-actions">
-                <%= f.submit "정답 등록", class: "action-btn action-btn-primary", id: "uploadTemplateBtn", disabled: true %>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 일괄 편집 탭 -->
-    <div class="answer-tab-content" id="tab-bulk-edit">
-      <%= form_with url: bulk_update_answers_researcher_passage_path(@stimulus), method: :patch, class: "bulk-edit-form", data: { turbo: false } do |f| %>
-        <div class="bulk-edit-grid">
-          <% @stimulus.items.order(:created_at).each_with_index do |item, index| %>
-            <div class="bulk-edit-item item-type-<%= item.item_type %>">
-              <div class="bulk-edit-header">
-                <span class="item-number"><%= index + 1 %></span>
-                <span class="item-code"><%= item.code %></span>
-                <span class="item-type-badge-mini item-type-<%= item.item_type %>">
-                  <%= item.item_type == 'mcq' ? '객관식' : '서술형' %>
-                </span>
-              </div>
-
-              <div class="bulk-edit-prompt">
-                <%= truncate(item.prompt, length: 80) %>
-              </div>
-
-              <% if item.item_type == 'mcq' %>
-                <div class="bulk-edit-choices">
-                  <% item.item_choices.order(:choice_no).each do |choice| %>
-                    <label class="bulk-choice-option">
-                      <input type="radio"
-                             name="answers[<%= item.id %>][correct_choice_id]"
-                             value="<%= choice.id %>"
-                             <%= 'checked' if choice.is_correct %>>
-                      <span class="choice-num"><%= choice.choice_no %></span>
-                      <span class="choice-text"><%= truncate(choice.content, length: 40) %></span>
-                    </label>
-                  <% end %>
-                </div>
-              <% else %>
-                <div class="bulk-edit-rubric-link">
-                  <%= link_to edit_researcher_item_path(item), class: "rubric-edit-link" do %>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                    채점기준 편집
-                  <% end %>
-                  <% if item.rubric&.rubric_criteria&.any? %>
-                    <span class="rubric-status complete">✓ <%= item.rubric.rubric_criteria.count %>개 기준</span>
-                  <% else %>
-                    <span class="rubric-status incomplete">미설정</span>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="bulk-edit-actions">
-          <%= f.submit "변경사항 저장", class: "action-btn action-btn-primary" %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-  <% end %>
+  <%# 정답/채점기준 등록 섹션 - 숨김 처리 (수동 입력 방식으로 전환) %>
 
   <!-- 버전 이력 -->
   <% if @stimulus.respond_to?(:versions) && @stimulus.versions.any? %>
@@ -870,6 +709,7 @@
     gap: 0.5rem;
     align-items: center;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .item-code {
@@ -910,6 +750,36 @@
   .difficulty-badge.difficulty-easy { background: #d1fae5; color: #065f46; }
   .difficulty-badge.difficulty-medium { background: #fef3c7; color: #92400e; }
   .difficulty-badge.difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+  .item-number-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .indicator-badge-sm {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 500;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .indicator-badge-sm--sub {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
 
   .answer-status-badge {
     font-size: 0.7rem;

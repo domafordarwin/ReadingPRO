@@ -88,18 +88,23 @@
 
     <!-- Item Preview Section (Always Visible) -->
     <div class="item-preview-section">
-      <!-- Item Type & Metadata -->
+      <!-- Item Type & Metadata (Display Only) -->
+      <%
+        difficulty_kr = { "easy" => "쉬움", "medium" => "보통", "hard" => "어려움" }
+        sub_indicator = @item.sub_indicator_id.present? ? SubIndicator.find_by(id: @item.sub_indicator_id) : nil
+      %>
       <div class="item-meta-badges">
         <span class="item-type-badge item-type-badge--<%= @item.item_type %>">
           <%= @item.item_type == "mcq" ? "객관식 (MCQ)" : "서술형" %>
         </span>
         <span class="difficulty-badge difficulty-badge--<%= @item.difficulty || 'medium' %>">
-          난이도: <%= difficulty_label %>
+          난이도: <%= difficulty_kr[@item.difficulty] || "미지정" %>
         </span>
         <% if @item.evaluation_indicator %>
-          <span class="indicator-badge">
-            <%= @item.evaluation_indicator.name %>
-          </span>
+          <span class="indicator-badge"><%= @item.evaluation_indicator.name %></span>
+        <% end %>
+        <% if sub_indicator %>
+          <span class="indicator-badge indicator-badge--sub"><%= sub_indicator.name %></span>
         <% end %>
       </div>
 
@@ -166,14 +171,17 @@
 
     <!-- Mode Tabs -->
     <div class="rp-tabs" role="tablist" aria-label="문항 편집 모드">
-      <button type="button" class="rp-tab rp-tab--active" data-state="mcq-default" role="tab">MCQ 정답</button>
-      <button type="button" class="rp-tab" data-state="mcq-proximity" role="tab">MCQ 근접점수</button>
-      <button type="button" class="rp-tab" data-state="essay-rubric" role="tab">서술형 루브릭</button>
+      <% if @item.mcq? %>
+        <button type="button" class="rp-tab rp-tab--active" data-state="mcq-default" role="tab">MCQ 정답</button>
+        <button type="button" class="rp-tab" data-state="mcq-proximity" role="tab">MCQ 근접점수</button>
+      <% else %>
+        <button type="button" class="rp-tab rp-tab--active" data-state="essay-rubric" role="tab">서술형 루브릭</button>
+      <% end %>
     </div>
 
     <!-- MCQ Default Mode -->
-    <section class="rp-frame" data-state="mcq-default">
-      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+    <section class="rp-frame" data-state="mcq-default" style="<%= 'display: none;' unless @item.mcq? %>">
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Choices Selection -->
@@ -251,7 +259,47 @@
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
-                    <span class="rp-value"><%= difficulty_label %></span>
+                    <select name="item_meta[difficulty]" class="rp-meta-select">
+                      <option value="easy" <%= "selected" if @item.difficulty == "easy" %>>쉬움</option>
+                      <option value="medium" <%= "selected" if @item.difficulty == "medium" %>>보통</option>
+                      <option value="hard" <%= "selected" if @item.difficulty == "hard" %>>어려움</option>
+                    </select>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">평가영역</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[evaluation_indicator_id]" class="rp-meta-select meta-indicator-select"
+                              onchange="filterSubIndicators(this)">
+                        <option value="">-- 선택 --</option>
+                        <% @evaluation_indicators.each do |ind| %>
+                          <option value="<%= ind.id %>" <%= "selected" if @item.evaluation_indicator_id == ind.id %>><%= ind.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddIndicator(this)" title="새 평가영역 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 평가영역명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">하위분류</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[sub_indicator_id]" class="rp-meta-select meta-sub-select">
+                        <option value="">-- 선택 --</option>
+                        <% @sub_indicators.each do |sub| %>
+                          <option value="<%= sub.id %>" data-parent="<%= sub.evaluation_indicator_id %>"
+                                  <%= "selected" if @item.sub_indicator_id == sub.id %>><%= sub.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddSubIndicator(this)" title="새 하위분류 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 하위분류명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createSubIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -338,7 +386,7 @@
 
     <!-- MCQ Proximity Mode -->
     <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
-      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Proximity Score Setting -->
@@ -373,15 +421,25 @@
                         <% end %>
                       </div>
                       <div class="rp-choice-text-display"><%= choice.content %></div>
-                      <div class="rp-proximity-score-input-group">
-                        <label class="rp-score-input-label">점수 비율</label>
-                        <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
-                                             choice.proximity_score || (choice.is_correct ? 100 : 0),
-                                             min: 0, max: 100, step: 5,
-                                             disabled: choice.is_correct,
-                                             class: "rp-input rp-input--score-large",
-                                             id: "score_input_#{choice.id}" %>
-                        <span class="rp-score-unit-large">%</span>
+                      <div class="rp-proximity-score-bottom">
+                        <div class="rp-proximity-score-input-group">
+                          <label class="rp-score-input-label">점수 비율</label>
+                          <%= number_field_tag "choice_scores[#{choice.id}][score_percent]",
+                                               choice.proximity_score || (choice.is_correct ? 100 : 0),
+                                               min: 0, max: 100, step: 5,
+                                               disabled: choice.is_correct,
+                                               class: "rp-input rp-input--score-large",
+                                               id: "score_input_#{choice.id}" %>
+                          <span class="rp-score-unit-large">%</span>
+                        </div>
+                        <div class="rp-proximity-reason-group">
+                          <label class="rp-score-input-label">설정 사유</label>
+                          <%= text_field_tag "choice_scores[#{choice.id}][reason]",
+                                             choice.proximity_reason,
+                                             placeholder: choice.is_correct ? "정답 (자동 100%) - 사유를 입력할 수 있습니다" : "근접점수 부여 사유를 입력하세요",
+                                             class: "rp-input rp-input--reason",
+                                             id: "reason_input_#{choice.id}" %>
+                        </div>
                       </div>
                     </div>
                   <% end %>
@@ -424,7 +482,47 @@
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
-                    <span class="rp-value"><%= difficulty_label %></span>
+                    <select name="item_meta[difficulty]" class="rp-meta-select">
+                      <option value="easy" <%= "selected" if @item.difficulty == "easy" %>>쉬움</option>
+                      <option value="medium" <%= "selected" if @item.difficulty == "medium" %>>보통</option>
+                      <option value="hard" <%= "selected" if @item.difficulty == "hard" %>>어려움</option>
+                    </select>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">평가영역</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[evaluation_indicator_id]" class="rp-meta-select meta-indicator-select"
+                              onchange="filterSubIndicators(this)">
+                        <option value="">-- 선택 --</option>
+                        <% @evaluation_indicators.each do |ind| %>
+                          <option value="<%= ind.id %>" <%= "selected" if @item.evaluation_indicator_id == ind.id %>><%= ind.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddIndicator(this)" title="새 평가영역 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 평가영역명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">하위분류</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[sub_indicator_id]" class="rp-meta-select meta-sub-select">
+                        <option value="">-- 선택 --</option>
+                        <% @sub_indicators.each do |sub| %>
+                          <option value="<%= sub.id %>" data-parent="<%= sub.evaluation_indicator_id %>"
+                                  <%= "selected" if @item.sub_indicator_id == sub.id %>><%= sub.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddSubIndicator(this)" title="새 하위분류 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 하위분류명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createSubIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -447,26 +545,26 @@
               </summary>
               <div class="rp-card__body">
                 <div class="rp-ai-suggestion rp-ai-suggestion--spaced">
-                  <h4 class="rp-ai-suggestion__title">근접점수 제안</h4>
-                  <p class="rp-ai-suggestion__desc">AI가 근접점수 분포를 계산했습니다. 기본 배점 기준입니다.</p>
-                  <div class="rp-score-preview-table">
+                  <h4 class="rp-ai-suggestion__title">현재 근접점수 설정</h4>
+                  <p class="rp-ai-suggestion__desc">저장된 근접점수 분포입니다. 변경 후 반드시 저장하세요.</p>
+                  <div class="rp-score-preview-table" id="proximity-score-preview">
                     <% choices.each do |choice| %>
-                      <div class="rp-score-preview-row">
-                        <span class="rp-label">보기 <%= choice.choice_no %></span>
-                        <strong><%= choice.is_correct ? 100 : 0 %>%</strong>
+                      <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
+                      <div class="rp-score-preview-row" data-preview-choice-id="<%= choice.id %>">
+                        <span class="rp-label">보기 <%= option_letter %></span>
+                        <strong class="proximity-preview-value"><%= choice.proximity_score || (choice.is_correct ? 100 : 0) %>%</strong>
                       </div>
+                      <% if choice.proximity_reason.present? %>
+                        <div class="rp-score-preview-reason">
+                          <span class="rp-reason-text"><%= choice.proximity_reason %></span>
+                        </div>
+                      <% end %>
                     <% end %>
                   </div>
                   <ul class="rp-ai-suggestion__list">
-                    <li>근접점수를 입력하고 저장하세요.</li>
-                    <li>시험 운영 정책과 맞는지 확인하세요.</li>
+                    <li>좌측에서 근접점수를 입력한 뒤 아래 <strong>저장</strong> 버튼을 클릭하세요.</li>
+                    <li>정답은 자동으로 100%입니다.</li>
                   </ul>
-                  <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm rp-btn--full" data-ai-apply="mcq-proximity">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    제안 적용
-                  </button>
                 </div>
 
                 <div class="rp-ai-suggestion rp-ai-suggestion--warning rp-ai-suggestion--spaced">
@@ -509,8 +607,15 @@
 
             <!-- Actions -->
             <div class="rp-card rp-card__footer">
-              <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
-              <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+              <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--primary rp-btn--full">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                근접점수 저장
+              </button>
+              <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--secondary rp-btn--full">게시</button>
             </div>
           </div>
         </div>
@@ -518,12 +623,34 @@
     </section>
 
     <!-- Essay Rubric Mode -->
-    <section class="rp-frame" data-state="essay-rubric" style="display: none;">
-      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", local: true do %>
+    <section class="rp-frame" data-state="essay-rubric" style="<%= 'display: none;' if @item.mcq? %>">
+      <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
-          <!-- LEFT COLUMN: Rubric Builder -->
+          <!-- LEFT COLUMN: Model Answer + Rubric Builder -->
           <div class="rp-col-left">
+            <!-- Model Answer Card -->
+            <div class="rp-card">
+              <div class="rp-card__header">
+                <h3 class="rp-card__title">모범답안</h3>
+                <span class="rp-badge rp-badge--<%= @item.model_answer.present? ? 'success' : 'warning' %>">
+                  <%= @item.model_answer.present? ? '등록됨' : '미등록' %>
+                </span>
+              </div>
+              <div class="rp-card__body">
+                <div class="rp-form-group">
+                  <label class="rp-label">모범답안 내용</label>
+                  <%= text_area_tag "item[model_answer]",
+                                    @item.model_answer,
+                                    class: "rp-textarea",
+                                    placeholder: "서술형 문항의 모범답안을 입력하세요. 루브릭 채점 시 참고 기준이 됩니다.",
+                                    rows: 5,
+                                    style: "resize: vertical; min-height: 100px;" %>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rubric Builder Card -->
             <div class="rp-card">
               <div class="rp-card__header">
                 <h3 class="rp-card__title">루브릭 빌더</h3>
@@ -546,10 +673,7 @@
                                  class="rp-input rp-criterion-name"
                                  placeholder="평가 기준 이름 (예: 핵심 개념 이해도)">
                           <div class="rp-criterion-actions">
-                            <%= button_to "↑", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "up"),
-                                        method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
-                            <%= button_to "↓", move_criterion_researcher_item_path(@item, criterion_id: criterion.id, direction: "down"),
-                                        method: :patch, class: "rp-btn rp-btn--sm rp-btn--ghost" %>
+                            <span class="rp-text-muted" style="font-size: 12px;">ID순 정렬</span>
                           </div>
                         </div>
 
@@ -561,12 +685,13 @@
                         <div class="rp-levels-grid rp-levels-grid--4col">
                           <% (0..3).each do |score| %>
                             <% level = criterion.rubric_levels.find { |l| l.level == score } %>
+                            <% default_desc = score == 0 ? "답안을 제출하지 않음" : nil %>
                             <div class="rp-level-cell">
                               <label class="rp-level-label rp-level-label--score-<%= score %>"><%= score %>점</label>
                               <%= text_area_tag "criteria[#{criterion.id}][levels][#{score}]",
-                                                level&.description,
+                                                level&.description || default_desc,
                                                 class: "rp-textarea rp-textarea--level",
-                                                placeholder: "#{score}점 수준의 답안 설명을 입력하세요",
+                                                placeholder: score == 0 ? "답안을 제출하지 않음" : "#{score}점 수준의 답안 설명을 입력하세요",
                                                 rows: 3 %>
                             </div>
                           <% end %>
@@ -576,28 +701,15 @@
                   <% end %>
                 </div>
 
-                <div class="rp-form-group rp-new-criterion">
-                  <label class="rp-label">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    새 평가 기준 추가
-                  </label>
-                  <input type="text" name="new_criterion[name]" class="rp-input" placeholder="평가 기준 이름 (예: 논리적 구성력)">
-                  <div class="rp-levels-grid rp-levels-grid--4col">
-                    <% (0..3).each do |score| %>
-                      <div class="rp-level-cell">
-                        <label class="rp-level-label rp-level-label--score-<%= score %>"><%= score %>점</label>
-                        <%= text_area_tag "new_criterion[levels][#{score}]",
-                                        nil,
-                                        class: "rp-textarea rp-textarea--level",
-                                        placeholder: "#{score}점 수준 설명",
-                                        rows: 3 %>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
+                <div id="new-criteria-container"></div>
+
+                <button type="button" class="rp-btn rp-btn--add-criterion" onclick="addNewCriterion()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  새 평가 기준 추가
+                </button>
               </div>
             </div>
           </div>
@@ -625,7 +737,47 @@
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">난이도</span>
-                    <span class="rp-value"><%= difficulty_label %></span>
+                    <select name="item_meta[difficulty]" class="rp-meta-select">
+                      <option value="easy" <%= "selected" if @item.difficulty == "easy" %>>쉬움</option>
+                      <option value="medium" <%= "selected" if @item.difficulty == "medium" %>>보통</option>
+                      <option value="hard" <%= "selected" if @item.difficulty == "hard" %>>어려움</option>
+                    </select>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">평가영역</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[evaluation_indicator_id]" class="rp-meta-select meta-indicator-select"
+                              onchange="filterSubIndicators(this)">
+                        <option value="">-- 선택 --</option>
+                        <% @evaluation_indicators.each do |ind| %>
+                          <option value="<%= ind.id %>" <%= "selected" if @item.evaluation_indicator_id == ind.id %>><%= ind.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddIndicator(this)" title="새 평가영역 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 평가영역명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
+                  </div>
+                  <div class="rp-summary-item rp-summary-item--full">
+                    <span class="rp-label">하위분류</span>
+                    <div class="rp-meta-select-wrap">
+                      <select name="item_meta[sub_indicator_id]" class="rp-meta-select meta-sub-select">
+                        <option value="">-- 선택 --</option>
+                        <% @sub_indicators.each do |sub| %>
+                          <option value="<%= sub.id %>" data-parent="<%= sub.evaluation_indicator_id %>"
+                                  <%= "selected" if @item.sub_indicator_id == sub.id %>><%= sub.name %></option>
+                        <% end %>
+                      </select>
+                      <button type="button" class="rp-add-btn" onclick="showAddSubIndicator(this)" title="새 하위분류 추가">+</button>
+                    </div>
+                    <div class="rp-add-inline" style="display:none;">
+                      <input type="text" class="rp-input rp-input--sm" placeholder="새 하위분류명" maxlength="100">
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--primary" onclick="createSubIndicator(this)">추가</button>
+                      <button type="button" class="rp-btn rp-btn--xs rp-btn--secondary" onclick="hideAddInline(this)">취소</button>
+                    </div>
                   </div>
                   <div class="rp-summary-item">
                     <span class="rp-label">마지막 저장</span>
@@ -673,6 +825,10 @@
               <div class="rp-card__body">
                 <div class="rp-checklist">
                   <label class="rp-checkbox">
+                    <input type="checkbox" <%= "checked" if @item.model_answer.present? %>>
+                    <span>모범답안 입력</span>
+                  </label>
+                  <label class="rp-checkbox">
                     <input type="checkbox" <%= "checked" if @rubric&.name.present? %>>
                     <span>루브릭 제목 입력</span>
                   </label>
@@ -717,6 +873,175 @@
 </div>
 
 <script>
+  // Sub-indicator filtering based on selected evaluation indicator
+  function filterSubIndicators(indicatorSelect) {
+    const selectedId = indicatorSelect.value;
+    const form = indicatorSelect.closest('form');
+    const subSelect = form ? form.querySelector('.meta-sub-select') : null;
+    if (!subSelect) return;
+
+    const options = subSelect.querySelectorAll('option[data-parent]');
+    let hasSelected = false;
+
+    options.forEach(function(opt) {
+      if (!selectedId || opt.dataset.parent === selectedId) {
+        opt.style.display = '';
+      } else {
+        opt.style.display = 'none';
+        if (opt.selected) { opt.selected = false; hasSelected = true; }
+      }
+    });
+
+    if (hasSelected) subSelect.value = '';
+  }
+
+  // Initialize sub-indicator filtering on page load
+  document.querySelectorAll('.meta-indicator-select').forEach(function(sel) {
+    filterSubIndicators(sel);
+  });
+
+  // --- Add new indicator/sub-indicator inline ---
+  function showAddIndicator(btn) {
+    var wrap = btn.closest('.rp-summary-item--full');
+    var inlineEl = wrap.querySelector('.rp-add-inline');
+    inlineEl.style.display = 'flex';
+    inlineEl.querySelector('input').focus();
+  }
+
+  function showAddSubIndicator(btn) {
+    var wrap = btn.closest('.rp-summary-item--full');
+    var form = btn.closest('form');
+    var indicatorSelect = form.querySelector('.meta-indicator-select');
+    if (!indicatorSelect || !indicatorSelect.value) {
+      alert('평가영역을 먼저 선택하세요.');
+      return;
+    }
+    var inlineEl = wrap.querySelector('.rp-add-inline');
+    inlineEl.style.display = 'flex';
+    inlineEl.querySelector('input').focus();
+  }
+
+  function hideAddInline(btn) {
+    var inlineEl = btn.closest('.rp-add-inline');
+    inlineEl.style.display = 'none';
+    inlineEl.querySelector('input').value = '';
+  }
+
+  function getCSRFToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
+
+  function createIndicator(btn) {
+    var inlineEl = btn.closest('.rp-add-inline');
+    var input = inlineEl.querySelector('input');
+    var name = input.value.trim();
+    if (name.length < 3) { alert('이름은 3자 이상이어야 합니다.'); return; }
+
+    fetch('<%= researcher_evaluation_indicators_path %>', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
+      body: JSON.stringify({ name: name })
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.error) { alert(data.error); return; }
+      // Add to ALL indicator selects on the page
+      document.querySelectorAll('.meta-indicator-select').forEach(function(sel) {
+        if (!sel.querySelector('option[value="' + data.id + '"]')) {
+          var opt = document.createElement('option');
+          opt.value = data.id;
+          opt.textContent = data.name;
+          sel.appendChild(opt);
+        }
+      });
+      // Select the new option in the current form
+      var form = btn.closest('form');
+      var sel = form.querySelector('.meta-indicator-select');
+      sel.value = data.id;
+      filterSubIndicators(sel);
+      hideAddInline(btn);
+    })
+    .catch(function(err) { alert('오류가 발생했습니다: ' + err.message); });
+  }
+
+  function createSubIndicator(btn) {
+    var inlineEl = btn.closest('.rp-add-inline');
+    var input = inlineEl.querySelector('input');
+    var name = input.value.trim();
+    if (name.length < 3) { alert('이름은 3자 이상이어야 합니다.'); return; }
+
+    var form = btn.closest('form');
+    var indicatorSelect = form.querySelector('.meta-indicator-select');
+    var parentId = indicatorSelect.value;
+    if (!parentId) { alert('평가영역을 먼저 선택하세요.'); return; }
+
+    fetch('<%= researcher_sub_indicators_path %>', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCSRFToken() },
+      body: JSON.stringify({ name: name, evaluation_indicator_id: parentId })
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.error) { alert(data.error); return; }
+      // Add to ALL sub-indicator selects on the page
+      document.querySelectorAll('.meta-sub-select').forEach(function(sel) {
+        if (!sel.querySelector('option[value="' + data.id + '"]')) {
+          var opt = document.createElement('option');
+          opt.value = data.id;
+          opt.dataset.parent = data.evaluation_indicator_id;
+          opt.textContent = data.name;
+          sel.appendChild(opt);
+        }
+      });
+      // Select the new option and re-filter
+      var subSel = form.querySelector('.meta-sub-select');
+      filterSubIndicators(indicatorSelect);
+      subSel.value = data.id;
+      hideAddInline(btn);
+    })
+    .catch(function(err) { alert('오류가 발생했습니다: ' + err.message); });
+  }
+
+  // --- Dynamic rubric criterion add ---
+  var newCriterionIdx = 0;
+
+  function addNewCriterion() {
+    var container = document.getElementById('new-criteria-container');
+    if (!container) return;
+
+    var idx = newCriterionIdx++;
+    var div = document.createElement('div');
+    div.className = 'rp-criterion-card rp-criterion-card--new';
+    div.dataset.newIdx = idx;
+
+    var levelsHtml = '';
+    for (var s = 0; s <= 3; s++) {
+      var defaultVal = s === 0 ? '답안을 제출하지 않음' : '';
+      var ph = s === 0 ? '답안을 제출하지 않음' : s + '점 수준 설명';
+      levelsHtml +=
+        '<div class="rp-level-cell">' +
+          '<label class="rp-level-label rp-level-label--score-' + s + '">' + s + '점</label>' +
+          '<textarea name="new_criteria[' + idx + '][levels][' + s + ']" class="rp-textarea rp-textarea--level" placeholder="' + ph + '" rows="3">' + defaultVal + '</textarea>' +
+        '</div>';
+    }
+
+    div.innerHTML =
+      '<div class="rp-criterion-header">' +
+        '<input type="text" name="new_criteria[' + idx + '][name]" class="rp-input rp-criterion-name" placeholder="평가 기준 이름 (예: 논리적 구성력)" autofocus>' +
+        '<button type="button" class="rp-btn-remove-criterion" onclick="removeNewCriterion(this)" title="삭제">&times;</button>' +
+      '</div>' +
+      '<div class="rp-levels-grid rp-levels-grid--4col">' + levelsHtml + '</div>';
+
+    container.appendChild(div);
+    div.querySelector('input').focus();
+  }
+
+  function removeNewCriterion(btn) {
+    var card = btn.closest('.rp-criterion-card--new');
+    if (card) card.remove();
+  }
+
   (function () {
     // Tab switching
     const tabs = document.querySelectorAll(".rp-tab");
@@ -767,14 +1092,27 @@
       button.addEventListener("click", applyCorrect);
     });
 
-    document.querySelectorAll("[data-ai-apply='mcq-proximity']").forEach((button) => {
-      button.addEventListener("click", () => {
-        const frame = button.closest(".rp-frame");
-        if (!frame) return;
-        frame.querySelectorAll(".rp-input--score").forEach((input) => {
-          if (!input.value) input.value = 0;
-        });
+    // Sync proximity score inputs to AI preview panel in real-time
+    const syncProximityPreview = () => {
+      const previewTable = document.getElementById("proximity-score-preview");
+      if (!previewTable) return;
+
+      document.querySelectorAll(".rp-proximity-score-item").forEach((item) => {
+        const choiceId = item.dataset.choiceId;
+        const scoreInput = item.querySelector(".rp-input--score-large");
+        if (!scoreInput) return;
+
+        const previewRow = previewTable.querySelector(`[data-preview-choice-id="${choiceId}"]`);
+        if (previewRow) {
+          const valueEl = previewRow.querySelector(".proximity-preview-value");
+          if (valueEl) valueEl.textContent = scoreInput.value + "%";
+        }
       });
+    };
+
+    // Attach input event listeners for real-time sync
+    document.querySelectorAll(".rp-input--score-large").forEach((input) => {
+      input.addEventListener("input", syncProximityPreview);
     });
 
     document.querySelectorAll("[data-ai-apply='rubric']").forEach((button) => {
@@ -862,6 +1200,9 @@
             }
           }
         });
+
+        // Sync preview after correct answer change
+        syncProximityPreview();
       });
     });
   })();
@@ -945,23 +1286,9 @@
     font-weight: 600;
   }
 
-  .difficulty-badge--easy {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-  }
-
-  .difficulty-badge--medium {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fcd34d;
-  }
-
-  .difficulty-badge--hard {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
-  }
+  .difficulty-badge--easy { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .difficulty-badge--medium { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .difficulty-badge--hard { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
   .indicator-badge {
     display: inline-flex;
@@ -973,6 +1300,170 @@
     background: white;
     color: #374151;
     border: 1px solid #d1d5db;
+  }
+
+  .indicator-badge--sub {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
+
+  /* Meta select in summary - full width items */
+  .rp-summary-item--full {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .rp-meta-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .rp-meta-select {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 28px 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rp-meta-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+
+  .rp-add-btn {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .rp-add-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #3b82f6;
+  }
+
+  .rp-add-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .rp-add-inline .rp-input--sm {
+    flex: 1;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+  }
+
+  .rp-btn--xs {
+    padding: 3px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+  }
+
+  .rp-btn--xs.rp-btn--primary {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .rp-btn--xs.rp-btn--primary:hover {
+    background: #2563eb;
+  }
+
+  .rp-btn--xs.rp-btn--secondary {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .rp-btn--xs.rp-btn--secondary:hover {
+    background: #e5e7eb;
+  }
+
+  /* Add criterion button */
+  .rp-btn--add-criterion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rp-btn--add-criterion:hover {
+    border-color: #7c3aed;
+    background: #faf5ff;
+    color: #7c3aed;
+  }
+
+  .rp-criterion-card--new {
+    border: 1px solid #d8b4fe;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    background: #faf5ff;
+  }
+
+  .rp-btn-remove-criterion {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #dc2626;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .rp-btn-remove-criterion:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
   }
 
   /* Item Prompt Card */
@@ -1227,8 +1718,16 @@
       padding: 16px;
     }
 
-    .item-meta-badges {
+    .item-meta-editor {
       gap: 8px;
+    }
+
+    .item-meta-form {
+      gap: 6px;
+    }
+
+    .meta-field-label {
+      display: none;
     }
 
     .choices-grid {
@@ -1857,16 +2356,61 @@
     margin-bottom: 12px;
   }
 
+  .rp-proximity-score-bottom {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
   .rp-proximity-score-input-group {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .rp-proximity-reason-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rp-input--reason {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    transition: border-color 0.15s;
+  }
+
+  .rp-input--reason:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+  }
+
+  .rp-input--reason:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .rp-input--reason::placeholder {
+    color: #9ca3af;
+    font-style: italic;
   }
 
   .rp-score-input-label {
     font-size: 13px;
     font-weight: 600;
     color: #6b7280;
+    white-space: nowrap;
   }
 
   .rp-input--score-large {
@@ -1901,6 +2445,21 @@
 
   .rp-score-preview-row:last-child {
     border-bottom: none;
+  }
+
+  .rp-score-preview-reason {
+    padding: 2px 0 6px 8px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .rp-score-preview-reason:last-child {
+    border-bottom: none;
+  }
+
+  .rp-reason-text {
+    font-size: 11px;
+    color: #6b7280;
+    font-style: italic;
   }
 
   .rp-score-preview-row .rp-label {
@@ -1944,14 +2503,30 @@
       grid-template-columns: 1fr;
     }
 
+    .rp-proximity-score-bottom {
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .rp-proximity-score-input-group {
       flex-direction: column;
       align-items: flex-start;
       gap: 6px;
     }
 
+    .rp-proximity-reason-group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+    }
+
     .rp-input--score-large {
       width: 80px;
+    }
+
+    .rp-input--reason {
+      width: 100%;
     }
   }
 </style>

@@ -35,7 +35,7 @@ module Student::DashboardHelper
     attempt.responses.includes(:item, response_rubric_scores: :rubric_criterion).each do |response|
       if response.item.constructed?
         response.response_rubric_scores.each do |score|
-          total_score += (score.score || 0)
+          total_score += (score.level_score || 0)
         end
       end
     end

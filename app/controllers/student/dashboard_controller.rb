@@ -8,6 +8,56 @@ class Student::DashboardController < ApplicationController
   def index
     @current_page = "dashboard"
     @student = current_user&.student
+
+    if @student
+      # 완료한 진단 수
+      @completed_count = @student.student_attempts.where(status: "completed").count
+
+      # 배정된 진단 (미완료 또는 재배정된 것)
+      school = @student.school
+      assigned_form_ids = DiagnosticAssignment.active
+        .where("student_id = ? OR school_id = ?", @student.id, school&.id)
+        .pluck(:diagnostic_form_id).uniq
+      retakeable_ids = retakeable_forms(assigned_form_ids, school)
+      @pending_assignments = DiagnosticForm.where(id: retakeable_ids)
+        .where(status: :active)
+      @pending_count = @pending_assignments.count
+
+      # 최신 배정 진단 (CTA용)
+      @latest_assignment = @pending_assignments.order(created_at: :desc).first
+
+      # 최신 완료 시도의 리포트 (역량 요약용)
+      @latest_attempt = @student.student_attempts
+        .where(status: "completed")
+        .includes(:attempt_report, :diagnostic_form)
+        .order(submitted_at: :desc)
+        .first
+
+      # 역량별 정확도 (최신 시도 기반)
+      @literacy_achievements = if @latest_attempt
+        calculate_literacy_achievements(@latest_attempt)
+      else
+        []
+      end
+
+      # 최근 피드백 (배포된 시도의 피드백만 표시)
+      published_attempt_ids = @student.student_attempts
+        .where.not(feedback_published_at: nil)
+        .select(:id)
+      @recent_feedbacks = ResponseFeedback.joins(response: :item)
+        .where(responses: { student_attempt_id: published_attempt_ids })
+        .includes(response: :item)
+        .order(created_at: :desc)
+        .limit(5)
+    else
+      @completed_count = 0
+      @pending_count = 0
+      @pending_assignments = DiagnosticForm.none
+      @latest_assignment = nil
+      @latest_attempt = nil
+      @literacy_achievements = []
+      @recent_feedbacks = []
+    end
   end
 
   def diagnostics
@@ -22,7 +72,10 @@ class Student::DashboardController < ApplicationController
           .pluck(:diagnostic_form_id)
           .uniq
 
-        @available_forms = DiagnosticForm.where(id: assigned_form_ids, status: :active)
+        # 완료된 진단 필터링: 재배정이 없는 경우 제외
+        retakeable_form_ids = retakeable_forms(assigned_form_ids, school)
+
+        @available_forms = DiagnosticForm.where(id: retakeable_form_ids, status: :active)
           .includes(:diagnostic_form_items)
           .order(created_at: :desc)
 
@@ -39,7 +92,7 @@ class Student::DashboardController < ApplicationController
 
         # 현재 학생의 완료된 시도 조회
         @completed_attempts = @student.student_attempts
-          .where(status: :completed)
+          .where(status: [ :completed, :submitted ])
           .includes(:diagnostic_form, :attempt_report)
           .order(created_at: :desc)
       else
@@ -61,7 +114,7 @@ class Student::DashboardController < ApplicationController
   def reports
     @current_page = "reports"
     # 현재 로그인한 학생의 모든 시험 기록 조회
-    @attempts = @student.student_attempts.includes(:attempt_report).order(created_at: :desc)
+    @attempts = @student.student_attempts.includes(:attempt_report, :diagnostic_form).order(created_at: :desc)
 
     respond_to do |format|
       format.html
@@ -69,8 +122,24 @@ class Student::DashboardController < ApplicationController
     end
   end
 
+  def comprehensive_report
+    @current_page = "comprehensive_report"
+    if @student
+      latest_attempt = @student.student_attempts
+                               .where(status: %w[completed submitted])
+                               .includes(:attempt_report)
+                               .order(submitted_at: :desc)
+                               .first
+      @report = latest_attempt&.attempt_report
+      @attempt = latest_attempt
+    end
+  end
+
   def about
-    @current_page = "dashboard"
+    @current_page = "notice"
+    @notices = Notice.active.recent
+    @notices = @notices.for_role("student").or(Notice.active.recent.where(target_roles: []))
+    @notices = @notices.distinct.order(important: :desc, published_at: :desc).limit(10)
   end
 
   def profile
@@ -156,8 +225,15 @@ class Student::DashboardController < ApplicationController
     @current_page = "reports"
     @attempt = @student.student_attempts.find(params[:attempt_id])
 
-    # 응답 데이터 조회
-    @responses = @attempt.responses.includes(:item, :selected_choice, :feedback).order(created_at: :asc)
+    # 응답 데이터 조회 (N+1 방지)
+    @responses = @attempt.responses
+      .includes(
+        :selected_choice,
+        :response_feedbacks,
+        :response_rubric_scores,
+        item: [ :evaluation_indicator, :sub_indicator, :item_choices ]
+      )
+      .order(created_at: :asc)
 
     # 객관식/서술형 분류
     @mcq_responses = @responses.select { |r| r.item.mcq? }
@@ -202,6 +278,39 @@ class Student::DashboardController < ApplicationController
         correct_count: correct_count,
         accuracy_rate: (correct_count * 100.0 / responses.count).round(1)
       )
+    end
+  end
+
+  # 재검사 가능한 진단 폼 ID 목록 반환
+  # - 완료된 적 없는 진단: 항상 포함
+  # - 완료된 진단: 최신 배정일이 최신 완료일보다 뒤인 경우만 포함 (재배정)
+  def retakeable_forms(assigned_form_ids, school)
+    return assigned_form_ids if assigned_form_ids.empty?
+
+    # 완료된 시도의 폼별 최신 완료 시각
+    completed_map = @student.student_attempts
+      .where(status: [ "completed", "submitted" ])
+      .where(diagnostic_form_id: assigned_form_ids)
+      .group(:diagnostic_form_id)
+      .maximum(:submitted_at)
+
+    return assigned_form_ids if completed_map.empty?
+
+    # 배정별 최신 배정 시각
+    assignment_map = DiagnosticAssignment.active
+      .where("student_id = ? OR school_id = ?", @student.id, school&.id)
+      .where(diagnostic_form_id: assigned_form_ids)
+      .group(:diagnostic_form_id)
+      .maximum(:assigned_at)
+
+    assigned_form_ids.select do |form_id|
+      completed_at = completed_map[form_id]
+      if completed_at.nil?
+        true # 미완료 → 항상 가능
+      else
+        assigned_at = assignment_map[form_id]
+        assigned_at.present? && assigned_at > completed_at # 재배정된 경우만 가능
+      end
     end
   end
 

@@ -126,7 +126,7 @@ class AnswerKeyTemplateService
     workbook.add_worksheet(name: "객관식 정답") do |sheet|
       # Header row
       sheet.add_row(
-        ["문항ID", "문항코드", "대분류", "소분류", "난이도", "정답", "보기", "근접점수", "보기내용(참고)"],
+        ["문항ID", "문항코드", "대분류", "소분류", "난이도", "정답", "보기", "근접점수", "보기내용(참고)", "설정사유"],
         style: @header_style,
         height: 30
       )
@@ -141,6 +141,7 @@ class AnswerKeyTemplateService
         choices.each_with_index do |choice, idx|
           is_correct = choice.is_correct
           proximity_score = is_correct ? 100 : (choice.proximity_score || "")
+          proximity_reason = choice.proximity_reason || ""
 
           if idx == 0
             # First row: show item info
@@ -154,7 +155,8 @@ class AnswerKeyTemplateService
                 correct_choice&.choice_no || "",
                 choice.choice_no,
                 proximity_score,
-                choice.content&.truncate(40)
+                choice.content&.truncate(40),
+                proximity_reason
               ],
               style: [
                 @locked_center_style,  # 문항ID - 잠금
@@ -165,7 +167,8 @@ class AnswerKeyTemplateService
                 @correct_style,        # 정답 - 편집 가능
                 @center_style,         # 보기 - 편집 가능
                 is_correct ? @correct_style : @score_style,  # 근접점수 - 편집 가능
-                @info_style            # 보기내용(참고) - 편집 가능
+                @info_style,           # 보기내용(참고) - 편집 가능
+                @info_style            # 설정사유 - 편집 가능
               ],
               height: 25
             )
@@ -181,7 +184,8 @@ class AnswerKeyTemplateService
                 "",
                 choice.choice_no,
                 proximity_score,
-                choice.content&.truncate(40)
+                choice.content&.truncate(40),
+                proximity_reason
               ],
               style: [
                 @locked_empty_style,   # 문항ID - 잠금 (빈칸)
@@ -192,7 +196,8 @@ class AnswerKeyTemplateService
                 @correct_style,        # 정답 - 편집 가능
                 @center_style,         # 보기 - 편집 가능
                 is_correct ? @correct_style : @score_style,  # 근접점수 - 편집 가능
-                @info_style            # 보기내용(참고) - 편집 가능
+                @info_style,           # 보기내용(참고) - 편집 가능
+                @info_style            # 설정사유 - 편집 가능
               ],
               height: 25
             )
@@ -213,7 +218,7 @@ class AnswerKeyTemplateService
         current_row += choice_count
       end
 
-      sheet.column_widths 10, 15, 15, 15, 10, 8, 8, 12, 35
+      sheet.column_widths 10, 15, 15, 15, 10, 8, 8, 12, 35, 35
     end
 
     # ========== Sheet 2: 서술형 루브릭 ==========
@@ -322,7 +327,8 @@ class AnswerKeyTemplateService
       sheet.add_row ["  - 부분 이해: 30~50"]
       sheet.add_row ["  - 거의 정답: 60~80"]
       sheet.add_row ["  - 정답: 100 (자동 설정)"]
-      sheet.add_row ["• 보기내용(참고): 근접점수 부여 사유 설명 (선택사항)"]
+      sheet.add_row ["• 보기내용(참고): 선택지 내용 미리보기 (참고용, 수정 불필요)"]
+      sheet.add_row ["• 설정사유: 근접점수 부여 이유 (예: '정답과 유사한 개념', '부분적 이해 반영')"]
       sheet.add_row []
       sheet.add_row ["=== 서술형 루브릭 시트 ==="]
       sheet.add_row ["• 평가 요소: 채점 기준 이름 (예: 내용 이해, 표현력, 논리성)"]
@@ -513,10 +519,17 @@ class AnswerKeyTemplateService
     begin
       xlsx = Roo::Spreadsheet.open(file_path, extension: :xlsx)
 
+      # Log available sheet names for debugging
+      sheet_names = xlsx.sheets
+      Rails.logger.info "[Answer Key Template] Available sheets: #{sheet_names.inspect} (#{sheet_names.map(&:encoding).inspect})"
+
       # ========== Sheet 1: 객관식 정답 (MCQ with proximity scoring) ==========
-      begin
-        mcq_sheet = xlsx.sheet("객관식 정답")
-        add_log(results, "📊 객관식 시트 파싱 중...")
+      mcq_sheet = find_sheet(xlsx, "객관식 정답", 0)
+
+      if mcq_sheet.nil? || mcq_sheet.last_row.nil? || mcq_sheet.last_row < 2
+        add_log(results, "⚠️ 객관식 시트를 찾을 수 없거나 비어있습니다")
+      else
+        add_log(results, "📊 객관식 시트 파싱 중... (시트명: '#{sheet_names[0]}')")
 
         # Group rows by item_id (multiple rows per item for each choice)
         current_item_id = nil
@@ -544,6 +557,7 @@ class AnswerKeyTemplateService
             choice_data = [{
               choice_no: mcq_sheet.cell(row_num, 7),    # Column G: 보기
               proximity_score: mcq_sheet.cell(row_num, 8), # Column H: 근접점수
+              proximity_reason: mcq_sheet.cell(row_num, 10), # Column J: 설정사유
               correct_answer: correct_answer
             }]
           else
@@ -551,6 +565,7 @@ class AnswerKeyTemplateService
             choice_data << {
               choice_no: mcq_sheet.cell(row_num, 7),    # Column G: 보기
               proximity_score: mcq_sheet.cell(row_num, 8), # Column H: 근접점수
+              proximity_reason: mcq_sheet.cell(row_num, 10), # Column J: 설정사유
               correct_answer: nil
             }
           end
@@ -560,73 +575,62 @@ class AnswerKeyTemplateService
         if current_item_id.present? && choice_data.any?
           process_mcq_choices(current_item_id, choice_data, results, current_item_metadata)
         end
-
-      rescue RangeError, ArgumentError => e
-        add_log(results, "⚠️ '객관식 정답' 시트를 찾을 수 없습니다. 기본 시트 사용 시도...")
-        # Fallback to first sheet with old format
-        process_legacy_sheet(xlsx.sheet(0), results)
       end
 
       # ========== Sheet 2: 서술형 루브릭 ==========
-      begin
-        rubric_sheet = xlsx.sheet("서술형 루브릭")
+      rubric_sheet = find_sheet(xlsx, "서술형 루브릭", 1)
 
-        # Check if sheet exists and has data
-        if rubric_sheet.last_row.nil? || rubric_sheet.last_row < 2
-          add_log(results, "⚠️ '서술형 루브릭' 시트가 비어있습니다")
-        else
-          add_log(results, "📊 서술형 루브릭 시트 파싱 중...")
+      if rubric_sheet.nil? || rubric_sheet.last_row.nil? || rubric_sheet.last_row < 2
+        add_log(results, "⚠️ 서술형 루브릭 시트를 찾을 수 없거나 비어있습니다 (서술형 문항이 없으면 정상)")
+      else
+        add_log(results, "📊 서술형 루브릭 시트 파싱 중... (시트명: '#{sheet_names[1]}')")
 
-          # Group rows by item_id (multiple rows per item for each criterion)
-          current_item_id = nil
-          current_item_metadata = {}
-          criteria_data = []
+        # Group rows by item_id (multiple rows per item for each criterion)
+        current_item_id = nil
+        current_item_metadata = {}
+        criteria_data = []
 
-          (2..rubric_sheet.last_row).each do |row_num|
-            row_item_id = rubric_sheet.cell(row_num, 1) # Column A: 문항ID
+        (2..rubric_sheet.last_row).each do |row_num|
+          row_item_id = rubric_sheet.cell(row_num, 1) # Column A: 문항ID
 
-            # If item_id is present, it's a new item; process previous if exists
-            if row_item_id.present?
-              # Process previous item's criteria
-              if current_item_id.present? && criteria_data.any?
-                process_rubric_criteria(current_item_id, criteria_data, results, current_item_metadata)
-              end
-
-              # Start new item
-              current_item_id = row_item_id.is_a?(Float) ? row_item_id.to_i : row_item_id
-              current_item_metadata = {
-                evaluation_indicator: rubric_sheet.cell(row_num, 3), # Column C: 대분류
-                sub_indicator: rubric_sheet.cell(row_num, 4),        # Column D: 소분류
-                difficulty: rubric_sheet.cell(row_num, 5)            # Column E: 난이도
-              }
-              criteria_data = [{
-                criterion_name: rubric_sheet.cell(row_num, 6), # Column F: 평가 요소
-                excellent: rubric_sheet.cell(row_num, 7),      # Column G: 우수 (3점)
-                average: rubric_sheet.cell(row_num, 8),        # Column H: 보통 (2점)
-                poor: rubric_sheet.cell(row_num, 9)            # Column I: 미흡 (1점)
-              }]
-            else
-              # Continuation row for the same item (additional criterion)
-              criterion_name = rubric_sheet.cell(row_num, 6) # Column F: 평가 요소
-              next if criterion_name.blank?
-
-              criteria_data << {
-                criterion_name: criterion_name,
-                excellent: rubric_sheet.cell(row_num, 7),
-                average: rubric_sheet.cell(row_num, 8),
-                poor: rubric_sheet.cell(row_num, 9)
-              }
+          # If item_id is present, it's a new item; process previous if exists
+          if row_item_id.present?
+            # Process previous item's criteria
+            if current_item_id.present? && criteria_data.any?
+              process_rubric_criteria(current_item_id, criteria_data, results, current_item_metadata)
             end
-          end
 
-          # Process last item
-          if current_item_id.present? && criteria_data.any?
-            process_rubric_criteria(current_item_id, criteria_data, results, current_item_metadata)
+            # Start new item
+            current_item_id = row_item_id.is_a?(Float) ? row_item_id.to_i : row_item_id
+            current_item_metadata = {
+              evaluation_indicator: rubric_sheet.cell(row_num, 3), # Column C: 대분류
+              sub_indicator: rubric_sheet.cell(row_num, 4),        # Column D: 소분류
+              difficulty: rubric_sheet.cell(row_num, 5)            # Column E: 난이도
+            }
+            criteria_data = [{
+              criterion_name: rubric_sheet.cell(row_num, 6), # Column F: 평가 요소
+              excellent: rubric_sheet.cell(row_num, 7),      # Column G: 우수 (3점)
+              average: rubric_sheet.cell(row_num, 8),        # Column H: 보통 (2점)
+              poor: rubric_sheet.cell(row_num, 9)            # Column I: 미흡 (1점)
+            }]
+          else
+            # Continuation row for the same item (additional criterion)
+            criterion_name = rubric_sheet.cell(row_num, 6) # Column F: 평가 요소
+            next if criterion_name.blank?
+
+            criteria_data << {
+              criterion_name: criterion_name,
+              excellent: rubric_sheet.cell(row_num, 7),
+              average: rubric_sheet.cell(row_num, 8),
+              poor: rubric_sheet.cell(row_num, 9)
+            }
           end
         end
 
-      rescue RangeError, ArgumentError => e
-        add_log(results, "⚠️ '서술형 루브릭' 시트를 찾을 수 없습니다 (서술형 문항이 없으면 정상)")
+        # Process last item
+        if current_item_id.present? && criteria_data.any?
+          process_rubric_criteria(current_item_id, criteria_data, results, current_item_metadata)
+        end
       end
 
       add_log(results, "🎉 처리 완료!")
@@ -661,12 +665,13 @@ class AnswerKeyTemplateService
     correct_choice_no = correct_answer.is_a?(Float) ? correct_answer.to_i : correct_answer.to_i
 
     # Reset all choices
-    item.item_choices.update_all(is_correct: false, proximity_score: nil)
+    item.item_choices.update_all(is_correct: false, proximity_score: nil, proximity_reason: nil)
 
     # Update each choice
     choice_data.each do |data|
       choice_no = data[:choice_no].is_a?(Float) ? data[:choice_no].to_i : data[:choice_no].to_i
       proximity_score_raw = data[:proximity_score]
+      proximity_reason_raw = data[:proximity_reason]
 
       choice = item.item_choices.find_by(choice_no: choice_no)
       next unless choice
@@ -691,10 +696,13 @@ class AnswerKeyTemplateService
         0
       end
 
-      # Log the update for debugging
-      Rails.logger.info "[MCQ Choice Update] Item: #{item.code}, Choice: #{choice_no}, Is Correct: #{is_correct}, Proximity Score: #{score} (raw: #{proximity_score_raw.inspect})"
+      # Set proximity reason (allowed for all choices including correct answer)
+      reason = proximity_reason_raw.to_s.strip.presence
 
-      result = choice.update(is_correct: is_correct, proximity_score: score)
+      # Log the update for debugging
+      Rails.logger.info "[MCQ Choice Update] Item: #{item.code}, Choice: #{choice_no}, Is Correct: #{is_correct}, Proximity Score: #{score}, Reason: #{reason.inspect}"
+
+      result = choice.update(is_correct: is_correct, proximity_score: score, proximity_reason: reason)
 
       unless result
         add_log(results, "⚠️ 문항 #{item.code} 보기 #{choice_no}번 업데이트 실패: #{choice.errors.full_messages.join(', ')}")
@@ -751,24 +759,74 @@ class AnswerKeyTemplateService
   end
 
   # Legacy single-sheet processing (fallback)
+  # Now also handles proximity scores if columns G/H are present (new Excel format)
   def process_legacy_sheet(sheet, results)
     add_log(results, "📊 기존 형식 시트 파싱 중...")
 
-    (2..sheet.last_row).each do |row_num|
-      item_id = sheet.cell(row_num, 1)
-      answer = sheet.cell(row_num, 6)
+    # Check if this is actually a new-format sheet (has proximity score column H)
+    header_g = sheet.cell(1, 7).to_s.strip rescue ""
+    header_h = sheet.cell(1, 8).to_s.strip rescue ""
+    has_proximity_columns = header_g.include?("보기") || header_h.include?("근접")
 
-      next if item_id.blank?
+    if has_proximity_columns
+      add_log(results, "  → 근접점수 컬럼 감지됨, 새 형식으로 처리합니다")
+      # Use the new MCQ processing logic via grouped rows
+      current_item_id = nil
+      current_item_metadata = {}
+      choice_data = []
 
-      item_id = item_id.to_i if item_id.is_a?(Float)
-      item = @stimulus.items.find_by(id: item_id)
+      (2..sheet.last_row).each do |row_num|
+        row_item_id = sheet.cell(row_num, 1)
 
-      unless item
-        results[:errors] << "행 #{row_num}: 문항 ID #{item_id}를 찾을 수 없습니다"
-        next
+        if row_item_id.present?
+          if current_item_id.present? && choice_data.any?
+            process_mcq_choices(current_item_id, choice_data, results, current_item_metadata)
+          end
+
+          current_item_id = row_item_id.is_a?(Float) ? row_item_id.to_i : row_item_id
+          current_item_metadata = {
+            evaluation_indicator: sheet.cell(row_num, 3),
+            sub_indicator: sheet.cell(row_num, 4),
+            difficulty: sheet.cell(row_num, 5)
+          }
+          correct_answer = sheet.cell(row_num, 6)
+          choice_data = [{
+            choice_no: sheet.cell(row_num, 7),
+            proximity_score: sheet.cell(row_num, 8),
+            proximity_reason: sheet.cell(row_num, 10),
+            correct_answer: correct_answer
+          }]
+        else
+          choice_data << {
+            choice_no: sheet.cell(row_num, 7),
+            proximity_score: sheet.cell(row_num, 8),
+            proximity_reason: sheet.cell(row_num, 10),
+            correct_answer: nil
+          }
+        end
       end
 
-      process_item_answer(item, answer, row_num, results)
+      if current_item_id.present? && choice_data.any?
+        process_mcq_choices(current_item_id, choice_data, results, current_item_metadata)
+      end
+    else
+      # True legacy format (simple CSV-like)
+      (2..sheet.last_row).each do |row_num|
+        item_id = sheet.cell(row_num, 1)
+        answer = sheet.cell(row_num, 6)
+
+        next if item_id.blank?
+
+        item_id = item_id.to_i if item_id.is_a?(Float)
+        item = @stimulus.items.find_by(id: item_id)
+
+        unless item
+          results[:errors] << "행 #{row_num}: 문항 ID #{item_id}를 찾을 수 없습니다"
+          next
+        end
+
+        process_item_answer(item, answer, row_num, results)
+      end
     end
   end
 
@@ -830,6 +888,53 @@ class AnswerKeyTemplateService
           results[:errors] << "행 #{row_num}: 루브릭 파싱 오류 - #{e.message}"
         end
       end
+    end
+  end
+
+  # Find sheet by name with encoding-safe fallback to index
+  def find_sheet(xlsx, target_name, fallback_index)
+    sheet_names = xlsx.sheets
+
+    # 1. Try exact name match
+    if sheet_names.include?(target_name)
+      Rails.logger.info "[Answer Key Template] Sheet '#{target_name}' found by exact name"
+      return xlsx.sheet(target_name)
+    end
+
+    # 2. Try encoding-normalized match (strip BOM, normalize Unicode)
+    normalized_target = target_name.unicode_normalize(:nfkc).strip
+    matched_name = sheet_names.find do |name|
+      name.to_s.unicode_normalize(:nfkc).strip == normalized_target
+    end
+    if matched_name
+      Rails.logger.info "[Answer Key Template] Sheet '#{target_name}' found by normalized match: '#{matched_name}'"
+      return xlsx.sheet(matched_name)
+    end
+
+    # 3. Try partial/contains match (Korean encoding issues may cause slight differences)
+    partial_match = sheet_names.find do |name|
+      name.to_s.include?(target_name) || target_name.include?(name.to_s.strip)
+    end
+    if partial_match
+      Rails.logger.info "[Answer Key Template] Sheet '#{target_name}' found by partial match: '#{partial_match}'"
+      return xlsx.sheet(partial_match)
+    end
+
+    # 4. Fallback to sheet index
+    if fallback_index < sheet_names.length
+      Rails.logger.info "[Answer Key Template] Sheet '#{target_name}' not found by name, using index #{fallback_index} (sheet: '#{sheet_names[fallback_index]}')"
+      return xlsx.sheet(fallback_index)
+    end
+
+    Rails.logger.warn "[Answer Key Template] Sheet '#{target_name}' not found and index #{fallback_index} out of range"
+    nil
+  rescue => e
+    Rails.logger.warn "[Answer Key Template] Error finding sheet '#{target_name}': #{e.message}"
+    # Last resort: try by index
+    begin
+      xlsx.sheet(fallback_index) if fallback_index < xlsx.sheets.length
+    rescue
+      nil
     end
   end
 

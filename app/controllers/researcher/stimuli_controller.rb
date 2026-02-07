@@ -37,9 +37,9 @@ class Researcher::StimuliController < ApplicationController
 
   def destroy
     if @stimulus.destroy
-      redirect_to researcher_passages_path, notice: "지문이 삭제되었습니다."
+      redirect_to researcher_passages_path, notice: "지문이 삭제되었습니다.", status: :see_other
     else
-      redirect_to researcher_passages_path, alert: "지문 삭제에 실패했습니다."
+      redirect_to researcher_passages_path, alert: "지문 삭제에 실패했습니다.", status: :see_other
     end
   end
 
@@ -225,8 +225,9 @@ class Researcher::StimuliController < ApplicationController
       service = AnswerKeyTemplateService.new(@stimulus)
 
       if is_excel
-        # Save to temp file for roo to process
-        temp_path = Rails.root.join("tmp", "answer_template_#{Time.now.to_i}_#{uploaded_file.original_filename}")
+        # Save to temp file for roo to process (use ASCII-safe filename to avoid encoding issues on Windows)
+        ext = File.extname(uploaded_file.original_filename).downcase
+        temp_path = Rails.root.join("tmp", "answer_template_#{Time.now.to_i}_#{SecureRandom.hex(4)}#{ext}")
         File.open(temp_path, "wb") { |f| f.write(uploaded_file.read) }
 
         results = service.process_excel_template(temp_path.to_s)
@@ -263,7 +264,7 @@ class Researcher::StimuliController < ApplicationController
   end
 
   def set_stimulus
-    @stimulus = ReadingStimulus.includes(:items).find(params[:id])
+    @stimulus = ReadingStimulus.includes(items: [:item_choices, :evaluation_indicator, :sub_indicator, rubric: { rubric_criteria: :rubric_levels }]).find(params[:id])
   end
 
   def stimulus_params

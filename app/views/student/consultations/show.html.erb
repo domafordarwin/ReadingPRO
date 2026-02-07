@@ -62,12 +62,12 @@
         <% if @post.created_by_id == current_user&.id %>
           <%= link_to "수정", edit_student_consultation_path(@post), class: "rp-btn rp-btn--secondary" %>
           <%= button_to "삭제", student_consultation_path(@post), method: :delete,
-              data: { confirm: "정말 삭제하시겠습니까?" },
+              data: { turbo_confirm: "정말 삭제하시겠습니까?" },
               class: "rp-btn rp-btn--danger" %>
 
           <% if @post.open? || @post.answered? %>
             <%= button_to "마감", close_student_consultation_path(@post), method: :patch,
-                data: { confirm: "이 게시글을 마감하시겠습니까?" },
+                data: { turbo_confirm: "이 게시글을 마감하시겠습니까?" },
                 class: "rp-btn rp-btn--secondary" %>
           <% elsif @post.closed? %>
             <%= button_to "다시 열기", reopen_student_consultation_path(@post), method: :patch,
@@ -104,7 +104,7 @@
                   <%= button_to "삭제",
                       student_consultation_comment_path(@post, comment),
                       method: :delete,
-                      data: { confirm: "댓글을 삭제하시겠습니까?" },
+                      data: { turbo_confirm: "댓글을 삭제하시겠습니까?" },
                       class: "rp-comment__delete" %>
                 <% end %>
               </div>

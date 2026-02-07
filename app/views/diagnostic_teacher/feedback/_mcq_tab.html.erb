@@ -1,175 +1,541 @@
 <div class="rp-tab-pane active" data-tab="mcq">
-  <!-- 상단: 응답 현황 -->
-  <div class="rp-overview-section">
-    <h2 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-      객관식 응답 현황
-      <span style="font-size: 13px; font-weight: 400; color: #64748b; margin-left: 8px;">
-        <% if @responses.any? %>
-          (<span id="correct-count">0</span>/<%= @responses.count %> 정답)
-        <% else %>
-          (0/0 정답)
-        <% end %>
-      </span>
-    </h2>
-
-    <% if @responses.any? %>
-      <!-- 정답과 학생답 요약 테이블 -->
-      <div style="margin-bottom: 16px; overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
-          <tbody>
-            <!-- 문항번호 행 -->
-            <tr>
-              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center; width: 60px;">문항</th>
-              <% @responses.each_with_index do |response, index| %>
-                <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: center;">
-                  <%= index + 1 %>
-                </th>
-              <% end %>
-            </tr>
-
-            <!-- 정답 행 -->
-            <tr>
-              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">정답</th>
-              <% @responses.each_with_index do |response, index| %>
-                <% correct_choice = response&.item&.item_choices&.find(&:is_correct) %>
-                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f0f9ff; color: #0284c7; font-weight: 600;">
-                  <%= correct_choice&.choice_no || '—' %>
-                </td>
-              <% end %>
-            </tr>
-
-            <!-- 학생답 행 -->
-            <tr>
-              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">학생답</th>
-              <% @responses.each_with_index do |response, index| %>
-                <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center; background: #f5f5f5; color: #475569;">
-                  <%= response.selected_choice&.choice_no || '—' %>
-                </td>
-              <% end %>
-            </tr>
-
-            <!-- 수정답 행 -->
-            <tr>
-              <th style="padding: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: 600; text-align: left;">수정답</th>
-              <% @responses.each_with_index do |response, index| %>
-                <td style="padding: 4px; border: 1px solid #cbd5e1; text-align: center;">
-                  <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-                    <input type="number"
-                           class="rp-edit-answer-input"
-                           data-response-id="<%= response.id %>"
-                           data-item-index="<%= index %>"
-                           min="1"
-                           max="5"
-                           style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-weight: 600; font-family: monospace; box-sizing: border-box;">
-                    <button class="rp-btn rp-btn--primary rp-btn--xs"
-                            data-response-id="<%= response.id %>"
-                            style="font-size: 11px; padding: 2px 6px; min-width: 40px;">저장</button>
-                  </div>
-                </td>
-              <% end %>
-            </tr>
-          </tbody>
-        </table>
+  <% if @responses.present? && @responses.any? %>
+    <!-- 상단: 통계 + 프롬프트 설정 + 피드백 생성 버튼 -->
+    <div class="mcq-header">
+      <div class="mcq-header__info">
+        <h2 class="mcq-header__title">
+          객관식 문항 결과
+          <span class="mcq-header__count">
+            (<span id="mcq-correct-count"><%= @responses.count { |r| r.selected_choice&.is_correct? } %></span>/<%= @responses.count %> 정답)
+          </span>
+        </h2>
       </div>
-    <% else %>
-      <div style="padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; color: #64748b;">
-        <p style="margin: 0; font-size: 14px;">객관식 응답 데이터가 없습니다.</p>
+      <div class="mcq-header__controls">
+        <button class="mcq-prompt-toggle-btn" id="mcq-prompt-toggle" title="프롬프트 설정">
+          <span class="mcq-prompt-toggle-btn__icon">&#9881;</span>
+          <span>프롬프트 설정</span>
+          <span class="mcq-prompt-toggle-btn__arrow" id="mcq-prompt-arrow">&#9660;</span>
+        </button>
+        <button class="rp-btn rp-btn--primary" id="generate-mcq-item-feedbacks" data-student-id="<%= @student.id %>">
+          오답 피드백 일괄 생성
+        </button>
       </div>
-    <% end %>
-  </div>
+    </div>
 
-    <% if @responses.any? %>
-    <!-- 수평선 -->
-    <div style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>
-
-    <!-- 하단: 통합 피드백 섹션 (좌우 분할) -->
-    <div style="margin-top: 32px;">
-      <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-        종합 분석 및 피드백
-      </h2>
-
-      <div class="rp-comprehensive-feedback-container" data-student-id="<%= @student.id %>">
-        <!-- 왼쪽: 피드백 영역 -->
-        <div class="rp-feedback-column">
-          <div class="rp-feedback-section">
-            <div class="rp-section-header">
-              <h4><%= @responses.count %>개 문항 종합 피드백</h4>
-              <button class="rp-btn rp-btn--primary" id="generate-comprehensive-feedback"<% unless @responses.any? %> disabled<% end %>>
-                AI 종합 피드백 생성
-              </button>
-            </div>
-
-            <!-- 피드백 표시 -->
-            <div class="rp-feedback-display" id="comprehensive-feedback-display">
-              <% if @comprehensive_feedback.present? %>
-                <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
-                  <%= simple_format(@comprehensive_feedback) %>
-                </div>
-              <% else %>
-                <p style="color: #94a3b8; font-size: 13px;">아직 생성된 피드백이 없습니다. 오른쪽의 버튼을 클릭하여 AI 종합 피드백을 생성하세요.</p>
-              <% end %>
-            </div>
-
-            <!-- 피드백 액션 버튼 -->
-            <div class="rp-feedback-actions" id="comprehensive-feedback-actions" style="display: none; margin-top: 12px; display: flex; gap: 8px;">
-              <button class="rp-btn rp-btn--secondary rp-btn--sm" id="edit-comprehensive-feedback">수정</button>
-              <button class="rp-btn rp-btn--success rp-btn--sm" id="save-feedback-display">저장</button>
-            </div>
-
-            <!-- 피드백 편집 -->
-            <div class="rp-feedback-edit" style="display: none;">
-              <textarea class="rp-feedback-textarea" id="comprehensive-feedback-textarea" rows="10" placeholder="종합 피드백을 입력하세요..."></textarea>
-              <div class="rp-edit-actions">
-                <button class="rp-btn rp-btn--primary rp-btn--sm" id="save-comprehensive-feedback">저장</button>
-                <button class="rp-btn rp-btn--secondary rp-btn--sm" id="cancel-comprehensive-feedback">취소</button>
-              </div>
-            </div>
-          </div>
+    <!-- 프롬프트 설정 (헤더 하단 확장) -->
+    <div class="mcq-prompt-panel" id="mcq-prompt-body" style="display: none;">
+      <div class="mcq-prompt-panel__inner">
+        <div class="mcq-prompt-panel__left">
+          <label class="mcq-prompt-panel__label">프롬프트 분류</label>
+          <select id="mcq-prompt-category" class="mcq-prompt-panel__select">
+            <option value="mcq_feedback" selected>객관식 답안 확인 피드백</option>
+            <option value="constructed_feedback">서술형 피드백</option>
+            <option value="reading_tendency">독서력 피드백</option>
+            <option value="comprehensive_report">종합 보고서 생성 프롬프트</option>
+          </select>
         </div>
-
-        <!-- 오른쪽: 프롬프트 관리 영역 -->
-        <div class="rp-prompt-column">
-          <div class="rp-feedback-section rp-prompt-section">
-            <h4>커스텀 프롬프트</h4>
-
-            <div class="rp-prompt-controls">
-              <div class="rp-form-group">
-                <label for="comprehensive-category">카테고리</label>
-                <select id="comprehensive-category" class="rp-prompt-category">
-                  <option value="general">일반</option>
-                  <option value="comprehension">이해력</option>
-                  <option value="explanation">설명</option>
-                  <option value="difficulty">난이도</option>
-                  <option value="strategy">전략</option>
-                </select>
-              </div>
-
-              <div class="rp-form-group">
-                <label for="comprehensive-prompt">커스텀 프롬프트</label>
-                <textarea id="comprehensive-prompt" class="rp-prompt-input" rows="6"
-                          placeholder="예: 학생의 약점 분석과 개선 방안을 포함한 피드백을 만들어주세요"></textarea>
-              </div>
-
-              <div class="rp-form-group">
-                <label class="rp-checkbox">
-                  <input type="checkbox" id="comprehensive-save-template">
-                  <span>템플릿으로 저장</span>
-                </label>
-              </div>
-
-              <!-- 버튼 그룹 -->
-              <div class="rp-button-group">
-                <button class="rp-btn rp-btn--secondary" id="refine-comprehensive-feedback" style="flex: 1;">
-                  프롬프트 최적화
-                </button>
-                <button class="rp-btn rp-btn--success" id="apply-custom-prompt" style="flex: 1;">
-                  피드백 생성
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="mcq-prompt-panel__center">
+          <label class="mcq-prompt-panel__label">피드백 생성 규칙 (AI 지침)</label>
+          <textarea class="mcq-prompt-panel__textarea" id="mcq-prompt-textarea" rows="4"><%= FeedbackAiService::MCQ_DEFAULT_PROMPT %></textarea>
+        </div>
+        <div class="mcq-prompt-panel__right">
+          <button class="rp-btn rp-btn--secondary rp-btn--sm" id="mcq-prompt-reset">기본값 복원</button>
+          <p class="mcq-prompt-panel__hint">수정 후 "오답 피드백 일괄 생성"을 누르면 적용됩니다.</p>
         </div>
       </div>
     </div>
-    <% end %>
+
+    <!-- 문항별 카드 리스트 -->
+    <div class="mcq-cards">
+      <% @responses.each_with_index do |response, index| %>
+        <% item = response.item %>
+        <% selected = response.selected_choice %>
+        <% correct_choice = item.item_choices.find(&:is_correct?) %>
+        <% is_correct = selected&.is_correct? %>
+        <% existing_feedback = response.response_feedbacks.find { |f| f.feedback_type == "item" || f.source == "ai" } %>
+
+        <div class="mcq-card <%= is_correct ? 'mcq-card--correct' : 'mcq-card--incorrect' %>" data-response-id="<%= response.id %>">
+          <!-- 카드 헤더 -->
+          <div class="mcq-card__header">
+            <span class="mcq-card__number">문항 <%= index + 1 %></span>
+            <% if item.prompt.present? %>
+              <span class="mcq-card__prompt"><%= truncate(item.prompt, length: 80) %></span>
+            <% end %>
+            <% if is_correct %>
+              <span class="mcq-badge mcq-badge--correct">정답</span>
+            <% else %>
+              <span class="mcq-badge mcq-badge--incorrect">오답</span>
+            <% end %>
+          </div>
+
+          <!-- 카드 본문: 3열 -->
+          <div class="mcq-card__body">
+            <!-- 좌측: 문항 메타 정보 -->
+            <div class="mcq-col mcq-col--meta">
+              <% if item.evaluation_indicator %>
+                <div class="mcq-meta-group">
+                  <span class="mcq-meta-label">평가영역</span>
+                  <span class="mcq-indicator-badge"><%= item.evaluation_indicator.name %></span>
+                </div>
+              <% end %>
+              <% if item.sub_indicator %>
+                <div class="mcq-meta-group">
+                  <span class="mcq-meta-label">세부지표</span>
+                  <span class="mcq-sub-badge"><%= item.sub_indicator.name %></span>
+                </div>
+              <% end %>
+              <div class="mcq-meta-group">
+                <span class="mcq-meta-label">난이도</span>
+                <span class="mcq-meta-value"><%= item.difficulty || '미지정' %></span>
+              </div>
+            </div>
+
+            <!-- 중앙: 답안 비교 + 선택지 -->
+            <div class="mcq-col mcq-col--answer">
+              <div class="mcq-answer-compare">
+                <div class="mcq-answer-box mcq-answer-box--correct">
+                  <div class="mcq-answer-box__label">정답</div>
+                  <div class="mcq-answer-box__value"><%= correct_choice&.choice_no || '—' %>번</div>
+                </div>
+                <div class="mcq-answer-box mcq-answer-box--student <%= 'is-correct' if is_correct %>">
+                  <div class="mcq-answer-box__label">학생답</div>
+                  <div class="mcq-answer-box__value"><%= selected&.choice_no || '—' %>번</div>
+                </div>
+              </div>
+
+              <!-- 선택지 목록 -->
+              <ul class="mcq-choice-list">
+                <% item.item_choices.sort_by(&:choice_no).each do |choice| %>
+                  <%
+                    css_class = ""
+                    css_class = "is-correct-choice" if choice.is_correct?
+                    css_class = "is-student-wrong" if !is_correct && selected&.id == choice.id
+                  %>
+                  <li class="mcq-choice-item <%= css_class %>">
+                    <span class="mcq-choice-no"><%= choice.choice_no %></span>
+                    <span class="mcq-choice-text"><%= choice.content %></span>
+                    <% if choice.is_correct? %>
+                      <span class="mcq-choice-marker">✓</span>
+                    <% elsif selected&.id == choice.id %>
+                      <span class="mcq-choice-marker">✗</span>
+                    <% end %>
+                  </li>
+                <% end %>
+              </ul>
+
+              <!-- 오답인 경우 proximity_reason 표시 -->
+              <% if !is_correct && selected&.proximity_reason.present? %>
+                <div class="mcq-proximity">
+                  <span class="mcq-proximity__label">오답 근접 이유</span>
+                  <p class="mcq-proximity__text"><%= selected.proximity_reason %></p>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- 우측: 피드백 영역 -->
+            <div class="mcq-col mcq-col--feedback">
+              <span class="mcq-meta-label">피드백</span>
+              <div class="mcq-feedback-display" id="feedback-display-<%= response.id %>">
+                <% if existing_feedback %>
+                  <p class="mcq-feedback-text"><%= existing_feedback.feedback %></p>
+                  <span class="mcq-feedback-meta">✓ <%= existing_feedback.source %> • <%= existing_feedback.created_at.strftime('%m/%d %H:%M') %></span>
+                <% elsif is_correct %>
+                  <p class="mcq-feedback-placeholder">정답입니다!</p>
+                <% else %>
+                  <p class="mcq-feedback-placeholder">상단 버튼으로 피드백을 생성하세요</p>
+                <% end %>
+              </div>
+
+              <!-- 피드백 편집 영역 (기본 숨김) -->
+              <div class="mcq-feedback-edit" id="mcq-feedback-edit-<%= response.id %>" style="display: none;">
+                <textarea class="mcq-feedback-textarea" id="mcq-feedback-textarea-<%= response.id %>" rows="5" placeholder="피드백을 편집하세요..."></textarea>
+                <div class="mcq-feedback-edit__actions">
+                  <button class="rp-btn rp-btn--primary rp-btn--xs mcq-save-feedback-btn" data-response-id="<%= response.id %>">저장</button>
+                  <button class="rp-btn rp-btn--secondary rp-btn--xs mcq-cancel-edit-btn" data-response-id="<%= response.id %>">취소</button>
+                </div>
+              </div>
+
+              <!-- 수정 버튼 -->
+              <div class="mcq-feedback-actions" id="mcq-feedback-actions-<%= response.id %>">
+                <% if existing_feedback %>
+                  <button class="rp-btn rp-btn--secondary rp-btn--xs mcq-edit-feedback-btn" data-response-id="<%= response.id %>" data-feedback="<%= h(existing_feedback.feedback) %>">수정</button>
+                <% end %>
+              </div>
+
+              <% if item.explanation.present? %>
+                <div class="mcq-explanation">
+                  <span class="mcq-meta-label">해설</span>
+                  <p class="mcq-explanation__text"><%= item.explanation %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% else %>
+    <div class="mcq-empty">
+      <p>객관식 응답 데이터가 없습니다.</p>
+    </div>
+  <% end %>
 </div>
+
+<style>
+  /* 헤더 */
+  .mcq-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .mcq-header__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+  }
+  .mcq-header__count {
+    font-size: 13px;
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 8px;
+  }
+  .mcq-header__controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* 프롬프트 토글 버튼 */
+  .mcq-prompt-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mcq-prompt-toggle-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .mcq-prompt-toggle-btn__icon { font-size: 13px; }
+  .mcq-prompt-toggle-btn__arrow {
+    font-size: 9px;
+    color: #94a3b8;
+    transition: transform 0.2s;
+  }
+  .mcq-prompt-toggle-btn__arrow.open { transform: rotate(180deg); }
+
+  /* 프롬프트 확장 패널 */
+  .mcq-prompt-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin: 12px 0 20px 0;
+    padding: 16px;
+    animation: fadeIn 0.15s ease;
+  }
+  .mcq-prompt-panel__inner {
+    display: grid;
+    grid-template-columns: 180px 1fr 140px;
+    gap: 16px;
+    align-items: start;
+  }
+  .mcq-prompt-panel__label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .mcq-prompt-panel__select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    background: white;
+    color: #334155;
+  }
+  .mcq-prompt-panel__textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+    color: #334155;
+    background: white;
+    box-sizing: border-box;
+  }
+  .mcq-prompt-panel__textarea:focus {
+    outline: none;
+    border-color: #2f5bff;
+    box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1);
+  }
+  .mcq-prompt-panel__right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 18px;
+  }
+  .mcq-prompt-panel__hint {
+    font-size: 10px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .mcq-prompt-panel__inner {
+      grid-template-columns: 1fr;
+    }
+    .mcq-prompt-panel__right {
+      padding-top: 0;
+    }
+  }
+
+  /* 카드 */
+  .mcq-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .mcq-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .mcq-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .mcq-card--incorrect { border-left: 3px solid #fca5a5; }
+  .mcq-card--correct { border-left: 3px solid #86efac; }
+
+  /* 카드 헤더 */
+  .mcq-card__header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
+  }
+  .mcq-card__number {
+    font-weight: 700;
+    font-size: 13px;
+    color: #2f5bff;
+    white-space: nowrap;
+  }
+  .mcq-card__prompt {
+    font-size: 12px;
+    color: #64748b;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 배지 */
+  .mcq-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mcq-badge--correct { background: #dcfce7; color: #166534; }
+  .mcq-badge--incorrect { background: #fef2f2; color: #991b1b; }
+
+  /* 카드 본문 3열 */
+  .mcq-card__body {
+    display: grid;
+    grid-template-columns: 160px 1.2fr 1fr;
+    min-height: 100px;
+  }
+  .mcq-col { padding: 14px 16px; }
+  .mcq-col:not(:last-child) { border-right: 1px solid #f1f5f9; }
+
+  /* 메타 정보 */
+  .mcq-meta-group { margin-bottom: 10px; }
+  .mcq-meta-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .mcq-meta-value { font-size: 13px; font-weight: 500; color: #334155; }
+  .mcq-indicator-badge {
+    display: inline-block;
+    background: #eff6ff; color: #1e40af;
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+  }
+  .mcq-sub-badge {
+    display: inline-block;
+    background: #f0fdf4; color: #166534;
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  /* 답안 비교 */
+  .mcq-answer-compare {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mcq-answer-box {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .mcq-answer-box--correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  .mcq-answer-box--correct .mcq-answer-box__label { color: #15803d; font-size: 10px; font-weight: 600; }
+  .mcq-answer-box--correct .mcq-answer-box__value { color: #166534; font-weight: 700; font-size: 14px; }
+  .mcq-answer-box--student {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+  .mcq-answer-box--student.is-correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  .mcq-answer-box--student .mcq-answer-box__label { color: #dc2626; font-size: 10px; font-weight: 600; }
+  .mcq-answer-box--student.is-correct .mcq-answer-box__label { color: #15803d; }
+  .mcq-answer-box--student .mcq-answer-box__value { color: #991b1b; font-weight: 700; font-size: 14px; }
+  .mcq-answer-box--student.is-correct .mcq-answer-box__value { color: #166534; }
+
+  /* 선택지 리스트 */
+  .mcq-choice-list { list-style: none; padding: 0; margin: 0; }
+  .mcq-choice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .mcq-choice-item.is-correct-choice { background: #f0fdf4; color: #166534; font-weight: 500; }
+  .mcq-choice-item.is-student-wrong { background: #fef2f2; color: #991b1b; }
+  .mcq-choice-no {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: #64748b;
+  }
+  .mcq-choice-item.is-correct-choice .mcq-choice-no { background: #dcfce7; color: #166534; }
+  .mcq-choice-item.is-student-wrong .mcq-choice-no { background: #fecaca; color: #991b1b; }
+  .mcq-choice-text { flex: 1; }
+  .mcq-choice-marker { flex-shrink: 0; font-size: 11px; margin-left: auto; }
+
+  /* Proximity reason */
+  .mcq-proximity {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #fffbeb;
+    border-radius: 8px;
+    border-left: 3px solid #f59e0b;
+  }
+  .mcq-proximity__label {
+    font-size: 10px; font-weight: 600; color: #92400e;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    margin-bottom: 4px; display: block;
+  }
+  .mcq-proximity__text { font-size: 12px; color: #78350f; line-height: 1.5; margin: 0; }
+
+  /* 피드백 영역 */
+  .mcq-feedback-display {
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    min-height: 60px;
+    margin-top: 4px;
+  }
+  .mcq-feedback-text { font-size: 12px; color: #334155; line-height: 1.6; margin: 0; }
+  .mcq-feedback-placeholder { font-size: 12px; color: #94a3b8; margin: 0; font-style: italic; }
+  .mcq-feedback-meta { font-size: 10px; color: #94a3b8; display: block; margin-top: 6px; }
+
+  /* 피드백 편집 */
+  .mcq-feedback-edit { margin-top: 6px; }
+  .mcq-feedback-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .mcq-feedback-textarea:focus { outline: none; border-color: #2f5bff; box-shadow: 0 0 0 3px rgba(47, 91, 255, 0.1); }
+  .mcq-feedback-edit__actions { display: flex; gap: 6px; margin-top: 6px; }
+  .mcq-feedback-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+  /* 해설 */
+  .mcq-explanation { margin-top: 10px; }
+  .mcq-explanation__text {
+    font-size: 12px; color: #334155; line-height: 1.6;
+    background: #f0f9ff; padding: 8px 10px; border-radius: 6px;
+    border-left: 3px solid #2f5bff; margin: 4px 0 0 0;
+  }
+
+  /* 빈 상태 */
+  .mcq-empty {
+    padding: 40px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  /* 로딩 */
+  .mcq-feedback-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+  }
+  .mcq-feedback-loading__spinner {
+    width: 14px; height: 14px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #2f5bff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 반응형 */
+  @media (max-width: 900px) {
+    .mcq-card__body {
+      grid-template-columns: 1fr;
+    }
+    .mcq-col:not(:last-child) {
+      border-right: none;
+      border-bottom: 1px solid #f1f5f9;
+    }
+  }
+</style>

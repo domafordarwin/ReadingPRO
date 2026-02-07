@@ -18,6 +18,14 @@ module Student
       render json: { error: e.message }, status: :unprocessable_entity
     end
 
+    def update_answer
+      if @response.update(answer_text: params[:answer_text])
+        redirect_to student_show_attempt_path(attempt_id: @response.student_attempt_id), notice: "답안이 수정되었습니다."
+      else
+        redirect_to student_show_attempt_path(attempt_id: @response.student_attempt_id), alert: "답안 수정에 실패했습니다."
+      end
+    end
+
     private
 
     def set_response

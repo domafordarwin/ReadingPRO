@@ -24,12 +24,12 @@ class Parent::ForumCommentsController < ApplicationController
 
   def destroy
     unless @comment.created_by_id == current_user.id
-      redirect_to parent_forum_path(@forum), alert: "권한이 없습니다."
+      redirect_to parent_forum_path(@forum), alert: "권한이 없습니다.", status: :see_other
       return
     end
 
     @comment.destroy
-    redirect_to parent_forum_path(@forum), notice: "댓글이 삭제되었습니다."
+    redirect_to parent_forum_path(@forum), notice: "댓글이 삭제되었습니다.", status: :see_other
   end
 
   private

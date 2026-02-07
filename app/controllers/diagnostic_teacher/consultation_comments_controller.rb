@@ -26,9 +26,9 @@ class DiagnosticTeacher::ConsultationCommentsController < ApplicationController
 
     if @comment.created_by_id == current_user.id
       @comment.destroy
-      redirect_to diagnostic_teacher_consultation_path(@post), notice: "답변이 삭제되었습니다."
+      redirect_to diagnostic_teacher_consultation_path(@post), notice: "답변이 삭제되었습니다.", status: :see_other
     else
-      redirect_to diagnostic_teacher_consultation_path(@post), alert: "권한이 없습니다."
+      redirect_to diagnostic_teacher_consultation_path(@post), alert: "권한이 없습니다.", status: :see_other
     end
   end
 

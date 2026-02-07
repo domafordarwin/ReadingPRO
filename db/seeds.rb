@@ -228,6 +228,34 @@ end
 # Sample data removed per user request
 
 # =============================================================================
+# Evaluation Indicators & Sub-Indicators Taxonomy
+# =============================================================================
+TAXONOMY = {
+  "이해력" => { code: "EI-COMP", level: 1, subs: ["사실적 이해", "추론적 이해", "비판적 이해"] },
+  "심미적 감수성" => { code: "EI-AEST", level: 1, subs: ["문학적 표현", "정서적 공감", "문학적 가치"] },
+  "의사소통 능력" => { code: "EI-COMM", level: 1, subs: ["표현과 전달 능력", "사회적 상호작용", "창의적 문제해결능력"] }
+}.freeze
+
+TAXONOMY.each do |name, config|
+  ei = EvaluationIndicator.find_or_initialize_by(name: name)
+  if ei.new_record?
+    ei.assign_attributes(code: config[:code], level: config[:level])
+    ei.save!
+    puts "  + Created EvaluationIndicator: #{name}"
+  else
+    puts "  = Exists EvaluationIndicator: #{name}"
+  end
+
+  config[:subs].each do |sub_name|
+    sub = SubIndicator.find_or_initialize_by(evaluation_indicator_id: ei.id, name: sub_name)
+    if sub.new_record?
+      sub.save!
+      puts "    + Created SubIndicator: #{sub_name}"
+    end
+  end
+end
+
+# =============================================================================
 # Summary
 # =============================================================================
 puts ""

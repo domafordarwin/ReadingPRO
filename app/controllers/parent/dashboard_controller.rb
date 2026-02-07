@@ -1,3 +1,5 @@
+require "ostruct"
+
 class Parent::DashboardController < ApplicationController
   layout "unified_portal"
   before_action -> { require_role("parent") }
@@ -79,7 +81,9 @@ class Parent::DashboardController < ApplicationController
 
   def show_report
     @current_page = "reports"
-    @attempt = @student&.student_attempts&.find_by(id: params[:attempt_id])
+    @attempt = @student&.student_attempts
+                        &.includes(:attempt_report, :diagnostic_form)
+                        &.find_by(id: params[:attempt_id])
 
     unless @attempt
       redirect_to parent_reports_path, alert: "시험 기록을 찾을 수 없습니다."
@@ -92,20 +96,6 @@ class Parent::DashboardController < ApplicationController
       redirect_to parent_reports_path, alert: "리포트를 찾을 수 없습니다."
       return
     end
-
-    # Calculate data like student dashboard does
-    @literacy_achievements = calculate_literacy_achievements(@attempt)
-    @comprehensive_analysis = ::ComprehensiveAnalysis.new(@attempt, @literacy_achievements)
-    # Load existing reader tendency or create placeholder struct for view
-    @reader_tendency = @attempt.reader_tendency || OpenStruct.new(
-      reading_speed: nil,
-      comprehension_strength: nil,
-      detail_orientation_score: nil,
-      speed_accuracy_balance_score: nil,
-      critical_thinking_score: nil,
-      tendency_summary: nil
-    )
-    @guidance_directions = generate_guidance_directions(@literacy_achievements)
   end
 
   def show_attempt

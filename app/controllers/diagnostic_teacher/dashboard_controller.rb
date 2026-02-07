@@ -167,9 +167,22 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @current_page = "assignments"
     @page_title = "진단 배정 현황"
 
-    @assignments = DiagnosticAssignment.includes(:diagnostic_form, :school, :student, :assigned_by)
-                                        .recent
-                                        .page(params[:page]).per(20)
+    # 상태 필터
+    @status_filter = params[:status].to_s.strip
+    base = DiagnosticAssignment.includes(:diagnostic_form, :school, :student, :assigned_by)
+
+    @assignments = case @status_filter
+                   when "active"
+                     base.active.recent
+                   when "completed"
+                     base.where(status: "completed").recent
+                   when "cancelled"
+                     base.where(status: "cancelled").recent
+                   else
+                     base.recent
+                   end
+
+    @assignments = @assignments.page(params[:page]).per(20)
 
     @total_assignments = DiagnosticAssignment.count
     @active_assignments = DiagnosticAssignment.active.count
@@ -204,6 +217,37 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     end
   end
 
+  # 재배정: 완료된 진단을 다시 응시할 수 있도록 새 배정 생성
+  def reassign
+    old_assignment = DiagnosticAssignment.find(params[:id])
+
+    new_assignment = DiagnosticAssignment.new(
+      diagnostic_form_id: old_assignment.diagnostic_form_id,
+      school_id: old_assignment.school_id,
+      student_id: old_assignment.student_id,
+      assigned_by: current_user,
+      assigned_at: Time.current,
+      due_date: params[:due_date].presence,
+      notes: "재배정 (이전 배정: ##{old_assignment.id})"
+    )
+
+    if new_assignment.save
+      redirect_to diagnostic_teacher_assignments_path, notice: "재배정되었습니다. 학생이 다시 진단을 응시할 수 있습니다."
+    else
+      redirect_to diagnostic_teacher_assignments_path, alert: "재배정 실패: #{new_assignment.errors.full_messages.join(', ')}"
+    end
+  end
+
+  # 진단 시도 삭제 (진행 중이거나 잘못된 진단)
+  def destroy_attempt
+    attempt = StudentAttempt.find(params[:id])
+    student_name = attempt.student&.name || "(미지정)"
+    form_name = attempt.diagnostic_form&.name || "(미지정)"
+
+    attempt.destroy
+    redirect_to diagnostic_teacher_diagnostics_status_path, notice: "#{student_name}의 '#{form_name}' 진단이 삭제되었습니다.", status: :see_other
+  end
+
   # 진단 관리 - 문항 관리
   def items
     @current_page = "items"
@@ -230,7 +274,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 학생별 응시 현황 (최근 순서대로, 페이지네이션)
     @attempts = StudentAttempt
-      .includes(:student, :responses)
+      .includes(:student, :diagnostic_form, :responses)
       .recent
       .page(params[:page])
       .per(20)
@@ -307,15 +351,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     render json: { success: false, error: "서버 오류: #{e.message}" }, status: 500
   end
 
-  # 공지사항 및 상담 - 공지사항 관리
-  # TODO: Notice 모델이 새로운 스키마에서 제거되었습니다. Announcement 모델 사용으로 변경 필요
-  def notices
-    @current_page = "notices"
-    @page_title = "공지사항 관리"
-    @notices = [] # Notice 모델이 존재하지 않음
-    @search_query = params[:search].to_s.strip
-    @status_filter = params[:status].to_s.strip
-  end
+  # 공지사항은 DiagnosticTeacher::NoticesController로 이동됨
 
   private
 

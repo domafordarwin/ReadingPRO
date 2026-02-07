@@ -54,7 +54,7 @@
               <small style="color: #999;"><%= comment.created_at.strftime("%Y.%m.%d %H:%M") %></small>
             </div>
             <% if comment.created_by_id == current_user&.id %>
-              <%= button_to "삭제", diagnostic_teacher_forum_comment_path(forum_id: @forum.id, id: comment.id), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
+              <%= button_to "삭제", diagnostic_teacher_forum_comment_path(forum_id: @forum.id, id: comment.id), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
             <% end %>
           </div>
           <p style="margin: 8px 0; color: #333; line-height: 1.6;">

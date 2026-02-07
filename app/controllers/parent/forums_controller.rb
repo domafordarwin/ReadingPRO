@@ -83,7 +83,7 @@ class Parent::ForumsController < ApplicationController
 
   def destroy
     @forum.destroy
-    redirect_to parent_forums_path, notice: "게시글이 삭제되었습니다."
+    redirect_to parent_forums_path, notice: "게시글이 삭제되었습니다.", status: :see_other
   end
 
   def close

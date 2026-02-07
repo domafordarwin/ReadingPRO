@@ -26,7 +26,7 @@ class DiagnosticTeacher::SchoolAdminsController < ApplicationController
     @school_admin.destroy
 
     flash[:notice] = "학교 관리자 '#{name}'이(가) 삭제되었습니다."
-    redirect_to diagnostic_teacher_managers_path
+    redirect_to diagnostic_teacher_managers_path, status: :see_other
   end
 
   def reset_password

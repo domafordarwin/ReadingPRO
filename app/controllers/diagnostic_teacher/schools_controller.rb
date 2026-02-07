@@ -75,7 +75,7 @@ class DiagnosticTeacher::SchoolsController < ApplicationController
     @school.destroy
 
     flash[:notice] = "학교 '#{school_name}'이(가) 삭제되었습니다."
-    redirect_to diagnostic_teacher_managers_path
+    redirect_to diagnostic_teacher_managers_path, status: :see_other
   end
 
   private

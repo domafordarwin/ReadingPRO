@@ -91,11 +91,21 @@
                 <% end %>
               </td>
               <td>
-                <%= button_to "취소",
-                    diagnostic_teacher_cancel_assignment_path(assignment),
-                    method: :delete,
-                    data: { turbo_confirm: "이 배정을 취소하시겠습니까?" },
-                    class: "rp-btn rp-btn--sm rp-btn--danger" %>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <% if assignment.status.in?(%w[assigned in_progress]) %>
+                    <%= button_to "취소",
+                        diagnostic_teacher_cancel_assignment_path(assignment),
+                        method: :delete,
+                        data: { turbo_confirm: "이 배정을 취소하시겠습니까?" },
+                        class: "rp-btn rp-btn--sm rp-btn--danger" %>
+                  <% elsif assignment.status == "completed" %>
+                    <%= button_to "재배정",
+                        diagnostic_teacher_reassign_assignment_path(assignment),
+                        method: :post,
+                        data: { turbo_confirm: "이 진단을 재배정하시겠습니까? 학생이 다시 응시할 수 있게 됩니다." },
+                        class: "rp-btn rp-btn--sm rp-btn--reassign" %>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>
@@ -138,4 +148,6 @@
   .rp-badge--info { background: #dbeafe; color: #1e3a8a; }
   .rp-badge--outline { background: transparent; border: 1px solid #cbd5e1; color: #475569; }
   .rp-empty-state-small { text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; }
+  .rp-btn--reassign { background: #dbeafe; color: #1e40af; }
+  .rp-btn--reassign:hover { background: #bfdbfe; }
 </style>

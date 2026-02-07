@@ -30,11 +30,11 @@
     <div style="display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
       <%= link_to "수정", edit_parent_forum_path(@forum), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
       <% if @forum.closed? %>
-        <%= link_to "다시 열기", parent_forum_path(@forum, reopen: true), method: :patch, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <%= button_to "다시 열기", reopen_parent_forum_path(@forum), method: :patch, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
       <% else %>
-        <%= link_to "마감", parent_forum_path(@forum, close: true), method: :patch, class: "rp-btn rp-btn--warning rp-btn--sm" %>
+        <%= button_to "마감", close_parent_forum_path(@forum), method: :patch, data: { turbo_confirm: "게시글을 마감하시겠습니까?" }, class: "rp-btn rp-btn--warning rp-btn--sm" %>
       <% end %>
-      <%= link_to "삭제", parent_forum_path(@forum), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
+      <%= button_to "삭제", parent_forum_path(@forum), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
     </div>
   <% end %>
 </div>
@@ -67,7 +67,7 @@
               <small style="color: #999;"><%= comment.created_at.strftime("%Y.%m.%d %H:%M") %></small>
             </div>
             <% if comment.created_by_id == current_user&.id %>
-              <%= button_to "삭제", parent_forum_comment_path(forum_id: @forum.id, id: comment.id), method: :delete, data: { confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
+              <%= button_to "삭제", parent_forum_comment_path(forum_id: @forum.id, id: comment.id), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" }, class: "rp-btn rp-btn--danger rp-btn--sm" %>
             <% end %>
           </div>
           <p style="margin: 8px 0; color: #333; line-height: 1.6;">

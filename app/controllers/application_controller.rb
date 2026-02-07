@@ -11,6 +11,7 @@ class ApplicationController < ActionController::Base
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   rescue_from ActionController::RoutingError, with: :render_not_found
   rescue_from AbstractController::ActionNotFound, with: :render_not_found
+  rescue_from ActionController::InvalidAuthenticityToken, with: :handle_csrf_error
 
   private
 
@@ -78,6 +79,17 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.html { render "errors/not_found", status: :not_found, layout: "application" }
       format.any { head :not_found }
+    end
+  end
+
+  def handle_csrf_error
+    reset_session
+    respond_to do |format|
+      format.json { render json: { error: "세션이 만료되었습니다." }, status: :unauthorized }
+      format.html do
+        flash[:alert] = "세션이 만료되었습니다. 다시 로그인해주세요."
+        redirect_to login_path
+      end
     end
   end
 end

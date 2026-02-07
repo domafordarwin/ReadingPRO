@@ -1,27 +1,68 @@
 <% content_for :portal_title do %>
-  ReadingPRO 소개
+  공지사항
 <% end %>
 <% content_for :portal_subtitle do %>
-  학교 운영을 지원하는 데이터 기반 독서 플랫폼입니다.
+  진단 교사가 등록한 공지사항을 확인합니다.
 <% end %>
 <% content_for :portal_nav do %>
   <%= render "school_admin/shared/nav", current: :about %>
 <% end %>
 
-<section class="portal-card">
-  <h2 class="portal-card-title">학교 운영 지원</h2>
-  <div class="portal-list">
-    <div class="portal-list-item">
-      <span>학년별 비교 및 취약 역량 분석</span>
-      <span class="portal-chip">데이터</span>
-    </div>
-    <div class="portal-list-item">
-      <span>담당 교사 협업용 리포트 제공</span>
-      <span class="portal-chip">협업</span>
-    </div>
-    <div class="portal-list-item">
-      <span>정기 진단 프로그램 운영 지원</span>
-      <span class="portal-chip">운영</span>
-    </div>
+<% if @notices.any? %>
+  <div class="rp-notice-list">
+    <% @notices.each do |notice| %>
+      <section class="portal-card rp-notice-card <%= 'rp-notice-card--important' if notice.important %>">
+        <div class="rp-notice-header">
+          <div>
+            <h3 class="rp-notice-title"><%= notice.title %></h3>
+            <p class="rp-notice-meta">
+              <% if notice.important %>
+                <span class="rp-badge rp-badge--important">중요</span>
+              <% end %>
+              <span class="rp-notice-date"><%= notice.published_at&.strftime("%Y년 %m월 %d일") %></span>
+              <% if notice.expired? %>
+                <span class="rp-badge rp-badge--expired">만료됨</span>
+              <% end %>
+            </p>
+          </div>
+        </div>
+
+        <div class="rp-notice-content">
+          <%= simple_format(notice.content) %>
+        </div>
+
+        <div class="rp-notice-footer">
+          <span class="rp-notice-author">작성자: <%= notice.created_by&.email || "시스템" %></span>
+        </div>
+      </section>
+    <% end %>
   </div>
-</section>
+<% else %>
+  <section class="portal-card">
+    <div style="text-align: center; padding: 60px 40px; color: #94a3b8;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 16px;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <p style="font-size: 16px; font-weight: 500; margin: 0 0 8px 0;">등록된 공지사항이 없습니다.</p>
+      <p style="font-size: 13px; margin: 0;">진단 교사가 공지사항을 등록하면 여기에 표시됩니다.</p>
+    </div>
+  </section>
+<% end %>
+
+<style>
+  .rp-notice-list { display: flex; flex-direction: column; gap: 16px; }
+  .rp-notice-card--important { border-left: 4px solid #f59e0b !important; background: #fffbf0 !important; }
+  .rp-notice-header { margin-bottom: 12px; }
+  .rp-notice-title { font-size: 18px; font-weight: 600; color: #0f172a; margin: 0 0 8px 0; }
+  .rp-notice-meta { font-size: 12px; color: #64748b; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .rp-notice-date { display: inline-block; }
+  .rp-notice-content { font-size: 14px; line-height: 1.7; color: #475569; padding: 12px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-bottom: 12px; }
+  .rp-notice-footer { font-size: 12px; color: #94a3b8; }
+  .rp-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .rp-badge--important { background: #fef3c7; color: #92400e; }
+  .rp-badge--expired { background: #fee2e2; color: #991b1b; }
+</style>

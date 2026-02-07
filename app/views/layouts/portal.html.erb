@@ -44,7 +44,7 @@
             <div class="portal-actions">
               <%= yield :portal_actions %>
               <% if current_role.present? %>
-                <%= button_to "로그아웃", logout_path, method: :delete, class: "portal-button secondary" %>
+                <%= button_to "로그아웃", logout_path, method: :delete, data: { turbo: false }, form: { data: { turbo: false } }, class: "portal-button secondary" %>
               <% end %>
             </div>
           </header>

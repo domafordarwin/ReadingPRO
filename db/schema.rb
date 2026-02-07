@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_07_004106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,9 +30,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
   create_table "attempt_reports", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "generated_at"
+    t.bigint "generated_by_id"
     t.decimal "max_score", precision: 10, scale: 2
     t.string "performance_level"
+    t.datetime "published_at"
     t.jsonb "recommendations", default: {}, null: false
+    t.jsonb "report_sections", default: {}, null: false
+    t.string "report_status", default: "none", null: false
     t.decimal "score_percentage", precision: 5, scale: 2
     t.jsonb "strengths", default: {}, null: false
     t.bigint "student_attempt_id", null: false
@@ -40,6 +44,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
     t.datetime "updated_at", null: false
     t.jsonb "weaknesses", default: {}, null: false
     t.index ["performance_level"], name: "index_attempt_reports_on_performance_level"
+    t.index ["published_at"], name: "index_attempt_reports_on_published_at"
+    t.index ["report_status"], name: "index_attempt_reports_on_report_status"
     t.index ["student_attempt_id"], name: "index_attempt_reports_on_student_attempt_id", unique: true
   end
 
@@ -274,6 +280,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
     t.datetime "created_at", null: false
     t.boolean "is_correct", default: false, null: false
     t.bigint "item_id", null: false
+    t.text "proximity_reason"
     t.integer "proximity_score"
     t.datetime "updated_at", null: false
     t.index ["item_id", "choice_no"], name: "index_item_choices_on_item_id_and_choice_no", unique: true
@@ -289,6 +296,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
     t.bigint "evaluation_indicator_id"
     t.text "explanation"
     t.string "item_type", null: false
+    t.text "model_answer"
     t.text "prompt", null: false
     t.string "status", default: "draft", null: false
     t.string "stimulus_code"
@@ -312,6 +320,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
     t.index ["stimulus_id"], name: "index_items_on_stimulus_id"
     t.index ["sub_indicator_id", "status"], name: "idx_items_sub_indicator_status"
     t.index ["sub_indicator_id"], name: "index_items_on_sub_indicator_id"
+  end
+
+  create_table "notices", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.datetime "expires_at"
+    t.boolean "important", default: false
+    t.datetime "published_at"
+    t.string "target_roles", default: [], array: true
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_notices_on_created_by_id"
+    t.index ["important"], name: "index_notices_on_important"
+    t.index ["published_at"], name: "index_notices_on_published_at"
+    t.index ["target_roles"], name: "index_notices_on_target_roles", using: :gin
   end
 
   create_table "parent_forum_comments", force: :cascade do |t|
@@ -527,6 +551,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
     t.datetime "comprehensive_feedback_generated_at"
     t.datetime "created_at", null: false
     t.bigint "diagnostic_form_id", null: false
+    t.datetime "feedback_published_at"
     t.datetime "started_at", null: false
     t.string "status", default: "in_progress", null: false
     t.bigint "student_id", null: false
@@ -615,6 +640,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
 
   add_foreign_key "announcements", "teachers", column: "published_by_id"
   add_foreign_key "attempt_reports", "student_attempts"
+  add_foreign_key "attempt_reports", "users", column: "generated_by_id"
   add_foreign_key "audit_logs", "users"
   add_foreign_key "consultation_comments", "consultation_posts"
   add_foreign_key "consultation_comments", "users", column: "created_by_id"
@@ -642,6 +668,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_05_145448) do
   add_foreign_key "items", "reading_stimuli", column: "stimulus_id"
   add_foreign_key "items", "sub_indicators"
   add_foreign_key "items", "teachers", column: "created_by_id"
+  add_foreign_key "notices", "users", column: "created_by_id"
   add_foreign_key "parent_forum_comments", "parent_forums"
   add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
   add_foreign_key "parent_forums", "users", column: "created_by_id"

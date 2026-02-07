@@ -31,9 +31,12 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       end
     end
 
-    # 통계
-    @students_count = student_responses_map.keys.count
-    @responses_count = mcq_responses.count
+    # 통계 (배포 완료 학생 제외 - 피드백 필요 학생만 카운트)
+    unpublished_map = student_responses_map.reject do |_student_id, responses|
+      responses.first.attempt.feedback_published_at.present?
+    end
+    @students_count = unpublished_map.keys.count
+    @responses_count = unpublished_map.values.flatten.count
 
     # 정렬 및 페이지네이션 (최신순)
     sorted_entries = student_responses_map.sort_by do |_, responses|
@@ -82,7 +85,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         .joins(:item)
         .where(student_attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:mcq])
-        .includes(:response_feedbacks, :feedback_prompts, :student_attempt, { item: :item_choices })
+        .includes(:response_feedbacks, :selected_choice, :student_attempt,
+                  { item: [:item_choices, :evaluation_indicator, :sub_indicator] })
         .order(:created_at)
 
       # 학생의 서술형 응답들 (constructed responses)
@@ -90,8 +94,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         .joins(:item)
         .where(student_attempt_id: @student.student_attempts.pluck(:id))
         .where("items.item_type = ?", Item.item_types[:constructed])
-        .includes(:response_rubric_scores, :response_feedbacks, :feedback_prompts, :student_attempt,
-                  { item: { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} } })
+        .includes(:response_rubric_scores, :response_feedbacks, :student_attempt,
+                  { item: [:evaluation_indicator, { rubric: { rubric_criteria: :rubric_levels }, stimulus: {} }] })
         .order(:created_at)
 
       # 서술형 응답을 item_id로 그룹화
@@ -152,9 +156,9 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       }
 
       # 전체 프롬프트 템플릿 로드 (드롭다운용)
-      @prompt_templates = FeedbackPrompt.templates
-        .order(:category)
-        .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text } }
+      @prompt_templates = FeedbackPrompt.active
+        .order(:prompt_type)
+        .map { |p| { id: p.id, category: p.prompt_type, prompt_text: p.template } }
     rescue => e
       Rails.logger.error("[FeedbackController#show] Error: #{e.class} - #{e.message}")
       Rails.logger.error("[FeedbackController#show] Backtrace: #{e.backtrace.first(5).join("\n")}")
@@ -183,7 +187,6 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     @response_feedback = @response.response_feedbacks.build(
       feedback: feedback_text,
       source: "ai",
-      created_by: current_user
     )
 
     if @response_feedback.save
@@ -238,8 +241,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       @response.response_feedbacks.create!(
         feedback: refined_feedback,
         source: "teacher",
-        created_by: current_user
-      )
+        )
     end
 
     render json: { success: true, feedback: refined_feedback }
@@ -284,10 +286,10 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       response = Response.find(params[:response_id])
 
       # Response 유효성 확인
-      unless response.item && response.response_rubric_scores.any?
+      unless response.item
         return render json: {
           success: false,
-          error: "문항 또는 채점 정보가 없습니다"
+          error: "문항 정보가 없습니다"
         }
       end
 
@@ -314,8 +316,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       response_feedback = response.response_feedbacks.create!(
         feedback: feedback_text,
         source: "ai",
-        created_by: current_user
-      )
+        )
 
       render json: {
         success: true,
@@ -416,8 +417,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       response.response_feedbacks.create!(
         feedback: feedback_text,
         source: "teacher",
-        created_by: current_user
-      )
+        )
     end
 
     render json: { success: true, feedback: feedback_text }
@@ -451,8 +451,7 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         response.response_feedbacks.create!(
           feedback: feedback_text,
           source: "ai",
-          created_by: current_user
-        )
+            )
         generated_count += 1
       rescue => e
         errors << { response_id: response.id, error: e.message }
@@ -469,11 +468,147 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
+  def generate_mcq_feedbacks
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
+    # 학생의 MCQ 오답 응답 로드
+    responses = Response
+      .joins(:item)
+      .where(student_attempt: student.student_attempts)
+      .where("items.item_type = ?", Item.item_types[:mcq])
+      .includes(:response_feedbacks, :selected_choice, item: :item_choices)
+      .to_a
+
+    # 오답만 필터링 (재생성 허용 - 기존 피드백 유무 무관)
+    wrong_answers = responses.select do |r|
+      r.selected_choice && !r.selected_choice.is_correct?
+    end
+
+    if wrong_answers.empty?
+      return render json: { success: true, feedbacks: {}, message: "오답이 없습니다" }
+    end
+
+    begin
+      custom_prompt = params[:prompt].presence
+      feedbacks = FeedbackAiService.generate_mcq_item_feedbacks(wrong_answers, custom_prompt: custom_prompt)
+
+      # ResponseFeedback에 저장 (기존 피드백이 있으면 업데이트)
+      feedbacks.each do |response_id, feedback_text|
+        response = wrong_answers.find { |r| r.id == response_id.to_i }
+        next unless response
+
+        existing = response.response_feedbacks.find { |f| f.feedback_type == "item" || f.source == "ai" }
+        if existing
+          existing.update!(feedback: feedback_text, source: "ai", feedback_type: "item")
+        else
+          response.response_feedbacks.create!(
+            feedback: feedback_text,
+            source: "ai",
+            feedback_type: "item"
+          )
+        end
+      end
+
+      render json: { success: true, feedbacks: feedbacks, count: feedbacks.size }
+    rescue => e
+      Rails.logger.error("[generate_mcq_feedbacks] #{e.class}: #{e.message}")
+      render json: { success: false, error: e.message }, status: :unprocessable_entity
+    end
+  end
+
+  def generate_constructed_feedbacks
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
+    # 학생의 서술형 응답 로드 (채점 여부 무관 - AI가 채점+피드백 동시 수행)
+    responses = Response
+      .joins(:item)
+      .where(student_attempt_id: student.student_attempts.pluck(:id))
+      .where("items.item_type = ?", Item.item_types[:constructed])
+      .includes(:response_feedbacks, :response_rubric_scores,
+                item: { rubric: { rubric_criteria: :rubric_levels } })
+      .to_a
+
+    Rails.logger.info("[generate_constructed_feedbacks] student_id=#{student.id}, attempts=#{student.student_attempts.count}, responses=#{responses.size}")
+
+    if responses.empty?
+      return render json: { success: true, feedbacks: {}, message: "서술형 문항이 없습니다" }
+    end
+
+    begin
+      custom_prompt = params[:prompt].presence
+      ai_results = FeedbackAiService.generate_constructed_item_feedbacks(responses, custom_prompt: custom_prompt)
+
+      Rails.logger.info("[generate_constructed_feedbacks] AI results keys: #{ai_results.keys}, response IDs: #{responses.map(&:id)}")
+
+      # AI 응답에서 채점 결과 + 피드백 저장
+      feedbacks_only = {}
+      ai_results.each do |response_id, result_data|
+        response = responses.find { |r| r.id == response_id.to_i }
+        unless response
+          Rails.logger.warn("[generate_constructed_feedbacks] No match for AI key '#{response_id}' (to_i=#{response_id.to_i})")
+          next
+        end
+
+        # 새 형식: {"scores": {...}, "feedback": "..."} 또는 이전 형식: "피드백 텍스트"
+        if result_data.is_a?(Hash)
+          feedback_text = result_data["feedback"]
+          scores_data = result_data["scores"]
+
+          # 채점 결과 저장 (ResponseRubricScore)
+          if scores_data.is_a?(Hash)
+            scores_data.each do |criterion_id, level_score|
+              existing_score = response.response_rubric_scores.find { |s| s.rubric_criterion_id == criterion_id.to_i }
+              if existing_score
+                existing_score.update!(level_score: level_score.to_i)
+              else
+                ResponseRubricScore.create!(
+                  response_id: response.id,
+                  rubric_criterion_id: criterion_id.to_i,
+                  level_score: level_score.to_i
+                )
+              end
+            end
+          end
+        else
+          # 이전 형식 호환 (문자열)
+          feedback_text = result_data.to_s
+        end
+
+        # 피드백 저장 (ResponseFeedback)
+        if feedback_text.present?
+          existing = response.response_feedbacks.find { |f| f.feedback_type == "item" || f.source == "ai" }
+          if existing
+            existing.update!(feedback: feedback_text, source: "ai", feedback_type: "item")
+          else
+            response.response_feedbacks.create!(
+              feedback: feedback_text,
+              source: "ai",
+              feedback_type: "item"
+            )
+          end
+        end
+
+        feedbacks_only[response_id] = feedback_text
+      end
+
+      render json: { success: true, feedbacks: feedbacks_only, count: feedbacks_only.size }
+    rescue => e
+      Rails.logger.error("[generate_constructed_feedbacks] #{e.class}: #{e.message}")
+      render json: { success: false, error: e.message }, status: :unprocessable_entity
+    end
+  end
+
   def prompt_templates
     # AJAX 요청으로 템플릿 로드
-    templates = FeedbackPrompt.templates
-      .order(:category, :prompt_text)
-      .map { |p| { id: p.id, category: p.category, prompt_text: p.prompt_text, category_label: p.category_label } }
+    templates = FeedbackPrompt.active
+      .order(:prompt_type, :name)
+      .map { |p| { id: p.id, category: p.prompt_type, prompt_text: p.template, category_label: p.prompt_type.humanize } }
 
     render json: { templates: templates }
   end
@@ -585,6 +720,49 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: { success: true, feedback: refined_feedback }
   rescue ActiveRecord::RecordNotFound
     render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def publish_feedback
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
+    attempt = student.student_attempts.order(:created_at).last
+    unless attempt
+      return render json: { success: false, error: "시도를 찾을 수 없습니다" }, status: :not_found
+    end
+
+    attempt.update!(feedback_published_at: Time.current)
+
+    render json: {
+      success: true,
+      published_at: attempt.feedback_published_at.strftime("%m/%d %H:%M"),
+      message: "피드백이 학생에게 배포되었습니다."
+    }
+  rescue => e
+    render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def unpublish_feedback
+    student = Student.find_by(id: params[:student_id])
+    unless student
+      return render json: { success: false, error: "학생을 찾을 수 없습니다" }, status: :not_found
+    end
+
+    attempt = student.student_attempts.order(:created_at).last
+    unless attempt
+      return render json: { success: false, error: "시도를 찾을 수 없습니다" }, status: :not_found
+    end
+
+    attempt.update!(feedback_published_at: nil)
+
+    render json: {
+      success: true,
+      message: "피드백 배포가 취소되었습니다."
+    }
   rescue => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end

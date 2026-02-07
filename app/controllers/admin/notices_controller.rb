@@ -59,7 +59,7 @@ module Admin
     def destroy
       @notice.destroy
       flash[:notice] = "공지사항이 성공적으로 삭제되었습니다."
-      redirect_to admin_notices_path
+      redirect_to admin_notices_path, status: :see_other
     end
 
     private

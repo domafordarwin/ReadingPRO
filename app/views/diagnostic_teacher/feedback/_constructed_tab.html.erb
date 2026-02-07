@@ -1,155 +1,505 @@
 <div class="rp-tab-pane" data-tab="constructed">
-  <% if @constructed_responses.any? %>
-    <div class="rp-constructed-header">
-      <h2 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #0f172a;">
-        서술형 문항 피드백
-        <span style="font-size: 13px; font-weight: 400; color: #64748b; margin-left: 8px;">
-          (<%= @constructed_responses.count %>개 문항)
-        </span>
-      </h2>
+  <% if @constructed_responses.present? && @constructed_responses.any? %>
+    <!-- 상단: 통계 + 프롬프트 설정 + 피드백 생성 버튼 -->
+    <div class="cr-header">
+      <div class="cr-header__info">
+        <h2 class="cr-header__title">
+          서술형 문항 결과
+          <span class="cr-header__count">(<%= @constructed_responses.count %>개 문항)</span>
+        </h2>
+      </div>
+      <div class="cr-header__controls">
+        <button class="cr-prompt-toggle-btn" id="cr-prompt-toggle" title="프롬프트 설정">
+          <span class="cr-prompt-toggle-btn__icon">&#9881;</span>
+          <span>프롬프트 설정</span>
+          <span class="cr-prompt-toggle-btn__arrow" id="cr-prompt-arrow">&#9660;</span>
+        </button>
+        <button class="rp-btn rp-btn--primary" id="generate-constructed-item-feedbacks" data-student-id="<%= @student.id %>">
+          서술형 피드백 일괄 생성
+        </button>
+      </div>
     </div>
 
-    <div class="rp-constructed-feedback-container">
-      <!-- 왼쪽: 문항 내용 및 채점 기준 -->
-      <div class="rp-constructed-left-panel">
-        <div class="rp-constructed-prompt-section">
-          <h3 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #0f172a;">문항 내용</h3>
+    <!-- 프롬프트 설정 (헤더 하단 확장) -->
+    <div class="cr-prompt-panel" id="cr-prompt-body" style="display: none;">
+      <div class="cr-prompt-panel__inner">
+        <div class="cr-prompt-panel__left">
+          <label class="cr-prompt-panel__label">프롬프트 분류</label>
+          <select id="cr-prompt-category" class="cr-prompt-panel__select">
+            <option value="mcq_feedback">객관식 답안 확인 피드백</option>
+            <option value="constructed_feedback" selected>서술형 피드백</option>
+            <option value="reading_tendency">독서력 피드백</option>
+            <option value="comprehensive_report">종합 보고서 생성 프롬프트</option>
+          </select>
+        </div>
+        <div class="cr-prompt-panel__center">
+          <label class="cr-prompt-panel__label">피드백 생성 규칙 (AI 지침)</label>
+          <textarea class="cr-prompt-panel__textarea" id="cr-prompt-textarea" rows="4"><%= FeedbackAiService::CONSTRUCTED_DEFAULT_PROMPT %></textarea>
+        </div>
+        <div class="cr-prompt-panel__right">
+          <button class="rp-btn rp-btn--secondary rp-btn--sm" id="cr-prompt-reset">기본값 복원</button>
+          <p class="cr-prompt-panel__hint">수정 후 "서술형 피드백 일괄 생성"을 누르면 적용됩니다.</p>
+        </div>
+      </div>
+    </div>
 
-          <% @constructed_responses.first&.item&.tap do |item| %>
-            <div class="rp-prompt-display" style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
-              <div class="rp-prompt-text" style="font-size: 13px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
-                <%= item.prompt %>
-              </div>
+    <!-- 문항별 카드 리스트 -->
+    <div class="cr-cards">
+      <% @constructed_responses.each_with_index do |response, index| %>
+        <% item = response.item %>
+        <% rubric = item&.rubric %>
+        <% criteria = rubric&.rubric_criteria || [] %>
+        <% scores = response.response_rubric_scores %>
+        <% total_score = scores.sum(&:level_score) %>
+        <% max_possible = criteria.sum { |c| c.max_score || c.rubric_levels.maximum(:level) || 0 } %>
+        <% existing_feedback = response.response_feedbacks.find { |f| f.feedback_type == "item" || f.source == "ai" } %>
+
+        <div class="cr-card" data-response-id="<%= response.id %>">
+          <!-- 카드 헤더 -->
+          <div class="cr-card__header">
+            <span class="cr-card__number">서술형 <%= index + 1 %></span>
+            <% if item.prompt.present? %>
+              <span class="cr-card__prompt"><%= truncate(item.prompt, length: 80) %></span>
+            <% end %>
+            <% if scores.any? %>
+              <span class="cr-badge cr-badge--score"><%= total_score %> / <%= max_possible %>점</span>
+            <% else %>
+              <span class="cr-badge cr-badge--pending">미채점</span>
+            <% end %>
+          </div>
+
+          <!-- 카드 본문: 3열 -->
+          <div class="cr-card__body">
+            <!-- 좌측: 채점 기준 + 점수 -->
+            <div class="cr-col cr-col--rubric">
+              <span class="cr-meta-label">채점 기준 및 점수</span>
+              <% if criteria.any? && scores.any? %>
+                <div class="cr-rubric-scores">
+                  <% criteria.each do |criterion| %>
+                    <% score = scores.find { |s| s.rubric_criterion_id == criterion.id } %>
+                    <% max_level = criterion.rubric_levels.maximum(:level) || criterion.max_score || 4 %>
+                    <div class="cr-rubric-row">
+                      <span class="cr-rubric-name"><%= criterion.criterion_name %></span>
+                      <span class="cr-rubric-score">
+                        <strong><%= score&.level_score || 0 %></strong> / <%= max_level %>
+                      </span>
+                    </div>
+                    <div class="cr-rubric-bar">
+                      <div class="cr-rubric-bar__fill" style="width: <%= max_level > 0 ? ((score&.level_score || 0).to_f / max_level * 100).round : 0 %>%"></div>
+                    </div>
+                  <% end %>
+                  <div class="cr-rubric-total">
+                    <span>총점</span>
+                    <strong><%= total_score %> / <%= max_possible %></strong>
+                  </div>
+                </div>
+              <% elsif criteria.any? %>
+                <div class="cr-rubric-scores">
+                  <% criteria.each do |criterion| %>
+                    <div class="cr-rubric-row">
+                      <span class="cr-rubric-name"><%= criterion.criterion_name %></span>
+                      <span class="cr-rubric-score cr-rubric-score--pending">미채점</span>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="cr-no-data">루브릭 미설정</p>
+              <% end %>
+
+              <% if item.evaluation_indicator %>
+                <div class="cr-meta-group" style="margin-top: 12px;">
+                  <span class="cr-meta-label">평가영역</span>
+                  <span class="cr-indicator-badge"><%= item.evaluation_indicator.name %></span>
+                </div>
+              <% end %>
             </div>
 
-            <% if item&.stimulus.present? %>
-              <div class="rp-stimulus-section" style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-bottom: 16px; border-left: 3px solid #0ea5e9;">
-                <h4 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #0284c7;">지문</h4>
-                <div class="rp-stimulus-text" style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
-                  <%= item.stimulus&.body || "(지문 없음)" %>
+            <!-- 중앙: 문항 + 학생 답안 -->
+            <div class="cr-col cr-col--answer">
+              <% if item.stimulus.present? %>
+                <div class="cr-stimulus">
+                  <span class="cr-meta-label">지문</span>
+                  <div class="cr-stimulus__text"><%= truncate(item.stimulus.body, length: 200) %></div>
+                </div>
+              <% end %>
+
+              <div class="cr-question">
+                <span class="cr-meta-label">문항</span>
+                <div class="cr-question__text"><%= item.prompt %></div>
+              </div>
+
+              <div class="cr-student-answer">
+                <span class="cr-meta-label">학생 답안</span>
+                <div class="cr-student-answer__text"><%= response.answer_text || "(답변 없음)" %></div>
+              </div>
+
+              <% if item.model_answer.present? %>
+                <div class="cr-model-answer">
+                  <span class="cr-meta-label">모범 답안</span>
+                  <div class="cr-model-answer__text"><%= item.model_answer %></div>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- 우측: 피드백 영역 -->
+            <div class="cr-col cr-col--feedback">
+              <span class="cr-meta-label">AI 피드백</span>
+              <div class="cr-feedback-display" id="cr-feedback-display-<%= response.id %>">
+                <% if existing_feedback %>
+                  <div class="cr-feedback-content"><%= simple_format(existing_feedback.feedback) %></div>
+                  <span class="cr-feedback-meta">
+                    <%= existing_feedback.source == 'ai' ? '✓ AI' : '✓ 교사' %> • <%= existing_feedback.created_at.strftime('%m/%d %H:%M') %>
+                  </span>
+                <% else %>
+                  <p class="cr-feedback-placeholder">상단 버튼으로 피드백을 생성하세요</p>
+                <% end %>
+              </div>
+
+              <!-- 피드백 편집 영역 -->
+              <div class="cr-feedback-edit" id="cr-feedback-edit-<%= response.id %>" style="display: none;">
+                <textarea class="cr-feedback-textarea" id="cr-feedback-textarea-<%= response.id %>" rows="8" placeholder="피드백을 편집하세요..."></textarea>
+                <div class="cr-feedback-edit__actions">
+                  <button class="rp-btn rp-btn--primary rp-btn--sm cr-save-feedback-btn" data-response-id="<%= response.id %>">저장</button>
+                  <button class="rp-btn rp-btn--secondary rp-btn--sm cr-cancel-edit-btn" data-response-id="<%= response.id %>">취소</button>
                 </div>
               </div>
-            <% end %>
-          <% end %>
-        </div>
 
-        <div class="rp-constructed-rubric-section">
-          <h3 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: #0f172a;">채점 기준</h3>
-
-          <% @constructed_responses.first&.item&.rubric&.rubric_criteria&.each do |criterion| %>
-            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: #f8fafc;">
-              <div style="font-weight: 600; color: #0f172a; font-size: 12px; margin-bottom: 8px;">
-                <%= criterion.name %>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
-                <% criterion.rubric_levels.sort_by(&:level_score).each do |level| %>
-                  <div style="padding: 6px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; font-size: 11px;">
-                    <div style="font-weight: 600; color: #2f5bff;">
-                      <%= level.level_score %>점
-                    </div>
-                    <div style="color: #64748b; margin-top: 2px; line-height: 1.3;">
-                      <%= truncate(level.descriptor, length: 30) %>
-                    </div>
-                  </div>
+              <!-- 피드백 액션 버튼 -->
+              <div class="cr-feedback-actions" id="cr-feedback-actions-<%= response.id %>">
+                <% if existing_feedback %>
+                  <button class="rp-btn rp-btn--secondary rp-btn--xs cr-edit-feedback-btn" data-response-id="<%= response.id %>" data-feedback="<%= h(existing_feedback.feedback) %>">수정</button>
                 <% end %>
               </div>
             </div>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- 오른쪽: 상하 이분할 (답안 표시 + 피드백) -->
-      <div class="rp-constructed-right-panel">
-        <!-- 상단: 답안 탭 및 답안 표시 -->
-        <div class="rp-constructed-answers-section">
-          <div class="rp-constructed-answer-tabs">
-            <% @constructed_responses.each_with_index do |response, idx| %>
-              <button class="rp-answer-tab-button <%= 'active' if idx == 0 %>" data-answer-id="<%= response.id %>" data-response-index="<%= idx %>">
-                문항 <%= idx + 1 %>
-              </button>
-            <% end %>
-          </div>
-
-          <div class="rp-answer-display-area" style="padding: 16px;">
-            <% @constructed_responses.each_with_index do |response, idx| %>
-              <div class="rp-answer-content-pane <%= 'active' if idx == 0 %>" data-answer-id="<%= response.id %>" style="<%= 'display: none;' unless idx == 0 %>">
-                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #0f172a;">학생 답변</h4>
-
-                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
-                  <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap; min-height: 60px;">
-                    <%= response.answer_text || "(답변 없음)" %>
-                  </div>
-                </div>
-
-                <h4 style="margin: 12px 0 8px 0; font-size: 13px; font-weight: 600; color: #0f172a;">채점 결과</h4>
-
-                <div class="rp-rubric-scores-display" style="background: #f0f9ff; padding: 12px; border-radius: 8px; border-left: 3px solid #0ea5e9;">
-                  <% response.response_rubric_scores.each do |score| %>
-                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e0f2fe;">
-                      <div style="font-size: 12px; color: #1e293b; font-weight: 600;">
-                        <%= score.rubric_criterion.name %>
-                      </div>
-                      <div style="font-size: 12px; font-weight: 700; color: #2f5bff;">
-                        <%= score.level %> / <%= score.rubric_criterion.rubric_levels.maximum(:level_score) %>
-                      </div>
-                    </div>
-                  <% end %>
-
-                  <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 12px 0; margin-top: 8px; font-weight: 700; border-top: 2px solid #0ea5e9;">
-                    <div style="font-size: 13px; color: #0f172a;">총점</div>
-                    <div style="font-size: 14px; color: #2f5bff;">
-                      <%= response.response_rubric_scores.sum(&:level) %> 점
-                    </div>
-                  </div>
-                </div>
-              </div>
-            <% end %>
           </div>
         </div>
-
-        <!-- 하단: 피드백 섹션 -->
-        <div class="rp-constructed-feedback-section" style="display: grid; grid-template-rows: auto 1fr auto; gap: 12px; padding: 16px;">
-          <h3 style="margin: 0; font-size: 13px; font-weight: 600; color: #0f172a;">피드백</h3>
-
-          <div class="rp-feedback-display" id="constructed-feedback-display" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; min-height: 100px; overflow-y: auto;">
-            <% first_feedback = @constructed_responses.first&.response_feedbacks&.first %>
-            <% if @constructed_responses.first&.response_rubric_scores&.any? %>
-              <% if first_feedback %>
-                <div style="font-size: 12px; line-height: 1.6; color: #1e293b; white-space: pre-wrap;">
-                  <%= simple_format(first_feedback.feedback) %>
-                </div>
-                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-                  <%= first_feedback.source == 'ai' ? '✓ AI 피드백' : '✓ 교사 피드백' %> • <%= first_feedback.created_at&.strftime("%Y-%m-%d %H:%M") %>
-                </div>
-              <% else %>
-                <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-                  피드백이 아직 생성되지 않았습니다. 버튼을 클릭하여 생성하세요.
-                </p>
-              <% end %>
-            <% else %>
-              <p style="color: #ef4444; font-size: 12px; margin: 0;">
-                ⚠️ 채점 정보가 없습니다. 먼저 루브릭으로 문항에 점수를 부여해주세요.
-              </p>
-            <% end %>
-          </div>
-
-          <div style="display: flex; gap: 8px;">
-            <% if @constructed_responses.any? && @constructed_responses.first&.response_rubric_scores&.any? %>
-              <button class="rp-btn rp-btn--primary rp-generate-constructed-feedback" data-response-id="<%= @constructed_responses.first.id %>" style="flex: 1; font-size: 12px;">
-                AI 피드백 생성
-              </button>
-            <% elsif @constructed_responses.any? %>
-              <button class="rp-btn rp-btn--secondary" disabled style="flex: 1; font-size: 12px; opacity: 0.5;">
-                (채점 정보 필요)
-              </button>
-            <% end %>
-          </div>
-        </div>
-      </div>
+      <% end %>
     </div>
+
   <% else %>
-    <div class="rp-empty-state">
+    <div class="cr-empty">
       <p>이 학생의 서술형 문항 응답이 없습니다.</p>
     </div>
   <% end %>
 </div>
+
+<style>
+  /* 헤더 */
+  .cr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cr-header__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+  }
+  .cr-header__count {
+    font-size: 13px;
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 8px;
+  }
+  .cr-header__controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* 프롬프트 토글 버튼 */
+  .cr-prompt-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .cr-prompt-toggle-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .cr-prompt-toggle-btn__icon { font-size: 13px; }
+  .cr-prompt-toggle-btn__arrow {
+    font-size: 9px;
+    color: #94a3b8;
+    transition: transform 0.2s;
+  }
+  .cr-prompt-toggle-btn__arrow.open { transform: rotate(180deg); }
+
+  /* 프롬프트 확장 패널 */
+  .cr-prompt-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin: 12px 0 20px 0;
+    padding: 16px;
+    animation: fadeIn 0.15s ease;
+  }
+  .cr-prompt-panel__inner {
+    display: grid;
+    grid-template-columns: 180px 1fr 140px;
+    gap: 16px;
+    align-items: start;
+  }
+  .cr-prompt-panel__label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .cr-prompt-panel__select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    background: white;
+    color: #334155;
+  }
+  .cr-prompt-panel__textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+    color: #334155;
+    background: white;
+    box-sizing: border-box;
+  }
+  .cr-prompt-panel__textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  }
+  .cr-prompt-panel__right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 18px;
+  }
+  .cr-prompt-panel__hint {
+    font-size: 10px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  @media (max-width: 1000px) {
+    .cr-prompt-panel__inner {
+      grid-template-columns: 1fr;
+    }
+    .cr-prompt-panel__right {
+      padding-top: 0;
+    }
+  }
+
+  /* 카드 */
+  .cr-cards { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+  .cr-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    border-left: 3px solid #7c3aed;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .cr-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+
+  /* 카드 헤더 */
+  .cr-card__header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
+  }
+  .cr-card__number {
+    font-weight: 700;
+    font-size: 13px;
+    color: #7c3aed;
+    white-space: nowrap;
+  }
+  .cr-card__prompt {
+    font-size: 12px;
+    color: #64748b;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 배지 */
+  .cr-badge {
+    display: inline-flex;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .cr-badge--score { background: #dbeafe; color: #1e40af; }
+  .cr-badge--pending { background: #fef3c7; color: #92400e; }
+
+  /* 카드 본문 3열 */
+  .cr-card__body {
+    display: grid;
+    grid-template-columns: 200px 1.2fr 1fr;
+    min-height: 150px;
+  }
+  .cr-col { padding: 14px 16px; }
+  .cr-col:not(:last-child) { border-right: 1px solid #f1f5f9; }
+
+  /* 메타 */
+  .cr-meta-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .cr-meta-group { margin-bottom: 10px; }
+  .cr-indicator-badge {
+    display: inline-block;
+    background: #eff6ff; color: #1e40af;
+    padding: 2px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  /* 루브릭 점수 */
+  .cr-rubric-scores { display: flex; flex-direction: column; gap: 8px; }
+  .cr-rubric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .cr-rubric-name { color: #334155; font-weight: 500; flex: 1; }
+  .cr-rubric-score { color: #2f5bff; font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .cr-rubric-score--pending { color: #94a3b8; font-style: italic; }
+  .cr-rubric-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .cr-rubric-bar__fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #2f5bff);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+  .cr-rubric-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    margin-top: 4px;
+    border-top: 2px solid #e2e8f0;
+    font-size: 13px;
+    color: #0f172a;
+  }
+
+  /* 문항/답안 */
+  .cr-stimulus { margin-bottom: 12px; }
+  .cr-stimulus__text {
+    font-size: 12px; color: #334155; line-height: 1.6;
+    background: #f0f9ff; padding: 8px 10px; border-radius: 6px;
+    border-left: 3px solid #0ea5e9;
+    white-space: pre-wrap;
+  }
+  .cr-question { margin-bottom: 12px; }
+  .cr-question__text {
+    font-size: 12px; color: #334155; line-height: 1.6;
+    background: #fffbeb; padding: 8px 10px; border-radius: 6px;
+    border-left: 3px solid #f59e0b;
+    white-space: pre-wrap;
+  }
+  .cr-student-answer { margin-bottom: 12px; }
+  .cr-student-answer__text {
+    font-size: 12px; color: #1e293b; line-height: 1.6;
+    background: #f8fafc; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    white-space: pre-wrap;
+    min-height: 40px;
+  }
+  .cr-model-answer { margin-bottom: 8px; }
+  .cr-model-answer__text {
+    font-size: 12px; color: #166534; line-height: 1.6;
+    background: #f0fdf4; padding: 8px 10px; border-radius: 6px;
+    border-left: 3px solid #22c55e;
+    white-space: pre-wrap;
+  }
+
+  /* 피드백 */
+  .cr-feedback-display {
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    min-height: 80px;
+    margin-bottom: 8px;
+  }
+  .cr-feedback-content { font-size: 12px; color: #334155; line-height: 1.7; }
+  .cr-feedback-content p { margin: 0 0 6px 0; }
+  .cr-feedback-placeholder { font-size: 12px; color: #94a3b8; margin: 0; font-style: italic; }
+  .cr-feedback-placeholder--warning { color: #d97706; }
+  .cr-feedback-meta { font-size: 10px; color: #94a3b8; display: block; margin-top: 6px; }
+  .cr-feedback-actions { display: flex; gap: 6px; }
+
+  /* 피드백 편집 */
+  .cr-feedback-edit { margin-bottom: 8px; }
+  .cr-feedback-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .cr-feedback-textarea:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+  .cr-feedback-edit__actions { display: flex; gap: 6px; margin-top: 8px; }
+
+  /* 로딩 */
+  .cr-feedback-loading {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #64748b;
+  }
+  .cr-feedback-loading__spinner {
+    width: 14px; height: 14px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: cr-spin 0.6s linear infinite;
+  }
+  @keyframes cr-spin { to { transform: rotate(360deg); } }
+
+  .cr-empty { padding: 40px; text-align: center; color: #94a3b8; font-size: 14px; }
+  .cr-no-data { font-size: 12px; color: #94a3b8; font-style: italic; margin: 0; }
+
+  @media (max-width: 1000px) {
+    .cr-card__body { grid-template-columns: 1fr; }
+    .cr-col:not(:last-child) { border-right: none; border-bottom: 1px solid #f1f5f9; }
+  }
+</style>

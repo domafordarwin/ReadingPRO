@@ -66,11 +66,11 @@ class PerformanceMonitorMiddleware
 
     [ status, headers, response ]
   rescue => e
-    # Log error but don't break the request
+    # Log error and re-raise so Rails handles it normally
     Rails.logger.error(
       "[PerformanceMonitorMiddleware] Error in middleware: #{e.class} - #{e.message}\n#{e.backtrace.first(3).join("\n")}"
     )
-    @app.call(env)
+    raise
   end
 
   private

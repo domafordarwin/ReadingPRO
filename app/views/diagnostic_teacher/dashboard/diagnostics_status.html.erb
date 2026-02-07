@@ -40,33 +40,48 @@
     <table class="rp-table">
       <thead>
         <tr>
-          <th>학생 ID</th>
+          <th>학생</th>
+          <th>진단지</th>
           <th>응시 시작</th>
           <th>제출 시간</th>
           <th>상태</th>
           <th>응답 수</th>
           <th>채점</th>
+          <th>관리</th>
         </tr>
       </thead>
       <tbody>
         <% @attempts.each do |attempt| %>
           <tr>
             <td><strong><%= attempt.student&.name || "(미지정)" %></strong></td>
+            <td><%= attempt.diagnostic_form&.name || "-" %></td>
             <td><%= attempt.started_at&.strftime("%Y-%m-%d %H:%M") || "-" %></td>
             <td><%= attempt.submitted_at&.strftime("%Y-%m-%d %H:%M") || "-" %></td>
             <td>
-              <% case attempt.status %>
-                <% when "in_progress" %>
-                  <span class="rp-badge rp-badge--warning">진행 중</span>
-                <% when "completed" %>
-                  <span class="rp-badge rp-badge--success">완료</span>
-              <% end %>
+              <% status_badge = case attempt.status
+                 when "in_progress" then '<span class="rp-badge rp-badge--warning">진행 중</span>'
+                 when "completed", "submitted" then '<span class="rp-badge rp-badge--success">완료</span>'
+                 else '<span class="rp-badge">' + h(attempt.status.to_s) + '</span>'
+                 end %>
+              <%= raw(status_badge) %>
             </td>
             <td><%= attempt.responses.count %></td>
             <td>
               <% scored = attempt.responses.select { |r| r.selected_choice.present? || r.response_rubric_scores.any? }.count %>
               <% total = attempt.responses.count %>
               <span class="rp-progress-text"><%= scored %> / <%= total %></span>
+            </td>
+            <td>
+              <%= button_to diagnostic_teacher_destroy_attempt_path(attempt),
+                    method: :delete,
+                    data: { turbo_confirm: "#{attempt.student&.name}의 '#{attempt.diagnostic_form&.name}' 진단을 삭제하시겠습니까?\n응답 데이터도 함께 삭제됩니다." },
+                    class: "rp-icon-btn rp-icon-btn--danger",
+                    title: "삭제" do %>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              <% end %>
             </td>
           </tr>
         <% end %>

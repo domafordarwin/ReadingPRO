@@ -1,0 +1,51 @@
+<% content_for :portal_title do %>
+  학생 정보 수정
+<% end %>
+<% content_for :portal_subtitle do %>
+  <%= @student.name %>의 정보를 수정합니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "school_admin/shared/nav", current: :students %>
+<% end %>
+
+<section class="portal-card" style="max-width: 500px;">
+  <% if @student.errors.any? %>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+      <strong>오류:</strong>
+      <ul style="margin: 8px 0 0 16px;">
+        <% @student.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @student, url: school_admin_update_student_path(@student), method: :patch, local: true, data: { turbo: false } do |f| %>
+    <div style="margin-bottom: 16px;">
+      <%= f.label :name, "학생 ID", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;" %>
+      <%= f.text_field :name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;", readonly: true %>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">학생 ID는 변경할 수 없습니다.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+      <div>
+        <%= f.label :grade, "학년", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;" %>
+        <%= f.number_field :grade, min: 1, max: 6, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;" %>
+      </div>
+      <div>
+        <%= f.label :class_name, "반", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;" %>
+        <%= f.text_field :class_name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;", placeholder: "예: 1반" %>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;">이메일</label>
+      <input type="email" value="<%= @student.user&.email %>" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc;" readonly>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 24px;">
+      <%= f.submit "저장", style: "padding: 10px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" %>
+      <%= link_to "취소", school_admin_students_path, style: "padding: 10px 16px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; text-decoration: none;" %>
+    </div>
+  <% end %>
+</section>

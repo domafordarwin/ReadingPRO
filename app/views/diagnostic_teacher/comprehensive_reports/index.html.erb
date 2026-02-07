@@ -1,0 +1,280 @@
+<% content_for :page_title do %>종합 결과 보고서<% end %>
+
+<!-- 페이지 헤더 -->
+<div class="cr-idx-header">
+  <div class="cr-idx-header__left">
+    <h1 class="cr-idx-header__title">종합 결과 보고서</h1>
+    <p class="cr-idx-header__subtitle">피드백 배포가 완료된 학생의 종합 보고서를 생성하고 관리합니다</p>
+  </div>
+</div>
+
+<!-- 통계 카드 -->
+<div class="cr-idx-stats">
+  <div class="cr-idx-stat-card">
+    <div class="cr-idx-stat-card__icon cr-idx-stat-card__icon--slate">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="cr-idx-stat-card__body">
+      <div class="cr-idx-stat-card__label">피드백 배포 완료</div>
+      <div class="cr-idx-stat-card__value"><%= @total_completed %></div>
+    </div>
+  </div>
+  <div class="cr-idx-stat-card">
+    <div class="cr-idx-stat-card__icon cr-idx-stat-card__icon--blue">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <div class="cr-idx-stat-card__body">
+      <div class="cr-idx-stat-card__label">보고서 생성</div>
+      <div class="cr-idx-stat-card__value cr-idx-stat-card__value--blue"><%= @total_reports %></div>
+    </div>
+  </div>
+  <div class="cr-idx-stat-card">
+    <div class="cr-idx-stat-card__icon cr-idx-stat-card__icon--green">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div class="cr-idx-stat-card__body">
+      <div class="cr-idx-stat-card__label">배포 완료</div>
+      <div class="cr-idx-stat-card__value cr-idx-stat-card__value--green"><%= @total_published %></div>
+    </div>
+  </div>
+</div>
+
+<!-- 검색 + 필터 -->
+<div class="cr-idx-filter">
+  <div class="cr-idx-filter__row">
+    <%= form_tag(diagnostic_teacher_comprehensive_reports_path, method: :get, data: { turbo: false }, class: "cr-idx-search-form") do %>
+      <div class="cr-idx-search-input-wrap">
+        <svg class="cr-idx-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="search" value="<%= @search_query %>" placeholder="학생 이름 검색..." class="cr-idx-search-input">
+      </div>
+      <input type="hidden" name="status" value="<%= @status_filter %>">
+      <button type="submit" class="cr-idx-btn cr-idx-btn--primary">검색</button>
+      <% if @search_query.present? %>
+        <%= link_to "초기화", diagnostic_teacher_comprehensive_reports_path(status: @status_filter), class: "cr-idx-btn cr-idx-btn--ghost" %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="cr-idx-filter__tabs">
+    <% [["all", "전체", nil], ["none", "생성 전", "#f59e0b"], ["draft", "초안", "#3b82f6"], ["published", "배포됨", "#16a34a"]].each do |value, label, dot_color| %>
+      <% is_active = (@status_filter.presence || "all") == value %>
+      <a href="<%= diagnostic_teacher_comprehensive_reports_path(status: value, search: @search_query) %>"
+         class="cr-idx-tab <%= 'cr-idx-tab--active' if is_active %>">
+        <% if dot_color %><span class="cr-idx-tab__dot" style="background:<%= dot_color %>;"></span><% end %>
+        <%= label %>
+      </a>
+    <% end %>
+  </div>
+</div>
+
+<!-- 테이블 -->
+<div class="cr-idx-table-wrap">
+  <table class="cr-idx-table">
+    <thead>
+      <tr>
+        <th>학생명</th>
+        <th>학년/반</th>
+        <th>진단지</th>
+        <th>진단일</th>
+        <th>상태</th>
+        <th class="cr-idx-table__action-col">액션</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @attempts.any? %>
+        <% @attempts.each do |attempt| %>
+          <% student = attempt.student %>
+          <% report = attempt.attempt_report %>
+          <% report_status = report&.report_status || "none" %>
+          <tr class="cr-idx-table__row">
+            <td>
+              <div class="cr-idx-student-cell">
+                <div class="cr-idx-student-cell__avatar"><%= student.name&.first || "?" %></div>
+                <strong class="cr-idx-student-cell__name"><%= student.name %></strong>
+              </div>
+            </td>
+            <td><span class="cr-idx-meta"><%= student.grade %>학년 <%= student.class_name %>반</span></td>
+            <td><span class="cr-idx-meta"><%= attempt.diagnostic_form&.name || "미지정" %></span></td>
+            <td><span class="cr-idx-meta"><%= attempt.submitted_at&.strftime("%Y-%m-%d") || "-" %></span></td>
+            <td>
+              <% case report_status %>
+              <% when "published" %>
+                <span class="cr-idx-badge cr-idx-badge--green">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  배포됨
+                </span>
+              <% when "draft" %>
+                <span class="cr-idx-badge cr-idx-badge--blue">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  초안
+                </span>
+              <% else %>
+                <span class="cr-idx-badge cr-idx-badge--yellow">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  생성 전
+                </span>
+              <% end %>
+            </td>
+            <td>
+              <% if report&.comprehensive_report_generated? %>
+                <%= link_to diagnostic_teacher_comprehensive_report_path(student.id, attempt.id), class: "cr-idx-action-btn cr-idx-action-btn--view" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  보기/편집
+                <% end %>
+              <% else %>
+                <%= link_to diagnostic_teacher_comprehensive_report_generate_path(student.id, attempt.id), class: "cr-idx-action-btn cr-idx-action-btn--create" do %>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  보고서 생성
+                <% end %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td colspan="6" class="cr-idx-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p class="cr-idx-empty__text">
+              <% if @search_query.present? || @status_filter.present? && @status_filter != "all" %>
+                검색 조건에 맞는 결과가 없습니다.
+              <% else %>
+                피드백이 배포된 학생이 없습니다.
+              <% end %>
+            </p>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<!-- 페이지네이션 -->
+<% if @attempts.respond_to?(:total_pages) && @attempts.total_pages > 1 %>
+  <div class="cr-idx-pagination">
+    <%= paginate @attempts %>
+  </div>
+<% end %>
+
+<style>
+  /* ── 헤더 ── */
+  .cr-idx-header { margin-bottom: 28px; }
+  .cr-idx-header__title { font-size: 26px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; }
+  .cr-idx-header__subtitle { font-size: 14px; color: #64748b; margin: 0; }
+
+  /* ── 통계 카드 ── */
+  .cr-idx-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .cr-idx-stat-card {
+    display: flex; align-items: center; gap: 16px;
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .cr-idx-stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .cr-idx-stat-card__icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cr-idx-stat-card__icon--slate { background: #f1f5f9; color: #475569; }
+  .cr-idx-stat-card__icon--blue { background: #eff6ff; color: #3b82f6; }
+  .cr-idx-stat-card__icon--green { background: #f0fdf4; color: #16a34a; }
+  .cr-idx-stat-card__label { font-size: 12px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
+  .cr-idx-stat-card__value { font-size: 26px; font-weight: 700; color: #0f172a; }
+  .cr-idx-stat-card__value--blue { color: #2563eb; }
+  .cr-idx-stat-card__value--green { color: #16a34a; }
+
+  /* ── 필터 ── */
+  .cr-idx-filter {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .cr-idx-filter__row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .cr-idx-search-form { display: flex; gap: 8px; flex: 1; align-items: center; }
+  .cr-idx-search-input-wrap { position: relative; flex: 1; }
+  .cr-idx-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .cr-idx-search-input {
+    width: 100%; padding: 9px 12px 9px 36px; border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 14px; color: #1e293b; background: #f8fafc; box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .cr-idx-search-input:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .cr-idx-search-input::placeholder { color: #94a3b8; }
+
+  .cr-idx-filter__tabs { display: flex; gap: 6px; margin-top: 14px; }
+  .cr-idx-tab {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 20px;
+    font-size: 13px; font-weight: 500; text-decoration: none; border: 1px solid #e2e8f0;
+    background: white; color: #64748b; transition: all 0.15s;
+  }
+  .cr-idx-tab:hover { border-color: #cbd5e1; background: #f8fafc; color: #334155; }
+  .cr-idx-tab--active { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+  .cr-idx-tab__dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── 버튼 ── */
+  .cr-idx-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.15s; white-space: nowrap;
+  }
+  .cr-idx-btn--primary { background: #2563eb; color: white; border: none; }
+  .cr-idx-btn--primary:hover { background: #1d4ed8; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+  .cr-idx-btn--ghost { background: transparent; color: #64748b; border-color: #e2e8f0; }
+  .cr-idx-btn--ghost:hover { background: #f1f5f9; color: #334155; }
+
+  /* ── 테이블 ── */
+  .cr-idx-table-wrap {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .cr-idx-table { width: 100%; border-collapse: collapse; }
+  .cr-idx-table thead { background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+  .cr-idx-table th {
+    padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600;
+    color: #64748b; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .cr-idx-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #475569; vertical-align: middle; }
+  .cr-idx-table__row { transition: background 0.15s; }
+  .cr-idx-table__row:hover { background: #f8fafc; }
+  .cr-idx-table__action-col { text-align: right; }
+
+  /* 학생 셀 */
+  .cr-idx-student-cell { display: flex; align-items: center; gap: 10px; }
+  .cr-idx-student-cell__avatar {
+    width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cr-idx-student-cell__name { font-weight: 600; color: #0f172a; }
+  .cr-idx-meta { color: #64748b; font-size: 13px; }
+
+  /* ── 배지 ── */
+  .cr-idx-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px;
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+  }
+  .cr-idx-badge--green { background: #dcfce7; color: #166534; }
+  .cr-idx-badge--blue { background: #dbeafe; color: #1e40af; }
+  .cr-idx-badge--yellow { background: #fef3c7; color: #92400e; }
+
+  /* ── 액션 버튼 ── */
+  .cr-idx-action-btn {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px;
+    border-radius: 8px; font-size: 12px; font-weight: 500; text-decoration: none;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .cr-idx-action-btn--view { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  .cr-idx-action-btn--view:hover { background: #dbeafe; color: #1d4ed8; box-shadow: 0 2px 4px rgba(37,99,235,0.1); }
+  .cr-idx-action-btn--create { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .cr-idx-action-btn--create:hover { background: #dcfce7; color: #15803d; box-shadow: 0 2px 4px rgba(22,163,74,0.1); }
+
+  /* ── 빈 상태 ── */
+  .cr-idx-empty { padding: 56px 16px !important; text-align: center; }
+  .cr-idx-empty svg { margin-bottom: 12px; }
+  .cr-idx-empty__text { font-size: 14px; color: #94a3b8; margin: 0; }
+
+  /* ── 페이지네이션 ── */
+  .cr-idx-pagination { display: flex; justify-content: center; padding: 20px; }
+
+  /* ── 반응형 ── */
+  @media (max-width: 768px) {
+    .cr-idx-stats { grid-template-columns: 1fr; }
+    .cr-idx-table-wrap { overflow-x: auto; }
+  }
+</style>

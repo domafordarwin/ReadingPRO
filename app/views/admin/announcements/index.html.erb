@@ -63,7 +63,7 @@
                 <%= button_to "삭제", admin_announcement_path(announcement),
                     method: :delete,
                     class: "rp-btn rp-btn--sm rp-btn--danger",
-                    data: { confirm: "정말 삭제하시겠습니까?" } %>
+                    data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
               </div>
             </td>
           </tr>
