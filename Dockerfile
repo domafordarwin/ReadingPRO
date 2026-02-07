@@ -36,6 +36,8 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
+# Cache bust: update this when Gemfile changes aren't picked up
+ARG BUNDLE_CACHE_BUST=2
 COPY vendor/* ./vendor/
 COPY Gemfile Gemfile.lock ./
 
