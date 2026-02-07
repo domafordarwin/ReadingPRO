@@ -66,12 +66,6 @@
       <button type="submit" class="login-button-new">로그인</button>
     </form>
 
-    <!-- Help Links -->
-    <div class="login-help-links">
-      <a href="#" class="login-help-link">비밀번호를 잊으셨나요?</a>
-      <a href="#" class="login-help-link">회원가입</a>
-    </div>
-
   </div>
 </div>
 
@@ -201,7 +195,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
 
   .login-field-group {
@@ -295,25 +289,6 @@
   .login-button-new:disabled {
     cursor: not-allowed !important;
     opacity: 0.7 !important;
-  }
-
-  .login-help-links {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    font-size: 13px;
-  }
-
-  .login-help-link {
-    color: #667eea;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-
-  .login-help-link:hover {
-    color: #764ba2;
-    text-decoration: underline;
   }
 
   @media (max-width: 600px) {
