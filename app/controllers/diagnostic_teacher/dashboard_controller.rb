@@ -348,6 +348,37 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     render json: { success: false, error: "서버 오류: #{e.message}" }, status: 500
   end
 
+  # 피드백 프롬프트 수정
+  def update_prompt
+    prompt = FeedbackPrompt.find(params[:id])
+    if prompt.update(prompt_params)
+      redirect_to diagnostic_teacher_feedback_prompts_path, notice: "'#{prompt.name}' 프롬프트가 수정되었습니다."
+    else
+      redirect_to diagnostic_teacher_feedback_prompts_path, alert: "수정 실패: #{prompt.errors.full_messages.join(', ')}"
+    end
+  end
+
+  # 피드백 프롬프트 삭제
+  def destroy_prompt
+    prompt = FeedbackPrompt.find(params[:id])
+    name = prompt.name
+    prompt.destroy
+    redirect_to diagnostic_teacher_feedback_prompts_path, notice: "'#{name}' 프롬프트가 삭제되었습니다.", status: :see_other
+  end
+
+  # 피드백 프롬프트 복사
+  def duplicate_prompt
+    original = FeedbackPrompt.find(params[:id])
+    copy = original.dup
+    copy.name = "#{original.name} (복사본)"
+    copy.usage_count = 0
+    if copy.save
+      redirect_to diagnostic_teacher_feedback_prompts_path, notice: "'#{original.name}' 프롬프트가 복사되었습니다."
+    else
+      redirect_to diagnostic_teacher_feedback_prompts_path, alert: "복사 실패: #{copy.errors.full_messages.join(', ')}"
+    end
+  end
+
   # 공지사항은 DiagnosticTeacher::NoticesController로 이동됨
 
   private
@@ -417,5 +448,9 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     return "피드백 대기" if attempt.attempt_report&.generated_at.nil?
     return "완료" if attempt.status == "completed"
     "완료"
+  end
+
+  def prompt_params
+    params.require(:feedback_prompt).permit(:name, :prompt_type, :template, :active)
   end
 end

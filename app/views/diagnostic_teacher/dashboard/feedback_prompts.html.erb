@@ -32,13 +32,9 @@
     <div class="rp-filter-group">
       <select name="type" class="rp-filter-select" onchange="this.form.submit()">
         <option value="">모든 유형</option>
-        <option value="comprehension" <%= 'selected' if @type_filter == 'comprehension' %>>이해력</option>
-        <option value="explanation" <%= 'selected' if @type_filter == 'explanation' %>>설명</option>
-        <option value="difficulty" <%= 'selected' if @type_filter == 'difficulty' %>>난이도</option>
-        <option value="strategy" <%= 'selected' if @type_filter == 'strategy' %>>전략</option>
-        <option value="general" <%= 'selected' if @type_filter == 'general' %>>일반</option>
-        <option value="report_overview" <%= 'selected' if @type_filter == 'report_overview' %>>진단 개요</option>
-        <option value="constructed_analysis" <%= 'selected' if @type_filter == 'constructed_analysis' %>>서술형 분석</option>
+        <option value="mcq" <%= 'selected' if @type_filter == 'mcq' %>>객관식 (MCQ)</option>
+        <option value="constructed" <%= 'selected' if @type_filter == 'constructed' %>>서술형</option>
+        <option value="comprehensive" <%= 'selected' if @type_filter == 'comprehensive' %>>종합</option>
       </select>
     </div>
 
@@ -55,7 +51,7 @@
 <div class="rp-prompt-list">
   <% if @prompts.any? %>
     <% @prompts.each do |prompt| %>
-      <div class="rp-prompt-card <%= 'rp-prompt-card--template' if prompt.active? %>">
+      <div class="rp-prompt-card <%= 'rp-prompt-card--template' if prompt.active? %>" id="prompt-card-<%= prompt.id %>">
         <div class="rp-prompt-header">
           <div class="rp-prompt-info">
             <% if prompt.active? %>
@@ -63,22 +59,32 @@
             <% else %>
               <span class="rp-badge rp-badge--custom">비활성</span>
             <% end %>
-            <span class="rp-badge rp-badge--category"><%= prompt.prompt_type || '일반' %></span>
+            <% type_label = { 'mcq' => '객관식', 'constructed' => '서술형', 'comprehensive' => '종합' }[prompt.prompt_type] || prompt.prompt_type %>
+            <span class="rp-badge rp-badge--category"><%= type_label %></span>
           </div>
-          <span class="rp-prompt-date"><%= prompt.created_at.strftime("%Y-%m-%d") %></span>
+          <div class="rp-prompt-actions">
+            <button class="rp-icon-btn rp-icon-btn--edit" title="편집"
+              onclick="openEditModal(<%= prompt.id %>, '<%= j(prompt.name) %>', '<%= j(prompt.prompt_type) %>', '<%= j(prompt.template) %>', <%= prompt.active? %>)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <%= button_to diagnostic_teacher_duplicate_feedback_prompt_path(prompt), class: "rp-icon-btn rp-icon-btn--info", title: "복사", data: { turbo: false } do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <% end %>
+            <%= button_to diagnostic_teacher_destroy_feedback_prompt_path(prompt), method: :delete, class: "rp-icon-btn rp-icon-btn--danger", title: "삭제", data: { turbo: false, turbo_confirm: "'#{prompt.name}' 프롬프트를 삭제하시겠습니까?" }, form: { data: { turbo: false } } do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <% end %>
+          </div>
         </div>
 
         <div class="rp-prompt-content">
           <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #0f172a;"><%= prompt.name %></h4>
-          <p class="rp-prompt-text"><%= truncate(prompt.template, length: 150) %></p>
+          <p class="rp-prompt-text"><%= truncate(prompt.template, length: 200) %></p>
         </div>
 
         <div class="rp-prompt-footer">
-          <span class="rp-prompt-author">
-            유형: <%= prompt.prompt_type || '일반' %>
-          </span>
+          <span class="rp-prompt-date"><%= prompt.created_at.strftime("%Y-%m-%d") %></span>
           <span class="rp-prompt-usage">
-            사용 횟수: <%= prompt.usage_count || 0 %>
+            사용 횟수: <%= prompt.usage_count || 0 %>회
           </span>
         </div>
       </div>
@@ -205,6 +211,32 @@
     gap: 8px;
     flex-wrap: wrap;
   }
+
+  .rp-prompt-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .rp-icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    padding: 0;
+  }
+
+  .rp-icon-btn--edit { background: #eff6ff; color: #3b82f6; }
+  .rp-icon-btn--edit:hover { background: #dbeafe; box-shadow: 0 2px 6px rgba(59,130,246,0.2); }
+  .rp-icon-btn--info { background: #f0fdf4; color: #16a34a; }
+  .rp-icon-btn--info:hover { background: #dcfce7; box-shadow: 0 2px 6px rgba(22,163,74,0.2); }
+  .rp-icon-btn--danger { background: #fef2f2; color: #dc2626; }
+  .rp-icon-btn--danger:hover { background: #fee2e2; box-shadow: 0 2px 6px rgba(220,38,38,0.2); }
 
   .rp-prompt-date {
     font-size: 12px;
@@ -530,21 +562,9 @@
         <label class="rp-label" for="prompt-category">카테고리 *</label>
         <select id="prompt-category" class="rp-select" required>
           <option value="">카테고리를 선택하세요</option>
-          <option value="comprehension">이해력</option>
-          <option value="explanation">설명</option>
-          <option value="difficulty">난이도</option>
-          <option value="strategy">전략</option>
-          <option value="general">일반</option>
-          <option value="report_overview">진단 개요</option>
-          <option value="mcq_correct_analysis">객관식 정답 분석</option>
-          <option value="mcq_incorrect_analysis">객관식 오답 분석</option>
-          <option value="mcq_no_response_analysis">객관식 미응답 분석</option>
-          <option value="constructed_analysis">서술형 분석</option>
-          <option value="score_analysis">정답률 분석</option>
-          <option value="reader_tendency_analysis">독자 성향 분석</option>
-          <option value="reader_tendency_guidance">독자 성향 제언</option>
-          <option value="comprehensive_literacy_analysis">문해력 종합 분석</option>
-          <option value="teaching_direction">지도 방향</option>
+          <option value="mcq">객관식 (MCQ)</option>
+          <option value="constructed">서술형</option>
+          <option value="comprehensive">종합</option>
         </select>
       </div>
 
@@ -591,6 +611,67 @@
     </div>
   </div>
 </div>
+
+<!-- 편집 모달 -->
+<div id="edit-prompt-modal" class="rp-modal">
+  <div class="rp-modal__overlay" onclick="closeEditModal()"></div>
+  <div class="rp-modal__content" style="max-width: 700px;">
+    <div class="rp-modal__header">
+      <h2 class="rp-modal__title">프롬프트 편집</h2>
+      <button class="rp-modal__close" onclick="closeEditModal()">&times;</button>
+    </div>
+    <form id="edit-prompt-form" method="post" data-turbo="false">
+      <input type="hidden" name="_method" value="patch">
+      <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+      <div class="rp-modal__body">
+        <div class="rp-form-group">
+          <label class="rp-label">이름 *</label>
+          <input type="text" name="feedback_prompt[name]" id="edit-prompt-name" class="rp-filter-input" required style="width:100%;box-sizing:border-box;">
+        </div>
+        <div class="rp-form-group">
+          <label class="rp-label">유형 *</label>
+          <select name="feedback_prompt[prompt_type]" id="edit-prompt-type" class="rp-select" required>
+            <option value="mcq">객관식 (MCQ)</option>
+            <option value="constructed">서술형</option>
+            <option value="comprehensive">종합</option>
+          </select>
+        </div>
+        <div class="rp-form-group">
+          <label class="rp-label">활성 상태</label>
+          <select name="feedback_prompt[active]" id="edit-prompt-active" class="rp-select">
+            <option value="true">활성</option>
+            <option value="false">비활성</option>
+          </select>
+        </div>
+        <div class="rp-form-group">
+          <label class="rp-label">템플릿 내용 *</label>
+          <textarea name="feedback_prompt[template]" id="edit-prompt-template" class="rp-textarea" required style="min-height: 300px; font-family: monospace; font-size: 13px; line-height: 1.5;"></textarea>
+        </div>
+      </div>
+      <div class="rp-modal__footer">
+        <button type="button" class="rp-btn rp-btn--secondary" onclick="closeEditModal()">취소</button>
+        <button type="submit" class="rp-btn rp-btn--primary">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditModal(id, name, promptType, template, active) {
+  var modal = document.getElementById('edit-prompt-modal');
+  var form = document.getElementById('edit-prompt-form');
+  form.action = '/diagnostic_teacher/feedback_prompts/' + id;
+  document.getElementById('edit-prompt-name').value = name;
+  document.getElementById('edit-prompt-type').value = promptType;
+  document.getElementById('edit-prompt-active').value = active ? 'true' : 'false';
+  document.getElementById('edit-prompt-template').value = template;
+  modal.classList.add('show');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-prompt-modal').classList.remove('show');
+}
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
