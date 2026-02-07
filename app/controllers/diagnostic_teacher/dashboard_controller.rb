@@ -77,11 +77,11 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     ).find(params[:attempt_id])
     @report = @attempt.attempt_report
 
-    # 종합 분석 및 관련 데이터 조회
-    @comprehensive_analysis = @attempt.comprehensive_analysis
-    @literacy_achievements = @attempt.literacy_achievements
-    @guidance_directions = @attempt.guidance_directions
+    # 종합 분석 데이터 (AttemptReport에서 조회)
     @reader_tendency = @attempt.reader_tendency
+    @comprehensive_analysis = @report  # AttemptReport를 종합 분석으로 사용
+    @literacy_achievements = []
+    @guidance_directions = []
 
     # 응답 데이터 조회 (결과보기용) - response_rubric_scores 포함
     @responses = @attempt.responses.order(created_at: :asc)

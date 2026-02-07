@@ -420,31 +420,54 @@
   <div class="panel">
     <div class="panel-title">📊 종합 보고서</div>
 
-    <!-- 종합 분석 -->
-    <% if @comprehensive_analysis %>
-      <div class="insight-box">
-        <div class="insight-label">종합 평가</div>
-        <div class="insight-value">
-          <%= @comprehensive_analysis.overall_summary || "평가 중입니다." %>
-        </div>
-      </div>
-
-      <% if @comprehensive_analysis.improvement_areas.present? %>
+    <!-- 종합 분석 (AttemptReport 데이터) -->
+    <% if @report %>
+      <% if @report.comprehensive_report_generated? %>
         <div class="insight-box">
-          <div class="insight-label">개선 영역</div>
+          <div class="insight-label">종합 평가</div>
           <div class="insight-value">
-            <%= @comprehensive_analysis.improvement_areas %>
+            <%= @report.section_content('overall_summary').presence || @report.strengths || "평가 중입니다." %>
           </div>
         </div>
-      <% end %>
 
-      <% if @comprehensive_analysis.comprehension_analysis.present? %>
-        <div class="insight-box">
-          <div class="insight-label">독해력 분석</div>
-          <div class="insight-value">
-            <%= @comprehensive_analysis.comprehension_analysis %>
+        <% if @report.section_content('comprehensive_opinion').present? || @report.weaknesses.present? %>
+          <div class="insight-box">
+            <div class="insight-label">종합 의견</div>
+            <div class="insight-value">
+              <%= @report.section_content('comprehensive_opinion').presence || @report.weaknesses %>
+            </div>
           </div>
-        </div>
+        <% end %>
+
+        <% if @report.section_content('learning_recommendations').present? || @report.recommendations.present? %>
+          <div class="insight-box">
+            <div class="insight-label">학습 권고사항</div>
+            <div class="insight-value">
+              <%= @report.section_content('learning_recommendations').presence || @report.recommendations %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <% if @report.strengths.present? %>
+          <div class="insight-box">
+            <div class="insight-label">강점</div>
+            <div class="insight-value"><%= @report.strengths %></div>
+          </div>
+        <% end %>
+
+        <% if @report.weaknesses.present? %>
+          <div class="insight-box">
+            <div class="insight-label">개선 영역</div>
+            <div class="insight-value"><%= @report.weaknesses %></div>
+          </div>
+        <% end %>
+
+        <% if @report.recommendations.present? %>
+          <div class="insight-box">
+            <div class="insight-label">권고사항</div>
+            <div class="insight-value"><%= @report.recommendations %></div>
+          </div>
+        <% end %>
       <% end %>
     <% end %>
 
@@ -484,7 +507,7 @@
       <% end %>
     <% end %>
 
-    <% unless @comprehensive_analysis || @reader_tendency || @literacy_achievements.any? || @guidance_directions.any? %>
+    <% unless @report || @reader_tendency || @literacy_achievements.any? || @guidance_directions.any? %>
       <div style="text-align: center; padding: 32px 16px; color: #999;">
         <p style="font-size: 12px;">분석 데이터가 아직 준비 중입니다.</p>
       </div>
