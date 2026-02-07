@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+# If running the rails server then migrate the database
+if [[ "$*" == *"rails server"* ]] || [[ "$*" == *"rails s"* ]]; then
+  echo "Running database migrations..."
   ./bin/rails db:migrate
 fi
 
