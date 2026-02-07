@@ -1082,7 +1082,9 @@
 }
 
 .rp-dropdown__item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: var(--rp-space-3) var(--rp-space-4);
   text-align: left;
@@ -1092,6 +1094,7 @@
   border: none;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .rp-dropdown__item:hover {

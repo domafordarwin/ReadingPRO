@@ -44,6 +44,7 @@
             <div class="portal-actions">
               <%= yield :portal_actions %>
               <% if current_role.present? %>
+                <%= link_to "내 정보", profile_path, class: "portal-button secondary", style: "text-decoration: none;" %>
                 <%= button_to "로그아웃", logout_path, method: :delete, data: { turbo: false }, form: { data: { turbo: false } }, class: "portal-button secondary" %>
               <% end %>
             </div>
