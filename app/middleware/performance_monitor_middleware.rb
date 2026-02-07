@@ -54,23 +54,21 @@ class PerformanceMonitorMiddleware
     queries_after = query_count
     query_count_executed = queries_after - queries_before
 
-    # Queue async metric recording (non-blocking)
-    record_metric(
-      endpoint: env["PATH_INFO"],
-      http_method: env["REQUEST_METHOD"],
-      total_time: total_time_ms,
-      query_count: query_count_executed,
-      status: status,
-      env: env
-    )
+    # Queue async metric recording (non-blocking, never fails the request)
+    begin
+      record_metric(
+        endpoint: env["PATH_INFO"],
+        http_method: env["REQUEST_METHOD"],
+        total_time: total_time_ms,
+        query_count: query_count_executed,
+        status: status,
+        env: env
+      )
+    rescue => e
+      Rails.logger.warn("[PerformanceMonitor] #{e.class}: #{e.message}")
+    end
 
     [ status, headers, response ]
-  rescue => e
-    # Log error and re-raise so Rails handles it normally
-    Rails.logger.error(
-      "[PerformanceMonitorMiddleware] Error in middleware: #{e.class} - #{e.message}\n#{e.backtrace.first(3).join("\n")}"
-    )
-    raise
   end
 
   private

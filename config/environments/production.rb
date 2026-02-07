@@ -51,14 +51,11 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Use Solid_cache for production (durable, in-process cache)
-  # Automatically falls back to Redis if REDIS_URL is set
-  config.cache_store = :solid_cache_store
+  # Use memory store for cache (no external dependency)
+  config.cache_store = :memory_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  # Phase 3.5.1: Use SolidQueue for reliable, durable background job processing
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Use async adapter for Active Job (in-process, no external tables needed)
+  config.active_job.queue_adapter = :async
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
