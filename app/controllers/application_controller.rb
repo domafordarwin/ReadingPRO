@@ -70,7 +70,7 @@ class ApplicationController < ActionController::Base
 
   def check_password_change
     return unless current_user&.must_change_password?
-    return if controller_name == "passwords" || controller_name == "sessions"
+    return if controller_name.in?(%w[passwords sessions profiles])
 
     redirect_to change_password_path
   end

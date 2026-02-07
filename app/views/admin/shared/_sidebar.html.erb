@@ -15,5 +15,6 @@
 <nav class="admin-nav">
   <%= link_to "시스템 관리", admin_system_path, class: nav_link_class(admin_system_path) %>
   <%= link_to "사용자 관리", admin_users_path, class: nav_link_class(admin_users_path) %>
+  <%= link_to "내 정보 / 비밀번호 변경", profile_path, class: nav_link_class(profile_path) %>
   <%= button_to "로그아웃", logout_path, method: :delete, data: { turbo: false }, form: { data: { turbo: false } }, class: "admin-nav-link", form_class: "admin-logout-form" %>
 </nav>

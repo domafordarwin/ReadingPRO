@@ -39,6 +39,9 @@
 <!-- 독서 발문 가이드 -->
 <%= link_to "독서 발문 가이드", diagnostic_teacher_guide_path, class: "portal-nav-link#{' is-active' if current == :guide}" %>
 
+<!-- 내 정보 -->
+<%= link_to "내 정보 / 비밀번호 변경", profile_path, class: "portal-nav-link#{' is-active' if current == :profile}" %>
+
 <style>
   .portal-nav-section {
     margin: 12px 0;

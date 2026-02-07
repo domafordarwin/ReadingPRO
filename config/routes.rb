@@ -274,7 +274,9 @@ Rails.application.routes.draw do
     end
   end
 
-  # 비밀번호 변경
+  # 내 정보 + 비밀번호 변경
+  get "profile", to: "profiles#show", as: "profile"
+  patch "profile/password", to: "profiles#update_password", as: "profile_update_password"
   get "change_password", to: "passwords#edit", as: "change_password"
   patch "change_password", to: "passwords#update"
 

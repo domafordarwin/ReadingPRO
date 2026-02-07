@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>내 정보 - ReadingPRO</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f1f5f9; min-height: 100vh; padding: 40px 16px; }
+
+    .profile-container { max-width: 600px; margin: 0 auto; }
+
+    .profile-header {
+      text-align: center; margin-bottom: 32px;
+    }
+    .profile-header__logo { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .profile-header__title { font-size: 20px; font-weight: 600; color: #0f172a; }
+    .profile-header__back {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px; color: #64748b; font-size: 14px; text-decoration: none;
+    }
+    .profile-header__back:hover { color: #2f5bff; }
+
+    .profile-card {
+      background: white; border-radius: 12px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+      margin-bottom: 24px; overflow: hidden;
+    }
+    .profile-card__header {
+      padding: 20px 24px; border-bottom: 1px solid #e5e7eb;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .profile-card__header svg { color: #64748b; flex-shrink: 0; }
+    .profile-card__title { font-size: 16px; font-weight: 600; color: #0f172a; }
+    .profile-card__body { padding: 24px; }
+
+    .info-grid { display: grid; gap: 16px; }
+    .info-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+    .info-label { font-size: 14px; font-weight: 500; color: #64748b; }
+    .info-value {
+      font-size: 14px; color: #0f172a; padding: 10px 14px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    }
+    .info-badge {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+    }
+    .info-badge--admin { background: #fee2e2; color: #991b1b; }
+    .info-badge--researcher { background: #ede9fe; color: #5b21b6; }
+    .info-badge--diagnostic_teacher { background: #e0e7ff; color: #3730a3; }
+    .info-badge--teacher { background: #dbeafe; color: #1e40af; }
+    .info-badge--school_admin { background: #fce7f3; color: #9d174d; }
+    .info-badge--parent { background: #fef3c7; color: #92400e; }
+    .info-badge--student { background: #d1fae5; color: #065f46; }
+
+    .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+    .flash--alert { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .flash--notice { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: 14px; }
+    .form-group input[type="password"] {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit;
+    }
+    .form-group input:focus { outline: none; border-color: #2f5bff; box-shadow: 0 0 0 3px rgba(47,91,255,0.1); }
+    .form-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .btn--primary { background: #2f5bff; color: white; }
+    .btn--primary:hover { background: #254ccb; }
+
+    @media (max-width: 640px) {
+      .info-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-header__logo">ReadingPRO</div>
+      <h1 class="profile-header__title">내 정보</h1>
+      <a href="javascript:history.back()" class="profile-header__back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        돌아가기
+      </a>
+    </div>
+
+    <% if flash[:notice] %>
+      <div class="flash flash--notice"><%= flash[:notice] %></div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="flash flash--alert"><%= flash[:alert] %></div>
+    <% end %>
+
+    <!-- 기본 정보 카드 -->
+    <div class="profile-card">
+      <div class="profile-card__header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <h2 class="profile-card__title">기본 정보</h2>
+      </div>
+      <div class="profile-card__body">
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-label">이메일</span>
+            <div class="info-value"><%= @user.email %></div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">역할</span>
+            <div>
+              <span class="info-badge info-badge--<%= @user.role %>"><%= @role_label %></span>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">이름</span>
+            <div class="info-value"><%= @user.name || "미설정" %></div>
+          </div>
+          <% if @user.student? %>
+            <div class="info-row">
+              <span class="info-label">학교</span>
+              <div class="info-value"><%= @user.student&.school&.name || "미설정" %></div>
+            </div>
+            <div class="info-row">
+              <span class="info-label">학년 / 반</span>
+              <div class="info-value"><%= @user.student&.grade %>학년 <%= @user.student&.class_name %>반</div>
+            </div>
+          <% elsif @user.teacher? %>
+            <div class="info-row">
+              <span class="info-label">학교</span>
+              <div class="info-value"><%= @user.teacher&.school&.name || "미설정" %></div>
+            </div>
+            <div class="info-row">
+              <span class="info-label">부서</span>
+              <div class="info-value"><%= @user.teacher&.department || "미설정" %></div>
+            </div>
+          <% elsif @user.parent? %>
+            <div class="info-row">
+              <span class="info-label">연결된 자녀</span>
+              <div class="info-value">
+                <% children = @user.parent&.students || [] %>
+                <% if children.any? %>
+                  <%= children.map { |s| "#{s.name} (#{s.school&.name})" }.join(", ") %>
+                <% else %>
+                  미설정
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+          <div class="info-row">
+            <span class="info-label">가입일</span>
+            <div class="info-value"><%= @user.created_at.strftime("%Y년 %m월 %d일") %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 비밀번호 변경 카드 -->
+    <div class="profile-card">
+      <div class="profile-card__header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <h2 class="profile-card__title">비밀번호 변경</h2>
+      </div>
+      <div class="profile-card__body">
+        <%= form_with url: profile_update_password_path, method: :patch, local: true, data: { turbo: false } do |f| %>
+          <div class="form-group">
+            <label for="current_password">현재 비밀번호</label>
+            <input type="password" name="current_password" id="current_password" required autocomplete="current-password">
+          </div>
+          <div class="form-group">
+            <label for="new_password">새 비밀번호</label>
+            <input type="password" name="new_password" id="new_password" required minlength="8" autocomplete="new-password">
+            <p class="form-hint">8자 이상 입력해주세요</p>
+          </div>
+          <div class="form-group">
+            <label for="new_password_confirmation">새 비밀번호 확인</label>
+            <input type="password" name="new_password_confirmation" id="new_password_confirmation" required minlength="8" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn--primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            비밀번호 변경
+          </button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
