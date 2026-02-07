@@ -2,19 +2,6 @@ class SessionsController < ApplicationController
   # Temporarily skip CSRF protection for create action to debug
   skip_forgery_protection only: :create
 
-  # Demo accounts for testing (username-based)
-  TEST_ACCOUNTS = {
-    "student01" => { role: "student", label: "학생" },
-    "parent01" => { role: "parent", label: "학부모" },
-    "teacher01" => { role: "teacher", label: "교사" },
-    "diagnostic_teacher01" => { role: "diagnostic_teacher", label: "진단담당교사" },
-    "school_admin01" => { role: "school_admin", label: "학교관리자" },
-    "researcher01" => { role: "researcher", label: "문항 개발 연구원" },
-    "admin01" => { role: "admin", label: "관리자" }
-  }.freeze
-
-  TEST_PASSWORD = "ReadingPro$12#"
-
   def new
     # 권한 에러로 인해 로그인 페이지에 온 경우 세션 초기화
     # (무한 리다이렉트 루프 방지)
@@ -91,18 +78,6 @@ class SessionsController < ApplicationController
       # Use 303 See Other to prevent Turbo from converting redirect to TURBO_STREAM
       redirect_to redirect_path, status: :see_other
       return
-    end
-
-    # Fallback to demo test accounts (username-based) - only in non-production
-    if !Rails.env.production?
-      account = TEST_ACCOUNTS[login_id]
-      if account && password == TEST_PASSWORD
-        session[:role] = account[:role]
-        session[:username] = login_id
-        Rails.logger.info "✅ Test account logged in: #{login_id} (#{account[:role]})"
-        redirect_to role_redirect_path(account[:role]), status: :see_other
-        return
-      end
     end
 
     # Authentication failed

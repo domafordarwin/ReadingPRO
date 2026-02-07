@@ -72,43 +72,6 @@
       <a href="#" class="login-help-link">회원가입</a>
     </div>
 
-    <!-- Test Accounts Section -->
-    <% if true %> <!-- Temporarily enabled for production testing -->
-      <div class="login-test-section">
-        <div class="login-test-title">테스트 계정</div>
-        <div class="login-test-buttons-grid">
-          <button type="button" class="login-test-btn" data-username="rps_0001@shinmyung.edu" data-usertype="student">
-            <span class="test-icon">🧑‍🎓</span>
-            <span class="test-label">학생 (RPS_0001)</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="rpp_0001@shinmyung.edu" data-usertype="parent">
-            <span class="test-icon">👨‍👩‍👧</span>
-            <span class="test-label">학부모 (RPP_0001)</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="school_admin@shinmyung.edu" data-usertype="school_teacher">
-            <span class="test-icon">🏫</span>
-            <span class="test-label">학교관리자</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="teacher_diagnostic@ReadingPro.com" data-usertype="diagnostic_teacher">
-            <span class="test-icon">📋</span>
-            <span class="test-label">진단교사</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="teacher@shinmyung.edu" data-usertype="school_teacher">
-            <span class="test-icon">👨‍🏫</span>
-            <span class="test-label">일반교사</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="researcher@ReadingPro.com" data-usertype="researcher">
-            <span class="test-icon">📊</span>
-            <span class="test-label">문항개발</span>
-          </button>
-          <button type="button" class="login-test-btn" data-username="admin@ReadingPro.com" data-usertype="admin">
-            <span class="test-icon">⚙️</span>
-            <span class="test-label">시스템관리자</span>
-          </button>
-        </div>
-        <div class="login-test-password">비밀번호: <strong>ReadingPro$12#</strong></div>
-      </div>
-    <% end %>
   </div>
 </div>
 
@@ -353,69 +316,6 @@
     text-decoration: underline;
   }
 
-  .login-test-section {
-    border-top: 1px solid #eee;
-    padding-top: 16px;
-    margin-top: 16px;
-  }
-
-  .login-test-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #999;
-    text-align: center;
-    margin-bottom: 12px;
-  }
-
-  .login-test-buttons-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .login-test-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 8px;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 11px;
-    font-weight: 500;
-    color: #333;
-  }
-
-  .login-test-btn:hover {
-    background: #667eea;
-    color: white;
-    border-color: #667eea;
-  }
-
-  .test-icon {
-    font-size: 16px;
-  }
-
-  .test-label {
-    white-space: nowrap;
-  }
-
-  .login-test-password {
-    text-align: center;
-    font-size: 11px;
-    color: #aaa;
-  }
-
-  .login-test-password strong {
-    color: #667eea;
-    font-weight: 600;
-  }
-
   @media (max-width: 600px) {
     .login-card-new {
       padding: 32px 24px;
@@ -423,10 +323,6 @@
 
     .login-header-new h1 {
       font-size: 20px;
-    }
-
-    .login-test-buttons-grid {
-      grid-template-columns: repeat(2, 1fr);
     }
   }
 </style>
@@ -480,10 +376,6 @@
   document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.querySelector('.login-form-new');
     const submitButton = document.querySelector('.login-button-new');
-    const testButtons = document.querySelectorAll('.login-test-btn');
-    const emailInput = document.getElementById('email');
-    const userTypeSelect = document.getElementById('user_type');
-    const passwordInput = document.getElementById('password');
 
     let isSubmitting = false;
     const originalButtonText = submitButton.textContent;
@@ -492,7 +384,6 @@
     loginForm.addEventListener('submit', function(e) {
       if (isSubmitting) {
         e.preventDefault();
-        console.log('[LoginForm] Double submission prevented');
         return false;
       }
 
@@ -501,12 +392,9 @@
       submitButton.textContent = '로그인 중...';
       submitButton.style.opacity = '0.7';
       submitButton.style.cursor = 'not-allowed';
-
-      console.log('[LoginForm] Form submitting with standard POST request');
     });
 
     // Reset state if form submission fails (page re-renders with error)
-    // This happens when 422 is returned
     window.addEventListener('pageshow', function() {
       if (isSubmitting) {
         isSubmitting = false;
@@ -514,29 +402,7 @@
         submitButton.textContent = originalButtonText;
         submitButton.style.opacity = '1';
         submitButton.style.cursor = 'pointer';
-        console.log('[LoginForm] State reset after page re-render');
       }
-    });
-
-    // Test account buttons
-    testButtons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        if (isSubmitting) {
-          return; // Prevent clicking test button while form is submitting
-        }
-
-        emailInput.value = button.dataset.username || '';
-        userTypeSelect.value = button.dataset.usertype || 'student';
-        passwordInput.value = 'ReadingPro$12#';
-        updatePlaceholder(userTypeSelect.value);
-
-        // Auto-submit the form after populating test credentials
-        setTimeout(() => {
-          loginForm.submit();
-        }, 100);
-      });
     });
   });
 </script>
