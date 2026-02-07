@@ -305,6 +305,10 @@ class FeedbackAiService
 
     rules = custom_prompt.presence || MCQ_DEFAULT_PROMPT
 
+    # 실제 response_id를 JSON 예시에 사용
+    response_ids = responses.map { |r| r.id.to_s }
+    json_example = response_ids.map { |rid| "\"#{rid}\": \"피드백 텍스트\"" }.join(", ")
+
     prompt_text = <<~PROMPT
       학생이 객관식 문항을 풀었습니다. 아래 오답 문항들에 대해 각각 개별 피드백을 작성해주세요.
 
@@ -314,8 +318,9 @@ class FeedbackAiService
       [피드백 작성 규칙]
       #{rules}
 
-      반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
-      {"response_id1": "피드백1", "response_id2": "피드백2"}
+      반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이).
+      키는 반드시 위 문항 목록의 response_id 숫자(#{response_ids.join(', ')})를 사용하세요:
+      {#{json_example}}
     PROMPT
 
     begin
@@ -325,7 +330,7 @@ class FeedbackAiService
         parameters: {
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "당신은 읽기 진단 평가 전문가입니다. 학생의 오답에 대해 교육적이고 건설적인 피드백을 JSON 형식으로 작성합니다." },
+            { role: "system", content: "당신은 읽기 진단 평가 전문가입니다. 학생의 오답에 대해 교육적이고 건설적인 피드백을 JSON 형식으로 작성합니다. JSON 키는 반드시 제시된 response_id 숫자를 그대로 사용합니다." },
             { role: "user", content: prompt_text }
           ],
           max_tokens: responses.size * 200,
@@ -335,8 +340,11 @@ class FeedbackAiService
       )
 
       raw = api_response.dig("choices", 0, "message", "content")
-      Rails.logger.info("[generate_mcq_item_feedbacks] AI response received (#{raw&.length || 0} chars)")
-      JSON.parse(raw || "{}")
+      Rails.logger.info("[generate_mcq_item_feedbacks] AI raw response: #{raw}")
+      parsed = JSON.parse(raw || "{}")
+
+      # AI 응답 키를 실제 response_id로 정규화
+      normalize_ai_keys(parsed, responses)
     rescue JSON::ParserError => e
       Rails.logger.error("[generate_mcq_item_feedbacks] JSON parse error: #{e.message}")
       fallback_individual_feedbacks(responses)
@@ -452,6 +460,28 @@ class FeedbackAiService
   end
 
   private
+
+  # AI가 반환한 키를 실제 response_id로 정규화
+  # AI가 순서번호("1","2")나 다른 형식의 키를 쓸 경우 매핑
+  def normalize_ai_keys(parsed, responses)
+    response_ids = responses.map { |r| r.id.to_s }
+
+    # 이미 올바른 키 사용 중인지 확인
+    if parsed.keys.all? { |k| response_ids.include?(k.to_s) }
+      Rails.logger.info("[normalize_ai_keys] Keys match response_ids: #{parsed.keys}")
+      return parsed
+    end
+
+    # 키가 불일치 → 순서대로 매핑
+    Rails.logger.warn("[normalize_ai_keys] Key mismatch! AI keys: #{parsed.keys}, expected: #{response_ids}. Mapping by order.")
+    normalized = {}
+    parsed.values.each_with_index do |value, idx|
+      if idx < response_ids.size
+        normalized[response_ids[idx]] = value
+      end
+    end
+    normalized
+  end
 
   def openai_client
     api_key = ENV["OPENAI_API_KEY"]

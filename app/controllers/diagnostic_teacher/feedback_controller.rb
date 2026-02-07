@@ -505,6 +505,8 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       custom_prompt = params[:prompt].presence
       feedbacks = FeedbackAiService.generate_mcq_item_feedbacks(wrong_answers, custom_prompt: custom_prompt)
 
+      Rails.logger.info("[generate_mcq_feedbacks] AI returned keys: #{feedbacks.keys}, expected response IDs: #{wrong_answers.map(&:id)}")
+
       # ResponseFeedback에 저장 (기존 피드백이 있으면 업데이트)
       feedbacks.each do |response_id, feedback_text|
         response = wrong_answers.find { |r| r.id == response_id.to_i }
