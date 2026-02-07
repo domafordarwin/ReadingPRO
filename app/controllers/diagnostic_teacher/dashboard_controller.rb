@@ -70,24 +70,21 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
   def show_student_report
     @current_page = "school_reports"
-    @attempt = @student.student_attempts.includes(
-      :attempt_report,
-      :reader_tendency,
-      responses: [ :item, :selected_choice, :response_feedbacks, :response_rubric_scores ]
-    ).find(params[:attempt_id])
-    @report = @attempt.attempt_report
+    @attempt = @student.student_attempts.find(params[:attempt_id])
 
-    # 종합 분석 데이터 (AttemptReport에서 조회)
-    @reader_tendency = @attempt.reader_tendency
-    @comprehensive_analysis = @report  # AttemptReport를 종합 분석으로 사용
-    @literacy_achievements = []
-    @guidance_directions = []
+    # 응답 데이터 조회 (N+1 방지)
+    @responses = @attempt.responses
+      .includes(
+        :selected_choice,
+        :response_feedbacks,
+        :response_rubric_scores,
+        item: [ :evaluation_indicator, :sub_indicator, :item_choices ]
+      )
+      .order(created_at: :asc)
 
-    # 응답 데이터 조회 (결과보기용) - response_rubric_scores 포함
-    @responses = @attempt.responses.order(created_at: :asc)
-
-    @mcq_responses = @responses.select { |r| r.item.present? && r.item.mcq? }
-    @constructed_responses = @responses.select { |r| r.item.present? && r.item.constructed? }
+    # 객관식/서술형 분류
+    @mcq_responses = @responses.select { |r| r.item.mcq? }
+    @constructed_responses = @responses.select { |r| r.item.constructed? }
 
     # 이전/다음 학생 ID 조회 (시도가 있는 학생만)
     all_students_with_attempts = Student.joins(:student_attempts).distinct.order(:id).pluck(:id)

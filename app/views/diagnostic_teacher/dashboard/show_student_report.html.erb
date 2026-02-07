@@ -3,7 +3,7 @@
 <% end %>
 
 <% content_for :portal_subtitle do %>
-  학생별 진단 결과 및 종합 보고서를 확인합니다.
+  학생별 진단 결과를 문항 단위로 확인합니다.
 <% end %>
 
 <% content_for :portal_nav do %>
@@ -11,509 +11,879 @@
 <% end %>
 
 <style>
-  .student-info-header {
+  /* ===== 페이지 헤더 ===== */
+  .sa-header {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     padding: 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+  }
+  .sa-header__top {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 16px;
   }
-
-  .student-info-left {
-    flex: 1;
-  }
-
-  .student-name {
-    font-size: 24px;
+  .sa-header__title {
+    font-size: 22px;
     font-weight: 700;
-    margin-bottom: 8px;
+    color: #0f172a;
+    margin: 0;
   }
-
-  .student-meta {
-    font-size: 13px;
-    opacity: 0.9;
-    display: flex;
-    gap: 16px;
-  }
-
-  .nav-buttons {
-    display: flex;
-    gap: 12px;
-  }
-
-  .nav-btn {
-    padding: 12px 16px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
+  .sa-header__student {
     font-size: 14px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
+    color: #64748b;
+    font-weight: 500;
   }
-
-  .nav-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  .nav-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .content-wrapper {
+  .sa-header__info {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  .panel {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 24px;
-    overflow-y: auto;
-    max-height: 800px;
-  }
-
-  .panel-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #667eea;
-  }
-
-  /* 결과 보기 스타일 */
-  .section-header {
-    display: flex;
-    align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
-    margin: 24px 0 16px 0;
   }
-
-  .section-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
+  .sa-info-item {
+    background: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 8px;
   }
-
-  .section-count {
-    background: #667eea;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
+  .sa-info-label {
     font-size: 11px;
     font-weight: 600;
-  }
-
-  .result-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    margin-bottom: 16px;
-  }
-
-  .result-table thead {
-    background: #f8f9fa;
-  }
-
-  .result-table th {
-    padding: 8px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 11px;
-    color: #333;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .result-table td {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    font-size: 11px;
-  }
-
-  .result-table tbody tr:hover {
-    background: #f8f9fa;
-  }
-
-  .cell-number {
-    font-weight: 600;
-    color: #667eea;
-    width: 40px;
-  }
-
-  .correct-badge {
-    display: inline-block;
-    background: #d4edda;
-    color: #155724;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: 600;
-  }
-
-  .incorrect-badge {
-    display: inline-block;
-    background: #f8d7da;
-    color: #721c24;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: 600;
-  }
-
-  /* 종합 보고서 스타일 */
-  .insight-box {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
-
-  .insight-label {
-    font-size: 10px;
-    color: #999;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
-
-  .insight-value {
-    font-size: 13px;
+  .sa-info-value {
+    font-size: 15px;
     font-weight: 600;
-    color: #333;
-    line-height: 1.5;
+    color: #0f172a;
   }
 
-  .achievement-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 12px;
-    border-radius: 6px;
-    text-align: center;
-    margin-bottom: 12px;
-  }
-
-  .achievement-card h4 {
-    margin: 0 0 6px 0;
-    font-size: 12px;
-    opacity: 0.9;
-  }
-
-  .achievement-score {
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .achievement-rate {
-    font-size: 11px;
-    opacity: 0.8;
-  }
-
-  .reader-type-box {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 16px;
-    border-radius: 6px;
-    text-align: center;
+  /* ===== 네비게이션 ===== */
+  .sa-nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
   }
-
-  .reader-type-box h3 {
-    margin: 0 0 6px 0;
-    font-size: 12px;
-    opacity: 0.9;
-  }
-
-  .reader-type-name {
-    font-size: 16px;
-    font-weight: 700;
-    margin: 8px 0;
-  }
-
-  .reader-type-desc {
-    font-size: 11px;
-    opacity: 0.8;
-    line-height: 1.4;
-  }
-
-  .direction-item {
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    margin-bottom: 12px;
-    border-left: 4px solid #667eea;
-    font-size: 12px;
-  }
-
-  .direction-item h4 {
-    margin: 0 0 6px 0;
-    color: #333;
-    font-size: 12px;
-  }
-
-  .direction-item p {
-    margin: 0;
-    color: #666;
-    font-size: 11px;
-    line-height: 1.4;
-  }
-
-  .back-link {
-    display: inline-block;
-    margin-bottom: 16px;
-    color: #667eea;
+  .sa-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #2f5bff;
     text-decoration: none;
     font-size: 14px;
+    font-weight: 500;
+  }
+  .sa-back-link:hover { text-decoration: underline; }
+  .sa-nav-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  .sa-nav-btn {
+    padding: 8px 16px;
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .sa-nav-btn:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2f5bff;
+  }
+  .sa-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
-  .back-link:hover {
-    text-decoration: underline;
+  /* ===== 통계 그리드 ===== */
+  .sa-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .sa-stat-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: box-shadow 0.15s;
+  }
+  .sa-stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .sa-stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2f5bff;
+    margin-bottom: 2px;
+  }
+  .sa-stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
   }
 
-  @media (max-width: 1200px) {
-    .content-wrapper {
+  /* ===== 섹션 헤더 ===== */
+  .sa-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 28px 0 16px 0;
+  }
+  .sa-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .sa-section-count {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ===== 공통 문항 카드 ===== */
+  .sa-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .sa-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .sa-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .sa-card-number {
+    font-weight: 700;
+    font-size: 14px;
+    color: #2f5bff;
+  }
+  .sa-card-prompt {
+    font-size: 13px;
+    color: #64748b;
+    flex: 1;
+    margin: 0 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 정답/오답 배지 */
+  .sa-badge-correct {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sa-badge-incorrect {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  .sa-badge-scored {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .sa-badge-pending {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* ===== 3열 레이아웃 ===== */
+  .sa-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    min-height: 120px;
+  }
+  .sa-col {
+    padding: 16px 20px;
+  }
+  .sa-col:not(:last-child) {
+    border-right: 1px solid #f1f5f9;
+  }
+
+  /* 문항 정보 컬럼 */
+  .sa-meta-group { margin-bottom: 12px; }
+  .sa-meta-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .sa-meta-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+  }
+  .sa-indicator-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .sa-sub-indicator-badge {
+    display: inline-block;
+    background: #f0fdf4;
+    color: #166534;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* 답안 비교 */
+  .sa-answer-compare {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .sa-answer-box {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .sa-answer-box--correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  .sa-answer-box--correct .sa-answer-box__label { color: #15803d; }
+  .sa-answer-box--correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box--student {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+  .sa-answer-box--student.is-correct {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  .sa-answer-box--student .sa-answer-box__label { color: #dc2626; }
+  .sa-answer-box--student.is-correct .sa-answer-box__label { color: #15803d; }
+  .sa-answer-box--student .sa-answer-box__value { color: #991b1b; font-weight: 600; }
+  .sa-answer-box--student.is-correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box__label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+  }
+
+  /* 선택지 리스트 */
+  .sa-choice-list { list-style: none; padding: 0; margin: 0; }
+  .sa-choice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+    line-height: 1.4;
+  }
+  .sa-choice-item.is-correct-choice {
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 500;
+  }
+  .sa-choice-item.is-student-wrong {
+    background: #fef2f2;
+    color: #991b1b;
+  }
+  .sa-choice-no {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .sa-choice-item.is-correct-choice .sa-choice-no {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .sa-choice-item.is-student-wrong .sa-choice-no {
+    background: #fecaca;
+    color: #991b1b;
+  }
+  .sa-choice-marker {
+    flex-shrink: 0;
+    font-size: 11px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* 피드백/해설 컬럼 */
+  .sa-explanation {
+    font-size: 12px;
+    color: #334155;
+    line-height: 1.6;
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 3px solid #2f5bff;
+  }
+  .sa-feedback-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sa-feedback-btn:hover { background: #dbeafe; }
+  .sa-no-feedback { font-size: 12px; color: #94a3b8; }
+
+  /* ===== 서술형 중간열 ===== */
+  .sa-col-middle {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #f1f5f9;
+  }
+  .sa-question-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .sa-question-text {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.7;
+    background: #fffbeb;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #f59e0b;
+    margin-top: 6px;
+  }
+  .sa-answer-section {
+    padding: 16px 20px;
+    flex: 1;
+  }
+  .sa-answer-display {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #334155;
+    margin-top: 8px;
+  }
+
+  /* 채점 결과 */
+  .sa-score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .sa-score-badge {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .sa-score-label {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  /* ===== 모달 ===== */
+  .sa-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.4);
+  }
+  .sa-modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 24px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  }
+  .sa-modal-header {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #0f172a;
+  }
+  .sa-modal-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #475569;
+    margin-bottom: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .sa-modal-footer { text-align: right; }
+  .sa-modal-close {
+    background: #2f5bff;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .sa-modal-close:hover { background: #254ccb; }
+
+  /* ===== 빈 상태 ===== */
+  .sa-empty {
+    text-align: center;
+    padding: 60px 16px;
+    color: #94a3b8;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+  }
+
+  /* ===== 반응형 ===== */
+  @media (max-width: 900px) {
+    .sa-card-body {
       grid-template-columns: 1fr;
     }
-
-    .panel {
-      max-height: none;
+    .sa-col, .sa-col-middle {
+      border-right: none !important;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .sa-col:last-child {
+      border-bottom: none !important;
     }
   }
 </style>
 
-<a href="<%= diagnostic_teacher_reports_path %>" class="back-link">← 목록으로 돌아가기</a>
+<div style="padding: 20px;">
+  <!-- 네비게이션 -->
+  <div class="sa-nav-row">
+    <a href="<%= diagnostic_teacher_reports_path %>" class="sa-back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      목록으로 돌아가기
+    </a>
+    <div class="sa-nav-buttons">
+      <% if @prev_student_id %>
+        <% prev_student = Student.find(@prev_student_id) %>
+        <% prev_attempt = prev_student.student_attempts.order(created_at: :desc).first %>
+        <% if prev_attempt %>
+          <a href="<%= diagnostic_teacher_show_student_report_path(@prev_student_id, attempt_id: prev_attempt.id) %>" class="sa-nav-btn">← 이전 학생</a>
+        <% else %>
+          <button class="sa-nav-btn" disabled>← 이전 학생</button>
+        <% end %>
+      <% else %>
+        <button class="sa-nav-btn" disabled>← 이전 학생</button>
+      <% end %>
 
-<!-- 학생 정보 헤더 -->
-<div class="student-info-header">
-  <div class="student-info-left">
-    <div class="student-name"><%= @student.name %></div>
-    <div class="student-meta">
-      <span>ID: <%= @student.id %></span>
-      <span>진단 ID: #<%= @attempt.id %></span>
-      <span>진단일: <%= @attempt.started_at&.strftime("%Y.%m.%d %H:%M") %></span>
+      <% if @next_student_id %>
+        <% next_student = Student.find(@next_student_id) %>
+        <% next_attempt = next_student.student_attempts.order(created_at: :desc).first %>
+        <% if next_attempt %>
+          <a href="<%= diagnostic_teacher_show_student_report_path(@next_student_id, attempt_id: next_attempt.id) %>" class="sa-nav-btn">다음 학생 →</a>
+        <% else %>
+          <button class="sa-nav-btn" disabled>다음 학생 →</button>
+        <% end %>
+      <% else %>
+        <button class="sa-nav-btn" disabled>다음 학생 →</button>
+      <% end %>
     </div>
   </div>
 
-  <div class="nav-buttons">
-    <% if @prev_student_id %>
-      <% prev_student = Student.find(@prev_student_id) %>
-      <% prev_attempt = prev_student.student_attempts.order(created_at: :desc).first %>
-      <% if prev_attempt %>
-        <a href="<%= diagnostic_teacher_show_student_report_path(@prev_student_id, attempt_id: prev_attempt.id) %>" class="nav-btn">
-          ← 이전
-        </a>
-      <% else %>
-        <button class="nav-btn" disabled>← 이전</button>
-      <% end %>
-    <% else %>
-      <button class="nav-btn" disabled>← 이전</button>
-    <% end %>
-
-    <% if @next_student_id %>
-      <% next_student = Student.find(@next_student_id) %>
-      <% next_attempt = next_student.student_attempts.order(created_at: :desc).first %>
-      <% if next_attempt %>
-        <a href="<%= diagnostic_teacher_show_student_report_path(@next_student_id, attempt_id: next_attempt.id) %>" class="nav-btn">
-          다음 →
-        </a>
-      <% else %>
-        <button class="nav-btn" disabled>다음 →</button>
-      <% end %>
-    <% else %>
-      <button class="nav-btn" disabled>다음 →</button>
-    <% end %>
-  </div>
-</div>
-
-<!-- 좌우 분할 컨텐츠 -->
-<div class="content-wrapper">
-  <!-- 왼쪽: 결과 보기 -->
-  <div class="panel">
-    <div class="panel-title">📋 진단 결과 상세</div>
-
-    <% if @mcq_responses.any? %>
-      <div class="section-header">
-        <span class="section-title">객관식 문항</span>
-        <span class="section-count"><%= @mcq_responses.count %>문항</span>
+  <!-- ===== 헤더 ===== -->
+  <div class="sa-header">
+    <div class="sa-header__top">
+      <h1 class="sa-header__title"><%= @attempt.diagnostic_form&.name || "진단 ##{@attempt.id}" %> - 결과 상세</h1>
+      <span class="sa-header__student"><%= @student.name %> 학생</span>
+    </div>
+    <div class="sa-header__info">
+      <div class="sa-info-item">
+        <div class="sa-info-label">학생 ID</div>
+        <div class="sa-info-value"><%= @student.id %></div>
       </div>
-
-      <table class="result-table">
-        <thead>
-          <tr>
-            <th style="width: 30px;">번호</th>
-            <th style="width: 100px;">평가지표</th>
-            <th style="width: 50px;">정오</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @mcq_responses.each_with_index do |response, idx| %>
-            <% is_correct = response.selected_choice&.is_correct %>
-            <tr>
-              <td class="cell-number"><%= idx + 1 %></td>
-              <td><%= response.item.evaluation_indicator&.name %></td>
-              <td>
-                <% if is_correct %>
-                  <span class="correct-badge">정답</span>
-                <% else %>
-                  <span class="incorrect-badge">오답</span>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% end %>
-
-    <% if @constructed_responses.any? %>
-      <div class="section-header">
-        <span class="section-title">서술형 문항</span>
-        <span class="section-count"><%= @constructed_responses.count %>문항</span>
+      <div class="sa-info-item">
+        <div class="sa-info-label">시험 상태</div>
+        <div class="sa-info-value"><%= @attempt.status == 'completed' ? '완료' : '진행중' %></div>
       </div>
-
-      <table class="result-table">
-        <thead>
-          <tr>
-            <th style="width: 30px;">번호</th>
-            <th style="width: 100px;">평가지표</th>
-            <th style="width: 50px;">평가점</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @constructed_responses.each_with_index do |response, idx| %>
-            <tr>
-              <td class="cell-number"><%= @mcq_responses.count + idx + 1 %></td>
-              <td><%= response.item.evaluation_indicator&.name %></td>
-              <td>
-                <% if response.response_rubric_scores.any? %>
-                  <% total_score = response.response_rubric_scores.sum(&:level_score) %>
-                  <%= total_score %>점
-                <% else %>
-                  평가중
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% end %>
-
-    <% if @responses.empty? %>
-      <div style="text-align: center; padding: 32px 16px; color: #999;">
-        <p>답변 데이터가 없습니다.</p>
+      <div class="sa-info-item">
+        <div class="sa-info-label">응시일</div>
+        <div class="sa-info-value"><%= @attempt.started_at&.strftime("%Y년 %m월 %d일") %></div>
       </div>
-    <% end %>
+      <div class="sa-info-item">
+        <div class="sa-info-label">제출일</div>
+        <div class="sa-info-value"><%= @attempt.submitted_at&.strftime("%Y년 %m월 %d일 %H:%M") || "-" %></div>
+      </div>
+      <div class="sa-info-item">
+        <div class="sa-info-label">총 문항</div>
+        <div class="sa-info-value"><%= @responses.count %>문항</div>
+      </div>
+    </div>
   </div>
 
-  <!-- 오른쪽: 종합 보고서 -->
-  <div class="panel">
-    <div class="panel-title">📊 종합 보고서</div>
+  <!-- ===== 통계 ===== -->
+  <% correct_count = @mcq_responses.count { |r| r.selected_choice&.is_correct? } %>
+  <% mcq_total = @mcq_responses.count %>
+  <% accuracy = mcq_total > 0 ? (correct_count * 100.0 / mcq_total).round(0) : 0 %>
 
-    <!-- 종합 분석 (AttemptReport 데이터) -->
-    <% if @report %>
-      <% if @report.comprehensive_report_generated? %>
-        <div class="insight-box">
-          <div class="insight-label">종합 평가</div>
-          <div class="insight-value">
-            <%= @report.section_content('overall_summary').presence || @report.strengths || "평가 중입니다." %>
-          </div>
+  <div class="sa-stats">
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= mcq_total %></div>
+      <div class="sa-stat-label">객관식 문항</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= @constructed_responses.count %></div>
+      <div class="sa-stat-label">서술형 문항</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number"><%= correct_count %> / <%= mcq_total %></div>
+      <div class="sa-stat-label">객관식 정답</div>
+    </div>
+    <div class="sa-stat-card">
+      <div class="sa-stat-number" style="color: <%= accuracy >= 80 ? '#10b981' : accuracy >= 60 ? '#f59e0b' : '#ef4444' %>;"><%= accuracy %>%</div>
+      <div class="sa-stat-label">정답률</div>
+    </div>
+  </div>
+
+  <!-- ===== 객관식 섹션 ===== -->
+  <% if @mcq_responses.any? %>
+    <div class="sa-section-header">
+      <h2 class="sa-section-title">객관식 문항</h2>
+      <span class="sa-section-count"><%= @mcq_responses.count %>문항</span>
+    </div>
+
+    <% @mcq_responses.each_with_index do |response, idx| %>
+      <%
+        item = response.item
+        choices = item.item_choices.sort_by(&:choice_no)
+        correct_choice = choices.find(&:is_correct?)
+        student_choice = response.selected_choice
+        is_correct = student_choice&.is_correct?
+      %>
+
+      <div class="sa-card">
+        <div class="sa-card-header">
+          <span class="sa-card-number">문항 <%= idx + 1 %></span>
+          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <% if is_correct %>
+            <span class="sa-badge-correct">&#10003; 정답</span>
+          <% else %>
+            <span class="sa-badge-incorrect">&#10007; 오답</span>
+          <% end %>
         </div>
 
-        <% if @report.section_content('comprehensive_opinion').present? || @report.weaknesses.present? %>
-          <div class="insight-box">
-            <div class="insight-label">종합 의견</div>
-            <div class="insight-value">
-              <%= @report.section_content('comprehensive_opinion').presence || @report.weaknesses %>
+        <div class="sa-card-body">
+          <!-- 1열: 문항 정보 -->
+          <div class="sa-col">
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">평가 영역</span>
+              <span class="sa-indicator-badge"><%= item.evaluation_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">하위 영역</span>
+              <span class="sa-sub-indicator-badge"><%= item.sub_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">난이도</span>
+              <span class="sa-meta-value">
+                <%= case item.difficulty
+                    when "easy" then "하"
+                    when "medium" then "중"
+                    when "hard" then "상"
+                    else item.difficulty || "-"
+                    end %>
+              </span>
             </div>
           </div>
-        <% end %>
 
-        <% if @report.section_content('learning_recommendations').present? || @report.recommendations.present? %>
-          <div class="insight-box">
-            <div class="insight-label">학습 권고사항</div>
-            <div class="insight-value">
-              <%= @report.section_content('learning_recommendations').presence || @report.recommendations %>
+          <!-- 2열: 답안 비교 -->
+          <div class="sa-col">
+            <div class="sa-answer-compare">
+              <div class="sa-answer-box sa-answer-box--correct">
+                <div class="sa-answer-box__label">정답</div>
+                <div class="sa-answer-box__value">
+                  <% if correct_choice %>
+                    <%= correct_choice.choice_no %>번 <%= correct_choice.content&.truncate(25) %>
+                  <% else %>
+                    -
+                  <% end %>
+                </div>
+              </div>
+              <div class="sa-answer-box sa-answer-box--student <%= 'is-correct' if is_correct %>">
+                <div class="sa-answer-box__label">학생 답</div>
+                <div class="sa-answer-box__value">
+                  <% if student_choice %>
+                    <%= student_choice.choice_no %>번 <%= student_choice.content&.truncate(25) %>
+                  <% else %>
+                    미응답
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <ul class="sa-choice-list">
+              <% choices.each do |choice| %>
+                <%
+                  is_this_correct = choice.is_correct?
+                  is_student_pick = student_choice && student_choice.id == choice.id
+                  is_wrong_pick = is_student_pick && !is_this_correct
+                  css_class = []
+                  css_class << "is-correct-choice" if is_this_correct
+                  css_class << "is-student-wrong" if is_wrong_pick
+                %>
+                <li class="sa-choice-item <%= css_class.join(' ') %>">
+                  <span class="sa-choice-no"><%= choice.choice_no %></span>
+                  <span><%= choice.content&.truncate(50) %></span>
+                  <span class="sa-choice-marker">
+                    <% if is_this_correct && is_student_pick %>
+                      &#10003; 정답
+                    <% elsif is_this_correct %>
+                      &#10003; 정답
+                    <% elsif is_wrong_pick %>
+                      &#10007; 선택
+                    <% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
+          <!-- 3열: 해설/피드백 -->
+          <div class="sa-col">
+            <% if item.explanation.present? %>
+              <span class="sa-meta-label">문항 해설</span>
+              <div class="sa-explanation" style="margin-top: 4px;"><%= item.explanation %></div>
+            <% end %>
+
+            <% if response.response_feedbacks.any? %>
+              <span class="sa-meta-label" style="margin-top: 8px; display: block;">AI 피드백</span>
+              <button class="sa-feedback-btn" onclick="showFeedback(<%= idx %>, 'mcq')" style="margin-top: 4px;">
+                &#128172; 피드백 보기
+              </button>
+
+              <div id="feedback-modal-<%= idx %>-mcq" class="sa-modal">
+                <div class="sa-modal-content">
+                  <div class="sa-modal-header">문항 <%= idx + 1 %> - 피드백</div>
+                  <div class="sa-modal-body">
+                    <% response.response_feedbacks.each do |fb| %>
+                      <p><strong><%= fb.source %></strong></p>
+                      <%= simple_format(fb.feedback) %>
+                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;">
+                    <% end %>
+                  </div>
+                  <div class="sa-modal-footer">
+                    <button class="sa-modal-close" onclick="closeFeedback(<%= idx %>, 'mcq')">닫기</button>
+                  </div>
+                </div>
+              </div>
+            <% elsif item.explanation.blank? %>
+              <span class="sa-no-feedback">해설/피드백 없음</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <!-- ===== 서술형 섹션 ===== -->
+  <% if @constructed_responses.any? %>
+    <div class="sa-section-header">
+      <h2 class="sa-section-title">서술형 문항</h2>
+      <span class="sa-section-count"><%= @constructed_responses.count %>문항</span>
+    </div>
+
+    <% @constructed_responses.each_with_index do |response, idx| %>
+      <% item = response.item %>
+
+      <div class="sa-card">
+        <div class="sa-card-header">
+          <span class="sa-card-number">문항 <%= @mcq_responses.count + idx + 1 %></span>
+          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <% if response.response_rubric_scores.any? %>
+            <span class="sa-badge-scored">채점 완료</span>
+          <% else %>
+            <span class="sa-badge-pending">채점 대기</span>
+          <% end %>
+        </div>
+
+        <div class="sa-card-body">
+          <!-- 1열: 문항 정보 + 채점 -->
+          <div class="sa-col">
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">평가 영역</span>
+              <span class="sa-indicator-badge"><%= item.evaluation_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">하위 영역</span>
+              <span class="sa-sub-indicator-badge"><%= item.sub_indicator&.name || "미지정" %></span>
+            </div>
+            <div class="sa-meta-group">
+              <span class="sa-meta-label">난이도</span>
+              <span class="sa-meta-value">
+                <%= case item.difficulty
+                    when "easy" then "하"
+                    when "medium" then "중"
+                    when "hard" then "상"
+                    else item.difficulty || "-"
+                    end %>
+              </span>
+            </div>
+
+            <% if response.response_rubric_scores.any? %>
+              <div class="sa-meta-group" style="padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                <span class="sa-meta-label">채점 결과</span>
+                <% response.response_rubric_scores.each do |score| %>
+                  <div class="sa-score-row" style="margin-top: 4px;">
+                    <span class="sa-score-badge"><%= score.level_score %></span>
+                    <span class="sa-score-label"><%= score.rubric_criterion&.criterion_name || "기준" %></span>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- 2열: 질문 + 학생답안 -->
+          <div class="sa-col-middle">
+            <div class="sa-question-section">
+              <span class="sa-meta-label">질문</span>
+              <div class="sa-question-text"><%= item.prompt %></div>
+            </div>
+
+            <div class="sa-answer-section">
+              <span class="sa-meta-label">학생 답안</span>
+              <div class="sa-answer-display">
+                <%= simple_format(response.answer_text.presence || "(미응답)") %>
+              </div>
             </div>
           </div>
-        <% end %>
-      <% else %>
-        <% if @report.strengths.present? %>
-          <div class="insight-box">
-            <div class="insight-label">강점</div>
-            <div class="insight-value"><%= @report.strengths %></div>
-          </div>
-        <% end %>
 
-        <% if @report.weaknesses.present? %>
-          <div class="insight-box">
-            <div class="insight-label">개선 영역</div>
-            <div class="insight-value"><%= @report.weaknesses %></div>
-          </div>
-        <% end %>
+          <!-- 3열: 해설/피드백 -->
+          <div class="sa-col">
+            <% if item.explanation.present? %>
+              <span class="sa-meta-label">문항 해설</span>
+              <div class="sa-explanation" style="margin-top: 4px;"><%= item.explanation %></div>
+            <% end %>
 
-        <% if @report.recommendations.present? %>
-          <div class="insight-box">
-            <div class="insight-label">권고사항</div>
-            <div class="insight-value"><%= @report.recommendations %></div>
-          </div>
-        <% end %>
-      <% end %>
-    <% end %>
+            <% if response.response_feedbacks.any? %>
+              <span class="sa-meta-label" style="margin-top: 8px; display: block;">AI 피드백</span>
+              <button class="sa-feedback-btn" onclick="showFeedback(<%= idx %>, 'cr')" style="margin-top: 4px;">
+                &#128172; 피드백 보기
+              </button>
 
-    <!-- 독자 성향 -->
-    <% if @reader_tendency %>
-      <div class="reader-type-box">
-        <h3>독자 성향</h3>
-        <div class="reader-type-name">
-          <%= @reader_tendency.reading_speed&.capitalize || "분석중" %> (<%= @reader_tendency.words_per_minute || 0 %> WPM)
-        </div>
-        <div class="reader-type-desc">
-          <%= @reader_tendency.tendency_summary || "읽기 성향을 분석합니다." %>
+              <div id="feedback-modal-<%= idx %>-cr" class="sa-modal">
+                <div class="sa-modal-content">
+                  <div class="sa-modal-header">문항 <%= @mcq_responses.count + idx + 1 %> - 종합 피드백</div>
+                  <div class="sa-modal-body">
+                    <p><strong>학생 답변:</strong></p>
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                      <%= simple_format(response.answer_text || "(답변 없음)") %>
+                    </div>
+                    <% response.response_feedbacks.each do |fb| %>
+                      <p><strong><%= fb.source %></strong></p>
+                      <%= simple_format(fb.feedback) %>
+                      <hr style="margin: 12px 0; border: none; border-top: 1px solid #e2e8f0;">
+                    <% end %>
+                  </div>
+                  <div class="sa-modal-footer">
+                    <button class="sa-modal-close" onclick="closeFeedback(<%= idx %>, 'cr')">닫기</button>
+                  </div>
+                </div>
+              </div>
+            <% elsif item.explanation.blank? %>
+              <span class="sa-no-feedback">해설/피드백 없음</span>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>
+  <% end %>
 
-    <!-- 문해력 성취 -->
-    <% if @literacy_achievements.any? %>
-      <div style="margin-bottom: 16px;">
-        <% @literacy_achievements.each do |achievement| %>
-          <div class="achievement-card">
-            <h4><%= achievement.evaluation_indicator&.name || "문해력" %></h4>
-            <div class="achievement-score"><%= achievement.correct_answers %>/<%= achievement.total_questions %></div>
-            <div class="achievement-rate">정답률: <%= achievement.accuracy_rate %>%</div>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-
-    <!-- 학습 지도 방향 -->
-    <% if @guidance_directions.any? %>
-      <% @guidance_directions.each do |direction| %>
-        <div class="direction-item">
-          <h4><%= direction.evaluation_indicator&.name || "학습 영역" %></h4>
-          <p><%= direction.content || "지도 내용을 준비 중입니다." %></p>
-        </div>
-      <% end %>
-    <% end %>
-
-    <% unless @report || @reader_tendency || @literacy_achievements.any? || @guidance_directions.any? %>
-      <div style="text-align: center; padding: 32px 16px; color: #999;">
-        <p style="font-size: 12px;">분석 데이터가 아직 준비 중입니다.</p>
-      </div>
-    <% end %>
-  </div>
+  <% if @responses.empty? %>
+    <div class="sa-empty">
+      <p style="font-size: 18px; font-weight: 600; color: #64748b; margin-bottom: 8px;">답변 데이터가 없습니다</p>
+      <p style="font-size: 14px;">아직 응답이 기록되지 않았습니다.</p>
+    </div>
+  <% end %>
 </div>
+
+<script>
+  function showFeedback(idx, type) {
+    const modal = document.getElementById(`feedback-modal-${idx}-${type}`);
+    if (modal) modal.style.display = 'block';
+  }
+
+  function closeFeedback(idx, type) {
+    const modal = document.getElementById(`feedback-modal-${idx}-${type}`);
+    if (modal) modal.style.display = 'none';
+  }
+
+  window.onclick = function(event) {
+    if (event.target.classList.contains('sa-modal')) {
+      event.target.style.display = 'none';
+    }
+  }
+</script>
 
 <% content_for :portal_actions do %>
   <a class="portal-button" href="<%= diagnostic_teacher_reports_path %>">목록으로 돌아가기</a>
