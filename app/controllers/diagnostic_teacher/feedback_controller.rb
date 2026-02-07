@@ -482,13 +482,23 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       .includes(:response_feedbacks, :selected_choice, item: :item_choices)
       .to_a
 
+    Rails.logger.info("[generate_mcq_feedbacks] student_id=#{student.id}, attempts=#{student.student_attempts.count}, total_mcq_responses=#{responses.size}")
+
+    # 디버깅: 각 응답의 selected_choice 상태 확인
+    responses.each do |r|
+      sc = r.selected_choice
+      Rails.logger.info("[generate_mcq_feedbacks] response_id=#{r.id}, selected_choice_id=#{r.selected_choice_id}, selected_choice=#{sc&.id}, is_correct=#{sc&.is_correct}")
+    end
+
     # 오답만 필터링 (재생성 허용 - 기존 피드백 유무 무관)
     wrong_answers = responses.select do |r|
       r.selected_choice && !r.selected_choice.is_correct?
     end
 
+    Rails.logger.info("[generate_mcq_feedbacks] wrong_answers=#{wrong_answers.size} (IDs: #{wrong_answers.map(&:id)})")
+
     if wrong_answers.empty?
-      return render json: { success: true, feedbacks: {}, message: "오답이 없습니다" }
+      return render json: { success: true, feedbacks: {}, message: "오답이 없습니다 (총 #{responses.size}개 MCQ 응답 중 오답 0개)" }
     end
 
     begin
@@ -512,9 +522,11 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
         end
       end
 
+      Rails.logger.info("[generate_mcq_feedbacks] Success: #{feedbacks.size} feedbacks generated for student #{student.id}")
       render json: { success: true, feedbacks: feedbacks, count: feedbacks.size }
     rescue => e
       Rails.logger.error("[generate_mcq_feedbacks] #{e.class}: #{e.message}")
+      Rails.logger.error("[generate_mcq_feedbacks] Backtrace: #{e.backtrace&.first(5)&.join("\n")}") unless e.message.include?("시간 초과")
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
   end

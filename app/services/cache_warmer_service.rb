@@ -37,7 +37,7 @@ class CacheWarmerService
 
     # Cache stimuli by status distribution (for future dashboards)
     # This prevents N+1 queries in reporting features
-    distribution = ReadingStimulus.group(:status).count
+    distribution = ReadingStimulus.group(:bundle_status).count
     Rails.cache.write("stimuli_by_status", distribution, expires_in: CACHE_DURATION)
 
     Rails.logger.info("[CacheWarmer] Stimulus metadata cached (#{total} total)")

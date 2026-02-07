@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class FeedbackAiService
+  OPENAI_TIMEOUT = 90 # seconds
+
   # ===== 프롬프트 카테고리 =====
   PROMPT_CATEGORIES = {
     "mcq_feedback" => "객관식 답안 확인 피드백",
@@ -70,7 +72,7 @@ class FeedbackAiService
     prompt_text = build_feedback_prompt(item, selected_choice, response)
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       response = client.chat(
         parameters: {
@@ -117,7 +119,7 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       response = client.chat(
         parameters: {
@@ -144,7 +146,7 @@ class FeedbackAiService
     summary = build_comprehensive_summary(responses)
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       prompt_text = <<~PROMPT
         학생이 객관식 18개 문항을 풀었습니다. 다음 정보를 바탕으로 학생의 전체 성능을 분석하고 종합 피드백을 작성해주세요.
@@ -174,9 +176,12 @@ class FeedbackAiService
       )
 
       response.dig("choices", 0, "message", "content")
+    rescue Faraday::TimeoutError, Net::ReadTimeout, Net::OpenTimeout => e
+      Rails.logger.error("[generate_comprehensive_feedback] Timeout: #{e.class} - #{e.message}")
+      raise "AI 서버 응답 시간 초과 (#{OPENAI_TIMEOUT}초). 다시 시도해주세요."
     rescue StandardError => e
-      Rails.logger.error("AI Comprehensive Feedback Generation Error: #{e.message}")
-      fallback_comprehensive_feedback(responses)
+      Rails.logger.error("[generate_comprehensive_feedback] Error: #{e.class} - #{e.message}")
+      raise "종합 피드백 생성 실패: #{e.message}"
     end
   end
 
@@ -202,7 +207,7 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       response = client.chat(
         parameters: {
@@ -219,10 +224,12 @@ class FeedbackAiService
       )
 
       response.dig("choices", 0, "message", "content")
+    rescue Faraday::TimeoutError, Net::ReadTimeout, Net::OpenTimeout => e
+      Rails.logger.error("[refine_comprehensive_feedback] Timeout: #{e.class} - #{e.message}")
+      raise "AI 서버 응답 시간 초과 (#{OPENAI_TIMEOUT}초). 다시 시도해주세요."
     rescue StandardError => e
-      Rails.logger.error("AI Comprehensive Feedback Refinement Error: #{e.message}")
-      # Fallback: 요약 정보와 사용자 지침을 함께 반환
-      "#{summary}\n\n[교사 지침]\n#{user_prompt}"
+      Rails.logger.error("[refine_comprehensive_feedback] Error: #{e.class} - #{e.message}")
+      raise "피드백 정교화 실패: #{e.message}"
     end
   end
 
@@ -245,7 +252,7 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       response = client.chat(
         parameters: {
@@ -262,10 +269,12 @@ class FeedbackAiService
       )
 
       response.dig("choices", 0, "message", "content")
+    rescue Faraday::TimeoutError, Net::ReadTimeout, Net::OpenTimeout => e
+      Rails.logger.error("[refine_with_existing_feedback] Timeout: #{e.class} - #{e.message}")
+      raise "AI 서버 응답 시간 초과 (#{OPENAI_TIMEOUT}초). 다시 시도해주세요."
     rescue StandardError => e
-      Rails.logger.error("AI Feedback Refinement with Existing Error: #{e.message}")
-      # Fallback: 기존 피드백과 교사 요청을 함께 반환
-      "#{existing_feedback}\n\n[교사 피드백]\n#{custom_prompt}"
+      Rails.logger.error("[refine_with_existing_feedback] Error: #{e.class} - #{e.message}")
+      raise "피드백 정교화 실패: #{e.message}"
     end
   end
 
@@ -310,7 +319,7 @@ class FeedbackAiService
     PROMPT
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       api_response = client.chat(
         parameters: {
@@ -326,14 +335,18 @@ class FeedbackAiService
       )
 
       raw = api_response.dig("choices", 0, "message", "content")
+      Rails.logger.info("[generate_mcq_item_feedbacks] AI response received (#{raw&.length || 0} chars)")
       JSON.parse(raw || "{}")
     rescue JSON::ParserError => e
       Rails.logger.error("[generate_mcq_item_feedbacks] JSON parse error: #{e.message}")
-      # Fallback: 개별 생성
       fallback_individual_feedbacks(responses)
+    rescue Faraday::TimeoutError, Net::ReadTimeout, Net::OpenTimeout => e
+      Rails.logger.error("[generate_mcq_item_feedbacks] Timeout (#{OPENAI_TIMEOUT}s): #{e.class} - #{e.message}")
+      raise "AI 서버 응답 시간 초과 (#{OPENAI_TIMEOUT}초). 문항 수를 줄이거나 다시 시도해주세요."
     rescue StandardError => e
       Rails.logger.error("[generate_mcq_item_feedbacks] Error: #{e.class} - #{e.message}")
-      fallback_individual_feedbacks(responses)
+      Rails.logger.error("[generate_mcq_item_feedbacks] Backtrace: #{e.backtrace&.first(3)&.join("\n")}")
+      raise "AI 피드백 생성 실패: #{e.message}"
     end
   end
 
@@ -405,7 +418,7 @@ class FeedbackAiService
     Rails.logger.info("[generate_constructed_item_feedbacks] Sending #{responses.size} responses to AI, IDs: #{response_ids}")
 
     begin
-      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      client = openai_client
 
       api_response = client.chat(
         parameters: {
@@ -421,21 +434,36 @@ class FeedbackAiService
       )
 
       raw = api_response.dig("choices", 0, "message", "content")
-      Rails.logger.info("[generate_constructed_item_feedbacks] AI raw response: #{raw&.truncate(500)}")
+      Rails.logger.info("[generate_constructed_item_feedbacks] AI response received (#{raw&.length || 0} chars)")
       parsed = JSON.parse(raw || "{}")
       Rails.logger.info("[generate_constructed_item_feedbacks] Parsed keys: #{parsed.keys}")
       parsed
     rescue JSON::ParserError => e
       Rails.logger.error("[generate_constructed_item_feedbacks] JSON parse error: #{e.message}")
       fallback_constructed_feedbacks(responses)
+    rescue Faraday::TimeoutError, Net::ReadTimeout, Net::OpenTimeout => e
+      Rails.logger.error("[generate_constructed_item_feedbacks] Timeout (#{OPENAI_TIMEOUT}s): #{e.class} - #{e.message}")
+      raise "AI 서버 응답 시간 초과 (#{OPENAI_TIMEOUT}초). 문항 수를 줄이거나 다시 시도해주세요."
     rescue StandardError => e
       Rails.logger.error("[generate_constructed_item_feedbacks] Error: #{e.class} - #{e.message}")
-      Rails.logger.error("[generate_constructed_item_feedbacks] Backtrace: #{e.backtrace.first(3).join("\n")}")
-      fallback_constructed_feedbacks(responses)
+      Rails.logger.error("[generate_constructed_item_feedbacks] Backtrace: #{e.backtrace&.first(3)&.join("\n")}")
+      raise "AI 피드백 생성 실패: #{e.message}"
     end
   end
 
   private
+
+  def openai_client
+    api_key = ENV["OPENAI_API_KEY"]
+    unless api_key.present?
+      Rails.logger.error("[FeedbackAiService] OPENAI_API_KEY is not set!")
+      raise "OPENAI_API_KEY 환경변수가 설정되지 않았습니다"
+    end
+    OpenAI::Client.new(
+      access_token: api_key,
+      request_timeout: OPENAI_TIMEOUT
+    )
+  end
 
   def build_comprehensive_summary(responses)
     total = responses.length

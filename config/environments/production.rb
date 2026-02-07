@@ -36,11 +36,11 @@ Rails.application.configure do
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger = ActiveSupport::Logger.new($stdout)
-    logger.formatter = config.log_formatter
-    config.logger = ActiveSupport::TaggedLogging.new(logger)
-  end
+
+  # Always log to STDOUT for Railway (container environments)
+  logger = ActiveSupport::Logger.new(STDOUT)
+  logger.formatter = ::Logger::Formatter.new
+  config.logger = ActiveSupport::TaggedLogging.new(logger)
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!).
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
