@@ -5,6 +5,13 @@
     <h1 class="rp-page-title">사용자 관리</h1>
     <p class="rp-page-subtitle">계정 상태와 접근 권한을 관리합니다.</p>
   </div>
+  <button class="rp-btn rp-btn--primary" onclick="openCreateModal()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    새 사용자 추가
+  </button>
 </div>
 
 <div class="rp-card">
@@ -140,6 +147,60 @@
   </div>
 </div>
 
+<!-- 사용자 생성 모달 -->
+<div id="createModal" class="rp-modal" style="display: none;">
+  <div class="rp-modal__overlay" onclick="closeCreateModal()"></div>
+  <div class="rp-modal__content">
+    <div class="rp-modal__header">
+      <h3 class="rp-modal__title">새 사용자 추가</h3>
+      <button class="rp-modal__close" onclick="closeCreateModal()" aria-label="닫기">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="rp-modal__body">
+      <%= form_with url: admin_users_path, method: :post, id: "createForm", class: "rp-form", data: { turbo: false } do |f| %>
+        <div class="rp-form-group">
+          <label class="rp-form-label">이메일 <span class="rp-required">*</span></label>
+          <%= email_field_tag :email, nil, class: "rp-form-input", required: true, placeholder: "user@example.com" %>
+        </div>
+
+        <div class="rp-form-group">
+          <label class="rp-form-label">역할 <span class="rp-required">*</span></label>
+          <select name="role" class="rp-form-select" required>
+            <option value="">역할을 선택하세요</option>
+            <% User.roles.keys.each do |role| %>
+              <option value="<%= role %>"><%= role_label(role) %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <div class="rp-form-group">
+          <label class="rp-form-label">비밀번호 <span class="rp-required">*</span></label>
+          <%= password_field_tag :password, nil, class: "rp-form-input", required: true, minlength: 6, placeholder: "6자 이상" %>
+        </div>
+
+        <div class="rp-form-group">
+          <label class="rp-form-label">비밀번호 확인 <span class="rp-required">*</span></label>
+          <%= password_field_tag :password_confirmation, nil, class: "rp-form-input", required: true, minlength: 6, placeholder: "비밀번호 재입력" %>
+        </div>
+
+        <div class="rp-modal__actions">
+          <button type="button" class="rp-btn rp-btn--secondary" onclick="closeCreateModal()">
+            취소
+          </button>
+          <button type="submit" class="rp-btn rp-btn--primary">
+            생성
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
 <script>
   function openRoleModal(userId, currentRole) {
     const modal = document.getElementById('roleModal');
@@ -163,10 +224,23 @@
     document.body.style.overflow = '';
   }
 
+  function openCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
   // ESC 키로 모달 닫기
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       closeRoleModal();
+      closeCreateModal();
     }
   });
 </script>
@@ -249,13 +323,18 @@
     align-items: center;
   }
 
+  .rp-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .rp-badge {
     display: inline-block;
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 500;
-    text-transform: uppercase;
   }
 
   .rp-badge--admin {
@@ -276,6 +355,21 @@
   .rp-badge--student {
     background-color: #d1fae5;
     color: #065f46;
+  }
+
+  .rp-badge--researcher {
+    background-color: #ede9fe;
+    color: #5b21b6;
+  }
+
+  .rp-badge--diagnostic_teacher {
+    background-color: #e0e7ff;
+    color: #3730a3;
+  }
+
+  .rp-badge--school_admin {
+    background-color: #fce7f3;
+    color: #9d174d;
   }
 
   .rp-modal {
@@ -360,5 +454,24 @@
     gap: 12px;
     justify-content: flex-end;
     margin-top: 24px;
+  }
+
+  .rp-form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .rp-form-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .rp-required {
+    color: #dc2626;
   }
 </style>

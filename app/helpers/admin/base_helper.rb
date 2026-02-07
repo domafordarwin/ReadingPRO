@@ -2,7 +2,10 @@ module Admin
   module BaseHelper
     ROLE_LABELS = {
       "admin" => "관리자",
-      "teacher" => "진단담당교사",
+      "researcher" => "문항개발자",
+      "diagnostic_teacher" => "진단교사",
+      "teacher" => "담당교사",
+      "school_admin" => "학교관리자",
       "parent" => "학부모",
       "student" => "학생"
     }.freeze
@@ -12,13 +15,7 @@ module Admin
     end
 
     def role_badge_class(role)
-      case role
-      when "admin" then "rp-badge--admin"
-      when "teacher" then "rp-badge--teacher"
-      when "parent" then "rp-badge--parent"
-      when "student" then "rp-badge--student"
-      else "rp-badge--default"
-      end
+      "rp-badge--#{role}"
     end
   end
 end
