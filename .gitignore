@@ -42,3 +42,4 @@ extracted_*.json
 docs/.bkit-memory.json
 docs/.pdca-snapshots/
 .claude.local.json
+db/seed_assessment_data.rb
