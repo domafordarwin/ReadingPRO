@@ -396,7 +396,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
           total_score += 1 if response.selected_choice&.is_correct
         elsif item.item_type == "constructed"
           # response_rubric_scores도 eager load되어 있음
-          response.response_rubric_scores.sum { |score| score.score || 0 }.tap do |sum|
+          response.response_rubric_scores.sum { |s| s.level_score || 0 }.tap do |sum|
             total_score += sum
           end
         end
