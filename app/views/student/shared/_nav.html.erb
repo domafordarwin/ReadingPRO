@@ -2,4 +2,4 @@
 <%= link_to "내 진단", student_reports_path, class: "portal-nav-link#{' is-active' if current == :diagnostics || current == :reports}" %>
 <%= link_to "상담 게시판", student_consultations_path, class: "portal-nav-link#{' is-active' if current == :consultations}" %>
 <%= link_to "리딩 PRO 소개", student_about_path, class: "portal-nav-link#{' is-active' if current == :about}" %>
-<%= link_to "내 정보 / 비밀번호 변경", profile_path, class: "portal-nav-link#{' is-active' if current == :profile}" %>
+<%= link_to "내 정보", profile_path, class: "portal-nav-link#{' is-active' if current == :profile}" %>
