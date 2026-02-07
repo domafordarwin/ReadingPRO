@@ -110,48 +110,48 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
       # Diagnosis items 데이터 준비
       @diagnosis_items = {
         motivation: {
-          title: "흥미도 분석",
+          title: "읽기 속도",
           icon: "🎯",
-          content: @reader_tendency&.interest_analysis || "분석 데이터 수집 중..."
+          content: @reader_tendency.present? ? "읽기 속도: #{@reader_tendency.reading_speed || '미측정'} (#{@reader_tendency.words_per_minute || 0} WPM)" : "분석 데이터 수집 중..."
         },
         attitude: {
-          title: "독자 유형",
+          title: "이해력 강점",
           icon: "📖",
-          content: @reader_tendency&.reader_type_description || "유형 분석 중..."
+          content: @reader_tendency&.comprehension_strength || "유형 분석 중..."
         },
         social: {
-          title: "가정 지원도",
+          title: "세부 지향 점수",
           icon: "👥",
-          content: @reader_tendency&.home_support_analysis || "분석 데이터 수집 중..."
+          content: @reader_tendency.present? ? "세부 지향: #{@reader_tendency.detail_orientation_score || 0}점" : "분석 데이터 수집 중..."
         },
         risk: {
-          title: "자기주도성",
+          title: "비판적 사고",
           icon: "⚠️",
-          content: @reader_tendency&.self_directed_analysis || "분석 데이터 수집 중..."
+          content: @reader_tendency.present? ? "비판적 사고: #{@reader_tendency.critical_thinking_score || 0}점" : "분석 데이터 수집 중..."
         }
       }
 
       # Recommendation items 데이터 준비
       @recommendation_items = {
         interest: {
-          title: "흥미 분석",
+          title: "성향 요약",
           icon: "💡",
-          content: @reader_tendency&.interest_analysis || "개인화 분석 개발 중..."
+          content: @reader_tendency&.tendency_summary || "개인화 분석 개발 중..."
         },
         autonomy: {
-          title: "자기주도성 분석",
+          title: "이해력 약점",
           icon: "🚀",
-          content: @reader_tendency&.self_directed_analysis || "개인화 분석 개발 중..."
+          content: @reader_tendency&.comprehension_weakness || "개인화 분석 개발 중..."
         },
         family: {
-          title: "가정 지원 분석",
+          title: "속도-정확도 균형",
           icon: "👨‍👩‍👧",
-          content: @reader_tendency&.home_support_analysis || "가정 연계 방안 개발 중..."
+          content: @reader_tendency.present? ? "균형 점수: #{@reader_tendency.speed_accuracy_balance_score || 0}점" : "분석 데이터 수집 중..."
         },
         caution: {
           title: "진단 점수 요약",
           icon: "📌",
-          content: @reader_tendency.present? ? "흥미도: #{@reader_tendency&.reading_interest_score}점 | 자기주도성: #{@reader_tendency&.self_directed_score}점 | 가정지원: #{@reader_tendency&.home_support_score}점" : "진단 데이터 수집 중..."
+          content: @reader_tendency.present? ? "세부지향: #{@reader_tendency.detail_orientation_score || 0}점 | 속도균형: #{@reader_tendency.speed_accuracy_balance_score || 0}점 | 비판사고: #{@reader_tendency.critical_thinking_score || 0}점" : "진단 데이터 수집 중..."
         }
       }
 

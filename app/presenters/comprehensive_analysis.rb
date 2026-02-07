@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class ComprehensiveAnalysis
-  attr_reader :overall_summary, :comprehension_analysis
+  attr_reader :overall_summary, :comprehension_analysis, :improvement_areas
 
   def initialize(attempt, achievements)
     @attempt = attempt
     @achievements = achievements
     @overall_summary = generate_summary
     @comprehension_analysis = generate_analysis
+    @improvement_areas = generate_improvement_areas
   end
 
   private
@@ -27,5 +28,15 @@ class ComprehensiveAnalysis
 
     "강점: #{strongest&.evaluation_indicator&.name} (#{strongest.accuracy_rate}%), " \
     "개선영역: #{weakest&.evaluation_indicator&.name} (#{weakest.accuracy_rate}%)"
+  end
+
+  def generate_improvement_areas
+    return nil if @achievements.blank?
+
+    weak = @achievements.select { |a| a.accuracy_rate < 70 }
+                        .sort_by(&:accuracy_rate)
+    return nil if weak.empty?
+
+    weak.map { |a| "#{a.evaluation_indicator&.name} (#{a.accuracy_rate}%)" }.join(", ")
   end
 end

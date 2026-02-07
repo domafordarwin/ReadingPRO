@@ -615,16 +615,16 @@
 
     <% if @reader_tendency %>
       <div class="reader-type-card">
-        <div class="reader-type-name"><%= @reader_tendency.reader_type&.name || "분석 중" %></div>
+        <div class="reader-type-name"><%= @reader_tendency.reading_speed&.capitalize || "분석 중" %> (<%= @reader_tendency.words_per_minute || 0 %> WPM)</div>
         <div class="reader-type-char">
-          <%= @reader_tendency.reader_type&.characteristics || "독자 성향을 분석 중입니다." %>
+          <%= @reader_tendency.tendency_summary || "독자 성향을 분석 중입니다." %>
         </div>
 
-        <% if @reader_tendency.reader_type %>
+        <% if @reader_tendency.tendency_summary.present? %>
           <div class="type-features">
             <div class="type-feature">
               <h4>📖 주요 특징</h4>
-              <p><%= @reader_tendency.reader_type.characteristics || "읽기 성향 분석 중" %></p>
+              <p><%= @reader_tendency.tendency_summary || "읽기 성향 분석 중" %></p>
             </div>
             <div class="type-feature">
               <h4>🎯 강점</h4>

@@ -451,12 +451,12 @@
     <!-- 독자 성향 -->
     <% if @reader_tendency %>
       <div class="reader-type-box">
-        <h3>독자 유형</h3>
+        <h3>독자 성향</h3>
         <div class="reader-type-name">
-          <%= @reader_tendency.reader_type&.name || "분석중" %>
+          <%= @reader_tendency.reading_speed&.capitalize || "분석중" %> (<%= @reader_tendency.words_per_minute || 0 %> WPM)
         </div>
         <div class="reader-type-desc">
-          <%= @reader_tendency.reader_type&.characteristics || "읽기 성향을 분석합니다." %>
+          <%= @reader_tendency.tendency_summary || "읽기 성향을 분석합니다." %>
         </div>
       </div>
     <% end %>
