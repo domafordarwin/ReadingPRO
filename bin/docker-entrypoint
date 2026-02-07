@@ -3,7 +3,8 @@
 # If running the rails server then migrate the database
 if [[ "$*" == *"rails server"* ]] || [[ "$*" == *"rails s"* ]]; then
   echo "Running database migrations..."
-  ./bin/rails db:migrate
+  RAILS_LOG_LEVEL=warn ./bin/rails db:migrate 2>&1 | grep -v "^D," || true
+  echo "Migrations complete."
 fi
 
 exec "${@}"

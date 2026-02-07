@@ -14,15 +14,15 @@
 # Data is persisted to PostgreSQL, survives restarts
 
 Rails.application.config.after_initialize do
-  if defined?(SolidQueue)
-    Rails.logger.info "[SolidQueue] Initialized for background job processing"
+  next unless defined?(Rails::Server) || defined?(Puma)
+  next unless defined?(SolidQueue)
 
-    # Error handling
-    SolidQueue.on_thread_error do |exception|
-      Rails.logger.error(
-        "[SolidQueue] Thread error: #{exception.class} - #{exception.message}\n#{exception.backtrace.first(5).join("\n")}"
-      )
-    end
+  Rails.logger.info "[SolidQueue] Initialized for background job processing"
+
+  SolidQueue.on_thread_error do |exception|
+    Rails.logger.error(
+      "[SolidQueue] Thread error: #{exception.class} - #{exception.message}\n#{exception.backtrace.first(5).join("\n")}"
+    )
   end
 end
 
