@@ -397,7 +397,7 @@
               <td><%= response.item.evaluation_indicator&.name %></td>
               <td>
                 <% if response.response_rubric_scores.any? %>
-                  <% total_score = response.response_rubric_scores.sum(&:score) %>
+                  <% total_score = response.response_rubric_scores.sum(&:level_score) %>
                   <%= total_score %>점
                 <% else %>
                   평가중

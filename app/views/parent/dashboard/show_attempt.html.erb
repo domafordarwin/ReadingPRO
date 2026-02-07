@@ -442,7 +442,7 @@
             <% if response.response_rubric_scores.any? %>
               <% response.response_rubric_scores.each do |score| %>
                 <span class="score-badge">
-                  <%= score.score %> / <%= score.rubric_criterion&.rubric&.max_score || 5 %>
+                  <%= score.level_score %> / <%= score.rubric_criterion&.rubric&.max_score || 5 %>
                 </span>
                 <br>
               <% end %>
