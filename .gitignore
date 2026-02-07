@@ -28,7 +28,11 @@ Thumbs.db
 
 # Windows reserved files
 nul
-cookie.txt
+cookies.txt
+
+# Debug/data output
+*.csv
+extracted_*.json
 
 # Claude Code & bkit (로컬 설정, 생성된 문서)
 .claude/
