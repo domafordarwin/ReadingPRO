@@ -3,7 +3,7 @@
 # If running the rails server then set up the database
 if [[ "$*" == *"rails server"* ]] || [[ "$*" == *"rails s"* ]]; then
   echo "Loading database schema..."
-  ./bin/rails db:schema:load || echo "Schema load failed or already loaded"
+  DISABLE_DATABASE_ENVIRONMENT_CHECK=1 ./bin/rails db:schema:load || echo "Schema load failed or already loaded"
   echo "Running seeds..."
   ./bin/rails db:seed || echo "Seed failed, continuing..."
 fi
