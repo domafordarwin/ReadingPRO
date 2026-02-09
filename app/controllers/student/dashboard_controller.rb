@@ -33,16 +33,24 @@ class Student::DashboardController < ApplicationController
         .order(submitted_at: :desc)
         .first
 
-      # 역량별 정확도 (최신 시도 기반)
-      @literacy_achievements = if @latest_attempt
-        calculate_literacy_achievements(@latest_attempt)
+      # 가장 높은 점수의 시도 (역량 요약 레이더 차트용)
+      @best_attempt = @student.student_attempts
+        .where(status: %w[completed submitted])
+        .joins(:attempt_report)
+        .includes(:attempt_report, :diagnostic_form)
+        .order("attempt_reports.score_percentage DESC NULLS LAST")
+        .first
+
+      # 역량별 정확도 (최고 점수 시도 기반)
+      @literacy_achievements = if @best_attempt
+        calculate_literacy_achievements(@best_attempt)
       else
         []
       end
 
-      # 9개 하위 지표별 레이더 차트 데이터
-      @radar_data = if @latest_attempt
-        calculate_radar_data(@latest_attempt)
+      # 9개 하위 지표별 레이더 차트 데이터 (최고 점수 시도 기반)
+      @radar_data = if @best_attempt
+        calculate_radar_data(@best_attempt)
       else
         []
       end
