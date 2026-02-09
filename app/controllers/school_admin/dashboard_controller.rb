@@ -108,6 +108,31 @@ class SchoolAdmin::DashboardController < ApplicationController
     redirect_to school_admin_diagnostics_path
   end
 
+  def revoke_assignment
+    assignment = DiagnosticAssignment.where(student: school_students).find(params[:id])
+
+    unless assignment.status.in?(%w[assigned in_progress])
+      flash[:alert] = "완료되었거나 이미 취소된 배정은 회수할 수 없습니다."
+      return redirect_to school_admin_diagnostics_path
+    end
+
+    student_name = assignment.student&.name || "학생"
+    form_name = assignment.diagnostic_form.name
+
+    # 진행 중인 StudentAttempt가 있으면 함께 삭제
+    if assignment.student_id.present?
+      StudentAttempt.where(
+        student_id: assignment.student_id,
+        diagnostic_form_id: assignment.diagnostic_form_id,
+        status: "in_progress"
+      ).destroy_all
+    end
+
+    assignment.cancel!
+    flash[:notice] = "#{student_name}의 '#{form_name}' 배정이 회수되었습니다."
+    redirect_to school_admin_diagnostics_path
+  end
+
   def reports
     @current_page = "school_reports"
     student_ids = school_students.pluck(:id)

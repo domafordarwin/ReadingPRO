@@ -89,11 +89,12 @@
     <table class="portal-table">
       <thead>
         <tr>
-          <th>학생 ID</th>
+          <th>학생</th>
           <th>진단지</th>
           <th>배정일</th>
           <th>마감일</th>
           <th>상태</th>
+          <th>관리</th>
         </tr>
       </thead>
       <tbody>
@@ -104,15 +105,33 @@
             <td><%= assignment.assigned_at.strftime("%Y-%m-%d") %></td>
             <td><%= assignment.due_date&.strftime("%Y-%m-%d") || "-" %></td>
             <td>
-              <% color = case assignment.status
+              <% status_style = case assignment.status
                          when "assigned" then "background: #dbeafe; color: #1e40af;"
+                         when "in_progress" then "background: #fef3c7; color: #92400e;"
                          when "completed" then "background: #d1fae5; color: #065f46;"
                          when "cancelled" then "background: #f1f5f9; color: #64748b;"
                          else "background: #f1f5f9; color: #64748b;"
                          end %>
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; <%= color %>">
-                <%= { "assigned" => "배정됨", "completed" => "완료", "cancelled" => "취소" }[assignment.status] || assignment.status %>
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; <%= status_style %>">
+                <%= { "assigned" => "배정됨", "in_progress" => "진행중", "completed" => "완료", "cancelled" => "회수됨" }[assignment.status] || assignment.status %>
               </span>
+            </td>
+            <td>
+              <% if assignment.status == "assigned" %>
+                <%= button_to "회수",
+                    school_admin_revoke_assignment_path(assignment),
+                    method: :delete,
+                    data: { turbo_confirm: "#{assignment.student&.name}의 '#{assignment.diagnostic_form.name}' 배정을 회수하시겠습니까?" },
+                    style: "padding: 4px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer;" %>
+              <% elsif assignment.status == "in_progress" %>
+                <%= button_to "회수",
+                    school_admin_revoke_assignment_path(assignment),
+                    method: :delete,
+                    data: { turbo_confirm: "#{assignment.student&.name}이(가) 진단을 진행 중입니다. 회수하면 진행 중인 응시가 삭제됩니다. 계속하시겠습니까?" },
+                    style: "padding: 4px 10px; background: #fef3c7; color: #92400e; border: none; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer;" %>
+              <% else %>
+                <span style="color: #94a3b8; font-size: 12px;">-</span>
+              <% end %>
             </td>
           </tr>
         <% end %>

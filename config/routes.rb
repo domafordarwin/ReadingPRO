@@ -124,6 +124,7 @@ Rails.application.routes.draw do
     get "diagnostics", to: "dashboard#diagnostics"
     post "diagnostics/assign_student", to: "dashboard#assign_to_student", as: "assign_to_student"
     post "diagnostics/bulk_assign", to: "dashboard#bulk_assign_to_students", as: "bulk_assign_to_students"
+    delete "assignments/:id/revoke", to: "dashboard#revoke_assignment", as: "revoke_assignment"
     get "reports", to: "dashboard#reports"
     get "reports/:student_id/:attempt_id", to: "dashboard#show_report", as: "show_report"
     get "report_template", to: "dashboard#report_template"
