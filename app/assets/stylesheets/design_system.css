@@ -74,17 +74,23 @@
   --rp-space-16: 64px;     /* 64px - Large page margins */
   --rp-space-20: 80px;     /* 80px - Maximum spacing */
 
-  /* Typography */
+  /* Typography - Font Family & Sizes */
   --rp-font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --rp-font-size-xs: 12px;
-  --rp-font-size-sm: 13px;
-  --rp-font-size-base: 14px;
-  --rp-font-size-md: 15px;
-  --rp-font-size-lg: 18px;
-  --rp-font-size-xl: 20px;
-  --rp-font-size-2xl: 24px;
-  --rp-font-size-3xl: 28px;
-  --rp-font-size-4xl: 32px;
+  --rp-font-size-xs: 12px;       /* 12px - Small text, badges */
+  --rp-font-size-sm: 13px;       /* 13px - Body text, labels */
+  --rp-font-size-base: 14px;     /* 14px - Default body */
+  --rp-font-size-md: 15px;       /* 15px - Emphasized text */
+  --rp-font-size-lg: 18px;       /* 18px - Subheadings */
+  --rp-font-size-xl: 20px;       /* 20px - Headings */
+  --rp-font-size-2xl: 24px;      /* 24px - Large headings */
+  --rp-font-size-3xl: 28px;      /* 28px - Section titles */
+  --rp-font-size-4xl: 32px;      /* 32px - Hero text */
+
+  /* Typography - Font Weights */
+  --rp-font-weight-normal: 400;  /* Normal text */
+  --rp-font-weight-medium: 500;  /* Medium emphasis */
+  --rp-font-weight-semibold: 600; /* Semibold - headings, buttons */
+  --rp-font-weight-bold: 700;    /* Bold - strong emphasis */
 
   /* Border Radius */
   --rp-radius-sm: 6px;
@@ -179,7 +185,7 @@
 
 .rp-header__title {
   font-size: var(--rp-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0;
 }
@@ -225,13 +231,13 @@
 
 .rp-logo__text {
   font-size: var(--rp-font-size-lg);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   letter-spacing: -0.02em;
   color: #2563eb;
 }
 
 .rp-logo__subtitle {
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: #334155;
   text-align: center;
   width: 100%;
@@ -249,7 +255,7 @@
   color: var(--rp-primary);
   border-radius: var(--rp-radius-full);
   font-size: var(--rp-font-size-sm);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   cursor: pointer;
   transition: background var(--rp-transition-fast);
   border: none;
@@ -313,7 +319,7 @@
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-md);
   font-size: var(--rp-font-size-sm);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-body);
   cursor: pointer;
   transition: all var(--rp-transition-fast);
@@ -362,7 +368,7 @@
 
 .rp-nav-group__label {
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -414,7 +420,7 @@
   background: var(--rp-danger);
   color: white;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   padding: 2px var(--rp-space-2);
   border-radius: var(--rp-radius-full);
 }
@@ -487,7 +493,7 @@
 .rp-nav-subitem--active {
   background: var(--rp-primary);
   color: white;
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 .rp-nav-subitem--active:hover {
@@ -519,7 +525,7 @@
 
 .rp-page-header__title {
   font-size: var(--rp-font-size-3xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-2);
   letter-spacing: -0.02em;
@@ -566,7 +572,7 @@
 
 .rp-card__title {
   font-size: var(--rp-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0;
 }
@@ -649,7 +655,7 @@
 
 .rp-stat__value {
   font-size: var(--rp-font-size-2xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
 }
 
@@ -673,7 +679,7 @@
   border-radius: var(--rp-radius-md);
   font-family: var(--rp-font-family);
   font-size: var(--rp-font-size-sm);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   text-decoration: none;
   cursor: pointer;
   transition: all var(--rp-transition-fast);
@@ -763,7 +769,7 @@
   padding: 3px var(--rp-space-2);
   border-radius: var(--rp-radius-full);
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .rp-badge--default {
@@ -833,7 +839,7 @@
 }
 
 .rp-table th {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-muted);
   background: var(--rp-bg-subtle);
 }
@@ -852,7 +858,7 @@
 .rp-label {
   display: block;
   font-size: var(--rp-font-size-sm);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-title);
   margin-bottom: var(--rp-space-2);
 }
@@ -936,7 +942,7 @@
 
 .rp-ai-coach__title {
   font-size: var(--rp-font-size-md);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-primary);
 }
 
@@ -970,7 +976,7 @@
 
 .rp-empty-state__title {
   font-size: var(--rp-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-2);
 }
@@ -1043,13 +1049,13 @@
 
 .rp-permission-matrix th {
   background: var(--rp-bg-subtle);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   font-size: var(--rp-font-size-sm);
 }
 
 .rp-permission-matrix td:first-child {
   text-align: left;
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 .rp-permission-check {
@@ -1282,8 +1288,8 @@
   border: none;
   border-bottom: 3px solid transparent;
   color: var(--rp-text-muted);
-  font-weight: 500;
-  font-size: 14px;
+  font-weight: var(--rp-font-weight-medium);
+  font-size: var(--rp-font-size-base);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -1297,7 +1303,7 @@
 .rp-tab--active {
   color: var(--rp-primary);
   border-bottom-color: var(--rp-primary);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 /* Frame sections */
@@ -1379,14 +1385,14 @@
   background: var(--rp-primary-soft);
   color: var(--rp-primary);
   border-radius: 50%;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: var(--rp-font-weight-bold);
+  font-size: var(--rp-font-size-base);
   flex-shrink: 0;
 }
 
 .rp-choice-text {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   color: var(--rp-text-body);
   line-height: 1.5;
 }
@@ -1412,14 +1418,14 @@
 
 .rp-input--score {
   text-align: right;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: var(--rp-font-weight-semibold);
+  font-size: var(--rp-font-size-base);
 }
 
 .rp-score-unit {
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-muted);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 /* Rubric Builder - Modular Card Design */
@@ -1452,8 +1458,8 @@
 
 .rp-criterion-name {
   flex: 1;
-  font-weight: 600 !important;
-  font-size: 14px !important;
+  font-weight: var(--rp-font-weight-semibold) !important;
+  font-size: var(--rp-font-size-base) !important;
   line-height: 1.5;
 }
 
@@ -1477,8 +1483,8 @@
 }
 
 .rp-level-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-primary);
   text-align: center;
   text-transform: uppercase;
@@ -1489,7 +1495,7 @@
 .rp-textarea--sm {
   min-height: 60px;
   resize: vertical;
-  font-size: 12px !important;
+  font-size: var(--rp-font-size-xs) !important;
   line-height: 1.4 !important;
 }
 
@@ -1504,7 +1510,7 @@
   display: flex;
   align-items: center;
   gap: var(--rp-space-3);
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   color: var(--rp-text-body);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1542,8 +1548,8 @@
 }
 
 .rp-info-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1551,9 +1557,9 @@
 }
 
 .rp-info-value {
-  font-size: 15px;
+  font-size: var(--rp-font-size-md);
   color: var(--rp-text-title);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   line-height: 1.5;
 }
 
@@ -1561,7 +1567,7 @@
   color: var(--rp-primary);
   text-decoration: none;
   transition: all 0.2s ease;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .rp-info-value a:hover {
@@ -1586,7 +1592,7 @@
 
 .rp-stimulus-text,
 .rp-prompt-text {
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   line-height: 1.7;
   color: var(--rp-text-body);
   white-space: pre-wrap;
@@ -1596,8 +1602,8 @@
 
 .rp-stimulus-section .rp-label,
 .rp-prompt-section .rp-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0;
 }
@@ -1622,8 +1628,8 @@
 }
 
 .rp-ai-suggestion__title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--rp-font-size-base);
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-3) 0;
   line-height: 1.5;
@@ -1633,7 +1639,7 @@
   list-style: disc;
   padding-left: var(--rp-space-6);
   margin: var(--rp-space-3) 0 0 0;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   line-height: 1.7;
 }
@@ -1655,7 +1661,7 @@
   padding: var(--rp-space-4);
   border-radius: var(--rp-radius-md);
   margin: var(--rp-space-4) 0;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .rp-score-table > div {
@@ -1674,14 +1680,14 @@
 }
 
 .rp-score-table .rp-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-muted);
   margin: 0;
 }
 
 .rp-score-table strong {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-primary);
 }
 
@@ -1698,8 +1704,8 @@
   background: var(--rp-primary-soft);
   color: var(--rp-primary);
   border-radius: var(--rp-radius-md);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
   width: fit-content;
   line-height: 1.4;
 }
@@ -1724,8 +1730,8 @@
 }
 
 .rp-summary-item .rp-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-muted);
   margin: 0;
   text-transform: uppercase;
@@ -1733,8 +1739,8 @@
 }
 
 .rp-summary-item .rp-value {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--rp-font-size-base);
+  font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
 }
 
@@ -1749,7 +1755,7 @@
 
 .rp-card__footer .rp-btn {
   margin: 0;
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 /* Modal - Clear Visual Hierarchy */
@@ -1779,15 +1785,15 @@
 }
 
 .rp-modal__card h3 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-3) 0;
   line-height: 1.5;
 }
 
 .rp-modal__card p {
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   color: var(--rp-text-body);
   margin: 0 0 var(--rp-space-7) 0;
   line-height: 1.6;
@@ -1802,7 +1808,7 @@
 .rp-modal__actions .rp-btn {
   margin: 0;
   width: 100%;
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 /* Responsive Design */
@@ -1827,7 +1833,7 @@
 
   .rp-tab {
     padding: var(--rp-space-2) var(--rp-space-3);
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
   }
 
   .rp-levels-grid {
@@ -1847,7 +1853,7 @@
   .rp-choice-label {
     width: 28px;
     height: 28px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
   }
 
   .rp-info-grid {
@@ -1870,7 +1876,7 @@
 
 .admin-title {
   font-size: var(--rp-font-size-3xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-2);
 }
@@ -1893,7 +1899,7 @@
 
 .admin-section h2 {
   font-size: var(--rp-font-size-xl);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-4);
 }
@@ -1922,7 +1928,7 @@
 
 .admin-stat-label {
   font-size: var(--rp-font-size-sm);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1931,7 +1937,7 @@
 
 .admin-stat-value {
   font-size: var(--rp-font-size-2xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
   margin-bottom: var(--rp-space-1);
   padding: var(--rp-space-2);
@@ -1975,7 +1981,7 @@
 
 .admin-card h2 {
   font-size: var(--rp-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-4);
 }
@@ -1987,7 +1993,7 @@
   color: white;
   border: none;
   border-radius: var(--rp-radius-md);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   cursor: pointer;
   transition: all var(--rp-transition-fast);
   font-family: var(--rp-font-family);
@@ -2037,7 +2043,7 @@
 
 .admin-trend-card h3 {
   font-size: var(--rp-font-size-base);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-3);
 }
@@ -2059,12 +2065,12 @@
 }
 
 .admin-trend-time {
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   color: var(--rp-text-muted);
 }
 
 .admin-trend-value {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
 }
 
@@ -2262,7 +2268,7 @@
   color: var(--rp-danger);
   font-size: var(--rp-font-size-sm);
   margin-top: var(--rp-space-2);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 /* Success state */
@@ -2289,7 +2295,7 @@
   color: var(--rp-success);
   font-size: var(--rp-font-size-sm);
   margin-top: var(--rp-space-2);
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
 }
 
 /* Form hint text */
@@ -2373,7 +2379,7 @@
   border: none;
   cursor: pointer;
   color: var(--rp-text-muted);
-  font-size: 24px;
+  font-size: var(--rp-font-size-2xl);
   width: 32px;
   height: 32px;
   display: flex;
@@ -2583,7 +2589,7 @@
 }
 
 .rp-toast__title {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   font-size: var(--rp-font-size-base);
 }
@@ -2599,7 +2605,7 @@
   border: none;
   cursor: pointer;
   color: var(--rp-text-muted);
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
   width: 24px;
   height: 24px;
   display: flex;
@@ -2748,8 +2754,8 @@ html {
 @media (max-width: 640px) {
   /* Assessment Timer - Larger font for mobile */
   .timer {
-    font-size: 28px !important;
-    font-weight: 700;
+    font-size: var(--rp-font-size-3xl) !important;
+    font-weight: var(--rp-font-weight-bold);
     min-width: 90px;
   }
 
@@ -2769,7 +2775,7 @@ html {
 
   /* Results Table - Horizontal scroll on mobile */
   .rp-table {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     display: block;
     width: 100%;
     overflow-x: auto;
@@ -2797,7 +2803,7 @@ html {
     content: attr(data-label);
     position: absolute;
     left: 0;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     width: 100px;
   }
 
@@ -2823,7 +2829,7 @@ html {
   .rp-btn {
     width: 100%;
     padding: var(--rp-space-3) var(--rp-space-4);
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     min-height: 44px;
   }
 
@@ -2845,7 +2851,7 @@ html {
     flex: 1;
     min-width: 80px;
     padding: var(--rp-space-2) var(--rp-space-3);
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
   }
 
   /* Assessment Header - Vertical layout */
@@ -2866,7 +2872,7 @@ html {
   }
 
   .rp-label {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
   }
 
   .rp-input,
@@ -2884,7 +2890,7 @@ html {
 
   .activity-time {
     text-align: right;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
   }
 
   /* Badge sizing */
