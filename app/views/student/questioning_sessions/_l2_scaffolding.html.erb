@@ -1,0 +1,943 @@
+<%#
+  L2 Scaffolding Partial - 초등 고학년 (elementary_high)
+  Local variables:
+    - current_stage (Integer 1-3)
+    - module_obj (QuestioningModule)
+    - stimulus (ReadingStimulus)
+%>
+
+<style>
+  /* ====================================
+     L2 Scaffolding Widgets
+     ==================================== */
+
+  /* Writing Tips */
+  .q-l2-tips {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+    margin-bottom: var(--rp-space-5);
+  }
+
+  .q-l2-tip-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    line-height: 1.6;
+  }
+
+  .q-l2-tip-card__icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--rp-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-bold);
+    background: var(--rp-primary-soft);
+    color: var(--rp-primary);
+  }
+
+  /* Structure Guide (연속 발문) */
+  .q-l2-structure-guide {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-5);
+    margin-bottom: var(--rp-space-5);
+  }
+
+  .q-l2-structure-guide__title {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin: 0 0 var(--rp-space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .q-l2-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .q-l2-tree__root {
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: var(--rp-primary);
+    color: #fff;
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    margin-bottom: var(--rp-space-2);
+  }
+
+  .q-l2-tree__branches {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+    padding-left: var(--rp-space-5);
+    border-left: 2px solid var(--rp-primary);
+    margin-left: var(--rp-space-4);
+  }
+
+  .q-l2-tree__branch {
+    position: relative;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    background: var(--rp-bg-subtle);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    line-height: 1.5;
+  }
+
+  .q-l2-tree__branch::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--rp-space-5) * -1);
+    top: 50%;
+    width: var(--rp-space-4);
+    height: 2px;
+    background: var(--rp-primary);
+  }
+
+  .q-l2-tree__branch-num {
+    font-weight: var(--rp-font-weight-bold);
+    color: var(--rp-primary);
+    margin-right: var(--rp-space-1);
+  }
+
+  /* Scene Evidence Helper (장면 근거 찾기) */
+  .q-l2-evidence {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-5);
+    margin-bottom: var(--rp-space-5);
+  }
+
+  .q-l2-evidence__title {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin: 0 0 var(--rp-space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .q-l2-evidence__fields {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--rp-space-3);
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .q-l2-evidence__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-1);
+  }
+
+  .q-l2-evidence__field label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .q-l2-evidence__field input {
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .q-l2-evidence__field input:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  .q-l2-evidence__preview {
+    padding: var(--rp-space-3);
+    background: var(--rp-bg-subtle);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-muted);
+    line-height: 1.6;
+    margin-bottom: var(--rp-space-3);
+    min-height: 40px;
+  }
+
+  /* Debate Helper (찬반 토론) */
+  .q-l2-debate {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-5);
+    margin-bottom: var(--rp-space-5);
+  }
+
+  .q-l2-debate__title {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin: 0 0 var(--rp-space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .q-l2-debate__tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: var(--rp-space-4);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    overflow: hidden;
+  }
+
+  .q-l2-debate__tab {
+    flex: 1;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: none;
+    background: var(--rp-bg-subtle);
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-medium);
+    color: var(--rp-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .q-l2-debate__tab--active {
+    background: var(--rp-primary);
+    color: #fff;
+    font-weight: var(--rp-font-weight-semibold);
+  }
+
+  .q-l2-debate__panel {
+    display: none;
+  }
+
+  .q-l2-debate__panel--active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+  }
+
+  .q-l2-debate__reason {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-2);
+  }
+
+  .q-l2-debate__reason-num {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--rp-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-bold);
+    margin-top: 6px;
+  }
+
+  .q-l2-debate__reason-num--pro {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  .q-l2-debate__reason-num--con {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .q-l2-debate__reason input {
+    flex: 1;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .q-l2-debate__reason input:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  .q-l2-debate__issue {
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .q-l2-debate__issue input {
+    width: 100%;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .q-l2-debate__issue input:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  /* Emotion Tracker (감정 변화 추적기) */
+  .q-l2-emotion {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-5);
+    margin-bottom: var(--rp-space-5);
+  }
+
+  .q-l2-emotion__title {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin: 0 0 var(--rp-space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .q-l2-emotion__flow {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+    margin-bottom: var(--rp-space-3);
+    flex-wrap: wrap;
+  }
+
+  .q-l2-emotion__select-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-1);
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .q-l2-emotion__select-group label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-muted);
+  }
+
+  .q-l2-emotion__select-group select {
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .q-l2-emotion__select-group select:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  .q-l2-emotion__arrow {
+    flex-shrink: 0;
+    color: var(--rp-text-muted);
+    margin-top: var(--rp-space-4);
+  }
+
+  .q-l2-emotion__reason {
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .q-l2-emotion__reason label {
+    display: block;
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-muted);
+    margin-bottom: var(--rp-space-1);
+  }
+
+  .q-l2-emotion__reason input {
+    width: 100%;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .q-l2-emotion__reason input:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  .q-l2-emotion__character {
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .q-l2-emotion__character label {
+    display: block;
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-muted);
+    margin-bottom: var(--rp-space-1);
+  }
+
+  .q-l2-emotion__character input {
+    width: 100%;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-title);
+    background: var(--rp-surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .q-l2-emotion__character input:focus {
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+
+  /* Shared button style for scaffolding widgets */
+  .q-l2-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    padding: var(--rp-space-2) var(--rp-space-4);
+    background: var(--rp-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-medium);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .q-l2-action-btn:hover {
+    opacity: 0.9;
+  }
+
+  .q-l2-action-btn--secondary {
+    background: var(--rp-bg-subtle);
+    color: var(--rp-primary);
+    border: 1px solid var(--rp-primary);
+  }
+
+  /* Section header */
+  .q-l2-section-header {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin: 0 0 var(--rp-space-4);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .q-l2-evidence__fields {
+      grid-template-columns: 1fr;
+    }
+
+    .q-l2-emotion__flow {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .q-l2-emotion__arrow {
+      transform: rotate(90deg);
+      align-self: center;
+      margin-top: 0;
+    }
+
+    .q-l2-tree__branches {
+      padding-left: var(--rp-space-3);
+      margin-left: var(--rp-space-2);
+    }
+  }
+</style>
+
+<!-- ========================================
+     Widget 1: Writing Tips (All stages)
+     ======================================== -->
+<div class="q-l2-tips" role="region" aria-label="발문 작성 팁">
+  <h3 class="q-l2-section-header">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M12 16v-4M12 8h.01"></path>
+    </svg>
+    발문 작성 팁
+  </h3>
+
+  <div class="q-l2-tip-card">
+    <div class="q-l2-tip-card__icon" aria-hidden="true">1</div>
+    <div>"어느 대목에서 그렇게 느꼈어?"처럼 <strong>장면 근거</strong>를 찾아보세요. 내 생각의 이유를 책 속에서 발견할 수 있습니다.</div>
+  </div>
+
+  <div class="q-l2-tip-card">
+    <div class="q-l2-tip-card__icon" aria-hidden="true">2</div>
+    <div>큰 질문을 <strong>작은 질문으로 쪼개어</strong> 보세요. 하나의 큰 물음을 1-1, 1-2, 1-3으로 나누면 생각이 더 또렷해집니다.</div>
+  </div>
+
+  <div class="q-l2-tip-card">
+    <div class="q-l2-tip-card__icon" aria-hidden="true">3</div>
+    <div><strong>찬성/반대 이유를 2가지씩</strong> 생각해 보세요. 서로 다른 입장을 비교하면 깊이 있는 발문을 만들 수 있어요.</div>
+  </div>
+</div>
+
+<!-- ========================================
+     Widget 2: Sequential Question Guide
+     (연속 발문 가이드 - All stages)
+     ======================================== -->
+<div class="q-l2-structure-guide" role="region" aria-label="연속 발문 가이드">
+  <h3 class="q-l2-structure-guide__title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+    </svg>
+    연속 발문 가이드 - 큰 질문 쪼개기
+  </h3>
+
+  <div class="q-l2-tree">
+    <div class="q-l2-tree__root">
+      큰 질문: "공감이 왜 중요할까?"
+    </div>
+    <div class="q-l2-tree__branches">
+      <div class="q-l2-tree__branch">
+        <span class="q-l2-tree__branch-num">1-1)</span> 책에서 공감이 필요한 장면은 어디였나요?
+      </div>
+      <div class="q-l2-tree__branch">
+        <span class="q-l2-tree__branch-num">1-2)</span> 그 장면에서 누가 어떤 마음이었나요?
+      </div>
+      <div class="q-l2-tree__branch">
+        <span class="q-l2-tree__branch-num">1-3)</span> 그때 '공감'이 실제로 도움이 되었나요?
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin: 0 0 var(--rp-space-3);">
+    이렇게 큰 질문을 작은 질문으로 나누면, 생각의 흐름을 따라가기 쉬워요.
+  </p>
+
+  <button type="button" class="q-l2-action-btn--secondary q-l2-action-btn" aria-label="나도 쪼개보기 - 연속 발문 프리픽스 자동 입력"
+          onclick="l2PrefixSequential();">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    나도 쪼개보기
+  </button>
+</div>
+
+<!-- ========================================
+     Widget 3: Scene Evidence Helper
+     (장면 근거 찾기 도우미 - All stages)
+     ======================================== -->
+<div class="q-l2-evidence" role="region" aria-label="장면 근거 찾기 도우미">
+  <h3 class="q-l2-evidence__title">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    장면 근거 찾기 도우미
+  </h3>
+
+  <div class="q-l2-evidence__fields">
+    <div class="q-l2-evidence__field">
+      <label for="l2-evidence-who">누가</label>
+      <input type="text" id="l2-evidence-who" placeholder="예: 완득이가" aria-label="누가" oninput="l2UpdateEvidencePreview();">
+    </div>
+    <div class="q-l2-evidence__field">
+      <label for="l2-evidence-what">무엇을</label>
+      <input type="text" id="l2-evidence-what" placeholder="예: 아버지를 떠난 것은" aria-label="무엇을" oninput="l2UpdateEvidencePreview();">
+    </div>
+    <div class="q-l2-evidence__field">
+      <label for="l2-evidence-why">왜</label>
+      <input type="text" id="l2-evidence-why" placeholder="예: 가족을 위해서" aria-label="왜" oninput="l2UpdateEvidencePreview();">
+    </div>
+  </div>
+
+  <div class="q-l2-evidence__preview" id="l2-evidence-preview" aria-live="polite">
+    아래 칸을 채우면 발문이 자동으로 만들어집니다.
+  </div>
+
+  <button type="button" class="q-l2-action-btn" aria-label="발문 만들기 - 장면 근거 기반"
+          onclick="l2ApplyEvidence();">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 11 12 14 22 4"></polyline>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+    </svg>
+    발문 만들기
+  </button>
+</div>
+
+<!-- ========================================
+     Widget 4: Emotion Tracker
+     (감정 변화 추적기 - Stage 2 only)
+     ======================================== -->
+<% if current_stage == 2 %>
+  <div class="q-l2-emotion" role="region" aria-label="감정 변화 추적기">
+    <h3 class="q-l2-emotion__title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+      </svg>
+      감정 변화 추적기
+    </h3>
+
+    <div class="q-l2-emotion__character">
+      <label for="l2-emotion-character">등장인물 이름</label>
+      <input type="text" id="l2-emotion-character" placeholder="예: 주인공, 완득이, 소녀" aria-label="등장인물 이름">
+    </div>
+
+    <div class="q-l2-emotion__flow">
+      <div class="q-l2-emotion__select-group">
+        <label for="l2-emotion-before">처음 감정</label>
+        <select id="l2-emotion-before" aria-label="처음 감정">
+          <option value="">-- 선택 --</option>
+          <option value="기쁨">기쁨</option>
+          <option value="슬픔">슬픔</option>
+          <option value="화남">화남</option>
+          <option value="두려움">두려움</option>
+          <option value="놀라움">놀라움</option>
+          <option value="부끄러움">부끄러움</option>
+          <option value="외로움">외로움</option>
+          <option value="설렘">설렘</option>
+          <option value="걱정">걱정</option>
+          <option value="후회">후회</option>
+          <option value="감사">감사</option>
+          <option value="질투">질투</option>
+          <option value="편안함">편안함</option>
+          <option value="답답함">답답함</option>
+        </select>
+      </div>
+
+      <div class="q-l2-emotion__arrow" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+
+      <div class="q-l2-emotion__select-group">
+        <label for="l2-emotion-after">나중 감정</label>
+        <select id="l2-emotion-after" aria-label="나중 감정">
+          <option value="">-- 선택 --</option>
+          <option value="기쁨">기쁨</option>
+          <option value="슬픔">슬픔</option>
+          <option value="화남">화남</option>
+          <option value="두려움">두려움</option>
+          <option value="놀라움">놀라움</option>
+          <option value="부끄러움">부끄러움</option>
+          <option value="외로움">외로움</option>
+          <option value="설렘">설렘</option>
+          <option value="걱정">걱정</option>
+          <option value="후회">후회</option>
+          <option value="감사">감사</option>
+          <option value="질투">질투</option>
+          <option value="편안함">편안함</option>
+          <option value="답답함">답답함</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="q-l2-emotion__reason">
+      <label for="l2-emotion-why">왜 바뀌었을까?</label>
+      <input type="text" id="l2-emotion-why" placeholder="예: 친구가 진심으로 사과했기 때문에" aria-label="감정이 바뀐 이유">
+    </div>
+
+    <button type="button" class="q-l2-action-btn" aria-label="감정 변화 발문 만들기"
+            onclick="l2ApplyEmotion();">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 11 12 14 22 4"></polyline>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+      발문 만들기
+    </button>
+  </div>
+<% end %>
+
+<!-- ========================================
+     Widget 5: Debate Structure Helper
+     (찬반 토론 구조 도우미 - Stage 3 only)
+     ======================================== -->
+<% if current_stage == 3 %>
+  <div class="q-l2-debate" role="region" aria-label="찬반 토론 구조 도우미">
+    <h3 class="q-l2-debate__title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      찬반 토론 구조 도우미
+    </h3>
+
+    <div class="q-l2-debate__issue">
+      <label for="l2-debate-issue" style="display: block; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); margin-bottom: var(--rp-space-1);">
+        토론 쟁점
+      </label>
+      <input type="text" id="l2-debate-issue" placeholder="예: 주인공의 거짓말은 옳았을까?" aria-label="토론 쟁점">
+    </div>
+
+    <div class="q-l2-debate__tabs" role="tablist" aria-label="찬성 반대 탭">
+      <button type="button" class="q-l2-debate__tab q-l2-debate__tab--active" role="tab"
+              id="l2-tab-pro" aria-selected="true" aria-controls="l2-panel-pro"
+              onclick="l2SwitchDebateTab('pro');">
+        찬성
+      </button>
+      <button type="button" class="q-l2-debate__tab" role="tab"
+              id="l2-tab-con" aria-selected="false" aria-controls="l2-panel-con"
+              onclick="l2SwitchDebateTab('con');">
+        반대
+      </button>
+    </div>
+
+    <!-- Pro panel -->
+    <div class="q-l2-debate__panel q-l2-debate__panel--active" id="l2-panel-pro" role="tabpanel" aria-labelledby="l2-tab-pro">
+      <div class="q-l2-debate__reason">
+        <div class="q-l2-debate__reason-num q-l2-debate__reason-num--pro" aria-hidden="true">1</div>
+        <input type="text" id="l2-debate-pro1" placeholder="찬성하는 첫 번째 이유" aria-label="찬성 이유 1">
+      </div>
+      <div class="q-l2-debate__reason">
+        <div class="q-l2-debate__reason-num q-l2-debate__reason-num--pro" aria-hidden="true">2</div>
+        <input type="text" id="l2-debate-pro2" placeholder="찬성하는 두 번째 이유" aria-label="찬성 이유 2">
+      </div>
+    </div>
+
+    <!-- Con panel -->
+    <div class="q-l2-debate__panel" id="l2-panel-con" role="tabpanel" aria-labelledby="l2-tab-con">
+      <div class="q-l2-debate__reason">
+        <div class="q-l2-debate__reason-num q-l2-debate__reason-num--con" aria-hidden="true">1</div>
+        <input type="text" id="l2-debate-con1" placeholder="반대하는 첫 번째 이유" aria-label="반대 이유 1">
+      </div>
+      <div class="q-l2-debate__reason">
+        <div class="q-l2-debate__reason-num q-l2-debate__reason-num--con" aria-hidden="true">2</div>
+        <input type="text" id="l2-debate-con2" placeholder="반대하는 두 번째 이유" aria-label="반대 이유 2">
+      </div>
+    </div>
+
+    <div style="margin-top: var(--rp-space-3);">
+      <button type="button" class="q-l2-action-btn" aria-label="찬반 토론 발문 만들기"
+              onclick="l2ApplyDebate();">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        발문으로 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ========================================
+     JavaScript - L2 Scaffolding Functions
+     ======================================== -->
+<script>
+  // Helper: set textarea value and update char counter
+  function l2SetTextarea(text) {
+    var ta = document.getElementById('question-text-input');
+    if (!ta) return;
+    ta.value = text;
+    ta.focus();
+    var counter = document.getElementById('char-count');
+    if (counter) counter.textContent = text.length;
+    // Mark as scaffolding-used
+    var field = document.getElementById('scaffolding-used-field');
+    if (field) field.value = 'true';
+  }
+
+  // Widget 2: Sequential question prefix
+  function l2PrefixSequential() {
+    var ta = document.getElementById('question-text-input');
+    if (!ta) return;
+    var current = ta.value.trim();
+    if (current === '') {
+      l2SetTextarea('1-1) ');
+    } else {
+      // Find the last sequential number and increment
+      var match = current.match(/(\d+)-(\d+)\)/g);
+      if (match) {
+        var last = match[match.length - 1];
+        var parts = last.match(/(\d+)-(\d+)/);
+        if (parts) {
+          var major = parseInt(parts[1], 10);
+          var minor = parseInt(parts[2], 10) + 1;
+          l2SetTextarea(current + '\n' + major + '-' + minor + ') ');
+        }
+      } else {
+        l2SetTextarea('1-1) ' + current);
+      }
+    }
+    ta.focus();
+  }
+
+  // Widget 3: Evidence preview update
+  function l2UpdateEvidencePreview() {
+    var who = document.getElementById('l2-evidence-who').value.trim();
+    var what = document.getElementById('l2-evidence-what').value.trim();
+    var why = document.getElementById('l2-evidence-why').value.trim();
+    var preview = document.getElementById('l2-evidence-preview');
+    if (!preview) return;
+
+    if (!who && !what && !why) {
+      preview.textContent = '아래 칸을 채우면 발문이 자동으로 만들어집니다.';
+      preview.style.color = 'var(--rp-text-muted)';
+      return;
+    }
+
+    var parts = [];
+    if (who) parts.push('[' + who + ']');
+    if (what) parts.push('[' + what + ']');
+    if (why) parts.push('[' + why + ']');
+
+    var text = parts.join(' ') + ' - 어느 대목에서 그렇게 생각했나요?';
+    preview.textContent = text;
+    preview.style.color = 'var(--rp-text-title)';
+  }
+
+  // Widget 3: Apply evidence to textarea
+  function l2ApplyEvidence() {
+    var who = document.getElementById('l2-evidence-who').value.trim();
+    var what = document.getElementById('l2-evidence-what').value.trim();
+    var why = document.getElementById('l2-evidence-why').value.trim();
+
+    if (!who && !what && !why) return;
+
+    var sentence = '';
+    if (who && what && why) {
+      sentence = who + ' ' + what + ' 이유가 ' + why + '이라면, 어느 대목에서 그렇게 생각했나요?';
+    } else if (who && what) {
+      sentence = who + ' ' + what + ' 장면은 어디인가요? 그 이유는 무엇일까요?';
+    } else if (who) {
+      sentence = who + '에 대해 어떤 장면이 가장 기억에 남나요? 왜 그런가요?';
+    } else {
+      var parts = [];
+      if (what) parts.push(what);
+      if (why) parts.push(why);
+      sentence = parts.join(' ') + ' - 이에 대해 어떻게 생각하나요?';
+    }
+
+    l2SetTextarea(sentence);
+  }
+
+  // Widget 4: Emotion tracker
+  function l2ApplyEmotion() {
+    var character = document.getElementById('l2-emotion-character').value.trim();
+    var before = document.getElementById('l2-emotion-before').value;
+    var after = document.getElementById('l2-emotion-after').value;
+    var why = document.getElementById('l2-emotion-why').value.trim();
+
+    if (!before && !after) return;
+
+    var name = character || '등장인물';
+    var sentence = '';
+
+    if (before && after && why) {
+      sentence = name + '의 마음이 처음에는 \'' + before + '\'이었다가 나중에는 \'' + after + '\'(으)로 바뀌었어요. ' + why + ' 때문일까요? 여러분은 어떻게 생각하나요?';
+    } else if (before && after) {
+      sentence = name + '의 마음이 \'' + before + '\'에서 \'' + after + '\'(으)로 바뀐 까닭은 무엇일까요?';
+    } else if (before) {
+      sentence = name + '이(가) \'' + before + '\'을(를) 느낀 장면은 어디인가요? 왜 그런 감정이 들었을까요?';
+    } else {
+      sentence = name + '이(가) 나중에 \'' + after + '\'을(를) 느끼게 된 이유는 무엇일까요?';
+    }
+
+    l2SetTextarea(sentence);
+  }
+
+  // Widget 5: Debate tab switching
+  function l2SwitchDebateTab(side) {
+    var proTab = document.getElementById('l2-tab-pro');
+    var conTab = document.getElementById('l2-tab-con');
+    var proPanel = document.getElementById('l2-panel-pro');
+    var conPanel = document.getElementById('l2-panel-con');
+
+    if (!proTab || !conTab || !proPanel || !conPanel) return;
+
+    if (side === 'pro') {
+      proTab.classList.add('q-l2-debate__tab--active');
+      proTab.setAttribute('aria-selected', 'true');
+      conTab.classList.remove('q-l2-debate__tab--active');
+      conTab.setAttribute('aria-selected', 'false');
+      proPanel.classList.add('q-l2-debate__panel--active');
+      conPanel.classList.remove('q-l2-debate__panel--active');
+    } else {
+      conTab.classList.add('q-l2-debate__tab--active');
+      conTab.setAttribute('aria-selected', 'true');
+      proTab.classList.remove('q-l2-debate__tab--active');
+      proTab.setAttribute('aria-selected', 'false');
+      conPanel.classList.add('q-l2-debate__panel--active');
+      proPanel.classList.remove('q-l2-debate__panel--active');
+    }
+  }
+
+  // Widget 5: Apply debate to textarea
+  function l2ApplyDebate() {
+    var issue = document.getElementById('l2-debate-issue').value.trim();
+    var pro1 = document.getElementById('l2-debate-pro1').value.trim();
+    var pro2 = document.getElementById('l2-debate-pro2').value.trim();
+    var con1 = document.getElementById('l2-debate-con1').value.trim();
+    var con2 = document.getElementById('l2-debate-con2').value.trim();
+
+    if (!issue && !pro1 && !con1) return;
+
+    var topic = issue || '이 문제';
+    var parts = [];
+
+    // Build pro reasons
+    var pros = [];
+    if (pro1) pros.push(pro1);
+    if (pro2) pros.push(pro2);
+
+    // Build con reasons
+    var cons = [];
+    if (con1) cons.push(con1);
+    if (con2) cons.push(con2);
+
+    var sentence = '"' + topic + '"에 대해 ';
+
+    if (pros.length > 0 && cons.length > 0) {
+      sentence += '찬성하는 이유는 ' + pros.join(', ') + '이고, ';
+      sentence += '반대하는 이유는 ' + cons.join(', ') + '입니다. ';
+      sentence += '여러분은 어느 쪽에 더 공감하나요? 그 이유는 무엇인가요?';
+    } else if (pros.length > 0) {
+      sentence += '찬성한다면 그 이유는 ' + pros.join(', ') + '입니다. 반대 의견은 어떤 것이 있을까요?';
+    } else if (cons.length > 0) {
+      sentence += '반대한다면 그 이유는 ' + cons.join(', ') + '입니다. 찬성 의견은 어떤 것이 있을까요?';
+    } else {
+      sentence += '여러분의 생각은 어떤가요? 찬성과 반대 이유를 각각 생각해 보세요.';
+    }
+
+    l2SetTextarea(sentence);
+  }
+</script>

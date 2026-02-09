@@ -1,0 +1,899 @@
+<%# L3 Middle School Scaffolding Partial
+     로컬 변수: current_stage (1-3), module_obj (QuestioningModule), stimulus (ReadingStimulus)
+%>
+
+<style>
+  /* ================================================
+     L3 Scaffolding Widget Styles (Middle School)
+     ================================================ */
+
+  /* Writing Tips */
+  .q-l3-tips {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fcd34d;
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-tips__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #92400e;
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-tips__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-tips__item {
+    font-size: var(--rp-font-size-sm);
+    color: #78350f;
+    padding-left: var(--rp-space-5);
+    position: relative;
+    line-height: 1.6;
+  }
+  .q-l3-tips__item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 16px;
+    height: 16px;
+    background: #f59e0b;
+    border-radius: 50%;
+    opacity: 0.3;
+  }
+
+  /* KWL Chart */
+  .q-l3-kwl {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-kwl__header {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: var(--rp-bg-subtle);
+    border-bottom: 1px solid var(--rp-border);
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+  }
+  .q-l3-kwl__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .q-l3-kwl__col {
+    padding: var(--rp-space-3);
+    border-right: 1px solid var(--rp-border);
+  }
+  .q-l3-kwl__col:last-child {
+    border-right: none;
+  }
+  .q-l3-kwl__col-header {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-bold);
+    text-align: center;
+    padding: var(--rp-space-2);
+    border-radius: var(--rp-radius-sm);
+    margin-bottom: var(--rp-space-2);
+  }
+  .q-l3-kwl__col-header--k {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .q-l3-kwl__col-header--w {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .q-l3-kwl__col-header--l {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .q-l3-kwl__col-desc {
+    font-size: 11px;
+    color: var(--rp-text-muted);
+    text-align: center;
+    margin-bottom: var(--rp-space-2);
+  }
+  .q-l3-kwl__textarea {
+    width: 100%;
+    min-height: 72px;
+    padding: var(--rp-space-2);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-sm);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    resize: vertical;
+    color: var(--rp-text-body);
+  }
+  .q-l3-kwl__textarea:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+  .q-l3-kwl__action {
+    padding: var(--rp-space-3) var(--rp-space-4);
+    border-top: 1px solid var(--rp-border);
+    text-align: right;
+  }
+
+  /* Fact/Opinion/Question Classifier */
+  .q-l3-classifier {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-classifier__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-classifier__categories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--rp-space-3);
+  }
+  .q-l3-classifier__category {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-classifier__cat-label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    padding: var(--rp-space-1) var(--rp-space-2);
+    border-radius: var(--rp-radius-sm);
+    text-align: center;
+  }
+  .q-l3-classifier__cat-label--fact {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .q-l3-classifier__cat-label--opinion {
+    background: #fce7f3;
+    color: #9d174d;
+  }
+  .q-l3-classifier__cat-label--question {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .q-l3-classifier__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rp-space-1);
+    min-height: 32px;
+    padding: var(--rp-space-2);
+    border: 1px dashed var(--rp-border);
+    border-radius: var(--rp-radius-sm);
+    align-items: flex-start;
+    align-content: flex-start;
+  }
+  .q-l3-classifier__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px var(--rp-space-2);
+    background: var(--rp-bg-subtle);
+    border-radius: var(--rp-radius-full);
+    font-size: var(--rp-font-size-xs);
+    color: var(--rp-text-body);
+  }
+  .q-l3-classifier__tag-remove {
+    cursor: pointer;
+    color: var(--rp-text-muted);
+    font-size: 14px;
+    line-height: 1;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+  .q-l3-classifier__tag-remove:hover {
+    color: var(--rp-danger);
+  }
+  .q-l3-classifier__input {
+    width: 100%;
+    padding: var(--rp-space-2);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-sm);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-xs);
+    color: var(--rp-text-body);
+  }
+  .q-l3-classifier__input:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+  }
+  .q-l3-classifier__input::placeholder {
+    color: var(--rp-text-muted);
+  }
+  .q-l3-classifier__action {
+    margin-top: var(--rp-space-3);
+    text-align: right;
+  }
+
+  /* Conditional Reasoning Helper */
+  .q-l3-conditional {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-conditional__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-conditional__row {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    flex-wrap: wrap;
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-body);
+    line-height: 2.4;
+    margin-bottom: var(--rp-space-2);
+  }
+  .q-l3-conditional__keyword {
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-info-dark);
+    white-space: nowrap;
+  }
+  .q-l3-conditional__input {
+    flex: 1;
+    min-width: 120px;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-body);
+  }
+  .q-l3-conditional__input:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+  .q-l3-conditional__action {
+    margin-top: var(--rp-space-3);
+    text-align: right;
+  }
+
+  /* Perspective Panel */
+  .q-l3-perspective {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-perspective__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-perspective__select {
+    width: 100%;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-body);
+    background: var(--rp-surface);
+    margin-bottom: var(--rp-space-3);
+  }
+  .q-l3-perspective__select:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+  }
+  .q-l3-perspective__textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    resize: vertical;
+    color: var(--rp-text-body);
+  }
+  .q-l3-perspective__textarea:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+  .q-l3-perspective__action {
+    margin-top: var(--rp-space-3);
+    text-align: right;
+  }
+
+  /* Policy Proposal Helper */
+  .q-l3-policy {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-policy__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-policy__levels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+  }
+  .q-l3-policy__level {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+  }
+  .q-l3-policy__level-badge {
+    flex-shrink: 0;
+    width: 80px;
+    padding: var(--rp-space-1) var(--rp-space-2);
+    border-radius: var(--rp-radius-sm);
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    text-align: center;
+  }
+  .q-l3-policy__level-badge--personal {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .q-l3-policy__level-badge--community {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .q-l3-policy__level-badge--government {
+    background: #fce7f3;
+    color: #9d174d;
+  }
+  .q-l3-policy__input {
+    flex: 1;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-body);
+  }
+  .q-l3-policy__input:focus {
+    outline: none;
+    border-color: var(--rp-primary);
+    box-shadow: 0 0 0 2px var(--rp-primary-soft);
+  }
+  .q-l3-policy__action {
+    margin-top: var(--rp-space-3);
+    text-align: right;
+  }
+
+  /* Evidence Checklist */
+  .q-l3-checklist {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-4);
+    margin-bottom: var(--rp-space-5);
+  }
+  .q-l3-checklist__title {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #166534;
+    margin-bottom: var(--rp-space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-checklist__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-checklist__item {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+  .q-l3-checklist__checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #16a34a;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .q-l3-checklist__label {
+    font-size: var(--rp-font-size-sm);
+    color: #15803d;
+    cursor: pointer;
+  }
+  .q-l3-checklist__success {
+    display: none;
+    margin-top: var(--rp-space-3);
+    padding: var(--rp-space-3);
+    background: #16a34a;
+    color: white;
+    border-radius: var(--rp-radius-md);
+    text-align: center;
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    animation: q-l3-fade-in 0.3s ease;
+  }
+
+  @keyframes q-l3-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Shared small button style */
+  .q-l3-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rp-space-1);
+    padding: var(--rp-space-2) var(--rp-space-3);
+    border: 1px solid var(--rp-primary);
+    border-radius: var(--rp-radius-md);
+    background: var(--rp-primary-soft);
+    color: var(--rp-primary);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .q-l3-btn:hover {
+    background: var(--rp-primary);
+    color: white;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .q-l3-kwl__grid {
+      grid-template-columns: 1fr;
+    }
+    .q-l3-kwl__col {
+      border-right: none;
+      border-bottom: 1px solid var(--rp-border);
+    }
+    .q-l3-kwl__col:last-child {
+      border-bottom: none;
+    }
+    .q-l3-classifier__categories {
+      grid-template-columns: 1fr;
+    }
+    .q-l3-conditional__row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .q-l3-policy__level {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .q-l3-policy__level-badge {
+      width: auto;
+    }
+  }
+</style>
+
+<!-- ===================================== -->
+<!-- Writing Tips (all stages)             -->
+<!-- ===================================== -->
+<div class="q-l3-tips" role="complementary" aria-label="발문 작성 팁">
+  <div class="q-l3-tips__title">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    발문 작성 팁
+  </div>
+  <ul class="q-l3-tips__list">
+    <li class="q-l3-tips__item">'내 생각'에 반드시 '근거(텍스트/사례/경험)'를 붙이세요</li>
+    <li class="q-l3-tips__item">개념(편향/무력감 등)을 텍스트와 연결해 설명해 보세요</li>
+    <li class="q-l3-tips__item">개인 실천과 사회 제도를 함께 다뤄 보세요</li>
+  </ul>
+</div>
+
+<% if current_stage == 1 %>
+  <!-- ===================================== -->
+  <!-- KWL Chart (Stage 1)                   -->
+  <!-- ===================================== -->
+  <div class="q-l3-kwl q-l3-analysis-guide" role="region" aria-label="KWL 차트">
+    <div class="q-l3-kwl__header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="3" y1="9" x2="21" y2="9"></line>
+        <line x1="9" y1="21" x2="9" y2="9"></line>
+      </svg>
+      KWL 차트
+    </div>
+    <div class="q-l3-kwl__grid">
+      <div class="q-l3-kwl__col">
+        <div class="q-l3-kwl__col-header q-l3-kwl__col-header--k" title="이미 알고 있는 배경지식을 적어 보세요">K - 알고 있는 것</div>
+        <div class="q-l3-kwl__col-desc">이 주제에 대해 이미 아는 것</div>
+        <textarea class="q-l3-kwl__textarea" id="l3-kwl-k" rows="3" placeholder="이 주제에 대해 알고 있는 것을 적어 보세요..." aria-label="알고 있는 것"></textarea>
+      </div>
+      <div class="q-l3-kwl__col">
+        <div class="q-l3-kwl__col-header q-l3-kwl__col-header--w" title="궁금한 점이나 알고 싶은 것을 적어 보세요">W - 알고 싶은 것</div>
+        <div class="q-l3-kwl__col-desc">더 알고 싶거나 궁금한 것</div>
+        <textarea class="q-l3-kwl__textarea" id="l3-kwl-w" rows="3" placeholder="궁금한 점이나 알고 싶은 것을 적어 보세요..." aria-label="알고 싶은 것"></textarea>
+      </div>
+      <div class="q-l3-kwl__col">
+        <div class="q-l3-kwl__col-header q-l3-kwl__col-header--l" title="지문을 읽고 새롭게 배운 것을 적어 보세요">L - 배운 것</div>
+        <div class="q-l3-kwl__col-desc">지문을 읽고 새로 배운 것</div>
+        <textarea class="q-l3-kwl__textarea" id="l3-kwl-l" rows="3" placeholder="지문을 읽고 새롭게 알게 된 것을 적어 보세요..." aria-label="배운 것"></textarea>
+      </div>
+    </div>
+    <div class="q-l3-kwl__action">
+      <button type="button" class="q-l3-btn" onclick="l3KwlToQuestion();" aria-label="W열의 내용을 발문으로 변환">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        발문으로 만들기
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- Fact/Opinion/Question Classifier (S1) -->
+  <!-- ===================================== -->
+  <div class="q-l3-classifier" role="region" aria-label="사실/의견/궁금한 점 분류기">
+    <div class="q-l3-classifier__title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+      사실 / 의견 / 궁금한 점 분류하기
+    </div>
+    <div class="q-l3-classifier__categories">
+      <% [
+        { key: "fact",     label: "사실",       css: "fact" },
+        { key: "opinion",  label: "의견",       css: "opinion" },
+        { key: "question", label: "궁금한 점", css: "question" }
+      ].each do |cat| %>
+        <div class="q-l3-classifier__category">
+          <div class="q-l3-classifier__cat-label q-l3-classifier__cat-label--<%= cat[:css] %>"><%= cat[:label] %></div>
+          <div class="q-l3-classifier__tags" id="l3-tags-<%= cat[:key] %>" aria-label="<%= cat[:label] %> 목록"></div>
+          <input type="text" class="q-l3-classifier__input" id="l3-input-<%= cat[:key] %>"
+                 placeholder="입력 후 Enter" aria-label="<%= cat[:label] %> 입력"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();l3AddTag('<%= cat[:key] %>');}" />
+        </div>
+      <% end %>
+    </div>
+    <div class="q-l3-classifier__action">
+      <button type="button" class="q-l3-btn" onclick="l3QuestionTagToQuestion();" aria-label="궁금한 점에서 발문 생성">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        궁금한 점에서 발문 만들기
+      </button>
+    </div>
+  </div>
+
+<% elsif current_stage == 2 %>
+  <!-- ===================================== -->
+  <!-- Conditional Reasoning Helper (S2)     -->
+  <!-- ===================================== -->
+  <div class="q-l3-conditional" role="region" aria-label="조건부 추론 도우미">
+    <div class="q-l3-conditional__title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      조건부 추론 도우미
+    </div>
+    <div class="q-l3-conditional__row">
+      <span class="q-l3-conditional__keyword">만약</span>
+      <input type="text" class="q-l3-conditional__input" id="l3-cond-condition"
+             placeholder="조건을 입력하세요 (예: 주인공이 다른 선택을 했다면)" aria-label="조건 입력" />
+      <span class="q-l3-conditional__keyword">이 달랐다면,</span>
+    </div>
+    <div class="q-l3-conditional__row">
+      <span class="q-l3-conditional__keyword">결과는</span>
+      <input type="text" class="q-l3-conditional__input" id="l3-cond-result"
+             placeholder="예상되는 결과 (예: 이야기의 결말이)" aria-label="결과 입력" />
+      <span class="q-l3-conditional__keyword">어떻게 되었을까?</span>
+    </div>
+    <div class="q-l3-conditional__row">
+      <span class="q-l3-conditional__keyword">이유는?</span>
+      <input type="text" class="q-l3-conditional__input" id="l3-cond-reason"
+             placeholder="그렇게 생각하는 근거 (예: 텍스트에서 ...라고 했기 때문에)" aria-label="이유 입력" />
+    </div>
+    <div class="q-l3-conditional__action">
+      <button type="button" class="q-l3-btn" onclick="l3ConditionalToQuestion();" aria-label="조건부 추론을 발문으로 변환">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        발문 만들기
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================== -->
+  <!-- Perspective Panel (Stage 2)           -->
+  <!-- ===================================== -->
+  <div class="q-l3-perspective" role="region" aria-label="관점 전환 패널">
+    <div class="q-l3-perspective__title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      관점 전환 패널
+    </div>
+    <label for="l3-perspective-role" style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-1); display: block;">
+      이 사건을 다른 인물의 입장에서 본다면?
+    </label>
+    <select class="q-l3-perspective__select" id="l3-perspective-role" aria-label="인물 관점 선택">
+      <option value="">-- 관점을 선택하세요 --</option>
+      <option value="주인공">주인공의 입장</option>
+      <option value="조연">조연의 입장</option>
+      <option value="악역">악역(반대 입장)의 입장</option>
+      <option value="작가">작가의 입장</option>
+      <option value="독자">독자의 입장</option>
+    </select>
+    <label for="l3-perspective-thought" style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-1); display: block;">
+      그 입장에서 어떻게 느끼고 생각했을까?
+    </label>
+    <textarea class="q-l3-perspective__textarea" id="l3-perspective-thought" rows="3"
+              placeholder="선택한 인물의 입장에서 느끼고 생각한 것을 적어 보세요..." aria-label="관점 전환 생각 입력"></textarea>
+    <div class="q-l3-perspective__action">
+      <button type="button" class="q-l3-btn" onclick="l3PerspectiveToQuestion();" aria-label="관점 전환을 발문으로 변환">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        발문으로 만들기
+      </button>
+    </div>
+  </div>
+
+<% elsif current_stage == 3 %>
+  <!-- ===================================== -->
+  <!-- Policy Proposal Helper (Stage 3)      -->
+  <!-- ===================================== -->
+  <div class="q-l3-policy" role="region" aria-label="정책 제안 도우미">
+    <div class="q-l3-policy__title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 3h7v7H3z"></path>
+        <path d="M14 3h7v7h-7z"></path>
+        <path d="M14 14h7v7h-7z"></path>
+        <path d="M3 14h7v7H3z"></path>
+      </svg>
+      정책 제안 도우미 - 문제 해결을 위한 다층적 접근
+    </div>
+    <div class="q-l3-policy__levels">
+      <div class="q-l3-policy__level">
+        <span class="q-l3-policy__level-badge q-l3-policy__level-badge--personal">개인</span>
+        <input type="text" class="q-l3-policy__input" id="l3-policy-personal"
+               placeholder="개인이 할 수 있는 실천 (예: 일상에서 편견을 인식하고...)" aria-label="개인 수준 실천" />
+      </div>
+      <div class="q-l3-policy__level">
+        <span class="q-l3-policy__level-badge q-l3-policy__level-badge--community">학교/지역</span>
+        <input type="text" class="q-l3-policy__input" id="l3-policy-community"
+               placeholder="학교나 지역사회가 할 수 있는 것 (예: 다문화 교육 프로그램을...)" aria-label="학교/지역 수준 실천" />
+      </div>
+      <div class="q-l3-policy__level">
+        <span class="q-l3-policy__level-badge q-l3-policy__level-badge--government">정부/사회</span>
+        <input type="text" class="q-l3-policy__input" id="l3-policy-government"
+               placeholder="정부나 사회 차원에서 할 수 있는 것 (예: 차별 금지법을...)" aria-label="정부/사회 수준 실천" />
+      </div>
+    </div>
+    <div class="q-l3-policy__action">
+      <button type="button" class="q-l3-btn" onclick="l3PolicyToQuestion();" aria-label="정책 제안을 발문으로 변환">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ===================================== -->
+<!-- Evidence Checklist (all stages)       -->
+<!-- ===================================== -->
+<div class="q-l3-checklist" role="region" aria-label="근거 붙이기 자가 점검">
+  <div class="q-l3-checklist__title">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    근거 붙이기 자가 점검
+  </div>
+  <div class="q-l3-checklist__items">
+    <label class="q-l3-checklist__item">
+      <input type="checkbox" class="q-l3-checklist__checkbox" onchange="l3ChecklistUpdate();" aria-label="내 생각을 명확히 표현했는지 확인" />
+      <span class="q-l3-checklist__label">내 생각을 명확히 표현했나요?</span>
+    </label>
+    <label class="q-l3-checklist__item">
+      <input type="checkbox" class="q-l3-checklist__checkbox" onchange="l3ChecklistUpdate();" aria-label="텍스트에서 근거를 찾았는지 확인" />
+      <span class="q-l3-checklist__label">텍스트에서 근거를 찾았나요?</span>
+    </label>
+    <label class="q-l3-checklist__item">
+      <input type="checkbox" class="q-l3-checklist__checkbox" onchange="l3ChecklistUpdate();" aria-label="다른 사람의 관점도 고려했는지 확인" />
+      <span class="q-l3-checklist__label">다른 사람의 관점도 고려했나요?</span>
+    </label>
+  </div>
+  <div class="q-l3-checklist__success" id="l3-checklist-success">
+    좋은 발문이 될 준비가 되었어요!
+  </div>
+</div>
+
+<!-- ===================================== -->
+<!-- JavaScript for L3 Scaffolding         -->
+<!-- ===================================== -->
+<script>
+  /* --- KWL Chart: Convert W column to question --- */
+  function l3KwlToQuestion() {
+    var wText = document.getElementById('l3-kwl-w');
+    if (!wText || !wText.value.trim()) return;
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      var lines = wText.value.trim().split('\n').filter(function(l) { return l.trim(); });
+      var question = lines[0].trim();
+      if (!question.endsWith('?')) question += '?';
+      textarea.value = question;
+      textarea.dispatchEvent(new Event('input'));
+      textarea.focus();
+    }
+  }
+
+  /* --- Classifier: Tag management --- */
+  function l3AddTag(category) {
+    var input = document.getElementById('l3-input-' + category);
+    var container = document.getElementById('l3-tags-' + category);
+    if (!input || !container || !input.value.trim()) return;
+    var tag = document.createElement('span');
+    tag.className = 'q-l3-classifier__tag';
+    tag.textContent = input.value.trim();
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'q-l3-classifier__tag-remove';
+    removeBtn.textContent = '\u00d7';
+    removeBtn.setAttribute('aria-label', '\ud0dc\uadf8 \uc0ad\uc81c');
+    removeBtn.onclick = function() { tag.remove(); };
+    tag.appendChild(removeBtn);
+    container.appendChild(tag);
+    input.value = '';
+    input.focus();
+  }
+
+  function l3QuestionTagToQuestion() {
+    var container = document.getElementById('l3-tags-question');
+    if (!container) return;
+    var tags = container.querySelectorAll('.q-l3-classifier__tag');
+    if (tags.length === 0) return;
+    var textarea = document.getElementById('question-text-input');
+    if (!textarea) return;
+    var firstTag = tags[0].childNodes[0].textContent.trim();
+    if (!firstTag.endsWith('?')) firstTag += '?';
+    textarea.value = firstTag;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  }
+
+  /* --- Conditional Reasoning: Build question --- */
+  function l3ConditionalToQuestion() {
+    var condition = document.getElementById('l3-cond-condition');
+    var result = document.getElementById('l3-cond-result');
+    var reason = document.getElementById('l3-cond-reason');
+    if (!condition || !result) return;
+    var condVal = condition.value.trim();
+    var resVal = result.value.trim();
+    var reaVal = reason ? reason.value.trim() : '';
+    if (!condVal && !resVal) return;
+    var textarea = document.getElementById('question-text-input');
+    if (!textarea) return;
+    var q = '';
+    if (condVal && resVal) {
+      q = '\ub9cc\uc57d ' + condVal + '\uc774 \ub2ec\ub790\ub2e4\uba74, ' + resVal + '\uc740 \uc5b4\ub5bb\uac8c \ub418\uc5c8\uc744\uae4c\uc694?';
+    } else if (condVal) {
+      q = '\ub9cc\uc57d ' + condVal + '\uc774 \ub2ec\ub790\ub2e4\uba74 \uc5b4\ub5bb\uac8c \ub418\uc5c8\uc744\uae4c\uc694?';
+    } else {
+      q = resVal + '\uc740 \uc5b4\ub5bb\uac8c \ub418\uc5c8\uc744\uae4c\uc694?';
+    }
+    if (reaVal) {
+      q += ' \uadf8\ub807\uac8c \uc0dd\uac01\ud558\ub294 \uc774\uc720\ub294 ' + reaVal + '.';
+    }
+    textarea.value = q;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  }
+
+  /* --- Perspective Panel: Build question --- */
+  function l3PerspectiveToQuestion() {
+    var roleSelect = document.getElementById('l3-perspective-role');
+    var thought = document.getElementById('l3-perspective-thought');
+    if (!roleSelect || !thought) return;
+    var role = roleSelect.value;
+    var thoughtVal = thought.value.trim();
+    if (!role && !thoughtVal) return;
+    var textarea = document.getElementById('question-text-input');
+    if (!textarea) return;
+    var q = '';
+    if (role && thoughtVal) {
+      q = '\uc774 \uc0ac\uac74\uc744 ' + role + '\uc758 \uc785\uc7a5\uc5d0\uc11c \ubcf8\ub2e4\uba74, ' + thoughtVal;
+    } else if (role) {
+      q = '\uc774 \uc0ac\uac74\uc744 ' + role + '\uc758 \uc785\uc7a5\uc5d0\uc11c \ubcf8\ub2e4\uba74 \uc5b4\ub5bb\uac8c \ub290\ub07c\uace0 \uc0dd\uac01\ud588\uc744\uae4c\uc694?';
+    } else {
+      q = thoughtVal;
+    }
+    if (!q.endsWith('?') && !q.endsWith('.')) q += '?';
+    textarea.value = q;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  }
+
+  /* --- Policy Proposal: Build question --- */
+  function l3PolicyToQuestion() {
+    var personal = document.getElementById('l3-policy-personal');
+    var community = document.getElementById('l3-policy-community');
+    var government = document.getElementById('l3-policy-government');
+    var pVal = personal ? personal.value.trim() : '';
+    var cVal = community ? community.value.trim() : '';
+    var gVal = government ? government.value.trim() : '';
+    if (!pVal && !cVal && !gVal) return;
+    var textarea = document.getElementById('question-text-input');
+    if (!textarea) return;
+    var parts = [];
+    if (pVal) parts.push('\uac1c\uc778\uc740 ' + pVal);
+    if (cVal) parts.push('\ud559\uad50\ub294 ' + cVal);
+    if (gVal) parts.push('\uc815\ubd80\ub294 ' + gVal);
+    var q = '\uc774 \ubb38\uc81c\ub97c \ud574\uacb0\ud558\uae30 \uc704\ud574 ' + parts.join(', ') + '\uc744 \ud560 \uc218 \uc788\uc9c0 \uc54a\uc744\uae4c\uc694?';
+    textarea.value = q;
+    textarea.dispatchEvent(new Event('input'));
+    textarea.focus();
+  }
+
+  /* --- Evidence Checklist --- */
+  function l3ChecklistUpdate() {
+    var checkboxes = document.querySelectorAll('.q-l3-checklist__checkbox');
+    var allChecked = true;
+    checkboxes.forEach(function(cb) {
+      if (!cb.checked) allChecked = false;
+    });
+    var successEl = document.getElementById('l3-checklist-success');
+    if (successEl) {
+      successEl.style.display = allChecked ? 'block' : 'none';
+    }
+  }
+</script>

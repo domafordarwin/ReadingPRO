@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 class QuestioningEvaluationService
-  def initialize(student_question, reading_stimulus)
+  def initialize(student_question, reading_stimulus, level: nil)
     @question = student_question
     @stimulus = reading_stimulus
+    @level = level || detect_level
   end
 
   def evaluate!
@@ -42,15 +43,17 @@ class QuestioningEvaluationService
   end
 
   def system_prompt
+    level_prompt = QuestioningLevelConfig.system_prompt_for(@level)
+
     <<~PROMPT
-      당신은 학생의 독서 발문(질문)을 평가하는 전문가입니다.
-      학생이 읽기 지문을 읽고 생성한 발문의 품질을 평가해주세요.
-      JSON 형식으로 다음 항목을 0-100 점수로 평가하세요:
+      #{level_prompt}
+
+      반드시 JSON 형식으로 다음 항목을 0-100 점수로 평가하세요:
       - relevance_score: 텍스트와의 관련성
       - depth_score: 사고의 깊이
       - creativity_score: 창의성
       - language_quality_score: 언어 표현의 질
-      - overall_score: 종합 점수
+      - overall_score: 종합 점수 (위 4개의 가중 평균)
       - feedback: 한국어로 학생에게 주는 피드백 (2-3문장)
       - strengths: 잘한 점 배열 (최대 3개)
       - improvements: 개선할 점 배열 (최대 2개)
@@ -58,16 +61,20 @@ class QuestioningEvaluationService
   end
 
   def build_evaluation_prompt
+    scaffolding_info = QuestioningLevelConfig.scaffolding_for(@level, @question.scaffolding_used.to_i)
+    scaffolding_desc = scaffolding_info[:label] || "정보 없음"
+
     <<~PROMPT
       ## 읽기 지문
       제목: #{@stimulus.title}
       내용: #{@stimulus.body&.truncate(500)}
 
       ## 학생 발문
+      학생 수준: #{QuestioningLevelConfig::LEVEL_LABELS[@level] || @level}
       단계: #{stage_label}
       발문: #{@question.question_text}
-      발문 유형: #{@question.question_type}
-      스캐폴딩 사용 단계: #{@question.scaffolding_used}
+      발문 유형: #{@question.question_type == "guided" ? "도움받아 작성" : "자유 작성"}
+      스캐폴딩 단계: #{@question.scaffolding_used} (#{scaffolding_desc})
     PROMPT
   end
 
@@ -93,5 +100,11 @@ class QuestioningEvaluationService
       evaluated_at: Time.current.iso8601,
       model_used: "fallback"
     }
+  end
+
+  def detect_level
+    session = @question.questioning_session
+    mod = session&.questioning_module
+    mod&.level || "elementary_low"
   end
 end

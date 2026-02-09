@@ -39,9 +39,9 @@ class Student::QuestioningSessionsController < ApplicationController
     end
 
     if question.save
-      # Run AI evaluation asynchronously (inline for now)
+      # Run AI evaluation with level-specific prompts
       begin
-        QuestioningEvaluationService.new(question, @stimulus).evaluate!
+        QuestioningEvaluationService.new(question, @stimulus, level: @module.level).evaluate!
       rescue StandardError => e
         Rails.logger.error("AI evaluation failed: #{e.message}")
       end

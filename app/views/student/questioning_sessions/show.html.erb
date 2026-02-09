@@ -3,16 +3,33 @@
 <%
   session = @questioning_session
   current_stage = session&.current_stage || 1
-  stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
-  stage_descriptions = {
-    1 => "배경지식을 활성화하고 경험을 나누어 봅시다.",
-    2 => "텍스트의 내용을 깊이 탐구하고 분석해 봅시다.",
-    3 => "읽은 내용을 삶과 사회에 연결하여 생각해 봅시다."
+  current_level = @module&.level || "elementary_low"
+
+  # 수준별 단계 정보 (QuestioningLevelConfig에서 로드)
+  level_stage_info = QuestioningLevelConfig.stage_description_for(current_level, current_stage)
+  stage_names = {
+    1 => level_stage_info[:title] || "책문열기",
+    2 => (QuestioningLevelConfig.stage_description_for(current_level, 2)[:title] rescue "이야기나누기"),
+    3 => (QuestioningLevelConfig.stage_description_for(current_level, 3)[:title] rescue "삶적용")
   }
+  stage_descriptions = {
+    1 => (QuestioningLevelConfig.stage_description_for(current_level, 1)[:description] rescue "배경지식을 활성화하고 경험을 나누어 봅시다."),
+    2 => (QuestioningLevelConfig.stage_description_for(current_level, 2)[:description] rescue "텍스트의 내용을 깊이 탐구하고 분석해 봅시다."),
+    3 => (QuestioningLevelConfig.stage_description_for(current_level, 3)[:description] rescue "읽은 내용을 삶과 사회에 연결하여 생각해 봅시다.")
+  }
+  stage_subtitles = {
+    1 => level_stage_info[:subtitle],
+    2 => (QuestioningLevelConfig.stage_description_for(current_level, 2)[:subtitle] rescue nil),
+    3 => (QuestioningLevelConfig.stage_description_for(current_level, 3)[:subtitle] rescue nil)
+  }
+
   is_completed = session&.status_completed? || false
   is_reviewed = session&.status_reviewed? || false
   is_finished = is_completed || is_reviewed
   questions_for_stage = @questions_by_stage[current_stage] || []
+  level_writing_tips = QuestioningLevelConfig.writing_tips_for(current_level)
+  level_partial_map = { "elementary_low" => "l1", "elementary_high" => "l2", "middle" => "l3", "high" => "l4" }
+  scaffolding_partial_name = level_partial_map[current_level] || "l1"
 %>
 
 <!-- Back Link -->
@@ -117,11 +134,22 @@
   <div style="text-align: center; margin-bottom: var(--rp-space-6);">
     <h2 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-2);">
       <%= current_stage %>단계: <%= stage_names[current_stage] %>
+      <% if stage_subtitles[current_stage].present? %>
+        <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-normal); color: var(--rp-text-muted); display: block; margin-top: var(--rp-space-1);">
+          <%= stage_subtitles[current_stage] %>
+        </span>
+      <% end %>
     </h2>
     <p style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); margin: 0;">
       <%= stage_descriptions[current_stage] %>
     </p>
   </div>
+
+  <!-- ============================== -->
+  <!-- 3.5 Level-Specific Scaffolding -->
+  <!-- ============================== -->
+  <%= render partial: "student/questioning_sessions/#{scaffolding_partial_name}_scaffolding",
+            locals: { current_stage: current_stage, module_obj: @module, stimulus: @stimulus } rescue nil %>
 
   <!-- ============================== -->
   <!-- 4. Previous Questions (stage)  -->

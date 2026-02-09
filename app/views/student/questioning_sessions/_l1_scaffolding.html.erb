@@ -1,0 +1,603 @@
+<%#
+  L1 초저(초1-2) 수준 스캐폴딩 UI
+  Local variables:
+    - current_stage (Integer, 1-3)
+    - module_obj (QuestioningModule)
+    - stimulus (ReadingStimulus)
+%>
+
+<%
+  # Determine current scaffolding level for the student (default 3 = maximum help)
+  scaffolding_level = 3
+  if defined?(@student) && @student.present? && module_obj.present?
+    progress = @student.questioning_progresses.find_by(
+      evaluation_indicator: module_obj.questioning_templates.first&.evaluation_indicator
+    )
+    scaffolding_level = progress&.current_scaffolding || 3
+  end
+
+  stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
+%>
+
+<!-- ============================== -->
+<!-- L1 Scaffolding Widgets         -->
+<!-- ============================== -->
+<div class="q-level--l1" id="l1-scaffolding-panel">
+
+  <!-- (A) Writing Tips -->
+  <div class="l1-widget" id="l1-tips-widget">
+    <button class="l1-widget__toggle" type="button" aria-expanded="true"
+            aria-controls="l1-tips-body" onclick="toggleL1Widget(this, 'l1-tips-body')">
+      <span class="l1-widget__toggle-label">
+        <span class="l1-widget__toggle-icon-left">&#128161;</span>
+        발문 작성 팁
+      </span>
+      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="l1-widget__body" id="l1-tips-body">
+      <div class="l1-tips-grid">
+        <div class="l1-tip-card" aria-label="팁 1: 한 가지만 물어보기">
+          <div class="l1-tip-card__icon">&#9757;</div>
+          <div class="l1-tip-card__text">한 번에 <strong>한 가지</strong>만 물어보세요</div>
+        </div>
+        <div class="l1-tip-card" aria-label="팁 2: 느낌 물어보기">
+          <div class="l1-tip-card__icon">&#128151;</div>
+          <div class="l1-tip-card__text">"<strong>어떤 마음이 들었니?</strong>"처럼 느낌을 물어보면 좋아요</div>
+        </div>
+        <div class="l1-tip-card" aria-label="팁 3: 나라면 어떻게">
+          <div class="l1-tip-card__icon">&#129300;</div>
+          <div class="l1-tip-card__text">"<strong>나라면 어떻게 했을까?</strong>"도 좋은 발문이에요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if scaffolding_level >= 2 %>
+  <!-- (B) Emoji Feeling Selector -->
+  <div class="l1-widget q-l1-emoji-prompt" id="l1-emoji-widget">
+    <button class="l1-widget__toggle" type="button" aria-expanded="true"
+            aria-controls="l1-emoji-body" onclick="toggleL1Widget(this, 'l1-emoji-body')">
+      <span class="l1-widget__toggle-label">
+        <span class="l1-widget__toggle-icon-left">&#128522;</span>
+        감정 골라보기
+      </span>
+      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="l1-widget__body" id="l1-emoji-body">
+      <p class="l1-widget__hint">인물의 마음은 어땠을까요? 감정을 골라 보세요!</p>
+      <div class="q-emoji-selector" role="group" aria-label="감정 선택">
+        <div class="l1-emoji-item">
+          <button type="button" class="q-emoji-selector__btn" aria-label="기쁨"
+                  onclick="l1SelectEmotion(this, '기쁨', '&#128522;')">&#128522;</button>
+          <div class="q-emoji-selector__label">기쁨</div>
+        </div>
+        <div class="l1-emoji-item">
+          <button type="button" class="q-emoji-selector__btn" aria-label="슬픔"
+                  onclick="l1SelectEmotion(this, '슬픔', '&#128546;')">&#128546;</button>
+          <div class="q-emoji-selector__label">슬픔</div>
+        </div>
+        <div class="l1-emoji-item">
+          <button type="button" class="q-emoji-selector__btn" aria-label="놀람"
+                  onclick="l1SelectEmotion(this, '놀람', '&#128558;')">&#128558;</button>
+          <div class="q-emoji-selector__label">놀람</div>
+        </div>
+        <div class="l1-emoji-item">
+          <button type="button" class="q-emoji-selector__btn" aria-label="화남"
+                  onclick="l1SelectEmotion(this, '화남', '&#128544;')">&#128544;</button>
+          <div class="q-emoji-selector__label">화남</div>
+        </div>
+        <div class="l1-emoji-item">
+          <button type="button" class="q-emoji-selector__btn" aria-label="무서움"
+                  onclick="l1SelectEmotion(this, '무서움', '&#128552;')">&#128552;</button>
+          <div class="q-emoji-selector__label">무서움</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% end %>
+
+  <% if scaffolding_level >= 3 %>
+  <!-- (C) O/X Selection Widget -->
+  <div class="l1-widget" id="l1-ox-widget">
+    <button class="l1-widget__toggle" type="button" aria-expanded="true"
+            aria-controls="l1-ox-body" onclick="toggleL1Widget(this, 'l1-ox-body')">
+      <span class="l1-widget__toggle-label">
+        <span class="l1-widget__toggle-icon-left">&#9898;</span>
+        O / X 골라보기
+      </span>
+      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="l1-widget__body" id="l1-ox-body">
+      <p class="l1-widget__hint">맞다고 생각하면 O, 아니라고 생각하면 X를 눌러 보세요!</p>
+      <div class="l1-ox-selector" role="group" aria-label="O/X 선택">
+        <button type="button" class="l1-ox-btn l1-ox-btn--o" aria-label="맞아요 (O)"
+                onclick="l1SelectOX(this, true)">
+          <span class="l1-ox-btn__symbol">O</span>
+          <span class="l1-ox-btn__label">맞아요</span>
+        </button>
+        <button type="button" class="l1-ox-btn l1-ox-btn--x" aria-label="아니에요 (X)"
+                onclick="l1SelectOX(this, false)">
+          <span class="l1-ox-btn__symbol">X</span>
+          <span class="l1-ox-btn__label">아니에요</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <% end %>
+
+  <!-- (D) Short Question Templates -->
+  <div class="l1-widget" id="l1-templates-widget">
+    <button class="l1-widget__toggle" type="button" aria-expanded="true"
+            aria-controls="l1-templates-body" onclick="toggleL1Widget(this, 'l1-templates-body')">
+      <span class="l1-widget__toggle-label">
+        <span class="l1-widget__toggle-icon-left">&#128172;</span>
+        발문 따라하기
+      </span>
+      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="l1-widget__body" id="l1-templates-body">
+      <p class="l1-widget__hint">마음에 드는 발문을 골라보세요. 자동으로 입력돼요!</p>
+      <div class="l1-template-grid">
+        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 어떤 마음이 들었니?"
+                onclick="l1UseTemplate(this, '(장면)에서 어떤 마음이 들었니?')">
+          <span class="l1-template-card__icon">&#128151;</span>
+          <span class="l1-template-card__text">(장면)에서 <strong>어떤 마음</strong>이 들었니?</span>
+        </button>
+        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 그렇게 한 이유는?"
+                onclick="l1UseTemplate(this, '(인물)이 그렇게 한 이유는 뭐라고 생각해?')">
+          <span class="l1-template-card__icon">&#129488;</span>
+          <span class="l1-template-card__text">(인물)이 그렇게 한 이유는 <strong>뭐라고 생각해?</strong></span>
+        </button>
+        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 나라면 어떻게 했을까?"
+                onclick="l1UseTemplate(this, '나라면 어떻게 했을까?')">
+          <span class="l1-template-card__icon">&#128588;</span>
+          <span class="l1-template-card__text">나라면 <strong>어떻게 했을까?</strong></span>
+        </button>
+        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 지금 할 수 있는 작은 실천"
+                onclick="l1UseTemplate(this, '우리 반에서 지금 할 수 있는 작은 실천은 뭐가 있을까?')">
+          <span class="l1-template-card__icon">&#127793;</span>
+          <span class="l1-template-card__text">우리 반에서 <strong>지금 할 수 있는 작은 실천</strong>은 뭐가 있을까?</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- (E) Scaffolding Level Guide -->
+  <div class="l1-scaffolding-guide" aria-label="스캐폴딩 안내">
+    <% case scaffolding_level %>
+    <% when 3 %>
+      <div class="l1-scaffolding-guide__icon">&#127919;</div>
+      <div class="l1-scaffolding-guide__text">
+        <strong>단계 3</strong> &mdash; O/X 선택, 이모지 선택, 발문 따라하기 등 <strong>시각적 도구</strong>로 쉽게 시작해요
+      </div>
+    <% when 2 %>
+      <div class="l1-scaffolding-guide__icon">&#128170;</div>
+      <div class="l1-scaffolding-guide__text">
+        <strong>단계 2</strong> &mdash; 감정 선택과 발문 따라하기를 참고해서 나만의 발문을 만들어 보세요
+      </div>
+    <% when 1 %>
+      <div class="l1-scaffolding-guide__icon">&#11088;</div>
+      <div class="l1-scaffolding-guide__text">
+        <strong>단계 1</strong> &mdash; 팁을 참고해서 조금만 도움받아 발문을 작성해 보세요
+      </div>
+    <% when 0 %>
+      <div class="l1-scaffolding-guide__icon">&#127941;</div>
+      <div class="l1-scaffolding-guide__text">
+        <strong>자유 단계</strong> &mdash; 도움 없이 자기만의 발문을 자유롭게 만들어 보세요!
+      </div>
+    <% end %>
+  </div>
+
+</div><!-- /#l1-scaffolding-panel -->
+
+<!-- ============================== -->
+<!-- L1 Scaffolding JavaScript      -->
+<!-- ============================== -->
+<script>
+  // Accordion toggle for L1 widgets
+  function toggleL1Widget(btn, bodyId) {
+    var body = document.getElementById(bodyId);
+    if (!body) return;
+    var expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    body.classList.toggle('l1-widget__body--collapsed');
+  }
+
+  // Emoji emotion selector -> fills textarea
+  function l1SelectEmotion(btn, emotionName, emojiChar) {
+    // Toggle selection state
+    var allBtns = btn.closest('.q-emoji-selector').querySelectorAll('.q-emoji-selector__btn');
+    allBtns.forEach(function(b) { b.classList.remove('q-emoji-selector__btn--selected'); });
+    btn.classList.add('q-emoji-selector__btn--selected');
+
+    // Fill textarea
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      textarea.value = '(인물)은(는) ' + emotionName + ' 기분일 것 같아요. 왜냐하면...';
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      // Update char counter
+      var counter = document.getElementById('char-count');
+      if (counter) counter.textContent = textarea.value.length;
+    }
+
+    // Mark as guided
+    l1MarkAsGuided();
+  }
+
+  // O/X selector -> fills textarea
+  function l1SelectOX(btn, isO) {
+    // Toggle selection state
+    var allBtns = btn.closest('.l1-ox-selector').querySelectorAll('.l1-ox-btn');
+    allBtns.forEach(function(b) { b.classList.remove('l1-ox-btn--selected'); });
+    btn.classList.add('l1-ox-btn--selected');
+
+    // Fill textarea
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      if (isO) {
+        textarea.value = '맞아요. 왜 그렇게 생각했냐면...';
+      } else {
+        textarea.value = '아니에요. 왜 그렇게 생각했냐면...';
+      }
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      var counter = document.getElementById('char-count');
+      if (counter) counter.textContent = textarea.value.length;
+    }
+
+    l1MarkAsGuided();
+  }
+
+  // Template card selector -> fills textarea
+  function l1UseTemplate(btn, templateText) {
+    // Toggle selection state
+    var allCards = document.querySelectorAll('.l1-template-card');
+    allCards.forEach(function(c) { c.classList.remove('l1-template-card--selected'); });
+    btn.classList.add('l1-template-card--selected');
+
+    // Fill textarea
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      textarea.value = templateText;
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      var counter = document.getElementById('char-count');
+      if (counter) counter.textContent = textarea.value.length;
+    }
+
+    l1MarkAsGuided();
+  }
+
+  // Mark the form as "guided" question type
+  function l1MarkAsGuided() {
+    var typeField = document.getElementById('question-type-field');
+    var scaffField = document.getElementById('scaffolding-used-field');
+    if (typeField) typeField.value = 'guided';
+    if (scaffField) scaffField.value = 'true';
+
+    // Update type toggle buttons if they exist
+    if (typeof updateTypeButtons === 'function') {
+      updateTypeButtons('guided');
+    }
+  }
+</script>
+
+<!-- ============================== -->
+<!-- L1 Scaffolding Styles          -->
+<!-- ============================== -->
+<style>
+  /* --- Widget Container --- */
+  .l1-widget {
+    background: var(--rp-surface);
+    border: 1px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    margin-bottom: var(--rp-space-4);
+    overflow: hidden;
+  }
+
+  .l1-widget__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-base);
+    font-weight: var(--rp-font-weight-semibold);
+    color: var(--rp-text-title);
+    transition: background var(--rp-transition-fast);
+  }
+
+  .l1-widget__toggle:hover {
+    background: var(--rp-bg-subtle);
+  }
+
+  .l1-widget__toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .l1-widget__toggle-icon-left {
+    font-size: 1.3rem;
+  }
+
+  .l1-widget__toggle-arrow {
+    transition: transform var(--rp-transition-normal);
+    flex-shrink: 0;
+  }
+
+  .l1-widget__toggle[aria-expanded="false"] .l1-widget__toggle-arrow {
+    transform: rotate(-90deg);
+  }
+
+  .l1-widget__body {
+    padding: 0 var(--rp-space-4) var(--rp-space-4);
+  }
+
+  .l1-widget__body--collapsed {
+    display: none;
+  }
+
+  .l1-widget__hint {
+    font-size: var(--rp-font-size-sm);
+    color: var(--rp-text-muted);
+    margin: 0 0 var(--rp-space-3);
+    line-height: 1.5;
+  }
+
+  /* --- Writing Tips --- */
+  .l1-tips-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+  }
+
+  .l1-tip-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: var(--rp-radius-md);
+  }
+
+  .l1-tip-card__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .l1-tip-card__text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--rp-text-body);
+  }
+
+  .l1-tip-card__text strong {
+    color: #92400e;
+  }
+
+  /* --- Emoji Selector --- */
+  .l1-emoji-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rp-space-1);
+  }
+
+  .q-l1-emoji-prompt .q-emoji-selector__btn {
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
+    border-radius: 50%;
+  }
+
+  .q-l1-emoji-prompt .q-emoji-selector__label {
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-medium);
+    color: var(--rp-text-body);
+  }
+
+  /* --- O/X Selector --- */
+  .l1-ox-selector {
+    display: flex;
+    gap: var(--rp-space-6);
+    justify-content: center;
+    padding: var(--rp-space-4) 0;
+  }
+
+  .l1-ox-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--rp-space-2);
+    padding: var(--rp-space-4);
+    border-radius: 50%;
+    width: 96px;
+    height: 96px;
+    justify-content: center;
+    border: 3px solid var(--rp-border);
+    background: var(--rp-surface);
+    cursor: pointer;
+    transition: all var(--rp-transition-fast);
+    font-family: var(--rp-font-family);
+  }
+
+  .l1-ox-btn:hover {
+    transform: scale(1.08);
+    box-shadow: var(--rp-shadow-md);
+  }
+
+  .l1-ox-btn--o {
+    border-color: #86efac;
+    background: #f0fdf4;
+  }
+
+  .l1-ox-btn--o:hover {
+    border-color: #22c55e;
+    background: #dcfce7;
+  }
+
+  .l1-ox-btn--x {
+    border-color: #fca5a5;
+    background: #fef2f2;
+  }
+
+  .l1-ox-btn--x:hover {
+    border-color: #ef4444;
+    background: #fee2e2;
+  }
+
+  .l1-ox-btn__symbol {
+    font-size: 2rem;
+    font-weight: var(--rp-font-weight-bold);
+    line-height: 1;
+  }
+
+  .l1-ox-btn--o .l1-ox-btn__symbol {
+    color: #16a34a;
+  }
+
+  .l1-ox-btn--x .l1-ox-btn__symbol {
+    color: #dc2626;
+  }
+
+  .l1-ox-btn__label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-medium);
+    color: var(--rp-text-body);
+  }
+
+  .l1-ox-btn--selected {
+    transform: scale(1.12);
+    box-shadow: var(--rp-shadow-lg);
+  }
+
+  .l1-ox-btn--o.l1-ox-btn--selected {
+    border-color: #16a34a;
+    background: #dcfce7;
+  }
+
+  .l1-ox-btn--x.l1-ox-btn--selected {
+    border-color: #dc2626;
+    background: #fee2e2;
+  }
+
+  /* --- Template Cards --- */
+  .l1-template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--rp-space-3);
+  }
+
+  .l1-template-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-4);
+    border: 2px solid var(--rp-border);
+    border-radius: var(--rp-radius-lg);
+    background: var(--rp-surface);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--rp-font-family);
+    transition: all var(--rp-transition-fast);
+    width: 100%;
+  }
+
+  .l1-template-card:hover {
+    border-color: var(--rp-primary);
+    box-shadow: var(--rp-shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .l1-template-card--selected {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary-soft);
+    box-shadow: 0 0 0 3px var(--rp-primary-soft);
+  }
+
+  .l1-template-card__icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .l1-template-card__text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--rp-text-body);
+  }
+
+  .l1-template-card__text strong {
+    color: var(--rp-primary);
+  }
+
+  /* --- Scaffolding Level Guide --- */
+  .l1-scaffolding-guide {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3) var(--rp-space-4);
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--rp-radius-md);
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .l1-scaffolding-guide__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .l1-scaffolding-guide__text {
+    font-size: var(--rp-font-size-sm);
+    color: #1e40af;
+    line-height: 1.5;
+  }
+
+  .l1-scaffolding-guide__text strong {
+    font-weight: var(--rp-font-weight-semibold);
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .l1-template-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .l1-ox-selector {
+      gap: var(--rp-space-4);
+    }
+
+    .l1-ox-btn {
+      width: 80px;
+      height: 80px;
+    }
+
+    .l1-ox-btn__symbol {
+      font-size: 1.6rem;
+    }
+
+    .q-l1-emoji-prompt .q-emoji-selector__btn {
+      width: 54px;
+      height: 54px;
+      font-size: 26px;
+    }
+
+    .l1-tip-card {
+      padding: var(--rp-space-2) var(--rp-space-3);
+    }
+
+    .l1-tip-card__text {
+      font-size: 1rem;
+    }
+  }
+</style>

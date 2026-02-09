@@ -1,0 +1,1181 @@
+<%#
+  L4 고등 수준 스캐폴딩 파셜
+  발문을 통한 사고력 신장 모듈 - 학술적/비판적 사고 도구
+
+  로컬 변수:
+    current_stage  - 현재 단계 (1-3)
+    module_obj     - QuestioningModule
+    stimulus       - ReadingStimulus
+%>
+
+<% current_stage ||= 1 %>
+
+<style>
+  /* ============================================
+     L4 High School Scaffolding Widgets
+     학술적, 어두운 톤 + 깔끔한 레이아웃
+     ============================================ */
+
+  .l4-widget {
+    background: #1e1b2e;
+    border: 1px solid #2d2a3e;
+    border-radius: var(--rp-radius-lg);
+    padding: var(--rp-space-5);
+    margin-bottom: var(--rp-space-5);
+    color: #e2dff0;
+  }
+
+  .l4-widget__header {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+    margin-bottom: var(--rp-space-4);
+    padding-bottom: var(--rp-space-3);
+    border-bottom: 1px solid #2d2a3e;
+  }
+
+  .l4-widget__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--rp-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .l4-widget__title {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #f0ecff;
+    margin: 0;
+  }
+
+  .l4-widget__subtitle {
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    margin-top: 2px;
+  }
+
+  .l4-label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--rp-space-2);
+  }
+
+  .l4-input {
+    width: 100%;
+    padding: var(--rp-space-3);
+    background: #151223;
+    border: 1px solid #3d3856;
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    color: #e2dff0;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .l4-input:focus {
+    outline: none;
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  }
+
+  .l4-input::placeholder {
+    color: #6b6484;
+  }
+
+  .l4-textarea {
+    width: 100%;
+    min-height: 72px;
+    padding: var(--rp-space-3);
+    background: #151223;
+    border: 1px solid #3d3856;
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    color: #e2dff0;
+    resize: vertical;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .l4-textarea:focus {
+    outline: none;
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  }
+
+  .l4-textarea::placeholder {
+    color: #6b6484;
+  }
+
+  .l4-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    padding: var(--rp-space-2) var(--rp-space-4);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    border: none;
+    border-radius: var(--rp-radius-md);
+    font-family: var(--rp-font-family);
+    font-size: var(--rp-font-size-sm);
+    font-weight: var(--rp-font-weight-semibold);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .l4-btn:hover {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+
+  .l4-btn:active {
+    transform: translateY(1px);
+  }
+
+  .l4-field {
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .l4-field:last-child {
+    margin-bottom: 0;
+  }
+
+  .l4-divider {
+    height: 1px;
+    background: #2d2a3e;
+    margin: var(--rp-space-4) 0;
+  }
+
+  /* Writing Tips */
+  .l4-tips {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--rp-space-3);
+  }
+
+  .l4-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    border-left: 3px solid #7c3aed;
+  }
+
+  .l4-tip__number {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: var(--rp-font-weight-bold);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .l4-tip__text {
+    font-size: var(--rp-font-size-sm);
+    color: #c4bfdb;
+    line-height: 1.6;
+  }
+
+  /* Hypothesis Panel */
+  .l4-hypothesis-flow {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    position: relative;
+  }
+
+  .l4-hypothesis-step {
+    display: flex;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3) 0;
+  }
+
+  .l4-hypothesis-step__marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 28px;
+  }
+
+  .l4-hypothesis-step__number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-bold);
+    flex-shrink: 0;
+  }
+
+  .l4-hypothesis-step__number--1 { background: #312e81; color: #818cf8; }
+  .l4-hypothesis-step__number--2 { background: #1e3a2f; color: #6ee7b7; }
+  .l4-hypothesis-step__number--3 { background: #3b1323; color: #fca5a5; }
+  .l4-hypothesis-step__number--4 { background: #3d2e0a; color: #fcd34d; }
+
+  .l4-hypothesis-step__line {
+    flex: 1;
+    width: 2px;
+    background: #3d3856;
+    min-height: 12px;
+  }
+
+  .l4-hypothesis-step__content {
+    flex: 1;
+    padding-bottom: var(--rp-space-2);
+  }
+
+  .l4-hypothesis-step__label {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    margin-bottom: var(--rp-space-2);
+  }
+
+  .l4-hypothesis-step__label--1 { color: #818cf8; }
+  .l4-hypothesis-step__label--2 { color: #6ee7b7; }
+  .l4-hypothesis-step__label--3 { color: #fca5a5; }
+  .l4-hypothesis-step__label--4 { color: #fcd34d; }
+
+  /* Interdisciplinary Map */
+  .l4-discipline-map {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--rp-space-3);
+    position: relative;
+  }
+
+  .l4-discipline-map__center {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--rp-space-3);
+    background: #312e81;
+    border-radius: var(--rp-radius-md);
+    margin-bottom: var(--rp-space-2);
+  }
+
+  .l4-discipline-map__center-label {
+    font-size: var(--rp-font-size-xs);
+    color: #818cf8;
+    margin-bottom: var(--rp-space-1);
+  }
+
+  .l4-discipline-map__center-text {
+    font-size: var(--rp-font-size-md);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #f0ecff;
+  }
+
+  .l4-discipline-card {
+    padding: var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    border: 1px solid #3d3856;
+  }
+
+  .l4-discipline-card__name {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    margin-bottom: var(--rp-space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+  }
+
+  .l4-discipline-card__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .l4-discipline-card__prompt {
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    margin-bottom: var(--rp-space-2);
+  }
+
+  /* Ideology Critique */
+  .l4-critique-questions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-4);
+  }
+
+  .l4-critique-question {
+    padding: var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    border-left: 3px solid #f472b6;
+  }
+
+  .l4-critique-question__text {
+    font-size: var(--rp-font-size-sm);
+    color: #f0ecff;
+    margin-bottom: var(--rp-space-2);
+    font-weight: var(--rp-font-weight-medium);
+  }
+
+  /* Debate Design */
+  .l4-debate-positions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--rp-space-3);
+    margin: var(--rp-space-3) 0;
+  }
+
+  .l4-debate-position {
+    padding: var(--rp-space-4);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+  }
+
+  .l4-debate-position--a {
+    border: 1px solid #3b82f6;
+  }
+
+  .l4-debate-position--b {
+    border: 1px solid #ef4444;
+  }
+
+  .l4-debate-position__header {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .l4-debate-position__header--a { color: #60a5fa; }
+  .l4-debate-position__header--b { color: #f87171; }
+
+  .l4-debate-field {
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .l4-debate-field:last-child {
+    margin-bottom: 0;
+  }
+
+  .l4-debate-field__label {
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    margin-bottom: var(--rp-space-1);
+  }
+
+  /* Metacognition Checklist */
+  .l4-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+    margin: var(--rp-space-3) 0;
+  }
+
+  .l4-checklist__item {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-2) var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .l4-checklist__item:hover {
+    background: #1c1833;
+  }
+
+  .l4-checklist__checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #7c3aed;
+    flex-shrink: 0;
+  }
+
+  .l4-checklist__label-text {
+    font-size: var(--rp-font-size-sm);
+    color: #c4bfdb;
+  }
+
+  .l4-checklist__label-sub {
+    font-size: var(--rp-font-size-xs);
+    color: #6b6484;
+    margin-left: var(--rp-space-1);
+  }
+
+  /* Sequential Question Guide */
+  .l4-seq-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+  }
+
+  .l4-seq-step {
+    display: flex;
+    gap: var(--rp-space-3);
+    padding: var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+  }
+
+  .l4-seq-step__code {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-bold);
+    color: #a78bfa;
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  .l4-seq-step__body {
+    flex: 1;
+  }
+
+  .l4-seq-step__desc {
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    margin-bottom: var(--rp-space-2);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .l4-tips {
+      grid-template-columns: 1fr;
+    }
+    .l4-discipline-map {
+      grid-template-columns: 1fr;
+    }
+    .l4-debate-positions {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- ============================================
+     Widget 1: Writing Tips (all stages)
+     ============================================ -->
+<div class="l4-widget" aria-label="발문 작성 팁">
+  <div class="l4-widget__header">
+    <div class="l4-widget__icon" style="background: #312e81;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+    </div>
+    <div>
+      <h3 class="l4-widget__title">고급 발문 작성 가이드</h3>
+      <div class="l4-widget__subtitle">비판적, 학제적, 메타인지적 사고를 위한 전략</div>
+    </div>
+  </div>
+  <div class="l4-tips">
+    <div class="l4-tip">
+      <div class="l4-tip__number">1</div>
+      <div class="l4-tip__text">텍스트의 전제/세계관을 의문시해 보세요</div>
+    </div>
+    <div class="l4-tip">
+      <div class="l4-tip__number">2</div>
+      <div class="l4-tip__text">가설을 세우고, 근거를 찾아 논증해 보세요</div>
+    </div>
+    <div class="l4-tip">
+      <div class="l4-tip__number">3</div>
+      <div class="l4-tip__text">여러 학문 분야의 렌즈로 재해석해 보세요</div>
+    </div>
+    <div class="l4-tip">
+      <div class="l4-tip__number">4</div>
+      <div class="l4-tip__text">나의 사고 과정 자체를 성찰해 보세요 (메타인지)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     Widget 2: Hypothesis Verification Panel
+     (Stage 2 only)
+     ============================================ -->
+<% if current_stage == 2 %>
+  <div class="l4-widget q-l4-metacognition-guide" id="l4-hypothesis-panel" aria-label="가설 검증 패널">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #1e3a2f;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" stroke-width="2">
+          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">가설 검증 논증 구조</h3>
+        <div class="l4-widget__subtitle">학술적 논증 4단계: 가설 - 근거 - 반박 - 결론</div>
+      </div>
+    </div>
+
+    <div class="l4-hypothesis-flow">
+      <!-- Step 1: Hypothesis -->
+      <div class="l4-hypothesis-step">
+        <div class="l4-hypothesis-step__marker">
+          <div class="l4-hypothesis-step__number l4-hypothesis-step__number--1">1</div>
+          <div class="l4-hypothesis-step__line"></div>
+        </div>
+        <div class="l4-hypothesis-step__content">
+          <div class="l4-hypothesis-step__label l4-hypothesis-step__label--1">가설 (Hypothesis)</div>
+          <textarea id="l4-hypo-hypothesis" class="l4-textarea" rows="2"
+                    placeholder="텍스트에 대한 나의 가설을 세워 보세요..."
+                    aria-label="가설 입력"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 2: Supporting Evidence -->
+      <div class="l4-hypothesis-step">
+        <div class="l4-hypothesis-step__marker">
+          <div class="l4-hypothesis-step__number l4-hypothesis-step__number--2">2</div>
+          <div class="l4-hypothesis-step__line"></div>
+        </div>
+        <div class="l4-hypothesis-step__content">
+          <div class="l4-hypothesis-step__label l4-hypothesis-step__label--2">뒷받침 근거 (Supporting Evidence)</div>
+          <textarea id="l4-hypo-support" class="l4-textarea" rows="2"
+                    placeholder="가설을 뒷받침하는 텍스트 근거를 찾아 적으세요..."
+                    aria-label="뒷받침 근거 입력"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 3: Counter Evidence -->
+      <div class="l4-hypothesis-step">
+        <div class="l4-hypothesis-step__marker">
+          <div class="l4-hypothesis-step__number l4-hypothesis-step__number--3">3</div>
+          <div class="l4-hypothesis-step__line"></div>
+        </div>
+        <div class="l4-hypothesis-step__content">
+          <div class="l4-hypothesis-step__label l4-hypothesis-step__label--3">반박 근거 (Counter Evidence)</div>
+          <textarea id="l4-hypo-counter" class="l4-textarea" rows="2"
+                    placeholder="가설에 반하는 근거나 반례를 적으세요..."
+                    aria-label="반박 근거 입력"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 4: Conclusion -->
+      <div class="l4-hypothesis-step">
+        <div class="l4-hypothesis-step__marker">
+          <div class="l4-hypothesis-step__number l4-hypothesis-step__number--4">4</div>
+        </div>
+        <div class="l4-hypothesis-step__content">
+          <div class="l4-hypothesis-step__label l4-hypothesis-step__label--4">결론 (Conclusion)</div>
+          <textarea id="l4-hypo-conclusion" class="l4-textarea" rows="2"
+                    placeholder="종합적 결론을 내려 보세요..."
+                    aria-label="결론 입력"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: right; margin-top: var(--rp-space-3);">
+      <button type="button" class="l4-btn" onclick="buildHypothesisQuestion();" aria-label="논증 발문 만들기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        논증 발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 3: Interdisciplinary Connection Map
+     (Stage 1 and 2)
+     ============================================ -->
+<% if current_stage == 1 || current_stage == 2 %>
+  <div class="l4-widget" id="l4-discipline-map" aria-label="학제 간 연결 맵">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #1e293b;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">학제 간 연결 맵</h3>
+        <div class="l4-widget__subtitle">다양한 학문 분야의 관점으로 텍스트를 재해석합니다</div>
+      </div>
+    </div>
+
+    <div class="l4-discipline-map">
+      <!-- Center: Text Theme -->
+      <div class="l4-discipline-map__center">
+        <div class="l4-discipline-map__center-label">텍스트 주제</div>
+        <div class="l4-discipline-map__center-text"><%= stimulus&.title || "읽기 지문" %></div>
+      </div>
+
+      <!-- 4 Discipline Cards -->
+      <div class="l4-discipline-card">
+        <div class="l4-discipline-card__name">
+          <span class="l4-discipline-card__dot" style="background: #f59e0b;"></span>
+          경제학
+        </div>
+        <div class="l4-discipline-card__prompt">이 분야의 관점에서 핵심 개념은?</div>
+        <input type="text" id="l4-disc-economics" class="l4-input"
+               placeholder="비용, 효율성, 인센티브..."
+               aria-label="경제학 관점 입력">
+      </div>
+
+      <div class="l4-discipline-card">
+        <div class="l4-discipline-card__name">
+          <span class="l4-discipline-card__dot" style="background: #ec4899;"></span>
+          심리학
+        </div>
+        <div class="l4-discipline-card__prompt">이 분야의 관점에서 핵심 개념은?</div>
+        <input type="text" id="l4-disc-psychology" class="l4-input"
+               placeholder="동기, 인지 편향, 감정..."
+               aria-label="심리학 관점 입력">
+      </div>
+
+      <div class="l4-discipline-card">
+        <div class="l4-discipline-card__name">
+          <span class="l4-discipline-card__dot" style="background: #14b8a6;"></span>
+          사회학
+        </div>
+        <div class="l4-discipline-card__prompt">이 분야의 관점에서 핵심 개념은?</div>
+        <input type="text" id="l4-disc-sociology" class="l4-input"
+               placeholder="계층, 권력, 사회 구조..."
+               aria-label="사회학 관점 입력">
+      </div>
+
+      <div class="l4-discipline-card">
+        <div class="l4-discipline-card__name">
+          <span class="l4-discipline-card__dot" style="background: #8b5cf6;"></span>
+          윤리학
+        </div>
+        <div class="l4-discipline-card__prompt">이 분야의 관점에서 핵심 개념은?</div>
+        <input type="text" id="l4-disc-ethics" class="l4-input"
+               placeholder="정의, 의무, 공정성..."
+               aria-label="윤리학 관점 입력">
+      </div>
+    </div>
+
+    <div style="text-align: right; margin-top: var(--rp-space-4);">
+      <button type="button" class="l4-btn" onclick="buildDisciplineQuestion();" aria-label="학제적 발문 만들기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        학제적 발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 4: Ideology / Worldview Critique Tool
+     (Stage 2 only)
+     ============================================ -->
+<% if current_stage == 2 %>
+  <div class="l4-widget" id="l4-critique-tool" aria-label="이데올로기 비판 도구">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #3b1323;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">세계관/이데올로기 비판 도구</h3>
+        <div class="l4-widget__subtitle">텍스트의 숨겨진 전제와 배제된 관점을 탐구합니다</div>
+      </div>
+    </div>
+
+    <div class="l4-critique-questions">
+      <div class="l4-critique-question">
+        <div class="l4-critique-question__text">이 텍스트가 전제하는 가치 체계는?</div>
+        <input type="text" id="l4-critique-values" class="l4-input"
+               placeholder="예: 개인주의, 성장 중심, 합리주의..."
+               aria-label="전제된 가치 체계 입력">
+      </div>
+
+      <div class="l4-critique-question">
+        <div class="l4-critique-question__text">텍스트에서 배제된 목소리/관점은?</div>
+        <input type="text" id="l4-critique-excluded" class="l4-input"
+               placeholder="예: 소수자, 환경, 비서구적 관점..."
+               aria-label="배제된 관점 입력">
+      </div>
+
+      <div class="l4-critique-question">
+        <div class="l4-critique-question__text">대안적 해석이 가능한가?</div>
+        <input type="text" id="l4-critique-alternative" class="l4-input"
+               placeholder="예: 다른 문화/시대의 관점에서 보면..."
+               aria-label="대안적 해석 입력">
+      </div>
+    </div>
+
+    <div style="text-align: right; margin-top: var(--rp-space-4);">
+      <button type="button" class="l4-btn" onclick="buildCritiqueQuestion();" aria-label="비판적 발문 만들기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        비판적 발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 5: Debate Design Tool
+     (Stage 3 only)
+     ============================================ -->
+<% if current_stage == 3 %>
+  <div class="l4-widget" id="l4-debate-tool" aria-label="쟁점 토론 설계 도구">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #1e293b;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">쟁점 토론 설계 도구</h3>
+        <div class="l4-widget__subtitle">찬반이 갈리는 쟁점을 구조화하여 발문을 설계합니다</div>
+      </div>
+    </div>
+
+    <!-- Issue -->
+    <div class="l4-field">
+      <div class="l4-label">쟁점 (Issue)</div>
+      <input type="text" id="l4-debate-issue" class="l4-input"
+             placeholder="텍스트에서 찬반이 갈리는 핵심 쟁점을 적으세요..."
+             aria-label="쟁점 입력">
+    </div>
+
+    <!-- Two Positions -->
+    <div class="l4-debate-positions">
+      <!-- Position A -->
+      <div class="l4-debate-position l4-debate-position--a">
+        <div class="l4-debate-position__header l4-debate-position__header--a">입장 A</div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">이름/입장</div>
+          <input type="text" id="l4-debate-a-name" class="l4-input"
+                 placeholder="예: 규제 찬성론"
+                 aria-label="입장 A 이름">
+        </div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">핵심 논거</div>
+          <input type="text" id="l4-debate-a-argument" class="l4-input"
+                 placeholder="예: 공공 안전 보호"
+                 aria-label="입장 A 핵심 논거">
+        </div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">가치 기준</div>
+          <input type="text" id="l4-debate-a-value" class="l4-input"
+                 placeholder="예: 공공선, 안전"
+                 aria-label="입장 A 가치 기준">
+        </div>
+      </div>
+
+      <!-- Position B -->
+      <div class="l4-debate-position l4-debate-position--b">
+        <div class="l4-debate-position__header l4-debate-position__header--b">입장 B</div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">이름/입장</div>
+          <input type="text" id="l4-debate-b-name" class="l4-input"
+                 placeholder="예: 자유 보장론"
+                 aria-label="입장 B 이름">
+        </div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">핵심 논거</div>
+          <input type="text" id="l4-debate-b-argument" class="l4-input"
+                 placeholder="예: 개인 자율성 침해"
+                 aria-label="입장 B 핵심 논거">
+        </div>
+        <div class="l4-debate-field">
+          <div class="l4-debate-field__label">가치 기준</div>
+          <input type="text" id="l4-debate-b-value" class="l4-input"
+                 placeholder="예: 자유, 자율성"
+                 aria-label="입장 B 가치 기준">
+        </div>
+      </div>
+    </div>
+
+    <!-- Alternative/Compromise -->
+    <div class="l4-field">
+      <div class="l4-label">대안/절충안</div>
+      <input type="text" id="l4-debate-alternative" class="l4-input"
+             placeholder="두 입장을 절충하거나 넘어서는 대안이 있다면..."
+             aria-label="대안/절충안 입력">
+    </div>
+
+    <div style="text-align: right; margin-top: var(--rp-space-3);">
+      <button type="button" class="l4-btn" onclick="buildDebateQuestion();" aria-label="쟁점 발문 만들기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        쟁점 발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 6: Metacognition Reflection Tool
+     (Stage 3)
+     ============================================ -->
+<% if current_stage == 3 %>
+  <div class="l4-widget q-l4-metacognition-guide" id="l4-metacognition-tool" aria-label="메타인지 성찰 도구">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #312e81;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4M12 8h.01"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">메타인지 성찰 도구</h3>
+        <div class="l4-widget__subtitle">이번 발문 활동에서 나는 어떤 사고 과정을 거쳤는가?</div>
+      </div>
+    </div>
+
+    <!-- Thinking Process Checklist -->
+    <div class="l4-label">사고 과정 체크리스트</div>
+    <div class="l4-checklist">
+      <label class="l4-checklist__item">
+        <input type="checkbox" class="l4-checklist__checkbox" value="factual">
+        <span>
+          <span class="l4-checklist__label-text">사실 확인</span>
+          <span class="l4-checklist__label-sub">(factual)</span>
+        </span>
+      </label>
+      <label class="l4-checklist__item">
+        <input type="checkbox" class="l4-checklist__checkbox" value="inferential">
+        <span>
+          <span class="l4-checklist__label-text">추론</span>
+          <span class="l4-checklist__label-sub">(inferential)</span>
+        </span>
+      </label>
+      <label class="l4-checklist__item">
+        <input type="checkbox" class="l4-checklist__checkbox" value="critical">
+        <span>
+          <span class="l4-checklist__label-text">비판적 분석</span>
+          <span class="l4-checklist__label-sub">(critical)</span>
+        </span>
+      </label>
+      <label class="l4-checklist__item">
+        <input type="checkbox" class="l4-checklist__checkbox" value="creative">
+        <span>
+          <span class="l4-checklist__label-text">창의적 사고</span>
+          <span class="l4-checklist__label-sub">(creative)</span>
+        </span>
+      </label>
+      <label class="l4-checklist__item">
+        <input type="checkbox" class="l4-checklist__checkbox" value="appreciative">
+        <span>
+          <span class="l4-checklist__label-text">감상</span>
+          <span class="l4-checklist__label-sub">(appreciative)</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="l4-divider"></div>
+
+    <!-- Reflection Fields -->
+    <div class="l4-field">
+      <div class="l4-label">내 발문의 강점은?</div>
+      <input type="text" id="l4-meta-strengths" class="l4-input"
+             placeholder="이번 활동에서 잘한 점을 적어 보세요..."
+             aria-label="발문 강점 입력">
+    </div>
+
+    <div class="l4-field">
+      <div class="l4-label">내 발문의 한계는?</div>
+      <input type="text" id="l4-meta-limits" class="l4-input"
+             placeholder="아쉬운 점이나 부족했던 부분은..."
+             aria-label="발문 한계 입력">
+    </div>
+
+    <div class="l4-field">
+      <div class="l4-label">개선 방향은?</div>
+      <input type="text" id="l4-meta-improvement" class="l4-input"
+             placeholder="다음에 발문을 작성한다면 어떻게 개선할 수 있을까요..."
+             aria-label="개선 방향 입력">
+    </div>
+
+    <div style="text-align: right; margin-top: var(--rp-space-3);">
+      <button type="button" class="l4-btn" onclick="buildMetacognitionQuestion();" aria-label="성찰 발문 만들기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        성찰 발문 만들기
+      </button>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 7: Sequential Question Advanced Guide
+     (All stages)
+     ============================================ -->
+<div class="l4-widget" id="l4-sequential-guide" aria-label="연속 발문 고급 가이드">
+  <div class="l4-widget__header">
+    <div class="l4-widget__icon" style="background: #1e293b;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"></line>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+        <line x1="8" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+      </svg>
+    </div>
+    <div>
+      <h3 class="l4-widget__title">연속 발문 고급 가이드</h3>
+      <div class="l4-widget__subtitle">하나의 큰 질문을 3단계로 분석하여 심화 발문을 만듭니다</div>
+    </div>
+  </div>
+
+  <!-- Big Question -->
+  <div class="l4-field">
+    <div class="l4-label">큰 질문 (Big Question)</div>
+    <input type="text" id="l4-seq-big-question" class="l4-input"
+           placeholder="예: 이타적 선택에서 '냉정함'은 왜 필요한가?"
+           aria-label="큰 질문 입력">
+  </div>
+
+  <div class="l4-divider"></div>
+
+  <!-- 3-Step Analysis -->
+  <div class="l4-label">3단계 분석 구조</div>
+  <div class="l4-seq-steps">
+    <div class="l4-seq-step">
+      <div class="l4-seq-step__code">1-1</div>
+      <div class="l4-seq-step__body">
+        <div class="l4-seq-step__desc">개념 정의/의미</div>
+        <input type="text" id="l4-seq-step1" class="l4-input"
+               placeholder="핵심 개념의 정의와 의미를 탐구합니다..."
+               aria-label="1단계 개념 정의 입력">
+      </div>
+    </div>
+    <div class="l4-seq-step">
+      <div class="l4-seq-step__code">1-2</div>
+      <div class="l4-seq-step__body">
+        <div class="l4-seq-step__desc">텍스트 사례/근거</div>
+        <input type="text" id="l4-seq-step2" class="l4-input"
+               placeholder="텍스트에서 관련 사례나 근거를 찾습니다..."
+               aria-label="2단계 텍스트 근거 입력">
+      </div>
+    </div>
+    <div class="l4-seq-step">
+      <div class="l4-seq-step__code">1-3</div>
+      <div class="l4-seq-step__body">
+        <div class="l4-seq-step__desc">적용/판단/대안</div>
+        <input type="text" id="l4-seq-step3" class="l4-input"
+               placeholder="실생활 적용, 가치 판단, 또는 대안을 제시합니다..."
+               aria-label="3단계 적용/판단 입력">
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: right; margin-top: var(--rp-space-4);">
+    <button type="button" class="l4-btn" onclick="buildSequentialQuestion();" aria-label="심화 발문 만들기">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+      심화 발문 만들기
+    </button>
+  </div>
+</div>
+
+<!-- ============================================
+     JavaScript: Question Builders
+     ============================================ -->
+<script>
+  // Utility: set text in the main question textarea
+  function l4SetQuestion(text) {
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      textarea.value = text;
+      textarea.focus();
+      // Update character counter
+      var counter = document.getElementById('char-count');
+      if (counter) counter.textContent = text.length;
+      // Mark as scaffolding-used
+      var scaffField = document.getElementById('scaffolding-used-field');
+      if (scaffField) scaffField.value = 'true';
+      var typeField = document.getElementById('question-type-field');
+      if (typeField) typeField.value = 'guided';
+    }
+  }
+
+  // Widget 2: Hypothesis Verification
+  function buildHypothesisQuestion() {
+    var hypo = (document.getElementById('l4-hypo-hypothesis') || {}).value || '';
+    var support = (document.getElementById('l4-hypo-support') || {}).value || '';
+    var counter = (document.getElementById('l4-hypo-counter') || {}).value || '';
+    var conclusion = (document.getElementById('l4-hypo-conclusion') || {}).value || '';
+
+    if (!hypo.trim()) {
+      alert('가설을 먼저 입력해 주세요.');
+      return;
+    }
+
+    var parts = [];
+    parts.push("'" + hypo.trim() + "'이라는 가설에 대해");
+    if (support.trim()) {
+      parts.push("텍스트에서 근거(" + support.trim() + ")를 찾았으나");
+    }
+    if (counter.trim()) {
+      parts.push(counter.trim() + "이라는 반례도 있습니다.");
+    }
+    if (conclusion.trim()) {
+      parts.push("따라서 " + conclusion.trim());
+    } else {
+      parts.push("이에 대해 어떻게 판단해야 할까요?");
+    }
+
+    l4SetQuestion(parts.join(', '));
+  }
+
+  // Widget 3: Interdisciplinary Connection
+  function buildDisciplineQuestion() {
+    var disciplines = [
+      { id: 'l4-disc-economics', name: '경제학' },
+      { id: 'l4-disc-psychology', name: '심리학' },
+      { id: 'l4-disc-sociology', name: '사회학' },
+      { id: 'l4-disc-ethics', name: '윤리학' }
+    ];
+
+    var filled = [];
+    for (var i = 0; i < disciplines.length; i++) {
+      var val = (document.getElementById(disciplines[i].id) || {}).value || '';
+      if (val.trim()) {
+        filled.push({ name: disciplines[i].name, concept: val.trim() });
+      }
+    }
+
+    if (filled.length === 0) {
+      alert('최소 한 분야의 관점을 입력해 주세요.');
+      return;
+    }
+
+    var chosen = filled[0];
+    var question = '이 텍스트를 ' + chosen.name + '의 관점에서 보면, ' +
+                   chosen.concept + '과(와) 관련하여 어떤 새로운 의미가 드러나나요?';
+
+    if (filled.length > 1) {
+      question += ' 또한 ' + filled[1].name + '(' + filled[1].concept + ')의 시각과 비교하면 어떤 차이가 있을까요?';
+    }
+
+    l4SetQuestion(question);
+  }
+
+  // Widget 4: Ideology Critique
+  function buildCritiqueQuestion() {
+    var values = (document.getElementById('l4-critique-values') || {}).value || '';
+    var excluded = (document.getElementById('l4-critique-excluded') || {}).value || '';
+    var alternative = (document.getElementById('l4-critique-alternative') || {}).value || '';
+
+    if (!values.trim() && !excluded.trim() && !alternative.trim()) {
+      alert('최소 하나의 항목을 입력해 주세요.');
+      return;
+    }
+
+    var parts = [];
+    if (values.trim()) {
+      parts.push('이 텍스트가 전제하는 ' + values.trim() + '이라는 가치 체계는 정당한가요?');
+    }
+    if (excluded.trim()) {
+      parts.push(excluded.trim() + '의 관점이 포함되었다면 텍스트의 의미는 어떻게 달라질까요?');
+    }
+    if (alternative.trim()) {
+      parts.push(alternative.trim());
+    }
+
+    l4SetQuestion(parts.join(' '));
+  }
+
+  // Widget 5: Debate Design
+  function buildDebateQuestion() {
+    var issue = (document.getElementById('l4-debate-issue') || {}).value || '';
+    var aName = (document.getElementById('l4-debate-a-name') || {}).value || '';
+    var bName = (document.getElementById('l4-debate-b-name') || {}).value || '';
+    var aValue = (document.getElementById('l4-debate-a-value') || {}).value || '';
+    var bValue = (document.getElementById('l4-debate-b-value') || {}).value || '';
+
+    if (!issue.trim()) {
+      alert('쟁점을 먼저 입력해 주세요.');
+      return;
+    }
+
+    var question = issue.trim() + '에 대해, ';
+    if (aName.trim() && bName.trim()) {
+      question += aName.trim() + '와(과) ' + bName.trim() + ' 중 어떤 것이 더 정당한가요?';
+    } else {
+      question += '어떤 입장이 더 정당한가요?';
+    }
+
+    if (aValue.trim() && bValue.trim()) {
+      question += ' ' + aValue.trim() + '와(과) ' + bValue.trim() + ' 중 어떤 기준으로 판단해야 하나요?';
+    }
+
+    l4SetQuestion(question);
+  }
+
+  // Widget 6: Metacognition Reflection
+  function buildMetacognitionQuestion() {
+    var checkboxes = document.querySelectorAll('#l4-metacognition-tool .l4-checklist__checkbox:checked');
+    var strengths = (document.getElementById('l4-meta-strengths') || {}).value || '';
+    var limits = (document.getElementById('l4-meta-limits') || {}).value || '';
+    var improvement = (document.getElementById('l4-meta-improvement') || {}).value || '';
+
+    var processes = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+      processes.push(checkboxes[i].value);
+    }
+
+    var parts = [];
+    if (processes.length > 0) {
+      parts.push('이번 활동에서 ' + processes.join(', ') + '의 사고 과정을 거쳤는데');
+    }
+    if (strengths.trim()) {
+      parts.push('강점은 ' + strengths.trim() + '이고');
+    }
+    if (limits.trim()) {
+      parts.push('한계는 ' + limits.trim() + '입니다.');
+    }
+    if (improvement.trim()) {
+      parts.push('앞으로 ' + improvement.trim() + '을(를) 통해 어떻게 더 깊이 있는 발문을 만들 수 있을까요?');
+    } else {
+      parts.push('이 성찰을 바탕으로 어떤 더 나은 발문을 만들 수 있을까요?');
+    }
+
+    l4SetQuestion(parts.join(', '));
+  }
+
+  // Widget 7: Sequential Question
+  function buildSequentialQuestion() {
+    var bigQ = (document.getElementById('l4-seq-big-question') || {}).value || '';
+    var step1 = (document.getElementById('l4-seq-step1') || {}).value || '';
+    var step2 = (document.getElementById('l4-seq-step2') || {}).value || '';
+    var step3 = (document.getElementById('l4-seq-step3') || {}).value || '';
+
+    if (!bigQ.trim()) {
+      alert('큰 질문을 먼저 입력해 주세요.');
+      return;
+    }
+
+    var parts = [bigQ.trim()];
+    if (step1.trim()) parts.push('먼저, ' + step1.trim() + '을(를) 생각해 봅시다.');
+    if (step2.trim()) parts.push('텍스트에서 ' + step2.trim() + '이(가) 이를 어떻게 보여줍니까?');
+    if (step3.trim()) parts.push('이를 바탕으로 ' + step3.trim());
+
+    l4SetQuestion(parts.join(' '));
+  }
+</script>
