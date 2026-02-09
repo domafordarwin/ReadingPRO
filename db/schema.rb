@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_100003) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_100004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -411,6 +411,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_100003) do
     t.index ["endpoint", "recorded_at"], name: "idx_performance_metrics_endpoint_time"
     t.index ["metric_type", "recorded_at"], name: "idx_performance_metrics_type_time"
     t.index ["recorded_at"], name: "index_performance_metrics_on_recorded_at"
+  end
+
+  create_table "questioning_module_assignments", force: :cascade do |t|
+    t.datetime "assigned_at", null: false
+    t.bigint "assigned_by_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "due_date"
+    t.text "notes"
+    t.bigint "questioning_module_id", null: false
+    t.bigint "school_id"
+    t.string "status", default: "assigned", null: false
+    t.bigint "student_id"
+    t.datetime "updated_at", null: false
+    t.index ["assigned_by_id"], name: "index_questioning_module_assignments_on_assigned_by_id"
+    t.index ["questioning_module_id", "school_id"], name: "idx_qma_module_school"
+    t.index ["questioning_module_id", "student_id"], name: "idx_qma_module_student"
+    t.index ["questioning_module_id"], name: "index_questioning_module_assignments_on_questioning_module_id"
+    t.index ["school_id"], name: "index_questioning_module_assignments_on_school_id"
+    t.index ["status"], name: "index_questioning_module_assignments_on_status"
+    t.index ["student_id"], name: "index_questioning_module_assignments_on_student_id"
   end
 
   create_table "questioning_module_templates", force: :cascade do |t|
@@ -956,6 +976,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_100003) do
   add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
   add_foreign_key "parent_forums", "users", column: "created_by_id"
   add_foreign_key "parents", "users"
+  add_foreign_key "questioning_module_assignments", "questioning_modules"
+  add_foreign_key "questioning_module_assignments", "schools"
+  add_foreign_key "questioning_module_assignments", "students"
+  add_foreign_key "questioning_module_assignments", "users", column: "assigned_by_id"
   add_foreign_key "questioning_module_templates", "questioning_modules"
   add_foreign_key "questioning_module_templates", "questioning_templates"
   add_foreign_key "questioning_modules", "reading_stimuli"

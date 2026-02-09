@@ -8,6 +8,7 @@ class QuestioningModule < ApplicationRecord
   has_many :questioning_templates, through: :questioning_module_templates
   has_many :questioning_sessions, dependent: :destroy
   has_many :student_questions, through: :questioning_sessions
+  has_many :questioning_module_assignments, dependent: :destroy
 
   # Enums
   enum :level, {

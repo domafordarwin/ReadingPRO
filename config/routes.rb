@@ -255,6 +255,12 @@ Rails.application.routes.draw do
         patch :review
       end
     end
+
+    # 발문 모듈 배정 관리
+    get  "questioning_assignments", to: "dashboard#questioning_assignments", as: "questioning_assignments"
+    post "questioning_assignments", to: "dashboard#create_questioning_assignment", as: "create_questioning_assignment"
+    delete "questioning_assignments/:id", to: "dashboard#cancel_questioning_assignment", as: "cancel_questioning_assignment"
+    post "questioning_assignments/bulk_assign", to: "dashboard#bulk_assign_questioning_module", as: "bulk_assign_questioning_module"
   end
 
   namespace :researcher do

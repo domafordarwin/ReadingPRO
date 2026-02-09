@@ -379,6 +379,97 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     end
   end
 
+  # =====================================================================
+  # 발문 모듈 배정 관리
+  # =====================================================================
+
+  def questioning_assignments
+    @current_page = "questioning_assignments"
+    @page_title = "발문 모듈 배정 관리"
+
+    # 통계
+    @total_assignments = QuestioningModuleAssignment.count
+    @active_assignments = QuestioningModuleAssignment.active.count
+    @completed_assignments = QuestioningModuleAssignment.where(status: "completed").count
+    @cancelled_assignments = QuestioningModuleAssignment.where(status: "cancelled").count
+
+    # 상태 필터
+    @status_filter = params[:status].to_s.strip
+    base = QuestioningModuleAssignment.includes(:questioning_module, :school, :student, :assigned_by)
+
+    @assignments = case @status_filter
+                   when "active"    then base.active.recent
+                   when "completed" then base.where(status: "completed").recent
+                   when "cancelled" then base.where(status: "cancelled").recent
+                   else                  base.recent
+                   end
+
+    @assignments = @assignments.page(params[:page]).per(20)
+
+    # 배정 폼 데이터
+    @active_modules = QuestioningModule.available.includes(:reading_stimulus).order(:title)
+    @schools = School.includes(:students).order(:name)
+  end
+
+  def create_questioning_assignment
+    assignment = QuestioningModuleAssignment.new(
+      questioning_module_id: params[:questioning_module_id],
+      school_id: params[:school_id].presence,
+      student_id: params[:student_id].presence,
+      assigned_by: current_user,
+      assigned_at: Time.current,
+      due_date: params[:due_date].presence,
+      notes: params[:notes].presence
+    )
+
+    if assignment.save
+      redirect_to diagnostic_teacher_questioning_assignments_path,
+                  notice: "발문 모듈이 배정되었습니다."
+    else
+      redirect_to diagnostic_teacher_questioning_assignments_path,
+                  alert: "배정 실패: #{assignment.errors.full_messages.join(', ')}"
+    end
+  end
+
+  def cancel_questioning_assignment
+    assignment = QuestioningModuleAssignment.find(params[:id])
+    if assignment.cancel!
+      redirect_to diagnostic_teacher_questioning_assignments_path,
+                  notice: "배정이 취소되었습니다."
+    else
+      redirect_to diagnostic_teacher_questioning_assignments_path,
+                  alert: "배정 취소에 실패했습니다."
+    end
+  end
+
+  def bulk_assign_questioning_module
+    mod = QuestioningModule.find(params[:questioning_module_id])
+    student_ids = params[:student_ids] || []
+    due_date = params[:due_date].present? ? Date.parse(params[:due_date]) : nil
+    count = 0
+
+    student_ids.each do |sid|
+      student = Student.find_by(id: sid)
+      next unless student
+      next if QuestioningModuleAssignment.exists?(
+        student: student, questioning_module: mod, status: %w[assigned in_progress]
+      )
+
+      QuestioningModuleAssignment.create!(
+        questioning_module: mod,
+        student: student,
+        assigned_by: current_user,
+        assigned_at: Time.current,
+        due_date: due_date,
+        notes: "학교 배정으로부터 개별 배정"
+      )
+      count += 1
+    end
+
+    redirect_to diagnostic_teacher_questioning_assignments_path,
+                notice: "#{count}명의 학생에게 발문 모듈을 배정했습니다."
+  end
+
   # 공지사항은 DiagnosticTeacher::NoticesController로 이동됨
 
   private

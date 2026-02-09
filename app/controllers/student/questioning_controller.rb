@@ -10,12 +10,15 @@ class Student::QuestioningController < ApplicationController
 
   def index
     @current_page = "questioning"
+
+    # 배정된 모듈만 표시 (학생 직접 배정 + 학교 배정)
+    assigned_ids = assigned_module_ids
     @questioning_modules = QuestioningModule.available
+      .where(id: assigned_ids)
       .includes(:reading_stimulus, :creator)
       .order(created_at: :desc)
 
     # Stats for the header
-    @student = current_user&.student
     @total_modules = @questioning_modules.count
     student_sessions = @student&.questioning_sessions || QuestioningSession.none
     @in_progress_count = student_sessions.active.count
@@ -98,7 +101,25 @@ class Student::QuestioningController < ApplicationController
 
   def set_module
     @module = QuestioningModule.includes(:reading_stimulus).find(params[:id])
+
+    # 배정 권한 확인
+    unless module_assigned?(@module)
+      redirect_to student_questioning_index_path, alert: "접근 권한이 없는 모듈입니다."
+    end
   rescue ActiveRecord::RecordNotFound
     redirect_to student_questioning_index_path, alert: "모듈을 찾을 수 없습니다."
+  end
+
+  # 학생 직접 배정 + 학교 배정 합산
+  def assigned_module_ids
+    student_ids = QuestioningModuleAssignment.active.by_student(@student).pluck(:questioning_module_id)
+    school_ids = QuestioningModuleAssignment.active.by_school(@student.school).pluck(:questioning_module_id)
+    (student_ids + school_ids).uniq
+  end
+
+  def module_assigned?(mod)
+    QuestioningModuleAssignment.active.where(questioning_module: mod).where(
+      "student_id = ? OR school_id = ?", @student.id, @student.school_id
+    ).exists?
   end
 end

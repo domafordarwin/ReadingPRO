@@ -205,4 +205,25 @@ MODULE_DEFS.each do |mod_def|
   end
 end
 
+# ---------------------------------------------------------------------------
+# Step 4: Assign all modules to 신명중학교
+# ---------------------------------------------------------------------------
+school = School.find_by(name: "신명중학교")
+assigner = User.find_by(role: "diagnostic_teacher") || User.find_by(role: "teacher")
+
+if school && assigner
+  QuestioningModule.available.each do |qm|
+    QuestioningModuleAssignment.find_or_create_by!(
+      questioning_module: qm,
+      school: school
+    ) do |a|
+      a.assigned_by = assigner
+      a.assigned_at = Time.current
+      a.status = "assigned"
+      a.notes = "시드 데이터 - 자동 배정"
+    end
+  end
+  puts "  -> #{QuestioningModule.available.count} modules assigned to #{school.name}"
+end
+
 puts "Questioning Modules seeding complete!"

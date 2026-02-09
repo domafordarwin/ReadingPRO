@@ -1,0 +1,232 @@
+<% content_for :page_title, "발문 모듈 배정 관리" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">발문 모듈 배정 관리</h1>
+  <p class="rp-page-header__subtitle">발문 학습 모듈을 학교에 배정하고, 학생별 배정 현황을 관리합니다</p>
+</div>
+
+<!-- 배정 현황 통계 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 배정</div>
+    <div class="rp-stat-value"><%= @total_assignments %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">활성 배정</div>
+    <div class="rp-stat-value rp-stat-value--info"><%= @active_assignments %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">완료</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @completed_assignments %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">취소</div>
+    <div class="rp-stat-value rp-stat-value--danger"><%= @cancelled_assignments %></div>
+  </div>
+</div>
+
+<!-- 새 배정 폼 -->
+<div class="rp-card" style="margin-bottom: 24px;">
+  <h2 class="rp-section-title" style="margin-bottom: 16px;">새 배정</h2>
+  <%= form_with url: diagnostic_teacher_create_questioning_assignment_path, method: :post, data: { turbo: false }, style: "display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;" do |f| %>
+    <div style="flex: 1; min-width: 200px;">
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">발문 모듈</label>
+      <select name="questioning_module_id" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        <option value="">모듈 선택...</option>
+        <% @active_modules.each do |mod| %>
+          <option value="<%= mod.id %>"><%= mod.title %> (<%= mod.level_label %>)</option>
+        <% end %>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">배정 대상 (학교)</label>
+      <select name="school_id" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        <option value="">학교 선택...</option>
+        <% @schools.each do |school| %>
+          <option value="<%= school.id %>"><%= school.name %> (<%= school.students.size %>명)</option>
+        <% end %>
+      </select>
+    </div>
+    <div style="min-width: 160px;">
+      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">마감일 (선택)</label>
+      <input type="date" name="due_date" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+    </div>
+    <div>
+      <button type="submit" class="rp-btn rp-btn--primary">배정하기</button>
+    </div>
+  <% end %>
+</div>
+
+<!-- 배정 목록 -->
+<div class="rp-card">
+  <div class="rp-section-header">
+    <h2 class="rp-section-title">배정 목록</h2>
+  </div>
+
+  <!-- 상태 필터 탭 -->
+  <div class="rp-filter-tabs">
+    <%= link_to "전체", diagnostic_teacher_questioning_assignments_path,
+        class: "rp-filter-tab #{@status_filter.blank? ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "활성", diagnostic_teacher_questioning_assignments_path(status: "active"),
+        class: "rp-filter-tab #{@status_filter == 'active' ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "완료", diagnostic_teacher_questioning_assignments_path(status: "completed"),
+        class: "rp-filter-tab #{@status_filter == 'completed' ? 'rp-filter-tab--active' : ''}" %>
+    <%= link_to "취소", diagnostic_teacher_questioning_assignments_path(status: "cancelled"),
+        class: "rp-filter-tab #{@status_filter == 'cancelled' ? 'rp-filter-tab--active' : ''}" %>
+  </div>
+
+  <% if @assignments.any? %>
+    <div class="rp-table-wrapper">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>모듈명</th>
+            <th>수준</th>
+            <th>대상</th>
+            <th>배정자</th>
+            <th>배정일</th>
+            <th>마감일</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @assignments.each do |assignment| %>
+            <tr>
+              <td><strong><%= assignment.questioning_module.title %></strong></td>
+              <td>
+                <span class="rp-badge rp-badge--level"><%= assignment.questioning_module.level_label %></span>
+              </td>
+              <td>
+                <% if assignment.school_assignment? %>
+                  <span class="rp-badge rp-badge--info"><%= assignment.school.name %> (전체)</span>
+                <% elsif assignment.student_assignment? %>
+                  <span class="rp-badge rp-badge--outline"><%= assignment.student.name %></span>
+                <% end %>
+              </td>
+              <td><%= assignment.assigned_by.email.split("@").first %></td>
+              <td><%= assignment.assigned_at.strftime("%Y.%m.%d") %></td>
+              <td><%= assignment.due_date&.strftime("%Y.%m.%d") || "-" %></td>
+              <td>
+                <% case assignment.status %>
+                <% when "assigned" %>
+                  <span class="rp-badge rp-badge--warning">배정됨</span>
+                <% when "in_progress" %>
+                  <span class="rp-badge rp-badge--info">진행중</span>
+                <% when "completed" %>
+                  <span class="rp-badge rp-badge--success">완료</span>
+                <% when "cancelled" %>
+                  <span class="rp-badge rp-badge--secondary">취소됨</span>
+                <% end %>
+              </td>
+              <td>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <% if assignment.status.in?(%w[assigned in_progress]) %>
+                    <%= button_to "취소",
+                        diagnostic_teacher_cancel_questioning_assignment_path(assignment),
+                        method: :delete,
+                        data: { turbo_confirm: "이 배정을 취소하시겠습니까?" },
+                        class: "rp-btn rp-btn--sm rp-btn--danger" %>
+                  <% else %>
+                    <span style="color: #94a3b8;">-</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+            <%# 학교 배정인 경우: 개별 학생 배정 드릴다운 %>
+            <% if assignment.school_assignment? && assignment.status.in?(%w[assigned in_progress]) %>
+              <tr>
+                <td colspan="8" style="padding: 0;">
+                  <details style="padding: 12px 16px; background: #f8fafc;">
+                    <summary style="cursor: pointer; font-size: 13px; color: #2563eb; font-weight: 500;">
+                      학생 개별 배정 (<%= assignment.school.students.count %>명)
+                    </summary>
+                    <div style="margin-top: 12px;">
+                      <%= form_with url: diagnostic_teacher_bulk_assign_questioning_module_path,
+                                    method: :post, data: { turbo: false } do %>
+                        <input type="hidden" name="questioning_module_id" value="<%= assignment.questioning_module_id %>">
+                        <input type="hidden" name="due_date" value="<%= assignment.due_date&.strftime('%Y-%m-%d') %>">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-bottom: 12px;">
+                          <% assignment.school.students.order(:name).each do |student| %>
+                            <% already_assigned = QuestioningModuleAssignment.active.exists?(
+                                 student: student, questioning_module_id: assignment.questioning_module_id
+                               ) %>
+                            <label style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; cursor: pointer; <%= 'opacity: 0.5;' if already_assigned %>">
+                              <input type="checkbox" name="student_ids[]" value="<%= student.id %>"
+                                     <%= 'checked disabled' if already_assigned %>>
+                              <span><%= student.name %></span>
+                              <% if already_assigned %>
+                                <span class="rp-badge rp-badge--success" style="font-size: 10px; padding: 2px 6px;">배정됨</span>
+                              <% end %>
+                            </label>
+                          <% end %>
+                        </div>
+                        <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">선택 학생에게 개별 배정</button>
+                      <% end %>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @assignments.respond_to?(:total_pages) && @assignments.total_pages > 1 %>
+      <div style="margin-top: 24px; display: flex; justify-content: center; gap: 8px;">
+        <% if @assignments.current_page > 1 %>
+          <%= link_to "이전", diagnostic_teacher_questioning_assignments_path(page: @assignments.current_page - 1, status: @status_filter.presence), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+        <span style="padding: 6px 12px; color: #64748b; font-size: 13px;">
+          <%= @assignments.current_page %> / <%= @assignments.total_pages %>
+        </span>
+        <% if @assignments.current_page < @assignments.total_pages %>
+          <%= link_to "다음", diagnostic_teacher_questioning_assignments_path(page: @assignments.current_page + 1, status: @status_filter.presence), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="rp-empty-state">
+      <p style="font-size: 16px; color: #64748b;">배정된 발문 모듈이 없습니다.</p>
+      <p style="color: #94a3b8;">위의 배정 폼에서 모듈을 학교에 배정해보세요.</p>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  .rp-page-header { margin-bottom: 24px; }
+  .rp-page-header__title { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+  .rp-page-header__subtitle { font-size: 14px; color: #94a3b8; margin: 0; }
+  .rp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .rp-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
+  .rp-stat-label { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 8px; }
+  .rp-stat-value { font-size: 28px; font-weight: 700; color: #0f172a; }
+  .rp-stat-value--info { color: #2563eb; }
+  .rp-stat-value--success { color: #10b981; }
+  .rp-stat-value--danger { color: #ef4444; }
+  .rp-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+  .rp-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .rp-section-title { font-size: 18px; font-weight: 600; color: #0f172a; margin: 0; }
+  .rp-table-wrapper { overflow-x: auto; }
+  .rp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rp-table th, .rp-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  .rp-table th { font-weight: 600; color: #94a3b8; background: #f8fafc; font-size: 12px; text-transform: uppercase; }
+  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+  .rp-btn--primary { background: #2f5bff; color: white; }
+  .rp-btn--secondary { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+  .rp-btn--sm { padding: 6px 12px; font-size: 12px; }
+  .rp-btn--danger { background: #fee2e2; color: #dc2626; }
+  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .rp-badge--warning { background: #fef3c7; color: #92400e; }
+  .rp-badge--success { background: #d1fae5; color: #065f46; }
+  .rp-badge--info { background: #dbeafe; color: #1e3a8a; }
+  .rp-badge--outline { background: transparent; border: 1px solid #cbd5e1; color: #475569; }
+  .rp-badge--secondary { background: #e2e8f0; color: #475569; }
+  .rp-badge--level { background: #ede9fe; color: #5b21b6; }
+  .rp-empty-state { text-align: center; padding: 60px 40px; }
+  .rp-filter-tabs { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: #f1f5f9; border-radius: 8px; }
+  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
+  .rp-filter-tab:hover { color: #0f172a; background: rgba(255,255,255,0.5); }
+  .rp-filter-tab--active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+</style>

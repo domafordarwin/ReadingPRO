@@ -14,6 +14,7 @@ class Student < ApplicationRecord
   # Questioning module
   has_many :questioning_sessions, dependent: :destroy
   has_many :questioning_progresses, dependent: :destroy
+  has_many :questioning_module_assignments, dependent: :destroy
 
   validates :name, presence: true
 
