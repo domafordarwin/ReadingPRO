@@ -81,6 +81,7 @@ class Researcher::DashboardController < ApplicationController
   def diagnostic_eval
     @current_page = "scoring"
     load_forms_with_filters
+    load_forms_coverage
   end
 
   def passages
@@ -453,6 +454,45 @@ class Researcher::DashboardController < ApplicationController
 
     # 필터링 옵션
     @available_statuses = DiagnosticForm.statuses.keys
+  end
+
+  def load_forms_coverage
+    @all_indicators = EvaluationIndicator.includes(:sub_indicators).order(:id)
+    @form_coverages = {}
+
+    @forms.each do |form|
+      items = form.items.includes(:evaluation_indicator, :sub_indicator)
+      indicator_counts = {}
+      sub_indicator_counts = {}
+      unmapped = 0
+
+      items.each do |item|
+        if item.evaluation_indicator_id.present?
+          indicator_counts[item.evaluation_indicator_id] ||= 0
+          indicator_counts[item.evaluation_indicator_id] += 1
+          if item.sub_indicator_id.present?
+            sub_indicator_counts[item.sub_indicator_id] ||= 0
+            sub_indicator_counts[item.sub_indicator_id] += 1
+          end
+        else
+          unmapped += 1
+        end
+      end
+
+      covered_ei = @all_indicators.count { |ei| indicator_counts[ei.id].to_i > 0 }
+      covered_si = @all_indicators.sum { |ei| ei.sub_indicators.count { |si| sub_indicator_counts[si.id].to_i > 0 } }
+      total_si = @all_indicators.sum { |ei| ei.sub_indicators.count }
+
+      @form_coverages[form.id] = {
+        indicator_counts: indicator_counts,
+        sub_indicator_counts: sub_indicator_counts,
+        unmapped: unmapped,
+        covered_ei: covered_ei,
+        total_ei: @all_indicators.count,
+        covered_si: covered_si,
+        total_si: total_si
+      }
+    end
   end
 
   def load_prompts_with_filters
