@@ -96,12 +96,12 @@ class Researcher::DashboardController < ApplicationController
   end
 
   def prompts
-    @current_page = "item_mgmt"
+    @current_page = "prompts"
     load_prompts_with_filters
   end
 
   def books
-    @current_page = "item_bank"
+    @current_page = "books"
     load_books_with_filters
   end
 

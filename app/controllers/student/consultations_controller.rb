@@ -10,7 +10,7 @@ class Student::ConsultationsController < ApplicationController
   before_action :authorize_post_author, only: [ :reopen ]
 
   def index
-    @current_page = "consultations"
+    @current_page = "feedback"
 
     # 검색 및 필터링 파라미터
     @search_query = params[:search].to_s.strip
@@ -45,7 +45,7 @@ class Student::ConsultationsController < ApplicationController
   end
 
   def show
-    @current_page = "consultations"
+    @current_page = "feedback"
 
     # 조회수 증가 (본인 글이 아닐 때만)
     @post.increment_views! unless @post.created_by_id == current_user&.id
@@ -60,12 +60,12 @@ class Student::ConsultationsController < ApplicationController
   end
 
   def new
-    @current_page = "consultations"
+    @current_page = "feedback"
     @post = @student.consultation_posts.build(created_by: current_user)
   end
 
   def create
-    @current_page = "consultations"
+    @current_page = "feedback"
     @post = @student.consultation_posts.build(consultation_post_params)
     @post.created_by = current_user
 
@@ -77,11 +77,11 @@ class Student::ConsultationsController < ApplicationController
   end
 
   def edit
-    @current_page = "consultations"
+    @current_page = "feedback"
   end
 
   def update
-    @current_page = "consultations"
+    @current_page = "feedback"
 
     if @post.update(consultation_post_params)
       redirect_to student_consultation_path(@post), notice: "게시글이 수정되었습니다."

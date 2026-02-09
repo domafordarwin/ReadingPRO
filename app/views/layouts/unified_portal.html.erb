@@ -15,6 +15,9 @@
   <%= yield :head %>
 </head>
 <body class="rp-body" data-controller="web-vitals" data-web-vitals-endpoint-value="/api/metrics/web_vitals">
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="skip-to-main">본문으로 건너뛰기</a>
+
   <!-- Icon Sprite (include once, hidden from view) -->
   <%= render "shared/icon_sprite" %>
 
@@ -34,7 +37,7 @@
           current_page: local_assigns[:current_page] || @current_page %>
 
       <!-- Main Content -->
-      <main class="rp-main">
+      <main class="rp-main" id="main-content">
         <div class="rp-main__container">
           <% if flash[:notice].present? %>
             <div class="rp-flash rp-flash--notice">

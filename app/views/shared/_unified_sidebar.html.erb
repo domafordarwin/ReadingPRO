@@ -109,7 +109,7 @@
   # Student: 문해력 검사 → 진단 페이지, 종합보고서 보기 → 개발중
   if current_role.to_s == "student"
     menu_a_items << { id: "start_diagnosis", label: "문해력 검사", icon: "book-open" }
-    menu_a_items << { id: "comprehensive_report", label: "종합보고서 보기", icon: "bar-chart" }
+    menu_a_items << { id: "comprehensive_report", label: "나의 진단 리포트", icon: "bar-chart" }
   elsif current_role.to_s == "parent"
     # Parent only sees reports and feedback, no diagnosis menu
   elsif current_role.to_s == "teacher"
@@ -125,7 +125,7 @@
   if current_role.to_s == "student"
     menu_a_items << { id: "feedback", label: "상담 신청", icon: "message-circle" }
   elsif current_role.to_s != "teacher"
-    menu_a_items << { id: "feedback", label: "피드백/상담", icon: "message-circle" }
+    menu_a_items << { id: "feedback", label: "학부모 포럼", icon: "message-circle" }
   end
   menu_a_items << { id: "notice", label: "공지사항", icon: "bell" } if current_role.to_s == "student"
 
@@ -221,7 +221,7 @@
         ]
       },
       "D" => {
-        label: "분석",
+        label: "진단 결과 분석",
         items: [
           { id: "statistics", label: "상담 통계 대시보드", icon: "trending-up" },
           { id: "sub_analysis", label: "하위역량 분석", icon: "activity" },
@@ -244,7 +244,7 @@
     "parent" => ["A"],
     "school_admin" => ["SA", "B", "D"],
     "teacher" => ["T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
-    "developer" => ["C", "D"],
+    "developer" => ["C"],
     "admin" => ["E"]
   }
 

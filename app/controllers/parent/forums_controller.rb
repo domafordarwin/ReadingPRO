@@ -8,7 +8,7 @@ class Parent::ForumsController < ApplicationController
   before_action :authorize_forum_author, only: [ :edit, :update, :destroy, :reopen ]
 
   def index
-    @current_page = "forums"
+    @current_page = "feedback"
 
     # 검색 및 필터링 파라미터
     @search_query = params[:search].to_s.strip
@@ -36,7 +36,7 @@ class Parent::ForumsController < ApplicationController
   end
 
   def show
-    @current_page = "forums"
+    @current_page = "feedback"
 
     # 조회수 증가 (본인 글이 아닐 때만)
     @forum.increment_views! unless @forum.created_by_id == current_user&.id
@@ -51,12 +51,12 @@ class Parent::ForumsController < ApplicationController
   end
 
   def new
-    @current_page = "forums"
+    @current_page = "feedback"
     @forum = ParentForum.new(created_by: current_user)
   end
 
   def create
-    @current_page = "forums"
+    @current_page = "feedback"
     @forum = ParentForum.new(forum_params)
     @forum.created_by = current_user
 
@@ -68,11 +68,11 @@ class Parent::ForumsController < ApplicationController
   end
 
   def edit
-    @current_page = "forums"
+    @current_page = "feedback"
   end
 
   def update
-    @current_page = "forums"
+    @current_page = "feedback"
 
     if @forum.update(forum_params)
       redirect_to parent_forum_path(@forum), notice: "게시글이 수정되었습니다."

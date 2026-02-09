@@ -13,7 +13,7 @@ class Parent::ForumCommentsController < ApplicationController
     if @comment.save
       redirect_to parent_forum_path(@forum), notice: "댓글이 작성되었습니다."
     else
-      @current_page = "forums"
+      @current_page = "feedback"
       @comments = @forum.parent_forum_comments
                         .includes(:created_by)
                         .recent

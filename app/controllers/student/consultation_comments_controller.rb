@@ -14,7 +14,7 @@ class Student::ConsultationCommentsController < ApplicationController
     if @comment.save
       redirect_to student_consultation_path(@post), notice: "댓글이 작성되었습니다."
     else
-      @current_page = "consultations"
+      @current_page = "feedback"
       @comments = @post.consultation_comments
                        .includes(:created_by)
                        .recent
