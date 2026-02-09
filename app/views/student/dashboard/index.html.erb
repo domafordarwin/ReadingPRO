@@ -230,34 +230,28 @@
   </div>
 
   <!-- Recent Feedback -->
-  <div class="rp-card">
+  <div class="rp-card" style="display: flex; flex-direction: column;">
     <div class="rp-card__header">
       <h3 class="rp-card__title">최근 피드백</h3>
       <% if @recent_feedbacks.any? %>
         <span class="rp-badge rp-badge--info"><%= @recent_feedbacks.size %>건</span>
       <% end %>
     </div>
-    <div class="rp-card__body">
+    <div class="rp-card__body" style="flex: 1; display: flex; flex-direction: column;">
       <% if @recent_feedbacks.any? %>
-        <div class="rp-table-wrapper">
-          <table class="rp-table">
-            <tbody>
-              <% @recent_feedbacks.each do |fb| %>
-                <tr>
-                  <td>
-                    <strong><%= fb.response&.item&.prompt&.truncate(20) || "문항" %></strong>
-                    <div class="rp-text-muted" style="font-size: 12px;"><%= fb.feedback&.truncate(40) %></div>
-                  </td>
-                  <td class="rp-text-right">
-                    <span class="rp-badge rp-badge--default"><%= time_ago_in_words(fb.created_at) %> 전</span>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <% @recent_feedbacks.each do |fb| %>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+              <div style="min-width: 0; flex: 1;">
+                <strong style="font-size: 13px;"><%= fb.response&.item&.prompt&.truncate(22) || "문항" %></strong>
+                <div class="rp-text-muted" style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= fb.feedback&.truncate(36) %></div>
+              </div>
+              <span class="rp-badge rp-badge--default" style="flex-shrink: 0; margin-left: 8px; font-size: 11px;"><%= time_ago_in_words(fb.created_at) %> 전</span>
+            </div>
+          <% end %>
         </div>
       <% else %>
-        <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
           <p style="margin: 0;">아직 받은 피드백이 없습니다.</p>
         </div>
       <% end %>

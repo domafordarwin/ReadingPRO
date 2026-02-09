@@ -55,7 +55,7 @@ class Student::DashboardController < ApplicationController
         .where(responses: { student_attempt_id: published_attempt_ids })
         .includes(response: :item)
         .order(created_at: :desc)
-        .limit(5)
+        .limit(6)
     else
       @completed_count = 0
       @pending_count = 0
