@@ -281,11 +281,9 @@
               <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= student_show_attempt_path(attempt.id) %>');">
                 진단 결과 보기
               </button>
-              <div style="flex: 1; pointer-events: none;">
-                <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; width: 100%; pointer-events: auto;" onclick="event.stopPropagation();">
-                  상세보고서 보기
-                </button>
-              </div>
+              <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= student_comprehensive_report_show_path(attempt.id) %>');">
+                종합보고서 보기
+              </button>
             </div>
           </div>
         </a>
