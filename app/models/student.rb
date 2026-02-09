@@ -11,6 +11,10 @@ class Student < ApplicationRecord
   has_many :reader_tendencies, dependent: :destroy
   has_many :consultation_posts, dependent: :destroy
 
+  # Questioning module
+  has_many :questioning_sessions, dependent: :destroy
+  has_many :questioning_progresses, dependent: :destroy
+
   validates :name, presence: true
 
   def primary_guardian

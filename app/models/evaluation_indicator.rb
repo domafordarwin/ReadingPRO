@@ -15,6 +15,10 @@ class EvaluationIndicator < ApplicationRecord
   has_many :sub_indicators, dependent: :destroy
   has_many :items, dependent: :nullify
 
+  # Questioning module
+  has_many :questioning_templates, dependent: :nullify
+  has_many :questioning_progresses, dependent: :destroy
+
   # Validations
   validates :code, presence: true, uniqueness: true, length: { minimum: 3, maximum: 100 }
   validates :name, presence: true, length: { minimum: 3, maximum: 500 }

@@ -1,0 +1,166 @@
+<% content_for :page_title do %>발문 모듈 상세<% end %>
+
+<%
+  # @questioning_module - QuestioningModule instance
+  # @stimulus - associated ReadingStimulus
+  # @sessions - student's previous sessions for this module
+  stimulus = @stimulus || @questioning_module&.reading_stimulus
+  level = @questioning_module&.level || "L1"
+  level_labels = { "L1" => "초저", "L2" => "초고", "L3" => "중등", "L4" => "고등" }
+  level_label = level_labels[level] || level
+%>
+
+<!-- Page Header with Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <a href="/student/questioning" style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    발문 모듈 목록으로
+  </a>
+</div>
+
+<div class="rp-page-header">
+  <div style="display: flex; align-items: center; gap: var(--rp-space-3); flex-wrap: wrap;">
+    <h1 class="rp-page-header__title" style="margin: 0;"><%= stimulus&.title || @questioning_module&.title || "발문 모듈" %></h1>
+    <span class="q-level-badge q-level-badge--<%= level.downcase %>"><%= level_label %></span>
+  </div>
+  <p class="rp-page-header__subtitle"><%= @questioning_module&.description || "읽기 지문을 읽고 발문을 만들어 봅시다." %></p>
+</div>
+
+<!-- 2-Column Layout: Passage + Module Info -->
+<div class="q-show-layout rp-mb-6">
+  <!-- Left: Reading Passage -->
+  <div class="q-show-passage">
+    <h3 class="q-show-passage__title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+      읽기 지문
+    </h3>
+    <div class="q-show-passage__body">
+      <% if stimulus&.body.present? %>
+        <%= simple_format(stimulus.body) %>
+      <% else %>
+        <p style="color: var(--rp-text-muted); text-align: center; padding: var(--rp-space-6) 0;">
+          지문이 아직 등록되지 않았습니다.
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Right: Module Info -->
+  <div class="q-show-info">
+    <!-- Module Details -->
+    <div class="q-show-info__section">
+      <h3 class="q-show-info__section-title">모듈 정보</h3>
+      <div style="display: flex; flex-direction: column; gap: var(--rp-space-3);">
+        <div style="display: flex; justify-content: space-between; font-size: var(--rp-font-size-sm);">
+          <span style="color: var(--rp-text-muted);">수준</span>
+          <span class="q-level-badge q-level-badge--<%= level.downcase %>"><%= level_label %></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: var(--rp-font-size-sm);">
+          <span style="color: var(--rp-text-muted);">예상 소요 시간</span>
+          <span style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">
+            <%= @questioning_module&.estimated_time_minutes || 15 %>분
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: var(--rp-font-size-sm);">
+          <span style="color: var(--rp-text-muted);">발문 단계</span>
+          <span style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">3단계</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning Objectives -->
+    <div class="q-show-info__section">
+      <h3 class="q-show-info__section-title">학습 목표</h3>
+      <ul style="margin: 0; padding-left: var(--rp-space-5); font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.8;">
+        <li>읽기 지문을 이해하고 핵심 내용을 파악한다</li>
+        <li>단계별로 적절한 발문을 만들어 본다</li>
+        <li>발문을 통해 비판적 사고력을 키운다</li>
+        <% if level == "L3" || level == "L4" %>
+          <li>다양한 관점에서 텍스트를 분석한다</li>
+        <% end %>
+        <% if level == "L4" %>
+          <li>메타인지 성찰을 통해 발문의 질을 높인다</li>
+        <% end %>
+      </ul>
+    </div>
+
+    <!-- 3-Stage Guide -->
+    <div class="q-show-info__section">
+      <h3 class="q-show-info__section-title">발문 3단계 안내</h3>
+      <div class="q-stage-guide">
+        <div class="q-stage-guide__item">
+          <div class="q-stage-guide__num q-stage-guide__num--1">1</div>
+          <div class="q-stage-guide__text">
+            <div class="q-stage-guide__name">책문열기</div>
+            배경지식 활성화, 경험 공유, 예측하기
+          </div>
+        </div>
+        <div class="q-stage-guide__item">
+          <div class="q-stage-guide__num q-stage-guide__num--2">2</div>
+          <div class="q-stage-guide__text">
+            <div class="q-stage-guide__name">이야기나누기</div>
+            텍스트 이해, 인물/사건 분석, 추론하기
+          </div>
+        </div>
+        <div class="q-stage-guide__item">
+          <div class="q-stage-guide__num q-stage-guide__num--3">3</div>
+          <div class="q-stage-guide__text">
+            <div class="q-stage-guide__name">삶적용</div>
+            비판적 사고, 가치 판단, 삶과 연결하기
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Start Button -->
+    <div style="padding-top: var(--rp-space-2);">
+      <%= form_tag("/student/questioning/#{@questioning_module&.id}/start_session", method: :post, data: { turbo: false }) do %>
+        <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg rp-btn--full">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+          </svg>
+          학습 시작하기
+        </button>
+      <% end %>
+    </div>
+
+    <!-- Previous Sessions -->
+    <% if @sessions.present? && @sessions.any? %>
+      <div class="q-show-info__section">
+        <h3 class="q-show-info__section-title">이전 세션 기록</h3>
+        <div style="display: flex; flex-direction: column; gap: var(--rp-space-2);">
+          <% @sessions.each do |session| %>
+            <a href="/student/questioning_sessions/<%= session.id %>"
+               style="display: flex; align-items: center; justify-content: space-between; padding: var(--rp-space-3); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md); text-decoration: none; color: inherit; transition: background 0.15s;"
+               onmouseover="this.style.background='var(--rp-border)'" onmouseout="this.style.background='var(--rp-bg-subtle)'">
+              <div>
+                <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-text-title);">
+                  세션 #<%= session.respond_to?(:session_number) ? session.session_number : session.id %>
+                </div>
+                <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                  <%= session.created_at&.strftime("%Y.%m.%d %H:%M") %>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--rp-space-2);">
+                <% if session.respond_to?(:completed?) && session.completed? %>
+                  <span class="q-status-badge q-status-badge--completed">완료</span>
+                <% else %>
+                  <span class="q-status-badge q-status-badge--in-progress">진행중</span>
+                <% end %>
+                <% if session.respond_to?(:avg_score) && session.avg_score %>
+                  <span class="rp-badge rp-badge--primary"><%= session.avg_score.round(0) %>점</span>
+                <% end %>
+              </div>
+            </a>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

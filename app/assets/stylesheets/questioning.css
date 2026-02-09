@@ -1,0 +1,1498 @@
+/* ============================================
+   Questioning Module - Student Learning UI
+   발문을 통한 사고력 신장 모듈
+   ============================================ */
+
+/* ============================================
+   1. Stage Indicator (3-step progress)
+   ============================================ */
+.q-stage-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: var(--rp-space-4) 0;
+  margin-bottom: var(--rp-space-6);
+}
+
+.q-stage-step {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+}
+
+.q-stage-step__circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-bold);
+  border: 2px solid var(--rp-border);
+  background: var(--rp-surface);
+  color: var(--rp-text-muted);
+  transition: all var(--rp-transition-normal);
+}
+
+.q-stage-step__label {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: var(--rp-text-muted);
+  transition: color var(--rp-transition-normal);
+}
+
+.q-stage-step--active .q-stage-step__circle {
+  background: var(--rp-primary);
+  border-color: var(--rp-primary);
+  color: white;
+}
+
+.q-stage-step--active .q-stage-step__label {
+  color: var(--rp-primary);
+  font-weight: var(--rp-font-weight-semibold);
+}
+
+.q-stage-step--completed .q-stage-step__circle {
+  background: var(--rp-success);
+  border-color: var(--rp-success);
+  color: white;
+}
+
+.q-stage-step--completed .q-stage-step__label {
+  color: var(--rp-success-dark);
+}
+
+.q-stage-connector {
+  width: 60px;
+  height: 2px;
+  background: var(--rp-border);
+  margin: 0 var(--rp-space-2);
+  transition: background var(--rp-transition-normal);
+}
+
+.q-stage-connector--active {
+  background: var(--rp-primary);
+}
+
+.q-stage-connector--completed {
+  background: var(--rp-success);
+}
+
+/* ============================================
+   2. Module Card (Index Page)
+   ============================================ */
+.q-module-card {
+  background: var(--rp-surface);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-5);
+  transition: all var(--rp-transition-normal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+.q-module-card:hover {
+  box-shadow: var(--rp-shadow-md);
+  border-color: var(--rp-border-strong);
+}
+
+.q-module-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rp-space-3);
+}
+
+.q-module-card__title {
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.q-module-card__badges {
+  display: flex;
+  gap: var(--rp-space-2);
+  flex-wrap: wrap;
+}
+
+.q-module-card__progress {
+  margin-top: var(--rp-space-1);
+}
+
+.q-module-card__progress-bar {
+  height: 6px;
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-full);
+  overflow: hidden;
+}
+
+.q-module-card__progress-fill {
+  height: 100%;
+  border-radius: var(--rp-radius-full);
+  background: linear-gradient(90deg, var(--rp-primary) 0%, #818cf8 100%);
+  transition: width var(--rp-transition-slow);
+}
+
+.q-module-card__progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-1);
+}
+
+.q-module-card__stages {
+  display: flex;
+  gap: var(--rp-space-2);
+}
+
+.q-module-card__stage-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--rp-font-weight-bold);
+  background: var(--rp-bg-subtle);
+  color: var(--rp-text-muted);
+  border: 1px solid var(--rp-border);
+}
+
+.q-module-card__stage-dot--completed {
+  background: var(--rp-success-soft);
+  color: var(--rp-success-dark);
+  border-color: var(--rp-success);
+}
+
+.q-module-card__stage-dot--active {
+  background: var(--rp-primary-soft);
+  color: var(--rp-primary);
+  border-color: var(--rp-primary);
+}
+
+.q-module-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--rp-space-3);
+  border-top: 1px solid var(--rp-border);
+}
+
+/* ============================================
+   3. Reading Passage Panel (Collapsible)
+   ============================================ */
+.q-passage-panel {
+  background: var(--rp-bg-subtle);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--rp-space-4);
+}
+
+.q-passage-panel__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--rp-space-3) var(--rp-space-4);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+.q-passage-panel__toggle:hover {
+  background: var(--rp-surface);
+}
+
+.q-passage-panel__toggle-icon {
+  transition: transform var(--rp-transition-normal);
+}
+
+.q-passage-panel__toggle[aria-expanded="true"] .q-passage-panel__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.q-passage-panel__body {
+  padding: 0 var(--rp-space-4) var(--rp-space-4);
+  max-height: 400px;
+  overflow-y: auto;
+  font-size: var(--rp-font-size-base);
+  line-height: 1.8;
+  color: var(--rp-text-body);
+}
+
+.q-passage-panel__body--collapsed {
+  display: none;
+}
+
+/* ============================================
+   4. Template Card
+   ============================================ */
+.q-template-card {
+  background: var(--rp-surface);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-5);
+  margin-bottom: var(--rp-space-4);
+}
+
+.q-template-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-3);
+  margin-bottom: var(--rp-space-4);
+}
+
+.q-template-card__number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--rp-primary-soft);
+  color: var(--rp-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-bold);
+  flex-shrink: 0;
+}
+
+.q-template-card__title {
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  margin: 0;
+}
+
+.q-template-card__prompt {
+  font-size: var(--rp-font-size-base);
+  color: var(--rp-text-body);
+  line-height: 1.7;
+  padding: var(--rp-space-3);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+  margin-bottom: var(--rp-space-4);
+}
+
+/* ============================================
+   5. Input Area
+   ============================================ */
+.q-input-area {
+  margin-bottom: var(--rp-space-4);
+}
+
+.q-input-area__label {
+  display: block;
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: var(--rp-text-title);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-input-area__textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-base);
+  line-height: 1.6;
+  color: var(--rp-text-body);
+  resize: vertical;
+  transition: border-color var(--rp-transition-fast), box-shadow var(--rp-transition-fast);
+}
+
+.q-input-area__textarea:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-soft);
+}
+
+.q-input-area__char-count {
+  text-align: right;
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-1);
+}
+
+/* ============================================
+   6. L1 Scaffolding Widgets (초저)
+   ============================================ */
+
+/* Large text for L1 */
+.q-level--l1 {
+  font-size: 1.2rem;
+}
+
+.q-level--l1 .q-template-card__prompt {
+  font-size: 1.15rem;
+  line-height: 1.9;
+}
+
+/* Emoji Selector */
+.q-emoji-selector {
+  display: flex;
+  gap: var(--rp-space-3);
+  justify-content: center;
+  padding: var(--rp-space-4) 0;
+}
+
+.q-emoji-selector__btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--rp-radius-lg);
+  border: 2px solid var(--rp-border);
+  background: var(--rp-surface);
+  cursor: pointer;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--rp-transition-fast);
+}
+
+.q-emoji-selector__btn:hover {
+  border-color: var(--rp-primary);
+  transform: scale(1.1);
+  box-shadow: var(--rp-shadow-md);
+}
+
+.q-emoji-selector__btn--selected {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-soft);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px var(--rp-primary-soft);
+}
+
+.q-emoji-selector__label {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-1);
+  text-align: center;
+}
+
+/* Image Card Grid */
+.q-image-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-image-card {
+  border: 2px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-3);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--rp-transition-fast);
+  background: var(--rp-surface);
+}
+
+.q-image-card:hover {
+  border-color: var(--rp-primary);
+  box-shadow: var(--rp-shadow-md);
+}
+
+.q-image-card--selected {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-soft);
+}
+
+.q-image-card__img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: var(--rp-radius-sm);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-image-card__placeholder {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-sm);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-image-card__label {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: var(--rp-text-body);
+}
+
+/* Fill-in-the-blank Sentence */
+.q-fill-blank {
+  font-size: 1.1rem;
+  line-height: 2.2;
+  color: var(--rp-text-body);
+  padding: var(--rp-space-4);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+}
+
+.q-fill-blank__input {
+  display: inline-block;
+  width: 140px;
+  border: none;
+  border-bottom: 2px dashed var(--rp-primary);
+  background: transparent;
+  font-family: var(--rp-font-family);
+  font-size: 1.1rem;
+  color: var(--rp-primary);
+  text-align: center;
+  padding: 2px var(--rp-space-2);
+  margin: 0 var(--rp-space-1);
+  transition: border-color var(--rp-transition-fast);
+}
+
+.q-fill-blank__input:focus {
+  outline: none;
+  border-bottom-color: var(--rp-primary-hover);
+  background: var(--rp-primary-soft);
+}
+
+/* Starter Word Cards */
+.q-starter-cards {
+  display: flex;
+  gap: var(--rp-space-3);
+  justify-content: center;
+  padding: var(--rp-space-3) 0;
+}
+
+.q-starter-card {
+  padding: var(--rp-space-3) var(--rp-space-5);
+  border: 2px solid var(--rp-border);
+  border-radius: var(--rp-radius-full);
+  background: var(--rp-surface);
+  cursor: pointer;
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-body);
+  transition: all var(--rp-transition-fast);
+}
+
+.q-starter-card:hover {
+  border-color: var(--rp-primary);
+  color: var(--rp-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--rp-shadow-md);
+}
+
+.q-starter-card--selected {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary);
+  color: white;
+}
+
+/* Praise Feedback Animation */
+@keyframes q-praise-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.q-praise-feedback {
+  text-align: center;
+  padding: var(--rp-space-4);
+}
+
+.q-praise-feedback__stars {
+  font-size: 32px;
+  animation: q-praise-pop 0.5s ease-out;
+}
+
+.q-praise-feedback__message {
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-warning-dark);
+  margin-top: var(--rp-space-2);
+}
+
+/* ============================================
+   7. L2 Scaffolding Widgets (초고)
+   ============================================ */
+
+/* Question Structure Form (누가/무엇을/왜) */
+.q-structure-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-structure-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-1);
+}
+
+.q-structure-form__label {
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.q-structure-form__input {
+  padding: var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-body);
+  transition: border-color var(--rp-transition-fast);
+}
+
+.q-structure-form__input:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-soft);
+}
+
+@media (max-width: 768px) {
+  .q-structure-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Question Type Selector Cards */
+.q-type-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-type-card {
+  padding: var(--rp-space-3);
+  border: 2px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--rp-transition-fast);
+  background: var(--rp-surface);
+}
+
+.q-type-card:hover {
+  border-color: var(--rp-primary);
+  box-shadow: var(--rp-shadow-sm);
+}
+
+.q-type-card--selected {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary-soft);
+}
+
+.q-type-card__icon {
+  font-size: 24px;
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-type-card__name {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+.q-type-card__desc {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-1);
+}
+
+@media (max-width: 768px) {
+  .q-type-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keyword Tag Selector */
+.q-keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rp-space-2);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-keyword-tag {
+  padding: var(--rp-space-2) var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-full);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-body);
+  background: var(--rp-surface);
+  cursor: pointer;
+  transition: all var(--rp-transition-fast);
+}
+
+.q-keyword-tag:hover {
+  border-color: var(--rp-primary);
+  color: var(--rp-primary);
+}
+
+.q-keyword-tag--selected {
+  border-color: var(--rp-primary);
+  background: var(--rp-primary);
+  color: white;
+}
+
+/* Text Highlight (지문 근거 찾기) */
+.q-highlight-area {
+  padding: var(--rp-space-4);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+  line-height: 2;
+  font-size: var(--rp-font-size-base);
+  color: var(--rp-text-body);
+  cursor: text;
+  user-select: text;
+}
+
+.q-highlight-area mark {
+  background: #fef08a;
+  padding: 2px 0;
+  border-radius: 2px;
+}
+
+.q-highlight-area__hint {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-2);
+}
+
+/* ============================================
+   8. L3 Scaffolding Widgets (중등)
+   ============================================ */
+
+/* Analysis Framework Guide */
+.q-analysis-frame {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-analysis-frame__item {
+  padding: var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  background: var(--rp-surface);
+}
+
+.q-analysis-frame__label {
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-info-dark);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-analysis-frame__textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--rp-space-2);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-sm);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  resize: vertical;
+}
+
+.q-analysis-frame__textarea:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+}
+
+@media (max-width: 768px) {
+  .q-analysis-frame {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Conditional Question Builder */
+.q-conditional-builder {
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+  padding: var(--rp-space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rp-space-2);
+  font-size: var(--rp-font-size-base);
+  color: var(--rp-text-body);
+  line-height: 2.5;
+}
+
+.q-conditional-builder__keyword {
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-info-dark);
+}
+
+.q-conditional-builder__input {
+  display: inline-block;
+  min-width: 140px;
+  padding: var(--rp-space-2) var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-md);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-body);
+}
+
+.q-conditional-builder__input:focus {
+  outline: none;
+  border-color: var(--rp-primary);
+  box-shadow: 0 0 0 3px var(--rp-primary-soft);
+}
+
+/* Perspective Toggle */
+.q-perspective-toggle {
+  display: flex;
+  gap: var(--rp-space-2);
+  padding: var(--rp-space-3) 0;
+  flex-wrap: wrap;
+}
+
+.q-perspective-btn {
+  padding: var(--rp-space-2) var(--rp-space-4);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-full);
+  background: var(--rp-surface);
+  cursor: pointer;
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: var(--rp-text-body);
+  transition: all var(--rp-transition-fast);
+}
+
+.q-perspective-btn:hover {
+  border-color: var(--rp-info);
+  color: var(--rp-info-dark);
+}
+
+.q-perspective-btn--active {
+  background: var(--rp-info-soft);
+  border-color: var(--rp-info);
+  color: var(--rp-info-dark);
+  font-weight: var(--rp-font-weight-semibold);
+}
+
+/* ============================================
+   9. L4 Scaffolding Widgets (고등)
+   ============================================ */
+
+/* Interdisciplinary Connection Tags */
+.q-discipline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rp-space-2);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-discipline-tag {
+  padding: var(--rp-space-2) var(--rp-space-3);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-full);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
+  cursor: pointer;
+  transition: all var(--rp-transition-fast);
+  background: var(--rp-surface);
+  color: var(--rp-text-body);
+}
+
+.q-discipline-tag:hover {
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+.q-discipline-tag--selected {
+  background: #ede9fe;
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+/* Metacognition Reflection */
+.q-metacognition {
+  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  border: 1px solid #e9d5ff;
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-5);
+}
+
+.q-metacognition__title {
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-semibold);
+  color: #7c3aed;
+  margin-bottom: var(--rp-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+}
+
+.q-metacognition__field {
+  margin-bottom: var(--rp-space-3);
+}
+
+.q-metacognition__label {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: #6d28d9;
+  margin-bottom: var(--rp-space-1);
+}
+
+.q-metacognition__textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--rp-space-3);
+  border: 1px solid #e9d5ff;
+  border-radius: var(--rp-radius-md);
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  resize: vertical;
+  background: var(--rp-surface);
+}
+
+.q-metacognition__textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* ============================================
+   10. AI Feedback Display
+   ============================================ */
+.q-ai-feedback {
+  margin-top: var(--rp-space-4);
+}
+
+.q-ai-feedback__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-6);
+  color: var(--rp-text-muted);
+}
+
+.q-ai-feedback__spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--rp-border);
+  border-top-color: var(--rp-primary);
+  border-radius: 50%;
+  animation: q-spin 0.8s linear infinite;
+}
+
+@keyframes q-spin {
+  to { transform: rotate(360deg); }
+}
+
+.q-ai-feedback__bubble {
+  background: linear-gradient(135deg, var(--rp-primary-softer) 0%, #f0f4ff 100%);
+  border: 1px solid var(--rp-primary);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-4);
+  position: relative;
+}
+
+.q-ai-feedback__bubble::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: var(--rp-space-6);
+  width: 16px;
+  height: 16px;
+  background: var(--rp-primary-softer);
+  border-left: 1px solid var(--rp-primary);
+  border-top: 1px solid var(--rp-primary);
+  transform: rotate(45deg);
+}
+
+.q-ai-feedback__header {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+  margin-bottom: var(--rp-space-3);
+}
+
+.q-ai-feedback__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--rp-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: var(--rp-font-weight-bold);
+}
+
+.q-ai-feedback__name {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-primary);
+}
+
+.q-ai-feedback__body {
+  font-size: var(--rp-font-size-sm);
+  line-height: 1.7;
+  color: var(--rp-text-body);
+}
+
+/* Score Gauge */
+.q-score-gauge {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-4);
+  padding: var(--rp-space-3) 0;
+}
+
+.q-score-gauge__circle {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.q-score-gauge__circle svg {
+  width: 60px;
+  height: 60px;
+  transform: rotate(-90deg);
+}
+
+.q-score-gauge__circle-bg {
+  fill: none;
+  stroke: var(--rp-border);
+  stroke-width: 5;
+}
+
+.q-score-gauge__circle-fill {
+  fill: none;
+  stroke: var(--rp-primary);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.q-score-gauge__value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-bold);
+  color: var(--rp-text-title);
+}
+
+.q-score-gauge__details {
+  flex: 1;
+}
+
+.q-score-gauge__strengths,
+.q-score-gauge__improvements {
+  font-size: var(--rp-font-size-sm);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-score-gauge__strengths strong {
+  color: var(--rp-success-dark);
+}
+
+.q-score-gauge__improvements strong {
+  color: var(--rp-warning-dark);
+}
+
+/* Star Rating (L1) */
+.q-star-rating {
+  display: flex;
+  gap: var(--rp-space-1);
+  font-size: 24px;
+}
+
+.q-star-rating__star {
+  color: var(--rp-border);
+}
+
+.q-star-rating__star--filled {
+  color: #f59e0b;
+}
+
+/* ============================================
+   11. Previous Questions (Accordion)
+   ============================================ */
+.q-prev-questions {
+  margin-top: var(--rp-space-6);
+  border-top: 1px solid var(--rp-border);
+  padding-top: var(--rp-space-4);
+}
+
+.q-prev-questions__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--rp-space-3) 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--rp-font-family);
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+.q-prev-questions__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+.q-prev-questions__list--collapsed {
+  display: none;
+}
+
+.q-prev-question-item {
+  padding: var(--rp-space-3);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+  border-left: 3px solid var(--rp-primary);
+}
+
+.q-prev-question-item__text {
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-body);
+  margin-bottom: var(--rp-space-1);
+}
+
+.q-prev-question-item__score {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+}
+
+/* ============================================
+   12. Progress Page
+   ============================================ */
+
+/* Mastery Progress Bar */
+.q-mastery-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-3);
+}
+
+.q-mastery-bar__track {
+  flex: 1;
+  height: 8px;
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-full);
+  overflow: hidden;
+}
+
+.q-mastery-bar__fill {
+  height: 100%;
+  border-radius: var(--rp-radius-full);
+  transition: width var(--rp-transition-slow);
+}
+
+.q-mastery-bar__fill--low {
+  background: var(--rp-danger);
+}
+
+.q-mastery-bar__fill--medium {
+  background: var(--rp-warning);
+}
+
+.q-mastery-bar__fill--high {
+  background: var(--rp-success);
+}
+
+.q-mastery-bar__value {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Level Badge */
+.q-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-1);
+  padding: 3px var(--rp-space-3);
+  border-radius: var(--rp-radius-full);
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-semibold);
+}
+
+.q-level-badge--l1 {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.q-level-badge--l2 {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.q-level-badge--l3 {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.q-level-badge--l4 {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+/* Status Badge */
+.q-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-1);
+  padding: 3px var(--rp-space-3);
+  border-radius: var(--rp-radius-full);
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-semibold);
+}
+
+.q-status-badge--not-started {
+  background: var(--rp-bg-subtle);
+  color: var(--rp-text-muted);
+}
+
+.q-status-badge--in-progress {
+  background: var(--rp-info-soft);
+  color: var(--rp-info-dark);
+}
+
+.q-status-badge--completed {
+  background: var(--rp-success-soft);
+  color: var(--rp-success-dark);
+}
+
+/* Scaffolding Step Indicator */
+.q-scaffolding-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-1);
+  padding: 3px var(--rp-space-3);
+  border-radius: var(--rp-radius-full);
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-medium);
+  background: var(--rp-primary-soft);
+  color: var(--rp-primary);
+}
+
+/* Area Card (Progress Page) */
+.q-area-card {
+  background: var(--rp-surface);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+.q-area-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.q-area-card__name {
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+.q-area-card__stats {
+  display: flex;
+  gap: var(--rp-space-4);
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+}
+
+.q-area-card__stat-value {
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+/* Timeline */
+.q-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: var(--rp-space-4);
+  border-left: 2px solid var(--rp-border);
+}
+
+.q-timeline__item {
+  position: relative;
+  padding: var(--rp-space-3) 0 var(--rp-space-3) var(--rp-space-5);
+}
+
+.q-timeline__item::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--rp-space-4) * -1 - 5px);
+  top: var(--rp-space-4);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--rp-primary);
+  border: 2px solid var(--rp-surface);
+}
+
+.q-timeline__title {
+  font-size: var(--rp-font-size-sm);
+  font-weight: var(--rp-font-weight-medium);
+  color: var(--rp-text-title);
+}
+
+.q-timeline__meta {
+  font-size: var(--rp-font-size-xs);
+  color: var(--rp-text-muted);
+  margin-top: var(--rp-space-1);
+}
+
+/* ============================================
+   13. Empty State
+   ============================================ */
+.q-empty-state {
+  text-align: center;
+  padding: var(--rp-space-12) var(--rp-space-6);
+}
+
+.q-empty-state__icon {
+  font-size: 48px;
+  margin-bottom: var(--rp-space-4);
+  opacity: 0.5;
+}
+
+.q-empty-state__title {
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  margin-bottom: var(--rp-space-2);
+}
+
+.q-empty-state__desc {
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-muted);
+}
+
+/* ============================================
+   14. Show Page (2-column)
+   ============================================ */
+.q-show-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--rp-space-6);
+}
+
+@media (max-width: 1024px) {
+  .q-show-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.q-show-passage {
+  background: var(--rp-bg-subtle);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-5);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.q-show-passage__title {
+  font-size: var(--rp-font-size-lg);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  margin-bottom: var(--rp-space-4);
+  padding-bottom: var(--rp-space-3);
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.q-show-passage__body {
+  font-size: var(--rp-font-size-base);
+  line-height: 1.9;
+  color: var(--rp-text-body);
+}
+
+.q-show-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-4);
+}
+
+.q-show-info__section {
+  background: var(--rp-surface);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  padding: var(--rp-space-4);
+}
+
+.q-show-info__section-title {
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+  margin-bottom: var(--rp-space-3);
+}
+
+/* Stage Guide Cards */
+.q-stage-guide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+.q-stage-guide__item {
+  display: flex;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3);
+  background: var(--rp-bg-subtle);
+  border-radius: var(--rp-radius-md);
+}
+
+.q-stage-guide__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--rp-font-size-xs);
+  font-weight: var(--rp-font-weight-bold);
+  flex-shrink: 0;
+}
+
+.q-stage-guide__num--1 {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.q-stage-guide__num--2 {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.q-stage-guide__num--3 {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.q-stage-guide__text {
+  font-size: var(--rp-font-size-sm);
+  color: var(--rp-text-body);
+}
+
+.q-stage-guide__name {
+  font-weight: var(--rp-font-weight-semibold);
+  color: var(--rp-text-title);
+}
+
+/* ============================================
+   15. Session Action Bar
+   ============================================ */
+.q-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rp-space-4) 0;
+  gap: var(--rp-space-3);
+}
+
+.q-action-bar__left {
+  display: flex;
+  gap: var(--rp-space-2);
+}
+
+.q-action-bar__right {
+  display: flex;
+  gap: var(--rp-space-2);
+}
+
+/* ============================================
+   16. Diagnostic Teacher Module Views
+   ============================================ */
+.q-dt-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--rp-space-4);
+  margin-bottom: var(--rp-space-6);
+}
+
+@media (max-width: 768px) {
+  .q-dt-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.q-dt-filter-bar {
+  display: flex;
+  gap: var(--rp-space-3);
+  align-items: center;
+  margin-bottom: var(--rp-space-4);
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   17. Responsive Overrides
+   ============================================ */
+@media (max-width: 768px) {
+  .q-stage-indicator {
+    flex-wrap: wrap;
+    gap: var(--rp-space-2);
+  }
+
+  .q-stage-connector {
+    width: 30px;
+  }
+
+  .q-emoji-selector__btn {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .q-image-card-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--rp-space-2);
+  }
+
+  .q-show-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .q-score-gauge {
+    flex-direction: column;
+    text-align: center;
+  }
+}

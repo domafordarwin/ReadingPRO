@@ -1,0 +1,18 @@
+<% content_for :page_title do %>새 발문 모듈<% end %>
+
+<!-- Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <a href="<%= diagnostic_teacher_questioning_modules_path %>" style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    모듈 목록으로
+  </a>
+</div>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">새 발문 모듈 추가</h1>
+  <p class="rp-page-header__subtitle">읽기 지문과 수준을 선택하여 발문 학습 모듈을 만듭니다.</p>
+</div>
+
+<%= render "form", questioning_module: @module, stimuli: @stimuli, templates: @templates, url: diagnostic_teacher_questioning_modules_path %>

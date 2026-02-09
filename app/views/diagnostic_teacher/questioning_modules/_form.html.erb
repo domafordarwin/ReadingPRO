@@ -1,0 +1,173 @@
+<%
+  # Local variables:
+  #   questioning_module - QuestioningModule (new or persisted)
+  #   stimuli            - array of ReadingStimulus
+  #   templates          - array of QuestioningTemplate
+  #   url                - form submit URL
+  is_edit = questioning_module.persisted?
+
+  level_options = [
+    ["초저 (초1-2)", "elementary_low"],
+    ["초고 (초3-6)", "elementary_high"],
+    ["중등", "middle"],
+    ["고등", "high"]
+  ]
+
+  status_options = [
+    ["작성 중", "draft"],
+    ["활성", "active"],
+    ["보관됨", "archived"]
+  ]
+
+  stage_names = {
+    1 => "1단계: 책문열기",
+    2 => "2단계: 이야기나누기",
+    3 => "3단계: 삶적용"
+  }
+%>
+
+<% if questioning_module.errors.any? %>
+  <div style="background: var(--rp-danger-bg, #fef2f2); border: 1px solid var(--rp-danger, #fecaca); color: var(--rp-danger-dark, #991b1b); padding: 12px 16px; border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-4);">
+    <strong>오류가 발생했습니다:</strong>
+    <ul style="margin: 8px 0 0 16px;">
+      <% questioning_module.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with(model: questioning_module, url: url, data: { turbo: false }) do |f| %>
+
+  <div class="rp-grid rp-grid--2 rp-mb-6">
+    <!-- Left: Basic Info -->
+    <div class="rp-card">
+      <div class="rp-card__header">
+        <h3 class="rp-card__title">기본 정보</h3>
+      </div>
+      <div class="rp-card__body">
+        <!-- Title -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_title">모듈 제목 <span style="color: var(--rp-danger);">*</span></label>
+          <%= f.text_field :title, id: "qm_title", class: "rp-input",
+              placeholder: "예: 흥부와 놀부 발문 학습", required: true %>
+        </div>
+
+        <!-- Description -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_description">설명</label>
+          <%= f.text_area :description, id: "qm_description", class: "rp-textarea",
+              placeholder: "모듈에 대한 간단한 설명...", rows: 3 %>
+        </div>
+
+        <!-- Reading Stimulus Selection -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_stimulus">읽기 지문 선택 <span style="color: var(--rp-danger);">*</span></label>
+          <%= f.collection_select :reading_stimulus_id, stimuli, :id,
+              ->(s) { "#{s.title} (#{s.items_count || 0}문항)" },
+              { prompt: "지문을 선택하세요" },
+              { id: "qm_stimulus", class: "rp-select", required: true } %>
+        </div>
+
+        <!-- Level -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_level">수준 <span style="color: var(--rp-danger);">*</span></label>
+          <%= f.select :level,
+              options_for_select(level_options, questioning_module.level),
+              { prompt: "선택하세요" },
+              { id: "qm_level", class: "rp-select", required: true } %>
+        </div>
+
+        <!-- Status -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_status">상태</label>
+          <%= f.select :status,
+              options_for_select(status_options, questioning_module.status || "draft"),
+              {},
+              { id: "qm_status", class: "rp-select" } %>
+        </div>
+
+        <!-- Estimated Time -->
+        <div class="rp-form-group">
+          <label class="rp-label" for="qm_time">예상 소요 시간 (분)</label>
+          <%= f.number_field :estimated_minutes, id: "qm_time", class: "rp-input",
+              placeholder: "15", min: 5, max: 60 %>
+        </div>
+
+        <!-- Learning Objectives (placeholder) -->
+        <div class="rp-form-group">
+          <label class="rp-label">학습 목표</label>
+          <p style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin: 0;">
+            학습 목표는 추후 모듈 상세 페이지에서 설정할 수 있습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Template Selection -->
+    <div class="rp-card">
+      <div class="rp-card__header">
+        <h3 class="rp-card__title">발문 템플릿 선택</h3>
+        <p class="rp-card__subtitle">사용할 템플릿을 선택하세요</p>
+      </div>
+      <div class="rp-card__body">
+        <% if templates.present? && templates.any? %>
+          <%
+            grouped = templates.group_by { |t| t.stage_before_type_cast }
+            selected_ids = questioning_module.questioning_template_ids rescue []
+          %>
+          <% [1, 2, 3].each do |stage_num| %>
+            <% stage_templates = grouped[stage_num] || [] %>
+            <% next if stage_templates.empty? %>
+            <div style="margin-bottom: var(--rp-space-4);">
+              <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin-bottom: var(--rp-space-2); padding-bottom: var(--rp-space-1); border-bottom: 1px solid var(--rp-border);">
+                <%= stage_names[stage_num] || "#{stage_num}단계" %>
+                <span style="font-weight: normal; color: var(--rp-text-muted); font-size: var(--rp-font-size-xs); margin-left: var(--rp-space-1);">(<%= stage_templates.size %>개)</span>
+              </div>
+              <% stage_templates.each do |tmpl| %>
+                <%
+                  is_selected = selected_ids.include?(tmpl.id)
+                %>
+                <label class="rp-checklist__item" style="display: flex; align-items: flex-start; gap: var(--rp-space-2); padding: var(--rp-space-2) var(--rp-space-3); border-radius: var(--rp-radius-md); cursor: pointer; margin-bottom: var(--rp-space-1); border: 1px solid transparent; transition: background 0.15s, border-color 0.15s;"
+                       onmouseenter="this.style.background='var(--rp-bg-subtle)'"
+                       onmouseleave="this.style.background='transparent'">
+                  <%= check_box_tag "template_ids[]", tmpl.id, is_selected,
+                      style: "margin-top: 3px; accent-color: var(--rp-primary);" %>
+                  <div style="flex: 1;">
+                    <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-text-title); margin-bottom: 2px;">
+                      <%= truncate(tmpl.template_text, length: 80) %>
+                    </div>
+                    <div style="display: flex; gap: var(--rp-space-2); flex-wrap: wrap;">
+                      <span style="font-size: var(--rp-font-size-xs); color: var(--rp-primary); background: var(--rp-blue-50, #eff6ff); padding: 1px 6px; border-radius: var(--rp-radius-sm);">
+                        <%= tmpl.type_label %>
+                      </span>
+                      <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                        스캐폴딩: <%= tmpl.scaffolding_label %>
+                      </span>
+                    </div>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <p style="color: var(--rp-text-muted); text-align: center; padding: var(--rp-space-6) 0;">
+            템플릿이 아직 등록되지 않았습니다.<br>
+            <span style="font-size: var(--rp-font-size-xs);">수준을 선택하면 해당 수준의 기본 템플릿이 자동으로 생성됩니다.</span>
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding-top: var(--rp-space-4);">
+    <a href="<%= diagnostic_teacher_questioning_modules_path %>" class="rp-btn rp-btn--secondary">취소</a>
+    <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <%= is_edit ? "수정 완료" : "모듈 생성" %>
+    </button>
+  </div>
+<% end %>

@@ -10,5 +10,8 @@ class Teacher < ApplicationRecord
   has_many :response_rubric_scores, foreign_key: "created_by_id", dependent: :destroy
   has_many :announcements, foreign_key: "published_by_id", dependent: :destroy
 
+  # Questioning module
+  has_many :questioning_modules, foreign_key: "created_by_id", dependent: :nullify
+
   validates :name, presence: true
 end

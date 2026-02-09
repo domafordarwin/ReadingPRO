@@ -1,0 +1,308 @@
+<% content_for :page_title do %>발문 학습 진행 현황<% end %>
+
+<%
+  # @progresses - Collection of QuestioningProgress objects
+  # @completed_sessions - Recent completed QuestioningSession objects
+
+  progresses = @progresses || []
+  completed_sessions = @completed_sessions || []
+
+  level_labels = { "L1" => "초저", "L2" => "초고", "L3" => "중등", "L4" => "고등" }
+
+  # Summary calculations
+  total_areas = progresses.size
+  avg_mastery = total_areas > 0 ? (progresses.sum { |p| p.mastery_percentage.to_f } / total_areas).round(1) : 0
+  total_questions = progresses.sum { |p| p.total_questions_created.to_i }
+  total_sessions = progresses.sum { |p| p.total_sessions_completed.to_i }
+
+  # Collect all level_history entries across progresses
+  all_history = progresses.flat_map { |p|
+    (p.level_history || []).map { |h|
+      h.merge("area_name" => p.evaluation_indicator&.name)
+    }
+  }.sort_by { |h| h["at"] || h[:at] || "" }.reverse
+%>
+
+<!-- Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <%= link_to student_questioning_index_path, style: "font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    발문 학습 목록으로
+  <% end %>
+</div>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">발문 학습 진행 현황</h1>
+  <p class="rp-page-header__subtitle">평가 영역별 발문 학습 진행 상태와 최근 세션 기록을 확인하세요.</p>
+</div>
+
+<!-- ============================================
+     1. Summary Stats
+     ============================================ -->
+<div class="rp-grid rp-grid--4 rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">학습 영역 수</div>
+    <div class="rp-stat__value"><%= total_areas %>개</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">평균 숙달도</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);"><%= avg_mastery %>%</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">총 생성 발문</div>
+    <div class="rp-stat__value" style="color: var(--rp-info);"><%= total_questions %>개</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">총 완료 세션</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= total_sessions %>회</div>
+  </div>
+</div>
+
+<!-- ============================================
+     2. Progress by Evaluation Area
+     ============================================ -->
+<div class="rp-card rp-mb-6">
+  <div class="rp-card__header">
+    <div>
+      <h3 class="rp-card__title">영역별 진행 현황</h3>
+      <p class="rp-card__subtitle">각 평가 영역의 수준, 숙달도, 스캐폴딩 단계를 확인합니다.</p>
+    </div>
+  </div>
+  <div class="rp-card__body">
+    <% if progresses.present? && progresses.any? %>
+      <div class="rp-grid rp-grid--3">
+        <% progresses.each do |progress| %>
+          <%
+            mastery = progress.mastery_percentage.to_i
+            fill_class = if mastery >= 70
+              "q-mastery-bar__fill--high"
+            elsif mastery >= 40
+              "q-mastery-bar__fill--medium"
+            else
+              "q-mastery-bar__fill--low"
+            end
+
+            current_level = progress.current_level || "L1"
+            level_css = current_level.to_s.downcase
+            scaffolding = progress.current_scaffolding.to_i
+            scaffolding_max = 3
+          %>
+          <div class="q-area-card">
+            <!-- Header: Area name + Level badge -->
+            <div class="q-area-card__header">
+              <span class="q-area-card__name"><%= progress.evaluation_indicator&.name || "영역" %></span>
+              <span class="q-level-badge q-level-badge--<%= level_css %>">
+                <%= progress.level_label || level_labels[current_level] || current_level %>
+              </span>
+            </div>
+
+            <!-- Mastery Bar -->
+            <div class="q-mastery-bar">
+              <div class="q-mastery-bar__track">
+                <div class="q-mastery-bar__fill <%= fill_class %>" style="width: <%= mastery %>%;"></div>
+              </div>
+              <span class="q-mastery-bar__value"><%= mastery %>%</span>
+            </div>
+
+            <!-- Scaffolding Step Indicator -->
+            <div style="display: flex; align-items: center; gap: var(--rp-space-2);">
+              <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">스캐폴딩:</span>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                <% scaffolding_max.times do |i| %>
+                  <%
+                    step_active = i < scaffolding
+                    step_bg = step_active ? "var(--rp-primary)" : "var(--rp-bg-subtle)"
+                    step_color = step_active ? "white" : "var(--rp-text-muted)"
+                    step_border = step_active ? "var(--rp-primary)" : "var(--rp-border)"
+                  %>
+                  <div style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; background: <%= step_bg %>; color: <%= step_color %>; border: 1px solid <%= step_border %>;">
+                    <%= i + 1 %>
+                  </div>
+                <% end %>
+              </div>
+              <span class="q-scaffolding-step">
+                <%= progress.scaffolding_label || "S#{scaffolding}" %>
+              </span>
+            </div>
+
+            <!-- Stats -->
+            <div class="q-area-card__stats">
+              <span>발문: <span class="q-area-card__stat-value"><%= progress.total_questions_created || 0 %>개</span></span>
+              <span>세션: <span class="q-area-card__stat-value"><%= progress.total_sessions_completed || 0 %>회</span></span>
+              <span>최고: <span class="q-area-card__stat-value"><%= progress.best_score ? "#{progress.best_score.round(1)}점" : "-" %></span></span>
+            </div>
+
+            <!-- Mastered / Fully Independent badges -->
+            <% if progress.mastered? %>
+              <div style="margin-top: var(--rp-space-1);">
+                <span class="rp-badge rp-badge--success">숙달 완료</span>
+                <% if progress.fully_independent? %>
+                  <span class="rp-badge rp-badge--primary" style="margin-left: 4px;">완전 자립</span>
+                <% end %>
+                <% if progress.max_level? %>
+                  <span class="rp-badge rp-badge--warning" style="margin-left: 4px;">최고 수준</span>
+                <% end %>
+              </div>
+            <% end %>
+
+            <!-- Last Activity -->
+            <% if progress.last_activity_at.present? %>
+              <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-top: var(--rp-space-1);">
+                최근 활동: <%= time_ago_in_words(progress.last_activity_at) %> 전
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="q-empty-state">
+        <div class="q-empty-state__icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--rp-text-muted);">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+        </div>
+        <h3 class="q-empty-state__title">진행 기록이 없습니다</h3>
+        <p class="q-empty-state__desc">발문 학습을 시작하면 영역별 진행 현황이 여기에 표시됩니다.</p>
+        <%= link_to "발문 학습 시작하기", student_questioning_index_path, class: "rp-btn rp-btn--primary rp-btn--sm", style: "margin-top: var(--rp-space-4);" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- ============================================
+     3. Recent Completed Sessions
+     ============================================ -->
+<div class="rp-card rp-mb-6">
+  <div class="rp-card__header">
+    <div>
+      <h3 class="rp-card__title">최근 완료 세션</h3>
+      <p class="rp-card__subtitle">최근에 완료한 발문 학습 세션 기록입니다.</p>
+    </div>
+  </div>
+  <div class="rp-card__body">
+    <% if completed_sessions.present? && completed_sessions.any? %>
+      <div style="display: flex; flex-direction: column; gap: var(--rp-space-2);">
+        <% completed_sessions.each do |session| %>
+          <%
+            qm = session.questioning_module
+            stimulus = qm&.reading_stimulus
+            module_title = qm&.title || stimulus&.title || "발문 모듈"
+            passage_title = stimulus&.title
+            score = session.total_score
+            duration = session.respond_to?(:duration_minutes) ? session.duration_minutes : nil
+          %>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--rp-space-3) var(--rp-space-4); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md); transition: background 0.15s;"
+               onmouseover="this.style.background='var(--rp-border)'" onmouseout="this.style.background='var(--rp-bg-subtle)'">
+            <!-- Left: Module info -->
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <%= module_title %>
+              </div>
+              <% if passage_title.present? && passage_title != module_title %>
+                <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <%= passage_title %>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Center: Status + Score -->
+            <div style="display: flex; align-items: center; gap: var(--rp-space-3); flex-shrink: 0; margin-left: var(--rp-space-3);">
+              <span class="q-status-badge q-status-badge--completed"><%= session.respond_to?(:status_label) ? session.status_label : "완료" %></span>
+              <% if score.present? %>
+                <span class="rp-badge rp-badge--primary"><%= score.respond_to?(:round) ? score.round(1) : score %>점</span>
+              <% end %>
+            </div>
+
+            <!-- Right: Date + Duration -->
+            <div style="text-align: right; flex-shrink: 0; margin-left: var(--rp-space-4);">
+              <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                <%= session.created_at&.strftime("%Y.%m.%d %H:%M") %>
+              </div>
+              <% if duration.present? && duration > 0 %>
+                <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                  <%= duration %>분 소요
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="text-align: center; padding: var(--rp-space-8) var(--rp-space-4); color: var(--rp-text-muted);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: var(--rp-space-3); opacity: 0.5;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <p style="margin: 0; font-size: var(--rp-font-size-sm);">아직 완료된 세션이 없습니다.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- ============================================
+     4. Level History Timeline
+     ============================================ -->
+<% if all_history.present? && all_history.any? %>
+  <div class="rp-card rp-mb-6">
+    <div class="rp-card__header">
+      <div>
+        <h3 class="rp-card__title">수준 변경 이력</h3>
+        <p class="rp-card__subtitle">평가 영역별 수준 및 스캐폴딩 변경 기록입니다.</p>
+      </div>
+    </div>
+    <div class="rp-card__body">
+      <div class="q-timeline">
+        <% all_history.each do |entry| %>
+          <%
+            entry_type = entry["type"] || entry[:type] || "level_change"
+            from_val = entry["from"] || entry[:from]
+            to_val = entry["to"] || entry[:to]
+            at_val = entry["at"] || entry[:at]
+            area_name = entry["area_name"] || entry[:area_name] || ""
+
+            if entry_type == "level_up"
+              type_label = "수준 상승"
+              from_label = level_labels[from_val] || from_val
+              to_label = level_labels[to_val] || to_val
+              arrow_color = "var(--rp-success-dark)"
+            elsif entry_type == "scaffolding_decrease"
+              type_label = "스캐폴딩 감소"
+              from_label = "S#{from_val}"
+              to_label = "S#{to_val}"
+              arrow_color = "var(--rp-info-dark)"
+            else
+              type_label = entry_type.to_s.humanize
+              from_label = from_val.to_s
+              to_label = to_val.to_s
+              arrow_color = "var(--rp-text-title)"
+            end
+
+            at_time = at_val.is_a?(String) ? Time.zone.parse(at_val) rescue nil : at_val
+          %>
+          <div class="q-timeline__item">
+            <div class="q-timeline__title">
+              <span style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= area_name %></span>
+              <span style="margin-left: var(--rp-space-2); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);"><%= type_label %></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-top: var(--rp-space-1);">
+              <span class="rp-badge rp-badge--default"><%= from_label %></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="<%= arrow_color %>" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              <span class="rp-badge rp-badge--success"><%= to_label %></span>
+            </div>
+            <div class="q-timeline__meta">
+              <% if at_time.present? %>
+                <%= at_time.strftime("%Y.%m.%d %H:%M") %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

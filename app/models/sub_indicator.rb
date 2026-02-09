@@ -16,6 +16,10 @@ class SubIndicator < ApplicationRecord
   belongs_to :evaluation_indicator
   has_many :items, dependent: :nullify
 
+  # Questioning module
+  has_many :questioning_templates, dependent: :nullify
+  has_many :student_questions, dependent: :nullify
+
   # Validations
   validates :evaluation_indicator_id, presence: true
   validates :code, length: { maximum: 100 }, uniqueness: { scope: :evaluation_indicator_id }, allow_nil: true

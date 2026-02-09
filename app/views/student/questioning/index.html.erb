@@ -1,0 +1,136 @@
+<% content_for :page_title do %>발문 학습<% end %>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">발문 학습</h1>
+  <p class="rp-page-header__subtitle">읽기 지문을 읽고 발문을 만들어 사고력을 키워보세요.</p>
+</div>
+
+<!-- Stats Bar -->
+<div class="rp-grid rp-grid--4 rp-mb-6">
+  <div class="rp-stat">
+    <div class="rp-stat__label">배정된 모듈</div>
+    <div class="rp-stat__value"><%= @total_modules || 0 %>개</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">진행중 세션</div>
+    <div class="rp-stat__value" style="color: var(--rp-info);"><%= @in_progress_count || 0 %>개</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">완료 세션</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= @completed_count || 0 %>개</div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">평균 점수</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);"><%= @avg_score ? "#{@avg_score.round(0)}점" : "-" %></div>
+  </div>
+</div>
+
+<!-- Module Cards -->
+<% if @questioning_modules.present? && @questioning_modules.any? %>
+  <div class="rp-grid rp-grid--2 rp-mb-6">
+    <% @questioning_modules.each do |qm| %>
+      <%
+        # qm = QuestioningModule instance
+        # qm.reading_stimulus - associated reading passage
+        # qm.level - L1/L2/L3/L4
+        # qm.sessions_for(current_student) - student's sessions
+        stimulus = qm.respond_to?(:reading_stimulus) ? qm.reading_stimulus : nil
+        student_sessions = qm.respond_to?(:sessions_for) ? qm.sessions_for(@student) : []
+        latest_session = student_sessions&.last
+        completed_stages = latest_session&.respond_to?(:completed_stages) ? latest_session.completed_stages : 0
+        total_stages = 3
+        progress_pct = (completed_stages.to_f / total_stages * 100).round(0)
+
+        level = qm.respond_to?(:level) ? qm.level : "L1"
+        level_labels = { "L1" => "초저", "L2" => "초고", "L3" => "중등", "L4" => "고등" }
+        level_label = level_labels[level] || level
+
+        if latest_session.nil?
+          status = :not_started
+        elsif latest_session.respond_to?(:completed?) && latest_session.completed?
+          status = :completed
+        else
+          status = :in_progress
+        end
+      %>
+      <div class="q-module-card">
+        <div class="q-module-card__header">
+          <h3 class="q-module-card__title"><%= stimulus&.title || qm.try(:title) || "발문 모듈" %></h3>
+          <div class="q-module-card__badges">
+            <span class="q-level-badge q-level-badge--<%= level.downcase %>"><%= level_label %></span>
+            <% case status %>
+            <% when :not_started %>
+              <span class="q-status-badge q-status-badge--not-started">시작 전</span>
+            <% when :in_progress %>
+              <span class="q-status-badge q-status-badge--in-progress">진행중</span>
+            <% when :completed %>
+              <span class="q-status-badge q-status-badge--completed">완료</span>
+            <% end %>
+          </div>
+        </div>
+
+        <% if stimulus&.body.present? %>
+          <p style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); margin: 0; line-height: 1.5;">
+            <%= truncate(strip_tags(stimulus.body), length: 80) %>
+          </p>
+        <% end %>
+
+        <!-- 3-Stage Progress -->
+        <div class="q-module-card__progress">
+          <div class="q-module-card__progress-label">
+            <span>발문 3단계 진행률</span>
+            <span><%= progress_pct %>%</span>
+          </div>
+          <div class="q-module-card__progress-bar">
+            <div class="q-module-card__progress-fill" style="width: <%= progress_pct %>%;"></div>
+          </div>
+        </div>
+
+        <div class="q-module-card__stages">
+          <% total_stages.times do |i| %>
+            <%
+              if i < completed_stages
+                dot_class = "q-module-card__stage-dot--completed"
+              elsif i == completed_stages && status == :in_progress
+                dot_class = "q-module-card__stage-dot--active"
+              else
+                dot_class = ""
+              end
+            %>
+            <div class="q-module-card__stage-dot <%= dot_class %>" title="<%= i + 1 %>단계">
+              <%= i + 1 %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="q-module-card__footer">
+          <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+            예상 <%= qm.respond_to?(:estimated_time_minutes) ? qm.estimated_time_minutes : 15 %>분
+          </span>
+          <% if status == :not_started %>
+            <%= link_to "시작하기", "/student/questioning/#{qm.id}",
+                class: "rp-btn rp-btn--primary rp-btn--sm" %>
+          <% elsif status == :in_progress %>
+            <%= link_to "이어하기", "/student/questioning_sessions/#{latest_session&.id}",
+                class: "rp-btn rp-btn--primary rp-btn--sm" %>
+          <% else %>
+            <%= link_to "다시보기", "/student/questioning/#{qm.id}",
+                class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <!-- Empty State -->
+  <div class="q-empty-state">
+    <div class="q-empty-state__icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--rp-text-muted);">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <h3 class="q-empty-state__title">아직 배정된 발문 모듈이 없습니다</h3>
+    <p class="q-empty-state__desc">선생님이 발문 학습 모듈을 배정하면 여기에 표시됩니다.</p>
+  </div>
+<% end %>

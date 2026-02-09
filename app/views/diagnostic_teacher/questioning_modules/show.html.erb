@@ -1,0 +1,287 @@
+<% content_for :page_title do %>발문 모듈 상세<% end %>
+
+<%
+  stimulus = @module&.reading_stimulus
+  level_badge_class = @module.level.to_s
+    .gsub("elementary_low", "l1")
+    .gsub("elementary_high", "l2")
+    .gsub("middle", "l3")
+    .gsub("high", "l4")
+
+  stage_names = { 1 => "1단계: 책문열기", 2 => "2단계: 이야기 나누기", 3 => "3단계: 삶 적용" }
+  stage_colors = { 1 => "#3b82f6", 2 => "#16a34a", 3 => "#f59e0b" }
+  stage_bg_colors = { 1 => "#dbeafe", 2 => "#dcfce7", 3 => "#fef3c7" }
+  stage_text_colors = { 1 => "#1e40af", 2 => "#166534", 3 => "#92400e" }
+%>
+
+<!-- Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <%= link_to diagnostic_teacher_questioning_modules_path, style: "font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: var(--rp-space-1);" do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    모듈 목록으로
+  <% end %>
+</div>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--rp-space-3);">
+    <div style="display: flex; align-items: center; gap: var(--rp-space-3); flex-wrap: wrap;">
+      <h1 class="rp-page-header__title" style="margin: 0;">
+        <%= @module.title %>
+      </h1>
+      <span class="q-level-badge q-level-badge--<%= level_badge_class %>"><%= @module.level_label %></span>
+      <% if @module.status_draft? %>
+        <span class="rp-badge rp-badge--warning">초안</span>
+      <% elsif @module.status_active? %>
+        <span class="rp-badge rp-badge--success">활성</span>
+      <% elsif @module.status_archived? %>
+        <span class="rp-badge rp-badge--default">보관됨</span>
+      <% end %>
+    </div>
+    <div style="display: flex; gap: var(--rp-space-2);">
+      <%= link_to edit_diagnostic_teacher_questioning_module_path(@module), class: "rp-btn rp-btn--secondary rp-btn--sm" do %>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        수정
+      <% end %>
+      <%= link_to sessions_diagnostic_teacher_questioning_module_path(@module), class: "rp-btn rp-btn--primary rp-btn--sm" do %>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+        학생 세션
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Row (3 cards) -->
+<div class="q-dt-stats" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="rp-stat">
+    <div class="rp-stat__label">총 세션 수</div>
+    <div class="rp-stat__value"><%= @total_sessions %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">완료 세션</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= @completed_sessions %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">평균 점수</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);"><%= @avg_score || "-" %></div>
+  </div>
+</div>
+
+<!-- Module Info Card -->
+<div class="rp-card rp-mb-6" style="padding: var(--rp-space-5);">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-6);">
+    <!-- Left: Description + Info -->
+    <div>
+      <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;">모듈 정보</h3>
+
+      <% if @module.description.present? %>
+        <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.7; margin-bottom: var(--rp-space-4);">
+          <%= simple_format(@module.description) %>
+        </div>
+      <% end %>
+
+      <!-- Estimated Time -->
+      <% if @module.estimated_minutes.present? %>
+        <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-3); font-size: var(--rp-font-size-sm); color: var(--rp-text-muted);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>예상 소요 시간: <strong style="color: var(--rp-text-title);"><%= @module.estimated_minutes %>분</strong></span>
+        </div>
+      <% end %>
+
+      <!-- Learning Objectives -->
+      <% if @module.learning_objectives.present? && @module.learning_objectives.any? %>
+        <div style="margin-bottom: var(--rp-space-3);">
+          <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-2) 0;">학습 목표</h4>
+          <ul style="margin: 0; padding-left: var(--rp-space-4); font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.8;">
+            <% @module.learning_objectives.each do |obj| %>
+              <li><%= obj %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Creator Info -->
+      <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-top: var(--rp-space-3); padding-top: var(--rp-space-3); border-top: 1px solid var(--rp-border);">
+        <span>생성자: <strong><%= @module.creator&.user&.name || "알 수 없음" %></strong></span>
+        <span style="margin-left: var(--rp-space-3);">생성일: <strong><%= @module.created_at&.strftime("%Y년 %m월 %d일") %></strong></span>
+      </div>
+    </div>
+
+    <!-- Right: Reading Stimulus Preview -->
+    <div>
+      <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;">읽기 지문</h3>
+      <% if stimulus %>
+        <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-primary); margin-bottom: var(--rp-space-2);">
+          <%= stimulus.title %>
+        </div>
+        <% if stimulus.body.present? %>
+          <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body); max-height: 300px; overflow-y: auto; padding: var(--rp-space-3); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md);">
+            <%= simple_format(truncate(stimulus.body, length: 500)) %>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="text-align: center; padding: var(--rp-space-6); color: var(--rp-text-muted);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <p style="margin: 0; font-size: var(--rp-font-size-sm);">지문이 등록되지 않았습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Templates by Stage -->
+<% [1, 2, 3].each do |stage_num| %>
+  <%
+    templates = @templates_by_stage[stage_num] || []
+    color = stage_colors[stage_num]
+    bg_color = stage_bg_colors[stage_num]
+    text_color = stage_text_colors[stage_num]
+  %>
+  <div class="rp-card rp-mb-6" style="padding: 0; overflow: hidden;">
+    <!-- Stage Header -->
+    <div style="display: flex; align-items: center; gap: var(--rp-space-3); padding: var(--rp-space-4) var(--rp-space-5); background: <%= bg_color %>; border-bottom: 2px solid <%= color %>;">
+      <div class="q-stage-guide__num q-stage-guide__num--<%= stage_num %>" style="width: 32px; height: 32px; font-size: var(--rp-font-size-sm);">
+        <%= stage_num %>
+      </div>
+      <div>
+        <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: <%= text_color %>;">
+          <%= stage_names[stage_num] %>
+        </h3>
+        <span style="font-size: var(--rp-font-size-xs); color: <%= text_color %>; opacity: 0.8;">
+          <%= templates.size %>개 템플릿
+        </span>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <div style="padding: var(--rp-space-4) var(--rp-space-5);">
+      <% if templates.any? %>
+        <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
+          <% templates.each_with_index do |tmpl, idx| %>
+            <div style="padding: var(--rp-space-4); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md); border-left: 3px solid <%= color %>;">
+              <!-- Template Header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-3); flex-wrap: wrap; gap: var(--rp-space-2);">
+                <div style="display: flex; align-items: center; gap: var(--rp-space-2);">
+                  <span class="q-template-card__number"><%= idx + 1 %></span>
+                  <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">
+                    템플릿 #<%= idx + 1 %>
+                  </span>
+                </div>
+                <div style="display: flex; gap: var(--rp-space-2); flex-wrap: wrap;">
+                  <% if tmpl.respond_to?(:type_label) && tmpl.type_label.present? %>
+                    <span class="rp-badge rp-badge--info"><%= tmpl.type_label %></span>
+                  <% end %>
+                  <% if tmpl.respond_to?(:scaffolding_label) && tmpl.scaffolding_level.present? %>
+                    <span class="q-scaffolding-step">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 20h20"></path>
+                        <path d="M6 16h12"></path>
+                        <path d="M10 12h4"></path>
+                      </svg>
+                      스캐폴딩: <%= tmpl.scaffolding_label %>
+                    </span>
+                  <% end %>
+                  <% if tmpl.respond_to?(:evaluation_indicator) && tmpl.evaluation_indicator.present? %>
+                    <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); background: var(--rp-surface); padding: 2px 8px; border-radius: var(--rp-radius-full); border: 1px solid var(--rp-border);">
+                      <%= tmpl.evaluation_indicator.name %>
+                    </span>
+                  <% end %>
+                  <% if tmpl.respond_to?(:sub_indicator) && tmpl.sub_indicator.present? %>
+                    <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); background: var(--rp-surface); padding: 2px 8px; border-radius: var(--rp-radius-full); border: 1px solid var(--rp-border);">
+                      <%= tmpl.sub_indicator.name %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Template Text -->
+              <div class="q-template-card__prompt" style="margin-bottom: var(--rp-space-3);">
+                <%= simple_format(tmpl.template_text) %>
+              </div>
+
+              <!-- Example Question -->
+              <% if tmpl.respond_to?(:example_question) && tmpl.example_question.present? %>
+                <div style="margin-bottom: var(--rp-space-3);">
+                  <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); margin-bottom: var(--rp-space-1); text-transform: uppercase; letter-spacing: 0.05em;">
+                    예시 발문
+                  </div>
+                  <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); padding: var(--rp-space-2) var(--rp-space-3); background: var(--rp-surface); border-radius: var(--rp-radius-sm); border: 1px solid var(--rp-border); font-style: italic;">
+                    "<%= tmpl.example_question %>"
+                  </div>
+                </div>
+              <% end %>
+
+              <!-- Guidance Text -->
+              <% if tmpl.respond_to?(:guidance_text) && tmpl.guidance_text.present? %>
+                <div>
+                  <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-success-dark); margin-bottom: var(--rp-space-1); text-transform: uppercase; letter-spacing: 0.05em;">
+                    교사 안내
+                  </div>
+                  <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.6;">
+                    <%= simple_format(tmpl.guidance_text) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align: center; padding: var(--rp-space-6); color: var(--rp-text-muted);">
+          <p style="margin: 0; font-size: var(--rp-font-size-sm);">이 단계에 등록된 템플릿이 없습니다.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- Action Buttons -->
+<div class="q-action-bar" style="padding-top: var(--rp-space-4); border-top: 1px solid var(--rp-border); margin-top: var(--rp-space-2);">
+  <div class="q-action-bar__left">
+    <%= link_to diagnostic_teacher_questioning_modules_path, class: "rp-btn rp-btn--secondary" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      목록으로
+    <% end %>
+  </div>
+  <div class="q-action-bar__right">
+    <%= link_to edit_diagnostic_teacher_questioning_module_path(@module), class: "rp-btn rp-btn--secondary" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 20h9"></path>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+      </svg>
+      수정
+    <% end %>
+    <%= link_to sessions_diagnostic_teacher_questioning_module_path(@module), class: "rp-btn rp-btn--primary" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+      </svg>
+      세션 목록
+    <% end %>
+    <%= button_to diagnostic_teacher_questioning_module_path(@module),
+        method: :delete,
+        data: { turbo: false, confirm: "'#{@module.title}' 모듈을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다." },
+        class: "rp-btn rp-btn--danger" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </svg>
+      삭제
+    <% end %>
+  </div>
+</div>

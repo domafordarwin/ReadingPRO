@@ -1,0 +1,58 @@
+ko:
+  questioning:
+    levels:
+      elementary_low: "초저 (1-2학년)"
+      elementary_high: "초고 (5-6학년)"
+      middle: "중등"
+      high: "고등"
+    stages:
+      opening: "1단계: 책문열기"
+      discussion: "2단계: 책 이야기 나누기"
+      application: "3단계: 삶과 사회 적용"
+    stage_descriptions:
+      opening: "배경지식을 활성화하고, 책의 주제와 관련된 경험을 나눠봐요."
+      discussion: "책의 내용을 깊이 살펴보고, 등장인물과 사건에 대해 생각해봐요."
+      application: "책에서 배운 것을 우리 삶과 사회에 연결해봐요."
+    l1:
+      welcome: "오늘도 재미있는 질문을 만들어 볼까요?"
+      good_job: "정말 잘했어요! 멋진 질문이에요!"
+      try_again: "한 번 더 생각해 볼까요?"
+      hint: "힌트를 줄게요!"
+      emoji_prompt: "어떤 기분인지 골라 볼까요?"
+      picture_prompt: "그림을 보고 알맞은 것을 골라 보세요."
+      fill_blank: "빈칸에 들어갈 말을 생각해 보세요."
+    l2:
+      welcome: "발문 학습을 시작합니다. 좋은 질문을 만들어 봅시다."
+      structure_guide: "누가, 무엇을, 왜를 생각하며 질문을 만들어 보세요."
+      comparison_guide: "비슷한 점과 다른 점을 찾아보세요."
+      evidence_guide: "책에서 근거를 찾아 이유를 말해 봅시다."
+      debate_guide: "찬성과 반대 의견을 이유와 함께 이야기해 봅시다."
+    l3:
+      welcome: "깊이 있는 발문을 통해 사고력을 키워봅시다."
+      analysis_guide: "텍스트를 분석적으로 읽고, 다양한 관점에서 질문해 보세요."
+      perspective_guide: "다른 인물의 입장에서 생각해 보세요."
+      connection_guide: "이 이야기와 우리 사회의 연결 고리를 찾아보세요."
+      structure_analysis: "글의 전체 구조를 파악하고, 작가의 의도를 추론해 보세요."
+    l4:
+      welcome: "비판적이고 창의적인 발문으로 사고의 지평을 넓혀봅시다."
+      metacognition_guide: "자신의 사고 과정을 성찰하며 발문을 설계해 보세요."
+      ideology_guide: "텍스트의 숨은 전제와 배제된 목소리를 찾아보세요."
+      interdisciplinary_guide: "여러 학문 분야의 관점에서 텍스트를 재해석해 보세요."
+      hypothesis_guide: "가설을 세우고 텍스트에서 근거를 찾아 논증해 보세요."
+    feedback:
+      excellent: "탁월한 발문입니다!"
+      good: "좋은 발문이에요."
+      average: "괜찮은 시도예요. 조금 더 깊이 생각해 볼까요?"
+      needs_work: "다시 한번 생각해 보세요."
+    scaffolding_labels:
+      "3": "최대 지원"
+      "2": "중간 지원"
+      "1": "최소 지원"
+      "0": "자기 주도"
+    template_types:
+      factual: "사실적 이해"
+      inferential: "추론적 이해"
+      critical: "비판적 이해"
+      creative: "창의적 사고"
+      appreciative: "감상적 이해"
+      vocabulary: "어휘력"

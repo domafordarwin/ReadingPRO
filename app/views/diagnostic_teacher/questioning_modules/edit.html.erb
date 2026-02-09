@@ -1,0 +1,18 @@
+<% content_for :page_title do %>모듈 수정<% end %>
+
+<!-- Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <a href="<%= diagnostic_teacher_questioning_module_path(@module) %>" style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    모듈 상세로
+  </a>
+</div>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">발문 모듈 수정</h1>
+  <p class="rp-page-header__subtitle"><%= @module.title %></p>
+</div>
+
+<%= render "form", questioning_module: @module, stimuli: @stimuli, templates: @templates, url: diagnostic_teacher_questioning_module_path(@module) %>

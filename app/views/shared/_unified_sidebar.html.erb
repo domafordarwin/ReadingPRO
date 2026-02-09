@@ -13,7 +13,9 @@
       "diagnosis_status" => "/student/reports",
       "reports" => "/student/latest_report",
       "feedback" => "/student/consultations",
-      "notice" => "/student/about"
+      "notice" => "/student/about",
+      "questioning" => "/student/questioning",
+      "questioning_progress" => "/student/questioning/progress"
     },
     "parent" => {
       "dashboard" => "/parent",
@@ -51,7 +53,9 @@
       "notices" => "/diagnostic_teacher/notices",
       "consultations" => "/diagnostic_teacher/consultations",
       "consultation_requests" => "/diagnostic_teacher/consultation_requests",
-      "consultation_statistics" => "/diagnostic_teacher/consultation_statistics"
+      "consultation_statistics" => "/diagnostic_teacher/consultation_statistics",
+      "questioning_modules" => "/diagnostic_teacher/questioning_modules",
+      "questioning_sessions" => "/diagnostic_teacher/questioning_modules/sessions"
     },
     "developer" => {
       "dashboard" => "/researcher",
@@ -110,6 +114,16 @@
   if current_role.to_s == "student"
     menu_a_items << { id: "start_diagnosis", label: "문해력 검사", icon: "book-open" }
     menu_a_items << { id: "comprehensive_report", label: "나의 진단 리포트", icon: "bar-chart" }
+    menu_a_items << {
+      id: "questioning_group",
+      label: "발문 학습",
+      icon: "message-square",
+      hasSubmenu: true,
+      children: [
+        { id: "questioning", label: "발문 모듈", icon: "book-open" },
+        { id: "questioning_progress", label: "나의 역량", icon: "trending-up" }
+      ]
+    }
   elsif current_role.to_s == "parent"
     # Parent only sees reports and feedback, no diagnosis menu
   elsif current_role.to_s == "teacher"
@@ -166,6 +180,21 @@
               { id: "diagnostics_status", label: "응시/채점 현황", icon: "clipboard" },
               { id: "feedback", label: "학생별 피드백", icon: "message-circle" },
               { id: "comprehensive_reports", label: "종합 결과 보고서", icon: "file-text" }
+            ]
+          }
+        ]
+      },
+      "T_QUESTIONING" => {
+        label: "발문 학습",
+        items: [
+          {
+            id: "questioning_mgmt",
+            label: "발문 학습 관리",
+            icon: "message-square",
+            hasSubmenu: true,
+            children: [
+              { id: "questioning_modules", label: "발문 모듈 관리", icon: "database" },
+              { id: "questioning_sessions", label: "학생 세션 현황", icon: "clipboard" }
             ]
           }
         ]
@@ -247,7 +276,7 @@
     "student" => ["A"],
     "parent" => ["A"],
     "school_admin" => ["SA", "B"],
-    "teacher" => ["T_DASHBOARD", "T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
+    "teacher" => ["T_DASHBOARD", "T_MAIN", "T_ANALYSIS", "T_QUESTIONING", "T_CONSULTATION"],
     "developer" => ["C"],
     "admin" => ["E"]
   }

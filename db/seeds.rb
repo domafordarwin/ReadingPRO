@@ -310,3 +310,8 @@ puts "  SchoolAdminProfiles: #{SchoolAdminProfile.count}"
 puts ""
 puts "  Note: Sample data (items, forms, announcements) removed as of 2026-02-05"
 puts "======================================="
+
+# =============================================================================
+# Questioning Templates (발문 템플릿)
+# =============================================================================
+load Rails.root.join("db/seeds/questioning_templates.rb")

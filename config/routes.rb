@@ -83,6 +83,20 @@ Rails.application.routes.draw do
       end
       resources :comments, controller: "consultation_comments", only: [ :create, :destroy ], foreign_key: "consultation_post_id"
     end
+
+    # Questioning module (발문을 통한 사고력 신장)
+    resources :questioning, only: [:index, :show], controller: "questioning" do
+      member do
+        post :start_session
+      end
+    end
+    resources :questioning_sessions, only: [:show] do
+      member do
+        post :submit_question
+        patch :complete_session
+      end
+    end
+    get "questioning_progress", to: "questioning#progress"
   end
 
   namespace :parent do
@@ -228,6 +242,18 @@ Rails.application.routes.draw do
     end
     resources :forums, only: [ :index, :show ] do
       resources :comments, controller: "forum_comments", only: [ :create, :destroy ], foreign_key: "parent_forum_id"
+    end
+
+    # Questioning module (발문을 통한 사고력 신장)
+    resources :questioning_modules do
+      member do
+        get :sessions
+      end
+    end
+    resources :questioning_sessions, only: [:show, :update] do
+      member do
+        patch :review
+      end
     end
   end
 

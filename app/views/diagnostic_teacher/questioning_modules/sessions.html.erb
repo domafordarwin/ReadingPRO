@@ -1,0 +1,207 @@
+<% content_for :page_title do %>발문 세션 현황 - <%= @module.title %><% end %>
+
+<%
+  # @module - QuestioningModule with title, level_label
+  # @sessions - Collection (paginated) of QuestioningSession objects
+  stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
+%>
+
+<!-- Back Link -->
+<div style="margin-bottom: var(--rp-space-4);">
+  <%= link_to diagnostic_teacher_questioning_module_path(@module),
+        style: "font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    모듈 상세로
+  <% end %>
+</div>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--rp-space-3);">
+    <div>
+      <h1 class="rp-page-header__title">발문 세션 현황 - <%= @module.title %></h1>
+      <p class="rp-page-header__subtitle">"<%= @module.title %>" 모듈에 참여한 학생들의 세션 목록입니다.</p>
+    </div>
+    <% if @module.respond_to?(:level_label) && @module.level_label.present? %>
+      <span class="q-level-badge q-level-badge--<%= @module.respond_to?(:level) ? @module.level.to_s.downcase : 'l1' %>">
+        <%= @module.level_label %>
+      </span>
+    <% end %>
+  </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="rp-card rp-mb-6">
+  <div class="q-dt-filter-bar">
+    <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-text-muted);">상태:</span>
+    <%= link_to "전체",
+          sessions_diagnostic_teacher_questioning_module_path(@module),
+          class: "rp-btn rp-btn--sm #{params[:status].blank? ? 'rp-btn--primary' : 'rp-btn--secondary'}" %>
+    <%= link_to "진행 중",
+          sessions_diagnostic_teacher_questioning_module_path(@module, status: "in_progress"),
+          class: "rp-btn rp-btn--sm #{params[:status] == 'in_progress' ? 'rp-btn--primary' : 'rp-btn--secondary'}" %>
+    <%= link_to "완료",
+          sessions_diagnostic_teacher_questioning_module_path(@module, status: "completed"),
+          class: "rp-btn rp-btn--sm #{params[:status] == 'completed' ? 'rp-btn--primary' : 'rp-btn--secondary'}" %>
+    <%= link_to "리뷰 완료",
+          sessions_diagnostic_teacher_questioning_module_path(@module, status: "reviewed"),
+          class: "rp-btn rp-btn--sm #{params[:status] == 'reviewed' ? 'rp-btn--primary' : 'rp-btn--secondary'}" %>
+  </div>
+
+  <% if @sessions.present? && @sessions.any? %>
+    <div class="rp-table-wrapper">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>학생</th>
+            <th>상태</th>
+            <th>현재 단계</th>
+            <th>점수</th>
+            <th>발문 수</th>
+            <th>소요 시간</th>
+            <th>시작일</th>
+            <th>액션</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @sessions.each do |session| %>
+            <%
+              student = session.student
+              student_user = student&.respond_to?(:user) ? student.user : nil
+              student_name = student_user&.name || student&.name || "학생"
+              student_grade = student&.respond_to?(:grade) ? student.grade : nil
+              student_class = student&.respond_to?(:class_name) ? student.class_name : nil
+            %>
+            <tr>
+              <!-- 학생 -->
+              <td>
+                <strong><%= student_name %></strong>
+                <% if student_grade.present? || student_class.present? %>
+                  <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                    <%= [student_grade.present? ? "#{student_grade}학년" : nil, student_class.present? ? "#{student_class}반" : nil].compact.join(" ") %>
+                  </div>
+                <% end %>
+              </td>
+
+              <!-- 상태 -->
+              <td>
+                <% case session.status.to_s %>
+                <% when "in_progress" %>
+                  <span class="q-status-badge q-status-badge--in-progress"><%= session.status_label %></span>
+                <% when "completed" %>
+                  <span class="q-status-badge q-status-badge--completed"><%= session.status_label %></span>
+                <% when "reviewed" %>
+                  <span class="rp-badge rp-badge--success"><%= session.status_label %></span>
+                <% else %>
+                  <span class="rp-badge rp-badge--default"><%= session.status_label %></span>
+                <% end %>
+              </td>
+
+              <!-- 현재 단계 -->
+              <td>
+                <span style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body);">
+                  <%= session.current_stage_label %>
+                </span>
+              </td>
+
+              <!-- 점수 -->
+              <td>
+                <% if session.total_score.present? %>
+                  <span style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary);">
+                    <%= session.total_score.respond_to?(:round) ? session.total_score.round(1) : session.total_score %>
+                  </span>
+                <% else %>
+                  <span style="color: var(--rp-text-muted);">-</span>
+                <% end %>
+              </td>
+
+              <!-- 발문 수 -->
+              <td>
+                <span><%= session.student_questions_count || 0 %>개</span>
+              </td>
+
+              <!-- 소요 시간 -->
+              <td>
+                <% if session.duration_minutes.present? %>
+                  <span style="font-size: var(--rp-font-size-sm);"><%= session.duration_minutes %>분</span>
+                <% else %>
+                  <span style="color: var(--rp-text-muted);">-</span>
+                <% end %>
+              </td>
+
+              <!-- 시작일 -->
+              <td style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                <%= session.created_at&.strftime("%Y.%m.%d %H:%M") %>
+              </td>
+
+              <!-- 액션 -->
+              <td>
+                <div style="display: flex; gap: var(--rp-space-2);">
+                  <% if session.status_completed? %>
+                    <%= link_to diagnostic_teacher_questioning_session_path(session),
+                          class: "rp-btn rp-btn--primary rp-btn--sm",
+                          title: "리뷰하기" do %>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                      리뷰
+                    <% end %>
+                  <% elsif session.status_reviewed? %>
+                    <%= link_to diagnostic_teacher_questioning_session_path(session),
+                          class: "rp-btn rp-btn--secondary rp-btn--sm",
+                          title: "상세보기" do %>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      보기
+                    <% end %>
+                  <% else %>
+                    <%= link_to diagnostic_teacher_questioning_session_path(session),
+                          class: "rp-btn rp-btn--secondary rp-btn--sm",
+                          title: "상세보기" do %>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      보기
+                    <% end %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if @sessions.respond_to?(:current_page) %>
+      <div style="margin-top: var(--rp-space-4); display: flex; justify-content: center;">
+        <%= paginate @sessions %>
+      </div>
+    <% end %>
+
+  <% else %>
+    <!-- Empty State -->
+    <div class="q-empty-state" style="padding: var(--rp-space-8) 0;">
+      <div class="q-empty-state__icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--rp-text-muted);">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        </svg>
+      </div>
+      <h3 class="q-empty-state__title">세션이 없습니다</h3>
+      <p class="q-empty-state__desc">
+        <% if params[:status].present? %>
+          해당 상태의 세션이 없습니다. 필터를 변경해보세요.
+        <% else %>
+          학생들이 발문 학습을 시작하면 여기에 세션이 표시됩니다.
+        <% end %>
+      </p>
+    </div>
+  <% end %>
+</div>

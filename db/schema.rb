@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_100003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -413,6 +413,105 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
     t.index ["recorded_at"], name: "index_performance_metrics_on_recorded_at"
   end
 
+  create_table "questioning_module_templates", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "questioning_module_id", null: false
+    t.bigint "questioning_template_id", null: false
+    t.boolean "required", default: true, null: false
+    t.integer "stage", null: false
+    t.datetime "updated_at", null: false
+    t.index ["questioning_module_id", "questioning_template_id"], name: "index_qmt_on_module_and_template", unique: true
+    t.index ["questioning_module_id", "stage", "position"], name: "index_qmt_on_module_stage_position"
+    t.index ["questioning_module_id"], name: "index_questioning_module_templates_on_questioning_module_id"
+    t.index ["questioning_template_id"], name: "index_questioning_module_templates_on_questioning_template_id"
+  end
+
+  create_table "questioning_modules", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "description"
+    t.jsonb "discussion_guide", default: {}, null: false
+    t.integer "estimated_minutes"
+    t.text "learning_objectives", default: [], null: false, array: true
+    t.string "level", null: false
+    t.bigint "reading_stimulus_id", null: false
+    t.integer "sessions_count", default: 0, null: false
+    t.string "status", default: "draft", null: false
+    t.integer "student_questions_count", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_questioning_modules_on_created_by_id"
+    t.index ["level", "status"], name: "index_questioning_modules_on_level_and_status"
+    t.index ["level"], name: "index_questioning_modules_on_level"
+    t.index ["reading_stimulus_id"], name: "index_questioning_modules_on_reading_stimulus_id"
+    t.index ["status"], name: "index_questioning_modules_on_status"
+  end
+
+  create_table "questioning_progresses", force: :cascade do |t|
+    t.decimal "average_score", precision: 5, scale: 2
+    t.decimal "best_score", precision: 5, scale: 2
+    t.datetime "created_at", null: false
+    t.string "current_level", default: "elementary_low", null: false
+    t.integer "current_scaffolding", default: 3, null: false
+    t.bigint "evaluation_indicator_id", null: false
+    t.datetime "last_activity_at"
+    t.jsonb "level_history", default: [], null: false
+    t.decimal "mastery_percentage", precision: 5, scale: 2, default: "0.0", null: false
+    t.bigint "student_id", null: false
+    t.integer "total_questions_created", default: 0, null: false
+    t.integer "total_sessions_completed", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["current_level"], name: "index_questioning_progresses_on_current_level"
+    t.index ["evaluation_indicator_id"], name: "index_questioning_progresses_on_evaluation_indicator_id"
+    t.index ["mastery_percentage"], name: "index_questioning_progresses_on_mastery_percentage"
+    t.index ["student_id", "evaluation_indicator_id"], name: "index_qp_on_student_and_indicator", unique: true
+    t.index ["student_id"], name: "index_questioning_progresses_on_student_id"
+  end
+
+  create_table "questioning_sessions", force: :cascade do |t|
+    t.jsonb "ai_summary", default: {}, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.integer "current_stage", default: 1, null: false
+    t.bigint "questioning_module_id", null: false
+    t.jsonb "stage_scores", default: {}, null: false
+    t.datetime "started_at", null: false
+    t.string "status", default: "in_progress", null: false
+    t.bigint "student_id", null: false
+    t.integer "student_questions_count", default: 0, null: false
+    t.text "teacher_comment"
+    t.integer "time_spent_seconds"
+    t.decimal "total_score", precision: 5, scale: 2
+    t.datetime "updated_at", null: false
+    t.index ["questioning_module_id"], name: "index_questioning_sessions_on_questioning_module_id"
+    t.index ["status"], name: "index_questioning_sessions_on_status"
+    t.index ["student_id", "questioning_module_id"], name: "index_qs_on_student_and_module"
+    t.index ["student_id"], name: "index_questioning_sessions_on_student_id"
+  end
+
+  create_table "questioning_templates", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.bigint "evaluation_indicator_id"
+    t.text "example_question"
+    t.text "guidance_text"
+    t.string "level", null: false
+    t.integer "scaffolding_level", default: 0, null: false
+    t.integer "sort_order", default: 0, null: false
+    t.integer "stage", null: false
+    t.bigint "sub_indicator_id"
+    t.text "template_text", null: false
+    t.string "template_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_questioning_templates_on_active"
+    t.index ["evaluation_indicator_id"], name: "index_questioning_templates_on_evaluation_indicator_id"
+    t.index ["scaffolding_level"], name: "index_questioning_templates_on_scaffolding_level"
+    t.index ["stage", "level"], name: "index_questioning_templates_on_stage_and_level"
+    t.index ["sub_indicator_id"], name: "index_questioning_templates_on_sub_indicator_id"
+    t.index ["template_type"], name: "index_questioning_templates_on_template_type"
+  end
+
   create_table "reader_tendencies", force: :cascade do |t|
     t.integer "avg_response_time_seconds"
     t.string "comprehension_strength"
@@ -737,6 +836,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
     t.index ["student_id"], name: "index_student_portfolios_on_student_id", unique: true
   end
 
+  create_table "student_questions", force: :cascade do |t|
+    t.jsonb "ai_evaluation", default: {}, null: false
+    t.decimal "ai_score", precision: 5, scale: 2
+    t.datetime "created_at", null: false
+    t.bigint "evaluation_indicator_id"
+    t.decimal "final_score", precision: 5, scale: 2
+    t.text "question_text", null: false
+    t.string "question_type", default: "guided", null: false
+    t.bigint "questioning_session_id", null: false
+    t.bigint "questioning_template_id"
+    t.integer "scaffolding_used", default: 0, null: false
+    t.integer "stage", null: false
+    t.bigint "sub_indicator_id"
+    t.text "teacher_feedback"
+    t.decimal "teacher_score", precision: 5, scale: 2
+    t.datetime "updated_at", null: false
+    t.index ["evaluation_indicator_id"], name: "index_student_questions_on_evaluation_indicator_id"
+    t.index ["questioning_session_id", "stage"], name: "index_sq_on_session_and_stage"
+    t.index ["questioning_session_id"], name: "index_student_questions_on_questioning_session_id"
+    t.index ["questioning_template_id"], name: "index_student_questions_on_questioning_template_id"
+    t.index ["stage"], name: "index_student_questions_on_stage"
+    t.index ["sub_indicator_id"], name: "index_student_questions_on_sub_indicator_id"
+  end
+
   create_table "students", force: :cascade do |t|
     t.string "class_name"
     t.datetime "created_at", null: false
@@ -833,6 +956,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
   add_foreign_key "parent_forum_comments", "users", column: "created_by_id"
   add_foreign_key "parent_forums", "users", column: "created_by_id"
   add_foreign_key "parents", "users"
+  add_foreign_key "questioning_module_templates", "questioning_modules"
+  add_foreign_key "questioning_module_templates", "questioning_templates"
+  add_foreign_key "questioning_modules", "reading_stimuli"
+  add_foreign_key "questioning_modules", "teachers", column: "created_by_id"
+  add_foreign_key "questioning_progresses", "evaluation_indicators"
+  add_foreign_key "questioning_progresses", "students"
+  add_foreign_key "questioning_sessions", "questioning_modules"
+  add_foreign_key "questioning_sessions", "students"
+  add_foreign_key "questioning_templates", "evaluation_indicators"
+  add_foreign_key "questioning_templates", "sub_indicators"
   add_foreign_key "reader_tendencies", "student_attempts"
   add_foreign_key "reader_tendencies", "students"
   add_foreign_key "reading_stimuli", "teachers", column: "created_by_id"
@@ -858,6 +991,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
   add_foreign_key "student_attempts", "diagnostic_forms"
   add_foreign_key "student_attempts", "students"
   add_foreign_key "student_portfolios", "students"
+  add_foreign_key "student_questions", "evaluation_indicators"
+  add_foreign_key "student_questions", "questioning_sessions"
+  add_foreign_key "student_questions", "questioning_templates"
+  add_foreign_key "student_questions", "sub_indicators"
   add_foreign_key "students", "schools"
   add_foreign_key "students", "users"
   add_foreign_key "sub_indicators", "evaluation_indicators", on_delete: :cascade

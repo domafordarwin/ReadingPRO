@@ -1,0 +1,267 @@
+<% content_for :page_title do %>발문 모듈 관리<% end %>
+
+<%
+  level_options = {
+    "elementary_low" => "초저 (초1-2)",
+    "elementary_high" => "초고 (초3-6)",
+    "middle" => "중등",
+    "high" => "고등"
+  }
+  status_options = {
+    "draft" => "초안",
+    "active" => "활성",
+    "archived" => "보관"
+  }
+  current_level = params[:level]
+  current_status = params[:status]
+  current_search = params[:search]
+
+  total_count = @modules.respond_to?(:total_count) ? @modules.total_count : @modules.size
+  active_count = @modules.select { |m| m.status_active? }.count
+  total_sessions = @modules.sum { |m| m.respond_to?(:sessions_count) ? m.sessions_count : m.questioning_sessions.size }
+  total_questions = @modules.sum { |m| m.respond_to?(:student_questions_count) ? m.student_questions_count : 0 }
+%>
+
+<!-- Page Header -->
+<div class="rp-page-header">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--rp-space-3);">
+    <div>
+      <h1 class="rp-page-header__title">발문 모듈 관리</h1>
+      <p class="rp-page-header__subtitle">발문 학습 모듈을 생성하고 관리합니다.</p>
+    </div>
+    <%= link_to new_diagnostic_teacher_questioning_module_path, class: "rp-btn rp-btn--primary" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      새 모듈 추가
+    <% end %>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="rp-card rp-mb-6">
+  <div class="q-dt-filter-bar">
+    <!-- Level Filter -->
+    <div style="display: flex; gap: var(--rp-space-2); align-items: center;">
+      <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-text-muted);">수준:</span>
+      <a href="<%= diagnostic_teacher_questioning_modules_path(status: current_status, search: current_search) %>"
+         class="rp-btn rp-btn--sm <%= current_level.blank? ? 'rp-btn--primary' : 'rp-btn--secondary' %>">전체</a>
+      <% level_options.each do |val, label| %>
+        <a href="<%= diagnostic_teacher_questioning_modules_path(level: val, status: current_status, search: current_search) %>"
+           class="rp-btn rp-btn--sm <%= current_level == val ? 'rp-btn--primary' : 'rp-btn--secondary' %>">
+          <%= label %>
+        </a>
+      <% end %>
+    </div>
+
+    <!-- Status Filter -->
+    <div style="display: flex; gap: var(--rp-space-2); align-items: center; margin-left: auto;">
+      <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: var(--rp-text-muted);">상태:</span>
+      <a href="<%= diagnostic_teacher_questioning_modules_path(level: current_level, search: current_search) %>"
+         class="rp-btn rp-btn--sm <%= current_status.blank? ? 'rp-btn--primary' : 'rp-btn--secondary' %>">전체</a>
+      <% status_options.each do |val, label| %>
+        <a href="<%= diagnostic_teacher_questioning_modules_path(level: current_level, status: val, search: current_search) %>"
+           class="rp-btn rp-btn--sm <%= current_status == val ? 'rp-btn--primary' : 'rp-btn--secondary' %>">
+          <%= label %>
+        </a>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div style="display: flex; gap: var(--rp-space-2); align-items: center;">
+    <%= form_with url: diagnostic_teacher_questioning_modules_path, method: :get, local: true, style: "display: flex; gap: var(--rp-space-2); flex: 1;" do |f| %>
+      <% if current_level.present? %>
+        <%= f.hidden_field :level, value: current_level %>
+      <% end %>
+      <% if current_status.present? %>
+        <%= f.hidden_field :status, value: current_status %>
+      <% end %>
+      <input type="text" name="search" value="<%= current_search %>" placeholder="모듈명 또는 지문 제목으로 검색..."
+             class="rp-input" style="flex: 1; padding: 8px 12px; border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm);" />
+      <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">검색</button>
+      <% if current_search.present? || current_level.present? || current_status.present? %>
+        <%= link_to "초기화", diagnostic_teacher_questioning_modules_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Stats Row -->
+<div class="q-dt-stats">
+  <div class="rp-stat">
+    <div class="rp-stat__label">전체 모듈</div>
+    <div class="rp-stat__value"><%= total_count %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">활성 모듈</div>
+    <div class="rp-stat__value" style="color: var(--rp-success);"><%= active_count %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">총 세션 수</div>
+    <div class="rp-stat__value" style="color: var(--rp-info, #0ea5e9);"><%= total_sessions %></div>
+  </div>
+  <div class="rp-stat">
+    <div class="rp-stat__label">총 발문 수</div>
+    <div class="rp-stat__value" style="color: var(--rp-primary);"><%= total_questions %></div>
+  </div>
+</div>
+
+<!-- Module Cards -->
+<% if @modules.present? && @modules.any? %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--rp-space-4); margin-bottom: var(--rp-space-6);">
+    <% @modules.each do |mod| %>
+      <%
+        stimulus = mod.reading_stimulus
+        creator_name = mod.creator&.user&.name || "알 수 없음"
+        template_count = mod.respond_to?(:total_template_count) ? mod.total_template_count : 0
+        sessions_count = mod.respond_to?(:sessions_count) ? mod.sessions_count : mod.questioning_sessions.size
+        questions_count = mod.respond_to?(:student_questions_count) ? mod.student_questions_count : 0
+      %>
+      <div class="q-module-card">
+        <!-- Header: Title + Badges -->
+        <div class="q-module-card__header">
+          <h3 class="q-module-card__title">
+            <%= link_to mod.title, diagnostic_teacher_questioning_module_path(mod), style: "color: inherit; text-decoration: none;" %>
+          </h3>
+          <div class="q-module-card__badges">
+            <span class="q-level-badge q-level-badge--<%= mod.level.to_s.gsub('elementary_low', 'l1').gsub('elementary_high', 'l2').gsub('middle', 'l3').gsub('high', 'l4') %>">
+              <%= mod.level_label %>
+            </span>
+            <% if mod.status_draft? %>
+              <span class="rp-badge rp-badge--warning">초안</span>
+            <% elsif mod.status_active? %>
+              <span class="rp-badge rp-badge--success">활성</span>
+            <% elsif mod.status_archived? %>
+              <span class="rp-badge rp-badge--default">보관됨</span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Reading Stimulus Title -->
+        <% if stimulus %>
+          <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-muted); display: flex; align-items: center; gap: var(--rp-space-2);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= stimulus.title %></span>
+          </div>
+        <% end %>
+
+        <!-- Description -->
+        <% if mod.description.present? %>
+          <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.5; max-height: 40px; overflow: hidden; text-overflow: ellipsis;">
+            <%= truncate(mod.description, length: 80) %>
+          </div>
+        <% end %>
+
+        <!-- Stats: Templates, Sessions -->
+        <div style="display: flex; gap: var(--rp-space-4); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+          <span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 2px;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            템플릿 <strong style="color: var(--rp-text-title);"><%= template_count %></strong>개
+          </span>
+          <span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 2px;">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            세션 <strong style="color: var(--rp-text-title);"><%= sessions_count %></strong>회
+          </span>
+          <% if mod.estimated_minutes.present? %>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 2px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <strong style="color: var(--rp-text-title);"><%= mod.estimated_minutes %></strong>분
+            </span>
+          <% end %>
+        </div>
+
+        <!-- Learning Objectives -->
+        <% if mod.learning_objectives.present? && mod.learning_objectives.any? %>
+          <div style="display: flex; gap: var(--rp-space-1); flex-wrap: wrap;">
+            <% mod.learning_objectives.first(3).each do |obj| %>
+              <span style="display: inline-block; padding: 2px 8px; background: var(--rp-bg-subtle); border-radius: var(--rp-radius-full); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                <%= truncate(obj, length: 20) %>
+              </span>
+            <% end %>
+            <% if mod.learning_objectives.size > 3 %>
+              <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">+<%= mod.learning_objectives.size - 3 %></span>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Footer: Creator + Actions -->
+        <div class="q-module-card__footer">
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+            <span><%= creator_name %></span>
+            <span style="margin-left: var(--rp-space-2);"><%= mod.created_at&.strftime("%Y.%m.%d") %></span>
+          </div>
+          <div style="display: flex; gap: var(--rp-space-2);">
+            <!-- View -->
+            <%= link_to diagnostic_teacher_questioning_module_path(mod), class: "rp-icon-btn rp-icon-btn--edit", title: "상세보기", aria: { label: "상세보기" } do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            <% end %>
+            <!-- Edit -->
+            <%= link_to edit_diagnostic_teacher_questioning_module_path(mod), class: "rp-icon-btn rp-icon-btn--edit", title: "수정", aria: { label: "수정" } do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+            <% end %>
+            <!-- Sessions -->
+            <%= link_to sessions_diagnostic_teacher_questioning_module_path(mod), class: "rp-icon-btn rp-icon-btn--edit", title: "세션 목록", aria: { label: "세션 목록" }, style: "background: #f0fdf4; color: #16a34a;" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+            <% end %>
+            <!-- Delete -->
+            <%= button_to diagnostic_teacher_questioning_module_path(mod),
+                method: :delete,
+                data: { turbo: false, confirm: "'#{mod.title}' 모듈을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다." },
+                class: "rp-icon-btn rp-icon-btn--danger",
+                title: "삭제",
+                aria: { label: "삭제" } do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Pagination -->
+  <%= paginate @modules if @modules.respond_to?(:current_page) %>
+<% else %>
+  <!-- Empty State -->
+  <div class="q-empty-state">
+    <div class="q-empty-state__icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--rp-text-muted);">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <h3 class="q-empty-state__title">발문 모듈이 없습니다</h3>
+    <p class="q-empty-state__desc">새 모듈을 생성하여 학생들의 발문 학습을 시작하세요.</p>
+    <%= link_to new_diagnostic_teacher_questioning_module_path, class: "rp-btn rp-btn--primary", style: "margin-top: var(--rp-space-4);" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      새 모듈 추가
+    <% end %>
+  </div>
+<% end %>
