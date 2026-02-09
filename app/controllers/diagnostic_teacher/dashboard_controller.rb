@@ -380,6 +380,40 @@ class DiagnosticTeacher::DashboardController < ApplicationController
   end
 
   # =====================================================================
+  # 발문 학생 세션 전체 현황
+  # =====================================================================
+
+  def questioning_sessions_overview
+    @current_page = "questioning_sessions"
+    @page_title = "학생 세션 현황"
+
+    # 통계
+    @total_sessions = QuestioningSession.count
+    @active_sessions = QuestioningSession.active.count
+    @completed_sessions = QuestioningSession.finished.count
+    @avg_score = QuestioningSession.finished.where.not(total_score: nil).reorder(nil).pick(Arel.sql("AVG(total_score)"))
+
+    # 필터
+    @status_filter = params[:status].to_s.strip
+    @module_filter = params[:module_id].to_s.strip
+
+    base = QuestioningSession.includes(:student, questioning_module: :reading_stimulus).recent
+
+    base = case @status_filter
+           when "active"    then base.active
+           when "completed" then base.finished
+           else                  base
+           end
+
+    base = base.where(questioning_module_id: @module_filter) if @module_filter.present?
+
+    @sessions = base.page(params[:page]).per(20)
+
+    # 필터용 모듈 목록
+    @modules = QuestioningModule.available.order(:title)
+  end
+
+  # =====================================================================
   # 발문 모듈 배정 관리
   # =====================================================================
 

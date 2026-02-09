@@ -106,7 +106,7 @@
 
         <div class="q-module-card__footer">
           <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
-            예상 <%= qm.respond_to?(:estimated_time_minutes) ? qm.estimated_time_minutes : 15 %>분
+            예상 <%= qm.estimated_minutes || 15 %>분
           </span>
           <% if status == :not_started %>
             <%= link_to "시작하기", "/student/questioning/#{qm.id}",

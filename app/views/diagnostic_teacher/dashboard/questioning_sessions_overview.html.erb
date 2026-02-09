@@ -1,0 +1,188 @@
+<% content_for :page_title, "학생 세션 현황" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">학생 세션 현황</h1>
+  <p class="rp-page-header__subtitle">모든 발문 모듈의 학생 학습 세션을 한눈에 확인합니다</p>
+</div>
+
+<!-- 통계 카드 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">전체 세션</div>
+    <div class="rp-stat-value"><%= @total_sessions %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">진행중</div>
+    <div class="rp-stat-value rp-stat-value--info"><%= @active_sessions %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">완료</div>
+    <div class="rp-stat-value rp-stat-value--success"><%= @completed_sessions %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">평균 점수</div>
+    <div class="rp-stat-value rp-stat-value--primary"><%= @avg_score ? "#{@avg_score.round(1)}점" : "-" %></div>
+  </div>
+</div>
+
+<div class="rp-card">
+  <div class="rp-section-header">
+    <h2 class="rp-section-title">세션 목록</h2>
+  </div>
+
+  <!-- 필터 -->
+  <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end;">
+    <!-- 상태 필터 탭 -->
+    <div class="rp-filter-tabs" style="flex: 1; min-width: 280px;">
+      <%= link_to "전체", diagnostic_teacher_questioning_sessions_overview_path(module_id: @module_filter.presence),
+          class: "rp-filter-tab #{@status_filter.blank? ? 'rp-filter-tab--active' : ''}" %>
+      <%= link_to "진행중", diagnostic_teacher_questioning_sessions_overview_path(status: "active", module_id: @module_filter.presence),
+          class: "rp-filter-tab #{@status_filter == 'active' ? 'rp-filter-tab--active' : ''}" %>
+      <%= link_to "완료", diagnostic_teacher_questioning_sessions_overview_path(status: "completed", module_id: @module_filter.presence),
+          class: "rp-filter-tab #{@status_filter == 'completed' ? 'rp-filter-tab--active' : ''}" %>
+    </div>
+
+    <!-- 모듈 필터 -->
+    <div style="min-width: 200px;">
+      <select onchange="location.href=this.value" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; color: #334155;">
+        <option value="<%= diagnostic_teacher_questioning_sessions_overview_path(status: @status_filter.presence) %>"
+                <%= 'selected' if @module_filter.blank? %>>모든 모듈</option>
+        <% @modules.each do |mod| %>
+          <option value="<%= diagnostic_teacher_questioning_sessions_overview_path(status: @status_filter.presence, module_id: mod.id) %>"
+                  <%= 'selected' if @module_filter == mod.id.to_s %>><%= mod.title %></option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <% if @sessions.any? %>
+    <div class="rp-table-wrapper">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>학생</th>
+            <th>모듈명</th>
+            <th>수준</th>
+            <th>현재 단계</th>
+            <th>상태</th>
+            <th>점수</th>
+            <th>시작일</th>
+            <th>소요시간</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @sessions.each do |session| %>
+            <tr>
+              <td>
+                <strong><%= session.student&.name || "-" %></strong>
+                <div style="font-size: 11px; color: #94a3b8;"><%= session.student&.class_name %></div>
+              </td>
+              <td>
+                <%= link_to session.questioning_module&.title || "-",
+                    sessions_diagnostic_teacher_questioning_module_path(session.questioning_module),
+                    style: "color: #2563eb; text-decoration: none; font-weight: 500;" %>
+              </td>
+              <td>
+                <span class="rp-badge rp-badge--level"><%= session.questioning_module&.level_label %></span>
+              </td>
+              <td>
+                <span style="font-size: 13px; color: #475569;"><%= session.current_stage_label %></span>
+              </td>
+              <td>
+                <% case session.status %>
+                <% when "in_progress" %>
+                  <span class="rp-badge rp-badge--info">진행중</span>
+                <% when "completed" %>
+                  <span class="rp-badge rp-badge--success">완료</span>
+                <% when "reviewed" %>
+                  <span class="rp-badge rp-badge--primary">리뷰완료</span>
+                <% end %>
+              </td>
+              <td>
+                <% if session.total_score.present? %>
+                  <strong style="color: #0f172a;"><%= session.total_score.round(1) %>점</strong>
+                <% else %>
+                  <span style="color: #94a3b8;">-</span>
+                <% end %>
+              </td>
+              <td style="font-size: 13px; color: #64748b;">
+                <%= session.started_at&.strftime("%Y.%m.%d %H:%M") || "-" %>
+              </td>
+              <td style="font-size: 13px; color: #64748b;">
+                <% if session.duration_minutes %>
+                  <%= session.duration_minutes %>분
+                <% elsif session.status_in_progress? %>
+                  <span style="color: #2563eb;">진행중</span>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @sessions.respond_to?(:total_pages) && @sessions.total_pages > 1 %>
+      <div style="margin-top: 24px; display: flex; justify-content: center; gap: 8px;">
+        <% if @sessions.current_page > 1 %>
+          <%= link_to "이전", diagnostic_teacher_questioning_sessions_overview_path(
+                page: @sessions.current_page - 1,
+                status: @status_filter.presence,
+                module_id: @module_filter.presence),
+              class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+        <span style="padding: 6px 12px; color: #64748b; font-size: 13px;">
+          <%= @sessions.current_page %> / <%= @sessions.total_pages %>
+        </span>
+        <% if @sessions.current_page < @sessions.total_pages %>
+          <%= link_to "다음", diagnostic_teacher_questioning_sessions_overview_path(
+                page: @sessions.current_page + 1,
+                status: @status_filter.presence,
+                module_id: @module_filter.presence),
+              class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="rp-empty-state">
+      <p style="font-size: 16px; color: #64748b;">학생 세션이 없습니다.</p>
+      <p style="color: #94a3b8;">학생들이 발문 모듈을 시작하면 여기에 세션이 표시됩니다.</p>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  .rp-page-header { margin-bottom: 24px; }
+  .rp-page-header__title { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+  .rp-page-header__subtitle { font-size: 14px; color: #94a3b8; margin: 0; }
+  .rp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .rp-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
+  .rp-stat-label { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 8px; }
+  .rp-stat-value { font-size: 28px; font-weight: 700; color: #0f172a; }
+  .rp-stat-value--info { color: #2563eb; }
+  .rp-stat-value--success { color: #10b981; }
+  .rp-stat-value--danger { color: #ef4444; }
+  .rp-stat-value--primary { color: #6366f1; }
+  .rp-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+  .rp-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .rp-section-title { font-size: 18px; font-weight: 600; color: #0f172a; margin: 0; }
+  .rp-table-wrapper { overflow-x: auto; }
+  .rp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rp-table th, .rp-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+  .rp-table th { font-weight: 600; color: #94a3b8; background: #f8fafc; font-size: 12px; text-transform: uppercase; }
+  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+  .rp-btn--primary { background: #2f5bff; color: white; }
+  .rp-btn--secondary { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+  .rp-btn--sm { padding: 6px 12px; font-size: 12px; }
+  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .rp-badge--info { background: #dbeafe; color: #1e3a8a; }
+  .rp-badge--success { background: #d1fae5; color: #065f46; }
+  .rp-badge--primary { background: #e0e7ff; color: #3730a3; }
+  .rp-badge--level { background: #ede9fe; color: #5b21b6; }
+  .rp-empty-state { text-align: center; padding: 60px 40px; }
+  .rp-filter-tabs { display: flex; gap: 4px; padding: 4px; background: #f1f5f9; border-radius: 8px; }
+  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
+  .rp-filter-tab:hover { color: #0f172a; background: rgba(255,255,255,0.5); }
+  .rp-filter-tab--active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+</style>

@@ -256,6 +256,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # 발문 학생 세션 전체 현황
+    get "questioning_sessions_overview", to: "dashboard#questioning_sessions_overview", as: "questioning_sessions_overview"
+
     # 발문 모듈 배정 관리
     get  "questioning_assignments", to: "dashboard#questioning_assignments", as: "questioning_assignments"
     post "questioning_assignments", to: "dashboard#create_questioning_assignment", as: "create_questioning_assignment"
