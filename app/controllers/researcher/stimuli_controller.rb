@@ -38,9 +38,9 @@ class Researcher::StimuliController < ApplicationController
 
   def destroy
     if @stimulus.destroy
-      redirect_to researcher_passages_path, notice: "지문이 삭제되었습니다.", status: :see_other
+      redirect_to researcher_item_bank_path, notice: "모듈이 삭제되었습니다.", status: :see_other
     else
-      redirect_to researcher_passages_path, alert: "지문 삭제에 실패했습니다.", status: :see_other
+      redirect_to researcher_item_bank_path, alert: "모듈 삭제에 실패했습니다.", status: :see_other
     end
   end
 

@@ -331,6 +331,9 @@
                 AI 분석
               <% end %>
             <% end %>
+            <%= button_to researcher_passage_path(bundle), method: :delete, class: "btn-action btn-delete", data: { turbo_confirm: "정말 삭제하시겠습니까?\n\n이 모듈의 지문과 모든 문항이 영구적으로 삭제됩니다.\n(보관처리를 원하시면 상세보기에서 '보관처리' 버튼을 사용해주세요)" } do %>
+              삭제
+            <% end %>
           </div>
         </div>
       </div>
@@ -1610,6 +1613,16 @@
 
   .btn-answer-key:hover {
     background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  }
+
+  .btn-delete {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .btn-delete:hover {
+    background: #dc2626;
+    color: white;
   }
 
   /* 정답 상태 표시 */
