@@ -43,3 +43,6 @@ docs/.bkit-memory.json
 docs/.pdca-snapshots/
 .claude.local.json
 db/seed_assessment_data.rb
+
+# Presentation files (로컬 시연 자료)
+presentation/
