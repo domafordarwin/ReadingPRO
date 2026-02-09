@@ -229,9 +229,9 @@
       "D" => {
         label: "진단 결과 분석",
         items: [
-          { id: "statistics", label: "상담 통계 대시보드", icon: "trending-up" },
-          { id: "sub_analysis", label: "하위역량 분석", icon: "activity" },
-          { id: "scoring_status", label: "응시/채점 현황", icon: "clipboard" }
+          { id: "consultation_statistics", label: "상담 통계 대시보드", icon: "trending-up" },
+          { id: "school_reports", label: "하위역량 분석", icon: "activity" },
+          { id: "distribution", label: "응시/채점 현황", icon: "clipboard" }
         ]
       },
       "E" => {
@@ -248,7 +248,7 @@
   role_menus = {
     "student" => ["A"],
     "parent" => ["A"],
-    "school_admin" => ["SA", "B", "D"],
+    "school_admin" => ["SA", "B"],
     "teacher" => ["T_DASHBOARD", "T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
     "developer" => ["C"],
     "admin" => ["E"]
@@ -315,14 +315,15 @@
 </aside>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const toggleButtons = document.querySelectorAll('[data-toggle-submenu]');
+  function initSidebarSubmenus() {
+    document.querySelectorAll('[data-toggle-submenu]').forEach(button => {
+      // 이미 바인딩된 이벤트 중복 방지
+      if (button.dataset.submenuBound) return;
+      button.dataset.submenuBound = "true";
 
-    toggleButtons.forEach(button => {
       button.addEventListener('click', function(e) {
         e.preventDefault();
         const submenu = this.nextElementSibling;
-        const isOpen = submenu.classList.contains('rp-nav-submenu--open');
 
         // Close all other submenus
         document.querySelectorAll('.rp-nav-submenu--open').forEach(menu => {
@@ -337,7 +338,11 @@
         this.classList.toggle('rp-nav-item--active');
       });
     });
-  });
+  }
+
+  // 초기 로드 + Turbo 페이지 전환 모두 대응
+  document.addEventListener('DOMContentLoaded', initSidebarSubmenus);
+  document.addEventListener('turbo:load', initSidebarSubmenus);
 </script>
 
 <%
