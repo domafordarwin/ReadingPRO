@@ -10,8 +10,8 @@ class Student::DashboardController < ApplicationController
     @student = current_user&.student
 
     if @student
-      # 완료한 진단 수
-      @completed_count = @student.student_attempts.where(status: "completed").count
+      # 완료한 진단 수 (completed 또는 submitted)
+      @completed_count = @student.student_attempts.where(status: %w[completed submitted]).count
 
       # 배정된 진단 (미완료 또는 재배정된 것)
       school = @student.school
@@ -28,7 +28,7 @@ class Student::DashboardController < ApplicationController
 
       # 최신 완료 시도의 리포트 (역량 요약용)
       @latest_attempt = @student.student_attempts
-        .where(status: "completed")
+        .where(status: %w[completed submitted])
         .includes(:attempt_report, :diagnostic_form)
         .order(submitted_at: :desc)
         .first
