@@ -23,22 +23,36 @@
   --rp-text-title: #0F172A;
   --rp-text-body: #475569;
   --rp-text-muted: #64748B;  /* Updated for WCAG AA contrast (5.2:1) */
+  --rp-text-subtle: #94A3B8;
+  --rp-text-dark: #1E293B;
+  --rp-text-darker: #334155;
 
   /* Colors - Brand */
   --rp-primary: #2F5BFF;
   --rp-primary-hover: #1E4AE8;
   --rp-primary-soft: #EEF2FF;
   --rp-primary-softer: #F5F8FF;
+  --rp-blue: #2563EB;
+  --rp-blue-50: #EFF6FF;
+  --rp-blue-100: #DBEAFE;
 
   /* Colors - Status */
   --rp-success: #22C55E;
   --rp-success-soft: #DCFCE7;
+  --rp-success-dark: #15803D;
   --rp-warning: #F59E0B;
   --rp-warning-soft: #FEF3C7;
+  --rp-warning-dark: #B45309;
   --rp-danger: #EF4444;
   --rp-danger-soft: #FEE2E2;
+  --rp-danger-dark: #B91C1C;
   --rp-info: #0EA5E9;
   --rp-info-soft: #E0F2FE;
+  --rp-info-dark: #0369A1;
+
+  /* Colors - Extended */
+  --rp-slate-100: #F1F5F9;
+  --rp-landing-bg: #F4F6F2;
 
   /* Spacing */
   --rp-space-1: 4px;
