@@ -17,17 +17,27 @@ class StudentBatchCreationService
     return add_error("학교 정보가 없습니다.") unless @school
     return add_error("이메일 도메인이 설정되지 않았습니다.") if @school.email_domain.blank?
     return add_error("생성할 학생 수를 입력해주세요.") if @count <= 0
-    return add_error("최대 100명까지 생성 가능합니다.") if @count > 100
+    return add_error("최대 300명까지 생성 가능합니다.") if @count > 300
 
     domain = @school.email_domain
-    start_seq = @school.next_student_sequence
+    seq = next_available_sequence(domain)
 
     ActiveRecord::Base.transaction do
-      @count.times do |i|
-        seq = start_seq + i
+      created = 0
+      max_attempts = @count * 3 # 충분한 여유를 두고 시도
+
+      while created < @count && max_attempts > 0
+        max_attempts -= 1
         seq_str = format("%04d", seq)
-        student_id = "RPS_#{seq_str}"
         student_email = "rps_#{seq_str}@#{domain}"
+
+        # 이미 존재하는 이메일이면 건너뛰기
+        if User.exists?(email: student_email)
+          seq += 1
+          next
+        end
+
+        student_id = "RPS_#{seq_str}"
         student_password = generate_password
 
         student_user = User.create!(
@@ -60,41 +70,61 @@ class StudentBatchCreationService
           parent_email = "rpp_#{seq_str}@#{domain}"
           parent_password = generate_password
 
-          parent_user = User.create!(
-            email: parent_email,
-            role: "parent",
-            password: parent_password,
-            password_confirmation: parent_password,
-            must_change_password: true
-          )
+          # 학부모 이메일도 중복 체크
+          unless User.exists?(email: parent_email)
+            parent_user = User.create!(
+              email: parent_email,
+              role: "parent",
+              password: parent_password,
+              password_confirmation: parent_password,
+              must_change_password: true
+            )
 
-          parent = Parent.create!(user: parent_user, name: parent_id)
+            parent = Parent.create!(user: parent_user, name: parent_id)
 
-          GuardianStudent.create!(
-            parent: parent,
-            student: student,
-            relationship: "guardian",
-            primary_contact: true,
-            can_view_results: true,
-            can_request_consultations: true
-          )
+            GuardianStudent.create!(
+              parent: parent,
+              student: student,
+              relationship: "guardian",
+              primary_contact: true,
+              can_view_results: true,
+              can_request_consultations: true
+            )
 
-          result[:parent_id] = parent_id
-          result[:parent_email] = parent_email
-          result[:parent_password] = parent_password
+            result[:parent_id] = parent_id
+            result[:parent_email] = parent_email
+            result[:parent_password] = parent_password
+          end
         end
 
         @results << result
+        created += 1
+        seq += 1
       end
+
+      add_error("사용 가능한 시퀀스 번호가 부족합니다.") if created < @count
     end
 
-    true
+    @errors.empty?
   rescue ActiveRecord::RecordInvalid => e
     @errors << "계정 생성 실패: #{e.message}"
     false
   end
 
   private
+
+  def next_available_sequence(domain)
+    # Student 테이블 기준 최대 시퀀스
+    student_max = @school.next_student_sequence
+
+    # User 테이블에서 고아 레코드 포함한 최대 시퀀스
+    user_max = User.where("email LIKE ?", "rps_%@#{domain}")
+                   .pluck(:email)
+                   .filter_map { |e| e.match(/rps_(\d+)@/)&.captures&.first&.to_i }
+                   .max || 0
+
+    [student_max, user_max + 1].max
+  end
 
   def generate_password
     # email_domain에서 학교명 추출 (예: shinmyung.edu → shinmyung)

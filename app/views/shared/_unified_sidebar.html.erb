@@ -132,6 +132,12 @@
   # Teacher role has a special menu structure
   if current_role.to_s == "teacher"
     menu_groups = {
+      "T_DASHBOARD" => {
+        label: "메인",
+        items: [
+          { id: "dashboard", label: "대시보드", icon: "home" }
+        ]
+      },
       "T_MAIN" => {
         label: "진단 관리",
         items: [
@@ -243,7 +249,7 @@
     "student" => ["A"],
     "parent" => ["A"],
     "school_admin" => ["SA", "B", "D"],
-    "teacher" => ["T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
+    "teacher" => ["T_DASHBOARD", "T_MAIN", "T_ANALYSIS", "T_CONSULTATION"],
     "developer" => ["C"],
     "admin" => ["E"]
   }

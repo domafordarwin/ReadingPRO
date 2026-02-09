@@ -60,12 +60,8 @@ class SessionsController < ApplicationController
     # Try database authentication first (email-based)
     user = User.find_by(email: login_id)
     if user&.authenticate(password)
-      # Check if user account is active (future feature)
-      # if user.suspended?
-      #   flash.now[:alert] = "계정이 정지되었습니다. 관리자에게 문의하세요."
-      #   render :new, status: :unprocessable_entity
-      #   return
-      # end
+      # 이전 세션 완전 초기화 (다른 계정 잔여 데이터 방지)
+      reset_session
 
       session[:user_id] = user.id
       session[:role] = user.role

@@ -317,6 +317,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # Development-only: quick account switching
+  if Rails.env.development?
+    get "dev/login_as/:user_id", to: "dev_sessions#login_as", as: :dev_login_as
+  end
+
   # Defines the root path route ("/")
   root "welcome#index"
 

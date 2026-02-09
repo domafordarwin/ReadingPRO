@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   helper_method :current_role, :current_user
+  before_action :set_no_cache_headers
   before_action :check_password_change
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
@@ -15,13 +16,21 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def set_no_cache_headers
+    return unless current_user
+
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+  end
+
   def current_user
     return nil unless session[:user_id]
     @current_user ||= User.find_by(id: session[:user_id])
   end
 
   def current_role
-    current_user&.role || session[:role]
+    current_user&.role
   end
 
   def require_login
