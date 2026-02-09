@@ -41,32 +41,36 @@
   </div>
 <% end %>
 
-<!-- Stats Grid -->
-<div class="rp-grid rp-grid--4 rp-stagger rp-mb-6">
-  <div class="rp-stat">
-    <div class="rp-stat__label">완료한 진단</div>
-    <div class="rp-stat__value"><%= @completed_count %>건</div>
+<!-- Stats Grid: 좌측 3칸(역량 요약 열) + 우측 1칸(최근 피드백 열) -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-4, 16px);" class="rp-stagger rp-mb-6">
+  <!-- 좌측: 3개 통계 박스 -->
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--rp-space-4, 16px);">
+    <div class="rp-stat">
+      <div class="rp-stat__label">완료한 진단</div>
+      <div class="rp-stat__value"><%= @completed_count %>건</div>
+    </div>
+    <div class="rp-stat">
+      <div class="rp-stat__label">배정된 진단</div>
+      <div class="rp-stat__value"><%= @pending_count %>건</div>
+      <% if @pending_count > 0 %>
+        <div class="rp-stat__trend">미완료</div>
+      <% end %>
+    </div>
+    <div class="rp-stat">
+      <div class="rp-stat__label">최근 점수</div>
+      <% if @latest_attempt&.attempt_report %>
+        <div class="rp-stat__value" style="color: var(--rp-primary);"><%= @latest_attempt.attempt_report.score_percentage&.round(0) || "-" %>점</div>
+      <% else %>
+        <div class="rp-stat__value" style="color: var(--rp-primary);">-</div>
+      <% end %>
+    </div>
   </div>
-  <div class="rp-stat">
-    <div class="rp-stat__label">배정된 진단</div>
-    <div class="rp-stat__value"><%= @pending_count %>건</div>
-    <% if @pending_count > 0 %>
-      <div class="rp-stat__trend">미완료</div>
-    <% end %>
-  </div>
-  <div class="rp-stat">
-    <div class="rp-stat__label">최근 점수</div>
-    <% if @latest_attempt&.attempt_report %>
-      <div class="rp-stat__value" style="color: var(--rp-primary);"><%= @latest_attempt.attempt_report.score_percentage&.round(0) || "-" %>점</div>
-    <% else %>
-      <div class="rp-stat__value" style="color: var(--rp-primary);">-</div>
-    <% end %>
-  </div>
+  <!-- 우측: 최근 진단 (최근 피드백 열 너비) -->
   <div class="rp-stat">
     <div class="rp-stat__label">최근 진단</div>
     <% if @latest_attempt %>
-      <div class="rp-stat__value" style="font-size: 18px;"><%= @latest_attempt.diagnostic_form&.name&.truncate(12) || "-" %></div>
-      <div class="rp-stat__trend"><%= @latest_attempt.submitted_at&.strftime("%m/%d") %></div>
+      <div class="rp-stat__value" style="font-size: 20px;"><%= @latest_attempt.diagnostic_form&.name || "-" %></div>
+      <div class="rp-stat__trend"><%= @latest_attempt.submitted_at&.strftime("%Y-%m-%d") %></div>
     <% else %>
       <div class="rp-stat__value">-</div>
     <% end %>
@@ -92,12 +96,10 @@
     </div>
     <div class="rp-card__body">
       <% if @literacy_achievements.any? %>
-        <div class="rp-chart-placeholder" style="height: 160px;">
-          <% @literacy_achievements.each do |achievement| %>
-            <div class="rp-chart-bar" style="height: <%= achievement.accuracy_rate %>%;"></div>
-          <% end %>
+        <div style="display: flex; justify-content: center; align-items: center; height: 220px;">
+          <canvas id="radarChart" width="280" height="220"></canvas>
         </div>
-        <div class="rp-flex rp-gap-2 rp-mt-4" style="flex-wrap: wrap;">
+        <div class="rp-flex rp-gap-2 rp-mt-4" style="flex-wrap: wrap; justify-content: center;">
           <% badge_classes = %w[rp-badge--primary rp-badge--info rp-badge--success rp-badge--warning] %>
           <% @literacy_achievements.each_with_index do |achievement, i| %>
             <span class="rp-badge <%= badge_classes[i % badge_classes.length] %>">
@@ -105,6 +107,112 @@
             </span>
           <% end %>
         </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            var canvas = document.getElementById("radarChart");
+            if (!canvas) return;
+            var ctx = canvas.getContext("2d");
+            var dpr = window.devicePixelRatio || 1;
+            var w = 280, h = 220;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + "px";
+            canvas.style.height = h + "px";
+            ctx.scale(dpr, dpr);
+
+            var labels = [<%= raw @literacy_achievements.map { |a| "\"#{a.evaluation_indicator&.name || '영역'}\"" }.join(",") %>];
+            var values = [<%= @literacy_achievements.map { |a| a.accuracy_rate.round(1) }.join(",") %>];
+            var n = labels.length;
+            var cx = w / 2, cy = h / 2 + 5;
+            var radius = 75;
+            var levels = 4;
+            var angleStep = (2 * Math.PI) / n;
+            var startAngle = -Math.PI / 2;
+
+            function getPoint(i, r) {
+              var angle = startAngle + i * angleStep;
+              return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+            }
+
+            // Grid
+            for (var lv = 1; lv <= levels; lv++) {
+              var r = (radius / levels) * lv;
+              ctx.beginPath();
+              for (var i = 0; i <= n; i++) {
+                var p = getPoint(i % n, r);
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+              }
+              ctx.closePath();
+              ctx.strokeStyle = lv === levels ? "#cbd5e1" : "#e2e8f0";
+              ctx.lineWidth = lv === levels ? 1.2 : 0.7;
+              ctx.stroke();
+            }
+
+            // Axis lines
+            for (var i = 0; i < n; i++) {
+              var p = getPoint(i, radius);
+              ctx.beginPath();
+              ctx.moveTo(cx, cy);
+              ctx.lineTo(p.x, p.y);
+              ctx.strokeStyle = "#e2e8f0";
+              ctx.lineWidth = 0.7;
+              ctx.stroke();
+            }
+
+            // Level labels (25, 50, 75, 100)
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "9px sans-serif";
+            ctx.textAlign = "left";
+            for (var lv = 1; lv <= levels; lv++) {
+              var val = (100 / levels) * lv;
+              var r = (radius / levels) * lv;
+              ctx.fillText(val.toFixed(0), cx + 3, cy - r + 3);
+            }
+
+            // Data polygon
+            ctx.beginPath();
+            for (var i = 0; i <= n; i++) {
+              var idx = i % n;
+              var r = (values[idx] / 100) * radius;
+              var p = getPoint(idx, r);
+              if (i === 0) ctx.moveTo(p.x, p.y);
+              else ctx.lineTo(p.x, p.y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = "rgba(99, 102, 241, 0.15)";
+            ctx.fill();
+            ctx.strokeStyle = "#6366f1";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Data points
+            for (var i = 0; i < n; i++) {
+              var r = (values[i] / 100) * radius;
+              var p = getPoint(i, r);
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+              ctx.fillStyle = "#6366f1";
+              ctx.fill();
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
+
+            // Labels
+            ctx.fillStyle = "#334155";
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            for (var i = 0; i < n; i++) {
+              var p = getPoint(i, radius + 22);
+              var align = "center";
+              if (p.x < cx - 10) align = "right";
+              else if (p.x > cx + 10) align = "left";
+              ctx.textAlign = align;
+              ctx.fillText(labels[i], p.x, p.y + 4);
+            }
+          });
+        </script>
       <% else %>
         <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
           <p style="margin: 0;">진단을 완료하면 역량 분석 결과가 표시됩니다.</p>
@@ -152,31 +260,39 @@
   </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="rp-card">
+<!-- 공지사항 -->
+<div class="rp-card rp-mb-6">
   <div class="rp-card__header">
     <div>
-      <h3 class="rp-card__title">빠른 메뉴</h3>
-      <p class="rp-card__subtitle">자주 사용하는 기능에 빠르게 접근하세요.</p>
+      <h3 class="rp-card__title">공지사항</h3>
+      <p class="rp-card__subtitle">최신 안내 사항을 확인하세요.</p>
     </div>
+    <%= link_to "전체 보기", student_about_path, class: "rp-btn rp-btn--secondary rp-btn--sm" %>
   </div>
   <div class="rp-card__body">
-    <div class="rp-grid rp-grid--3">
-      <%= link_to student_diagnostics_path, class: "rp-card rp-card--clickable", style: "padding: var(--rp-space-4); text-decoration: none; color: inherit;" do %>
-        <span class="rp-badge rp-badge--primary rp-mb-2">진단</span>
-        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">진단 시작</h4>
-        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">배정된 진단을 확인하고 시작하세요</p>
-      <% end %>
-      <%= link_to student_reports_path, class: "rp-card rp-card--clickable", style: "padding: var(--rp-space-4); text-decoration: none; color: inherit;" do %>
-        <span class="rp-badge rp-badge--info rp-mb-2">결과</span>
-        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">평가 결과</h4>
-        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">진단 결과와 리포트를 확인하세요</p>
-      <% end %>
-      <%= link_to student_about_path, class: "rp-card rp-card--clickable", style: "padding: var(--rp-space-4); text-decoration: none; color: inherit;" do %>
-        <span class="rp-badge rp-badge--warning rp-mb-2">안내</span>
-        <h4 style="margin: 0 0 4px; font-weight: 600; color: var(--rp-text-title);">공지사항</h4>
-        <p class="rp-text-muted" style="margin: 0; font-size: 13px;">최신 공지사항과 안내를 확인하세요</p>
-      <% end %>
-    </div>
+    <% if @notices.any? %>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <% @notices.each do |notice| %>
+          <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: var(--rp-bg-subtle, #f8fafc); border-radius: 8px;">
+            <% if notice.important? %>
+              <span class="rp-badge rp-badge--warning" style="flex-shrink: 0; margin-top: 2px;">중요</span>
+            <% else %>
+              <span class="rp-badge rp-badge--default" style="flex-shrink: 0; margin-top: 2px;">안내</span>
+            <% end %>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 600; color: var(--rp-text-title, #1e293b); margin-bottom: 4px;"><%= notice.title %></div>
+              <div class="rp-text-muted" style="font-size: 13px; line-height: 1.5;"><%= truncate(strip_tags(notice.content), length: 80) %></div>
+            </div>
+            <div class="rp-text-muted" style="flex-shrink: 0; font-size: 12px; white-space: nowrap;">
+              <%= notice.published_at&.strftime("%m/%d") %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+        <p style="margin: 0;">현재 공지사항이 없습니다.</p>
+      </div>
+    <% end %>
   </div>
 </div>

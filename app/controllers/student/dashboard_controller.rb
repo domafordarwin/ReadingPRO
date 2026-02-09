@@ -58,6 +58,11 @@ class Student::DashboardController < ApplicationController
       @literacy_achievements = []
       @recent_feedbacks = []
     end
+
+    # 최근 공지사항 (학생 대상 또는 전체 대상)
+    @notices = Notice.active.recent
+    @notices = @notices.for_role("student").or(Notice.active.recent.where(target_roles: []))
+    @notices = @notices.distinct.order(important: :desc, published_at: :desc).limit(5)
   end
 
   def diagnostics
