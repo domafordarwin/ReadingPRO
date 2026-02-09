@@ -1,5 +1,6 @@
 class Researcher::DashboardController < ApplicationController
   layout "unified_portal"
+  skip_forgery_protection only: [:upload_pdf]
   before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_role

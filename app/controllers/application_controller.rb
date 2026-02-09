@@ -83,10 +83,13 @@ class ApplicationController < ActionController::Base
   end
 
   def handle_csrf_error
-    reset_session
     respond_to do |format|
-      format.json { render json: { error: "세션이 만료되었습니다." }, status: :unauthorized }
+      format.json do
+        # JSON 요청은 세션을 유지하면서 에러만 반환 (세션 파괴 방지)
+        render json: { error: "CSRF 토큰이 유효하지 않습니다. 페이지를 새로고침해주세요." }, status: :unprocessable_entity
+      end
       format.html do
+        reset_session
         flash[:alert] = "세션이 만료되었습니다. 다시 로그인해주세요."
         redirect_to login_path
       end

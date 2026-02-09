@@ -1,5 +1,6 @@
 class Researcher::StimuliController < ApplicationController
   layout "unified_portal"
+  skip_forgery_protection only: [:upload_answer_key, :upload_answer_template, :bulk_update_answers]
   before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_stimulus, only: %i[show edit update destroy analyze duplicate archive restore upload_answer_key bulk_update_answers download_answer_template upload_answer_template]
