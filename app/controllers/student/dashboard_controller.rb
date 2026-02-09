@@ -40,6 +40,13 @@ class Student::DashboardController < ApplicationController
         []
       end
 
+      # 9개 하위 지표별 레이더 차트 데이터
+      @radar_data = if @latest_attempt
+        calculate_radar_data(@latest_attempt)
+      else
+        []
+      end
+
       # 최근 피드백 (배포된 시도의 피드백만 표시)
       published_attempt_ids = @student.student_attempts
         .where.not(feedback_published_at: nil)
@@ -56,6 +63,7 @@ class Student::DashboardController < ApplicationController
       @latest_assignment = nil
       @latest_attempt = nil
       @literacy_achievements = []
+      @radar_data = []
       @recent_feedbacks = []
     end
 
@@ -305,6 +313,23 @@ class Student::DashboardController < ApplicationController
         correct_count: correct_count,
         accuracy_rate: (correct_count * 100.0 / responses.count).round(1)
       )
+    end
+  end
+
+  # 9개 하위 지표별 레이더 차트 데이터 생성 (종합보고서와 동일 형식)
+  def calculate_radar_data(attempt)
+    responses = attempt.responses.includes(item: [ :evaluation_indicator, :sub_indicator ], selected_choice: [])
+    grouped = responses.group_by { |r| r.item.sub_indicator }
+
+    grouped.filter_map do |sub_indicator, resps|
+      next unless sub_indicator
+      correct = resps.count { |r| r.selected_choice&.is_correct }
+      score = (correct * 100.0 / resps.count).round(1)
+      {
+        name: sub_indicator.name,
+        score: score,
+        group: sub_indicator.evaluation_indicator&.name || "기타"
+      }
     end
   end
 
