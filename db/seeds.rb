@@ -107,6 +107,14 @@ if school_admin_user.new_record?
   puts "  + Created school_admin: school_admin@shinmyung.edu"
 end
 
+# SchoolAdminProfile (school_admin ↔ school 연결)
+SchoolAdminProfile.find_or_create_by!(user_id: school_admin_user.id) do |sa|
+  sa.school = school
+  sa.name = "신명중 관리자"
+  sa.position = "교감"
+end
+puts "  + SchoolAdminProfile: school_admin@shinmyung.edu → #{school.name}"
+
 # Student (RPS_0001 - anonymous ID)
 student_user = User.find_or_initialize_by(email: "rps_0001@shinmyung.edu")
 if student_user.new_record?
@@ -272,6 +280,7 @@ puts ""
 puts "  Schools: #{School.count}"
 puts "  Users: #{User.count}"
 puts "  Students: #{Student.count} (RPS_0001 ~ RPS_0006)"
+puts "  SchoolAdminProfiles: #{SchoolAdminProfile.count}"
 puts ""
 puts "  Note: Sample data (items, forms, announcements) removed as of 2026-02-05"
 puts "======================================="

@@ -16,6 +16,7 @@
         <tr>
           <th>이름</th>
           <th>이메일</th>
+          <th>직위</th>
           <th>역할</th>
           <th>등록일</th>
         </tr>
@@ -24,7 +25,8 @@
         <% @school_admins.each do |admin| %>
           <tr>
             <td><strong><%= admin.name %></strong></td>
-            <td><%= admin.email %></td>
+            <td><%= admin.user.email %></td>
+            <td><%= admin.position || "-" %></td>
             <td><span class="portal-badge portal-badge--primary">학교 관리자</span></td>
             <td><%= admin.created_at.strftime("%Y-%m-%d") %></td>
           </tr>
@@ -54,7 +56,7 @@
         <% @teachers.each do |teacher| %>
           <tr>
             <td><strong><%= teacher.name %></strong></td>
-            <td><%= teacher.email %></td>
+            <td><%= teacher.user.email %></td>
             <td><span class="portal-badge portal-badge--info">담당 교사</span></td>
             <td><%= teacher.created_at.strftime("%Y-%m-%d") %></td>
           </tr>

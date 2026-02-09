@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_09_004931) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_09_132027) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -539,6 +539,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_004931) do
     t.index ["item_id"], name: "index_rubrics_on_item_id"
   end
 
+  create_table "school_admins", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "position"
+    t.bigint "school_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["school_id", "name"], name: "index_school_admins_on_school_id_and_name"
+    t.index ["school_id"], name: "index_school_admins_on_school_id"
+    t.index ["user_id"], name: "index_school_admins_on_user_id", unique: true
+  end
+
   create_table "school_portfolios", force: :cascade do |t|
     t.decimal "average_score", precision: 10, scale: 2
     t.datetime "created_at", null: false
@@ -834,6 +846,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_004931) do
   add_foreign_key "rubric_criteria", "rubrics"
   add_foreign_key "rubric_levels", "rubric_criteria"
   add_foreign_key "rubrics", "items"
+  add_foreign_key "school_admins", "schools"
+  add_foreign_key "school_admins", "users"
   add_foreign_key "school_portfolios", "schools"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

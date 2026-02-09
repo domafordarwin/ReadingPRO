@@ -75,6 +75,18 @@ class ApplicationController < ActionController::Base
     redirect_to change_password_path
   end
 
+  def role_dashboard_path
+    case current_role
+    when "student" then student_dashboard_path
+    when "parent" then parent_dashboard_path
+    when "teacher", "diagnostic_teacher" then diagnostic_teacher_dashboard_path
+    when "school_admin" then school_admin_dashboard_path
+    when "researcher" then researcher_dashboard_path
+    when "admin" then admin_system_path
+    else root_path
+    end
+  end
+
   def render_not_found
     respond_to do |format|
       format.html { render "errors/not_found", status: :not_found, layout: "application" }

@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_one :student, dependent: :destroy
   has_one :teacher, dependent: :destroy
   has_one :parent, dependent: :destroy
+  has_one :school_admin_profile, dependent: :destroy
   has_many :audit_logs, dependent: :destroy
   has_many :parent_forums, foreign_key: :created_by_id, dependent: :destroy
   has_many :parent_forum_comments, foreign_key: :created_by_id, dependent: :destroy
@@ -22,6 +23,20 @@ class User < ApplicationRecord
     teacher?
   end
 
+  # 소속 학교 반환
+  def school
+    case role
+    when "school_admin"
+      school_admin_profile&.school
+    when "teacher"
+      teacher&.school
+    when "student"
+      student&.school
+    else
+      nil
+    end
+  end
+
   # 이름 표시 (학생/학부모/교사에 따라 다르게)
   def name
     case role
@@ -31,6 +46,8 @@ class User < ApplicationRecord
       parent&.name || email.split("@").first
     when "teacher"
       teacher&.name || email.split("@").first
+    when "school_admin"
+      school_admin_profile&.name || email.split("@").first
     else
       email.split("@").first
     end
