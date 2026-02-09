@@ -4,10 +4,42 @@
 <% end %>
 
 <div class="cr-stu-header">
-  <h1 class="cr-stu-header__title">종합보고서 보기</h1>
+  <h1 class="cr-stu-header__title">나의 진단 리포트</h1>
+  <% if @report && @published_attempts && @published_attempts.size > 1 %>
+    <a href="<%= student_comprehensive_report_path %>" class="cr-stu-header__back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      목록으로 돌아가기
+    </a>
+  <% end %>
 </div>
 
-<% if @report&.report_status == "published" && @report.comprehensive_report_generated? %>
+<% if @published_attempts && @published_attempts.size > 1 && @report.nil? %>
+  <!-- 다건 목록 표시 -->
+  <div class="cr-stu-list">
+    <p class="cr-stu-list__desc">총 <strong><%= @published_attempts.size %></strong>건의 종합보고서가 있습니다.</p>
+    <div class="cr-stu-list__grid">
+      <% @published_attempts.each_with_index do |attempt, idx| %>
+        <% report = attempt.attempt_report %>
+        <% summary = report.section_data("overall_summary") %>
+        <a href="<%= student_comprehensive_report_show_path(attempt_id: attempt.id) %>" class="cr-stu-list__card" data-turbo="false">
+          <div class="cr-stu-list__card-num"><%= idx + 1 %></div>
+          <div class="cr-stu-list__card-body">
+            <div class="cr-stu-list__card-title"><%= attempt.diagnostic_form&.name || "진단 ##{attempt.id}" %></div>
+            <div class="cr-stu-list__card-meta">
+              <span>진단일: <%= attempt.submitted_at&.strftime("%Y-%m-%d") %></span>
+              <% if summary["score_percentage"].present? %>
+                <span class="cr-stu-list__card-score"><%= summary["score_percentage"] %>점</span>
+              <% end %>
+            </div>
+            <div class="cr-stu-list__card-date">배포일: <%= report.published_at&.strftime("%Y-%m-%d") %></div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      <% end %>
+    </div>
+  </div>
+
+<% elsif @report&.report_status == "published" && @report.comprehensive_report_generated? %>
 
   <div id="report-printable-area">
   <!-- 학생 프로필 + 성과 요약 -->
@@ -176,7 +208,7 @@
       <% end %>
 
       <div class="cr-stu-section__content">
-        <div class="cr-stu-section__text"><%= section["content"] %></div>
+        <div class="cr-stu-section__text"><%= render_markdown(section["content"]) %></div>
       </div>
     </div>
   <% end %>
@@ -349,8 +381,34 @@ function downloadPdf() {
 
 <style>
   /* ── 헤더 ── */
-  .cr-stu-header { margin-bottom: 24px; }
+  .cr-stu-header { margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
   .cr-stu-header__title { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; }
+  .cr-stu-header__back {
+    font-size: 13px; color: #64748b; text-decoration: none; display: flex; align-items: center; gap: 4px;
+    margin-left: auto; padding: 6px 12px; border-radius: 6px; transition: background 0.15s;
+  }
+  .cr-stu-header__back:hover { background: #f1f5f9; color: #334155; }
+
+  /* ── 목록 ── */
+  .cr-stu-list__desc { font-size: 14px; color: #64748b; margin-bottom: 16px; }
+  .cr-stu-list__grid { display: flex; flex-direction: column; gap: 10px; }
+  .cr-stu-list__card {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--rp-surface, #fff); border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 16px 20px; text-decoration: none; color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .cr-stu-list__card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.12); }
+  .cr-stu-list__card-num {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .cr-stu-list__card-body { flex: 1; min-width: 0; }
+  .cr-stu-list__card-title { font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+  .cr-stu-list__card-meta { font-size: 13px; color: #64748b; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cr-stu-list__card-score { font-weight: 600; color: #667eea; }
+  .cr-stu-list__card-date { font-size: 12px; color: #94a3b8; margin-top: 4px; }
 
   /* ── 프로필 카드 ── */
   .cr-stu-profile {
@@ -407,7 +465,11 @@ function downloadPdf() {
   .cr-stu-section__title { font-size: 15px; font-weight: 600; color: #0f172a; margin: 0; }
   .cr-stu-section__data { padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
   .cr-stu-section__content { padding: 20px; }
-  .cr-stu-section__text { font-size: 14px; line-height: 1.8; color: #334155; white-space: pre-wrap; }
+  .cr-stu-section__text { font-size: 14px; line-height: 1.8; color: #334155; }
+  .cr-stu-section__text .md-h3 { font-size: 15px; font-weight: 600; color: #0f172a; margin: 16px 0 8px; }
+  .cr-stu-section__text .md-h4 { font-size: 14px; font-weight: 600; color: #1e293b; margin: 12px 0 6px; }
+  .cr-stu-section__text .md-ol, .cr-stu-section__text .md-ul { margin: 8px 0; padding-left: 24px; }
+  .cr-stu-section__text .md-ol li, .cr-stu-section__text .md-ul li { margin-bottom: 4px; }
 
   /* ── 이분할 레이아웃 ── */
   .cr-stu-area-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }

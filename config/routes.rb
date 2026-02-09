@@ -53,6 +53,7 @@ Rails.application.routes.draw do
     get "reports/:attempt_id", to: "dashboard#show_report", as: "show_report"
     get "attempts/:attempt_id", to: "dashboard#show_attempt", as: "show_attempt"
     get "comprehensive_report", to: "dashboard#comprehensive_report"
+    get "comprehensive_report/:attempt_id", to: "dashboard#comprehensive_report_show", as: "comprehensive_report_show"
     get "about", to: "dashboard#about"
     get "profile", to: "dashboard#profile"
     post "generate_report", to: "dashboard#generate_report"

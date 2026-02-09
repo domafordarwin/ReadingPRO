@@ -124,15 +124,37 @@ class Student::DashboardController < ApplicationController
 
   def comprehensive_report
     @current_page = "comprehensive_report"
-    if @student
-      latest_attempt = @student.student_attempts
-                               .where(status: %w[completed submitted])
-                               .includes(:attempt_report)
-                               .order(submitted_at: :desc)
-                               .first
-      @report = latest_attempt&.attempt_report
-      @attempt = latest_attempt
+    return unless @student
+
+    # 배포된 종합보고서가 있는 시도만 조회
+    @published_attempts = @student.student_attempts
+                                  .where(status: %w[completed submitted])
+                                  .joins(:attempt_report)
+                                  .where(attempt_reports: { report_status: "published" })
+                                  .where.not(attempt_reports: { report_sections: nil })
+                                  .includes(:attempt_report, :diagnostic_form)
+                                  .order(submitted_at: :desc)
+
+    # 1건이면 바로 상세 표시
+    if @published_attempts.size == 1
+      @attempt = @published_attempts.first
+      @report = @attempt.attempt_report
     end
+    # 0건 또는 2건 이상이면 뷰에서 목록/빈 상태 표시
+  end
+
+  def comprehensive_report_show
+    @current_page = "comprehensive_report"
+    return redirect_to student_comprehensive_report_path, alert: "학생 정보가 없습니다." unless @student
+
+    @attempt = @student.student_attempts.find(params[:attempt_id])
+    @report = @attempt.attempt_report
+
+    unless @report&.report_status == "published" && @report&.comprehensive_report_generated?
+      return redirect_to student_comprehensive_report_path, alert: "배포된 종합보고서가 없습니다."
+    end
+
+    render :comprehensive_report
   end
 
   def about
