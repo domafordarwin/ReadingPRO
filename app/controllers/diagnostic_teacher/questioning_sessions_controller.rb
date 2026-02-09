@@ -82,7 +82,7 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
   private
 
   def set_role
-    @current_role = "diagnostic_teacher"
+    @current_role = "teacher"
   end
 
   def set_session
