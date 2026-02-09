@@ -40,6 +40,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
     if params[:module_ids].blank?
       flash.now[:alert] = "최소 1개 이상의 모듈을 선택해야 합니다."
       load_available_modules
+      build_module_indicator_data
       render :new
       return
     end
@@ -52,6 +53,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
       redirect_to researcher_diagnostic_eval_path, status: :see_other
     else
       load_available_modules
+      build_module_indicator_data
       render :new
     end
   end
@@ -87,6 +89,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
       redirect_to researcher_diagnostic_eval_path, status: :see_other
     else
       load_available_modules
+      build_module_indicator_data
       render :edit
     end
   end
