@@ -123,6 +123,19 @@
       <div id="module-order-inputs"></div>
     </div>
 
+    <!-- 평가 영역 커버리지 분석 -->
+    <div class="form-section" id="coverage-panel" style="display: none;">
+      <h3 class="form-section-title" style="display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        평가 영역 커버리지
+      </h3>
+      <p class="form-section-description">선택한 모듈의 평가 영역 커버리지를 실시간으로 확인합니다.</p>
+      <div id="coverage-content"></div>
+    </div>
+
     <!-- 액션 버튼 -->
     <div class="form-actions">
       <%= link_to "취소", researcher_diagnostic_eval_path, class: "btn-secondary" %>
@@ -514,7 +527,38 @@
     color: #9ca3af;
     font-size: 0.875rem;
   }
+
+  /* 커버리지 패널 */
+  .coverage-summary-bar { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .coverage-summary-item { flex: 1; min-width: 110px; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; }
+  .coverage-summary-item.cov-complete { background: #f0fdf4; border-color: #86efac; }
+  .coverage-summary-item.cov-incomplete { background: #fef3c7; border-color: #fde68a; }
+  .coverage-summary-item.cov-warning { background: #fef2f2; border-color: #fecaca; }
+  .coverage-summary-label { display: block; font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+  .coverage-summary-value { font-size: 1.25rem; font-weight: 700; color: #111827; }
+  .cov-complete .coverage-summary-value { color: #166534; }
+  .cov-incomplete .coverage-summary-value { color: #92400e; }
+  .cov-warning .coverage-summary-value { color: #991b1b; }
+  .coverage-detail-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+  .coverage-indicator { padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb; }
+  .coverage-indicator--covered { background: #f8fafc; border-color: #e2e8f0; }
+  .coverage-indicator--missing { background: #fef2f2; border-color: #fecaca; }
+  .coverage-indicator-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+  .coverage-indicator-status { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 0.75rem; flex-shrink: 0; }
+  .coverage-indicator--covered .coverage-indicator-status { background: #dcfce7; color: #166534; }
+  .coverage-indicator--missing .coverage-indicator-status { background: #fecaca; color: #991b1b; }
+  .coverage-indicator-name { font-size: 0.9375rem; font-weight: 600; color: #111827; flex: 1; }
+  .coverage-indicator-count { font-size: 0.8125rem; font-weight: 600; color: #6b7280; }
+  .coverage-sub-list { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-left: 1.75rem; }
+  .coverage-sub-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+  .coverage-sub-badge--covered { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .coverage-sub-badge--missing { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 </style>
+
+<script>
+  const INDICATOR_TAXONOMY = <%= raw @all_indicators.map { |ei| { id: ei.id, name: ei.name, code: ei.code, sub_indicators: ei.sub_indicators.map { |si| { id: si.id, name: si.name } } } }.to_json %>;
+  const MODULE_INDICATOR_MAP = <%= raw @module_indicator_map.to_json %>;
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -601,6 +645,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 제거 버튼 이벤트 등록
     setupRemoveButtons();
+
+    // 커버리지 패널 업데이트
+    updateCoveragePanel();
+  }
+
+  // 평가 영역 커버리지 분석
+  function updateCoveragePanel() {
+    const panel = document.getElementById('coverage-panel');
+    const content = document.getElementById('coverage-content');
+    if (!panel || !content) return;
+
+    if (selectedModules.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+
+    const agg = { indicators: {}, subIndicators: {}, unmapped: 0, total: 0 };
+    selectedModules.forEach(m => {
+      const data = MODULE_INDICATOR_MAP[m.id];
+      if (!data) return;
+      agg.total += data.total_count;
+      agg.unmapped += data.unmapped_count;
+      for (const [eiId, info] of Object.entries(data.coverage)) {
+        agg.indicators[eiId] = (agg.indicators[eiId] || 0) + info.count;
+        for (const [siId, cnt] of Object.entries(info.sub_ids)) {
+          agg.subIndicators[siId] = (agg.subIndicators[siId] || 0) + cnt;
+        }
+      }
+    });
+
+    const totalEI = INDICATOR_TAXONOMY.length;
+    const coveredEI = INDICATOR_TAXONOMY.filter(ei => agg.indicators[ei.id] > 0).length;
+    const totalSI = INDICATOR_TAXONOMY.reduce((s, ei) => s + ei.sub_indicators.length, 0);
+    const coveredSI = INDICATOR_TAXONOMY.reduce((s, ei) => s + ei.sub_indicators.filter(si => agg.subIndicators[si.id] > 0).length, 0);
+
+    let html = `<div class="coverage-summary-bar">
+      <div class="coverage-summary-item ${coveredEI === totalEI ? 'cov-complete' : 'cov-incomplete'}">
+        <span class="coverage-summary-label">평가 영역</span>
+        <span class="coverage-summary-value">${coveredEI}/${totalEI}</span>
+      </div>
+      <div class="coverage-summary-item ${coveredSI === totalSI ? 'cov-complete' : 'cov-incomplete'}">
+        <span class="coverage-summary-label">하위 영역</span>
+        <span class="coverage-summary-value">${coveredSI}/${totalSI}</span>
+      </div>
+      <div class="coverage-summary-item">
+        <span class="coverage-summary-label">전체 문항</span>
+        <span class="coverage-summary-value">${agg.total}</span>
+      </div>
+      ${agg.unmapped > 0 ? `<div class="coverage-summary-item cov-warning">
+        <span class="coverage-summary-label">미매핑 문항</span>
+        <span class="coverage-summary-value">${agg.unmapped}</span>
+      </div>` : ''}
+    </div><div class="coverage-detail-grid">`;
+
+    INDICATOR_TAXONOMY.forEach(ei => {
+      const cnt = agg.indicators[ei.id] || 0;
+      const cls = cnt > 0 ? 'covered' : 'missing';
+      html += `<div class="coverage-indicator coverage-indicator--${cls}">
+        <div class="coverage-indicator-header">
+          <span class="coverage-indicator-status">${cnt > 0 ? '&#10003;' : '&#10007;'}</span>
+          <span class="coverage-indicator-name">${ei.name}</span>
+          <span class="coverage-indicator-count">${cnt}개 문항</span>
+        </div><div class="coverage-sub-list">`;
+      ei.sub_indicators.forEach(si => {
+        const sc = agg.subIndicators[si.id] || 0;
+        html += `<span class="coverage-sub-badge coverage-sub-badge--${sc > 0 ? 'covered' : 'missing'}">${si.name} (${sc})</span>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+    content.innerHTML = html;
   }
 
   // 드래그 이벤트 설정

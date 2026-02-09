@@ -17,6 +17,10 @@ class Researcher::DiagnosticFormsController < ApplicationController
     @constructed_count = @modules.sum { |m| m[:items].count { |i| i[:item].item_type == "constructed" } }
     @estimated_time = (@mcq_count * 2) + (@constructed_count * 5) # 객관식 2분, 서술형 5분
 
+    # 평가 영역 커버리지 분석
+    @all_indicators = EvaluationIndicator.includes(:sub_indicators).order(:id)
+    @coverage = calculate_coverage(@modules)
+
     Rails.logger.info "[DiagnosticForms#show] Modules: #{@modules.count}, Items: #{@total_items}, MCQ: #{@mcq_count}, Constructed: #{@constructed_count}"
   end
 
@@ -24,6 +28,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
     @current_page = "scoring"
     @diagnostic_form = DiagnosticForm.new
     load_available_modules
+    build_module_indicator_data
   end
 
   def create
@@ -54,6 +59,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
   def edit
     @current_page = "scoring"
     load_available_modules
+    build_module_indicator_data
 
     # Load selected modules in order (by first item position in each stimulus)
     @selected_modules_ordered = @diagnostic_form.diagnostic_form_items
@@ -133,7 +139,60 @@ class Researcher::DiagnosticFormsController < ApplicationController
     @available_modules = ReadingStimulus.joins(:items)
                                         .distinct
                                         .where.not(bundle_status: "archived")
+                                        .includes(items: [ :evaluation_indicator, :sub_indicator ])
                                         .order(created_at: :desc)
+  end
+
+  def build_module_indicator_data
+    @all_indicators = EvaluationIndicator.includes(:sub_indicators).order(:id)
+
+    @module_indicator_map = {}
+    @available_modules.each do |stimulus|
+      coverage = {}
+      unmapped = 0
+      stimulus.items.each do |item|
+        if item.evaluation_indicator_id.present?
+          ei_id = item.evaluation_indicator_id
+          coverage[ei_id] ||= { count: 0, sub_ids: {} }
+          coverage[ei_id][:count] += 1
+          if item.sub_indicator_id.present?
+            coverage[ei_id][:sub_ids][item.sub_indicator_id] ||= 0
+            coverage[ei_id][:sub_ids][item.sub_indicator_id] += 1
+          end
+        else
+          unmapped += 1
+        end
+      end
+      @module_indicator_map[stimulus.id] = {
+        coverage: coverage,
+        unmapped_count: unmapped,
+        total_count: stimulus.items.size
+      }
+    end
+  end
+
+  def calculate_coverage(modules)
+    indicator_counts = {}
+    sub_indicator_counts = {}
+    unmapped_count = 0
+
+    modules.each do |mod|
+      mod[:items].each do |item_data|
+        item = item_data[:item]
+        if item.evaluation_indicator_id.present?
+          indicator_counts[item.evaluation_indicator_id] ||= 0
+          indicator_counts[item.evaluation_indicator_id] += 1
+          if item.sub_indicator_id.present?
+            sub_indicator_counts[item.sub_indicator_id] ||= 0
+            sub_indicator_counts[item.sub_indicator_id] += 1
+          end
+        else
+          unmapped_count += 1
+        end
+      end
+    end
+
+    { indicator_counts: indicator_counts, sub_indicator_counts: sub_indicator_counts, unmapped_count: unmapped_count }
   end
 
   def add_modules_to_form(module_ids)
@@ -162,7 +221,7 @@ class Researcher::DiagnosticFormsController < ApplicationController
   def load_modules_with_items
     # Get all items in order
     form_items = @diagnostic_form.diagnostic_form_items
-                                   .includes(item: [ :stimulus, :item_choices, rubric: { rubric_criteria: :rubric_levels } ])
+                                   .includes(item: [ :stimulus, :evaluation_indicator, :sub_indicator, :item_choices, rubric: { rubric_criteria: :rubric_levels } ])
                                    .order(:position)
 
     # Group by stimulus

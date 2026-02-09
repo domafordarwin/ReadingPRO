@@ -45,6 +45,72 @@
         <div class="preview-progress__fill" id="progressFill" style="width: 0%"></div>
       </div>
     </div>
+    <!-- 평가 영역 커버리지 분석 -->
+    <div class="coverage-analysis-section">
+      <div class="coverage-analysis-header">
+        <h3 class="coverage-analysis-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          평가 영역 커버리지
+        </h3>
+        <button type="button" class="coverage-toggle-btn" id="coverageToggle">
+          <span id="coverageToggleText">펼치기</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="coverageToggleIcon" style="transition: transform 0.2s;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      </div>
+
+      <%
+        covered_indicators = @all_indicators.count { |ei| @coverage[:indicator_counts][ei.id].to_i > 0 }
+        total_indicators = @all_indicators.count
+        covered_subs = @all_indicators.sum { |ei| ei.sub_indicators.count { |si| @coverage[:sub_indicator_counts][si.id].to_i > 0 } }
+        total_subs = @all_indicators.sum { |ei| ei.sub_indicators.count }
+      %>
+      <div class="coverage-summary-bar">
+        <div class="coverage-summary-item <%= covered_indicators == total_indicators ? 'cov-complete' : 'cov-incomplete' %>">
+          <span class="coverage-summary-label">평가 영역</span>
+          <span class="coverage-summary-value"><%= covered_indicators %>/<%= total_indicators %></span>
+        </div>
+        <div class="coverage-summary-item <%= covered_subs == total_subs ? 'cov-complete' : 'cov-incomplete' %>">
+          <span class="coverage-summary-label">하위 영역</span>
+          <span class="coverage-summary-value"><%= covered_subs %>/<%= total_subs %></span>
+        </div>
+        <div class="coverage-summary-item">
+          <span class="coverage-summary-label">전체 문항</span>
+          <span class="coverage-summary-value"><%= @total_items %></span>
+        </div>
+        <% if @coverage[:unmapped_count] > 0 %>
+          <div class="coverage-summary-item cov-warning">
+            <span class="coverage-summary-label">미매핑 문항</span>
+            <span class="coverage-summary-value"><%= @coverage[:unmapped_count] %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="coverage-detail-grid" id="coverageDetail" style="display: none;">
+        <% @all_indicators.each do |ei| %>
+          <% ei_count = @coverage[:indicator_counts][ei.id].to_i %>
+          <div class="coverage-indicator <%= ei_count > 0 ? 'coverage-indicator--covered' : 'coverage-indicator--missing' %>">
+            <div class="coverage-indicator-header">
+              <span class="coverage-indicator-status"><%= ei_count > 0 ? raw('&#10003;') : raw('&#10007;') %></span>
+              <span class="coverage-indicator-name"><%= ei.name %></span>
+              <span class="coverage-indicator-count"><%= ei_count %>개 문항</span>
+            </div>
+            <div class="coverage-sub-list">
+              <% ei.sub_indicators.each do |si| %>
+                <% si_count = @coverage[:sub_indicator_counts][si.id].to_i %>
+                <span class="coverage-sub-badge <%= si_count > 0 ? 'coverage-sub-badge--covered' : 'coverage-sub-badge--missing' %>">
+                  <%= si.name %> (<%= si_count %>)
+                </span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 
   <!-- Empty State: No Modules -->
@@ -375,6 +441,25 @@
 
   // Initialize
   showQuestion(0);
+
+  // 커버리지 토글
+  const coverageToggle = document.getElementById('coverageToggle');
+  if (coverageToggle) {
+    coverageToggle.addEventListener('click', () => {
+      const detail = document.getElementById('coverageDetail');
+      const text = document.getElementById('coverageToggleText');
+      const icon = document.getElementById('coverageToggleIcon');
+      if (detail.style.display === 'none') {
+        detail.style.display = 'flex';
+        text.textContent = '접기';
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        detail.style.display = 'none';
+        text.textContent = '펼치기';
+        icon.style.transform = 'rotate(0deg)';
+      }
+    });
+  }
 </script>
 <% end %>
 
@@ -981,6 +1066,200 @@
       border-right: none;
       border-bottom: 2px solid #e5e7eb;
       max-height: 40vh;
+    }
+  }
+
+  /* 평가 영역 커버리지 분석 */
+  .coverage-analysis-section {
+    margin: 0 32px 16px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+
+  .coverage-analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .coverage-analysis-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .coverage-analysis-title svg {
+    color: #667eea;
+  }
+
+  .coverage-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .coverage-toggle-btn:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .coverage-summary-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .coverage-summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    min-width: 80px;
+  }
+
+  .coverage-summary-item.cov-complete {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  .coverage-summary-item.cov-incomplete {
+    background: #fefce8;
+    border-color: #fde68a;
+  }
+
+  .coverage-summary-item.cov-warning {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .coverage-summary-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+
+  .coverage-summary-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .cov-complete .coverage-summary-value { color: #15803d; }
+  .cov-incomplete .coverage-summary-value { color: #a16207; }
+  .cov-warning .coverage-summary-value { color: #dc2626; }
+
+  .coverage-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .coverage-indicator {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+  }
+
+  .coverage-indicator--covered {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  .coverage-indicator--missing {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .coverage-indicator-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .coverage-indicator-status {
+    font-size: 14px;
+    font-weight: 700;
+    width: 20px;
+    text-align: center;
+  }
+
+  .coverage-indicator--covered .coverage-indicator-status { color: #16a34a; }
+  .coverage-indicator--missing .coverage-indicator-status { color: #dc2626; }
+
+  .coverage-indicator-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .coverage-indicator-count {
+    font-size: 12px;
+    color: #64748b;
+    margin-left: auto;
+  }
+
+  .coverage-sub-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 28px;
+  }
+
+  .coverage-sub-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .coverage-sub-badge--covered {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .coverage-sub-badge--missing {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  @media (max-width: 768px) {
+    .coverage-analysis-section {
+      margin: 0 12px 12px;
+      padding: 12px 14px;
+    }
+    .coverage-summary-bar {
+      gap: 8px;
+    }
+    .coverage-summary-item {
+      min-width: 60px;
+      padding: 6px 10px;
+    }
+    .coverage-sub-list {
+      padding-left: 12px;
     }
   }
 </style>
