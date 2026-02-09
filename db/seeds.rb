@@ -115,6 +115,31 @@ SchoolAdminProfile.find_or_create_by!(user_id: school_admin_user.id) do |sa|
 end
 puts "  + SchoolAdminProfile: school_admin@shinmyung.edu → #{school.name}"
 
+# =============================================================================
+# School 2: 신림중학교
+# =============================================================================
+school2 = School.find_or_create_by!(name: "신림중학교") do |s|
+  s.region = "서울시"
+  s.email_domain = "shinlim.ms.kr"
+end
+school2.update!(email_domain: "shinlim.ms.kr") unless school2.email_domain == "shinlim.ms.kr"
+puts "  + School: #{school2.name} (domain: #{school2.email_domain})"
+
+# School Admin 2 (신림중)
+shinlim_admin_user = User.find_or_initialize_by(email: "Shinlim_admin@shinlim.ms.kr")
+if shinlim_admin_user.new_record?
+  shinlim_admin_user.assign_attributes(role: "school_admin", password: "shinlim_$12#", password_confirmation: "shinlim_$12#")
+  shinlim_admin_user.save!
+  puts "  + Created school_admin: Shinlim_admin@shinlim.ms.kr"
+end
+
+SchoolAdminProfile.find_or_create_by!(user_id: shinlim_admin_user.id) do |sa|
+  sa.school = school2
+  sa.name = "신림중 관리자"
+  sa.position = "교감"
+end
+puts "  + SchoolAdminProfile: Shinlim_admin@shinlim.ms.kr → #{school2.name}"
+
 # Student (RPS_0001 - anonymous ID)
 student_user = User.find_or_initialize_by(email: "rps_0001@shinmyung.edu")
 if student_user.new_record?
@@ -272,7 +297,8 @@ puts "  Admin:              admin@ReadingPro.com"
 puts "  Researcher:         researcher@ReadingPro.com"
 puts "  Diagnostic Teacher: teacher_diagnostic@ReadingPro.com"
 puts "  Teacher:            teacher@shinmyung.edu"
-puts "  School Admin:       school_admin@shinmyung.edu"
+puts "  School Admin 1:     school_admin@shinmyung.edu → 신명중학교"
+puts "  School Admin 2:     Shinlim_admin@shinlim.ms.kr → 신림중학교"
 puts "  Student (RPS_0001): rps_0001@shinmyung.edu"
 puts "  Parent (RPP_0001):  rpp_0001@shinmyung.edu"
 puts "  Password:           #{DEFAULT_PASSWORD}"
