@@ -378,6 +378,14 @@
             <div class="rp-card rp-card__footer">
               <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
               <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+              <% if stimulus.present? %>
+                <a href="<%= researcher_passage_path(stimulus) %>" class="rp-btn rp-btn--outline rp-btn--full" style="margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                  지문 모듈로 돌아가기
+                </a>
+              <% end %>
             </div>
           </div>
         </div>
@@ -616,6 +624,14 @@
                 근접점수 저장
               </button>
               <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--secondary rp-btn--full">게시</button>
+              <% if stimulus.present? %>
+                <a href="<%= researcher_passage_path(stimulus) %>" class="rp-btn rp-btn--outline rp-btn--full" style="margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                  지문 모듈로 돌아가기
+                </a>
+              <% end %>
             </div>
           </div>
         </div>
@@ -852,6 +868,14 @@
             <div class="rp-card rp-card__footer">
               <button type="submit" name="commit_action" value="save" class="rp-btn rp-btn--secondary rp-btn--full">임시저장</button>
               <button type="submit" name="commit_action" value="publish" class="rp-btn rp-btn--primary rp-btn--full">게시</button>
+              <% if stimulus.present? %>
+                <a href="<%= researcher_passage_path(stimulus) %>" class="rp-btn rp-btn--outline rp-btn--full" style="margin-top: 4px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                  지문 모듈로 돌아가기
+                </a>
+              <% end %>
             </div>
           </div>
         </div>
