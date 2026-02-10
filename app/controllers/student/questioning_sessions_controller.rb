@@ -27,6 +27,10 @@ class Student::QuestioningSessionsController < ApplicationController
     @discussion_messages = @questioning_session.discussion_messages_for_stage(@questioning_session.current_stage)
     @essay = @questioning_session.argumentative_essay
     @report = @questioning_session.questioning_report
+  rescue StandardError => e
+    Rails.logger.error("SESSION SHOW ERROR: #{e.class} - #{e.message}")
+    Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
+    raise
   end
 
   def submit_question
