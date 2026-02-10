@@ -203,8 +203,9 @@ class Student::QuestioningSessionsController < ApplicationController
   def complete_session
     @current_page = "questioning"
 
-    # 3단계 피드백 확인 체크
-    unless @questioning_session.stage_confirmed?(3)
+    # 3단계 피드백 확인 체크 (배포된 피드백이 있으면 확인 필요)
+    published_3 = @questioning_session.student_questions.where(stage: 3).where.not(feedback_published_at: nil)
+    if published_3.any? && published_3.where(student_confirmed_at: nil).any?
       redirect_to student_questioning_session_path(@questioning_session), alert: "3단계 피드백을 확인해야 세션을 완료할 수 있습니다."
       return
     end

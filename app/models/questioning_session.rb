@@ -83,9 +83,12 @@ class QuestioningSession < ApplicationRecord
     published.any? && published.where(student_confirmed_at: nil).none?
   end
 
-  # 다음 단계로 이동 가능 여부 (현재 단계 피드백 확인 완료)
+  # 다음 단계로 이동 가능 여부
+  # 피드백 미배포 → 이동 가능 / 배포됨 → 확인 완료 시 이동 가능
   def can_advance_stage?
-    stage_confirmed?(current_stage)
+    published = student_questions.where(stage: current_stage).where.not(feedback_published_at: nil)
+    return true if published.empty?
+    published.where(student_confirmed_at: nil).empty?
   end
 
   # 피드백 미배포 질문 수
