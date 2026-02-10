@@ -100,7 +100,7 @@
                       <div><%= sanitize item.prompt, tags: %w[b strong i em u s br span], attributes: %w[style class] %></div>
                       <% if item.image.attached? %>
                         <div style="margin-top: 8px;">
-                          <%= image_tag item.image, style: "max-width: 300px; max-height: 200px; border-radius: 6px; border: 1px solid #e2e8f0;" %>
+                          <%= image_tag item.image, style: "max-width: 300px; max-height: 200px; border-radius: 6px; border: 1px solid #e2e8f0;", onerror: "this.parentElement.style.display='none'" %>
                         </div>
                       <% end %>
                     </td>
