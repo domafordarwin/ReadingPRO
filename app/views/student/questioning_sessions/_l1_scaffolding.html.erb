@@ -358,6 +358,47 @@
     line-height: 1.4;
   }
 
+  /* --- Scroll Hint Banner --- */
+  .l1-kid__scroll-hint {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    border: 2px solid #a78bfa;
+    border-radius: 16px;
+    animation: l1-bounce 0.6s ease;
+  }
+
+  .l1-kid__scroll-hint--visible {
+    display: flex;
+  }
+
+  .l1-kid__scroll-hint-icon {
+    font-size: 32px;
+    line-height: 1;
+    animation: l1-point 1s ease infinite;
+  }
+
+  .l1-kid__scroll-hint-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #5b21b6;
+  }
+
+  @keyframes l1-bounce {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes l1-point {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
   /* --- Responsive --- */
   @media (max-width: 768px) {
     .l1-kid { font-size: 16px; }
@@ -598,6 +639,12 @@
     </p>
   </div>
 
+  <!-- Scroll Hint (shown after selection) -->
+  <div class="l1-kid__scroll-hint" id="l1-scroll-hint">
+    <span class="l1-kid__scroll-hint-icon">&#128071;</span>
+    <span class="l1-kid__scroll-hint-text">아래에서 제출하기를 눌러요!</span>
+  </div>
+
 </div><!-- /.l1-kid -->
 
 <!-- ============================== -->
@@ -679,7 +726,7 @@
     l1MarkAsGuided();
   }
 
-  // Mark as guided question type
+  // Mark as guided question type + auto-scroll to form
   function l1MarkAsGuided() {
     var typeField = document.getElementById('question-type-field');
     var scaffField = document.getElementById('scaffolding-used-field');
@@ -688,5 +735,30 @@
     if (typeof updateTypeButtons === 'function') {
       updateTypeButtons('guided');
     }
+    // Show scroll hint and auto-scroll to form
+    l1ShowScrollHint();
+  }
+
+  // Show a visual hint and scroll to the form
+  function l1ShowScrollHint() {
+    // Show the scroll hint banner
+    var hint = document.getElementById('l1-scroll-hint');
+    if (hint) {
+      hint.style.display = 'flex';
+      hint.classList.add('l1-kid__scroll-hint--visible');
+    }
+    // Highlight the textarea
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      textarea.style.borderColor = '#8b5cf6';
+      textarea.style.boxShadow = '0 0 0 4px rgba(139, 92, 246, 0.2)';
+    }
+    // Smooth scroll to the form after a short delay
+    setTimeout(function() {
+      var formArea = document.getElementById('questioning-form-area');
+      if (formArea) {
+        formArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 400);
   }
 </script>
