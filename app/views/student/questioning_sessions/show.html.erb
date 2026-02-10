@@ -110,29 +110,7 @@
 <!-- ============================== -->
 <!-- 2. Collapsible Reading Passage -->
 <!-- ============================== -->
-<% if current_level == "elementary_low" %>
-  <!-- L1 Kid-Friendly Passage Panel -->
-  <div id="passage-panel" style="background: #fffbeb; border: 3px solid #fde68a; border-radius: 20px; margin-bottom: var(--rp-space-4); overflow: hidden;">
-    <button type="button" aria-expanded="true" aria-controls="passage-body"
-            onclick="var body=document.getElementById('passage-body'); var expanded=this.getAttribute('aria-expanded')==='true'; this.setAttribute('aria-expanded', String(!expanded)); body.classList.toggle('q-passage-panel__body--collapsed');"
-            style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: linear-gradient(135deg, #fef3c7, #fde68a); border: none; cursor: pointer; font-family: inherit;">
-      <span style="font-size: 20px; font-weight: 800; color: #92400e;">
-        &#128214; <%= @stimulus&.title || "오늘의 이야기" %>
-      </span>
-      <svg class="q-passage-panel__toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="3">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-    </button>
-    <div class="q-passage-panel__body" id="passage-body" style="padding: 20px 24px; font-size: 20px; line-height: 2.2; color: #1f2937; word-break: keep-all;">
-      <% if @stimulus&.body.present? %>
-        <%= simple_format(@stimulus.body) %>
-      <% else %>
-        <p style="color: var(--rp-text-muted); font-size: 18px;">이야기가 아직 없어요.</p>
-      <% end %>
-    </div>
-  </div>
-<% else %>
-  <div class="q-passage-panel" id="passage-panel">
+<div class="q-passage-panel" id="passage-panel">
     <button class="q-passage-panel__toggle" type="button" aria-expanded="true" aria-controls="passage-body"
             onclick="var body=document.getElementById('passage-body'); var expanded=this.getAttribute('aria-expanded')==='true'; this.setAttribute('aria-expanded', String(!expanded)); body.classList.toggle('q-passage-panel__body--collapsed');">
       <span>
@@ -154,7 +132,6 @@
       <% end %>
     </div>
   </div>
-<% end %>
 
 <% unless is_finished %>
   <!-- ============================== -->
@@ -223,7 +200,7 @@
                 <div class="q-ai-feedback__bubble">
                   <div class="q-ai-feedback__header">
                     <div class="q-ai-feedback__avatar">AI</div>
-                    <span class="q-ai-feedback__name"><%= current_level == 'elementary_low' ? 'AI 선생님' : 'AI 튜터' %></span>
+                    <span class="q-ai-feedback__name">AI 튜터</span>
                   </div>
                   <div class="q-ai-feedback__body">
                     <%= simple_format(q.ai_feedback) %>
@@ -275,7 +252,7 @@
   <!-- ============================== -->
   <!-- 5. Template Cards              -->
   <!-- ============================== -->
-  <% if @current_templates.present? && @current_templates.any? && current_level != "elementary_low" %>
+  <% if @current_templates.present? && @current_templates.any? %>
     <div style="margin-bottom: var(--rp-space-4);">
       <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin-bottom: var(--rp-space-3);">
         발문 도우미
@@ -326,18 +303,13 @@
   <!-- ============================== -->
   <!-- 6. Question Submission Form    -->
   <!-- ============================== -->
-  <% l1_needs_guided_reading = current_level == "elementary_low" && !@guided_reading_summary.present? %>
-  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;<%= ' border-radius: 20px; border-color: #8b5cf6; background: #faf5ff;' if current_level == 'elementary_low' %><%= ' display: none;' if l1_needs_guided_reading %>" id="questioning-form-area">
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4);<%= ' font-size: 22px; color: #7c3aed; text-align: center;' if current_level == 'elementary_low' %>">
-      <% if current_level == "elementary_low" %>
-        &#128221; 나의 질문
-      <% else %>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        새 발문 작성
-      <% end %>
+  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;" id="questioning-form-area">
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      새 발문 작성
     </h3>
 
     <%= form_with url: submit_question_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, id: "questioning-form" do |f| %>
@@ -346,36 +318,24 @@
       <%= hidden_field_tag "student_question[scaffolding_used]", 0, id: "scaffolding-used-field" %>
       <%= hidden_field_tag "student_question[questioning_template_id]", "", id: "template-id-field" %>
 
-      <!-- Question type toggle (L1에서는 스캐폴딩이 처리) -->
-      <% unless current_level == "elementary_low" %>
-        <div style="display: flex; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
-          <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" id="btn-type-guided"
-                  onclick="setQuestionType('guided');" style="flex: 1;">
-            도움받아 작성
-          </button>
-          <button type="button" class="rp-btn rp-btn--primary rp-btn--sm" id="btn-type-free"
-                  onclick="setQuestionType('free');" style="flex: 1;">
-            자유롭게 작성
-          </button>
-        </div>
-      <% end %>
+      <!-- Question type toggle -->
+      <div style="display: flex; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
+        <button type="button" class="rp-btn rp-btn--secondary rp-btn--sm" id="btn-type-guided"
+                onclick="setQuestionType('guided');" style="flex: 1;">
+          도움받아 작성
+        </button>
+        <button type="button" class="rp-btn rp-btn--primary rp-btn--sm" id="btn-type-free"
+                onclick="setQuestionType('free');" style="flex: 1;">
+          자유롭게 작성
+        </button>
+      </div>
 
       <!-- Textarea -->
       <div class="q-input-area">
-        <% if current_level == "elementary_low" %>
-          <label class="q-input-area__label" for="question-text-input" style="font-size: 18px; font-weight: 700; color: #7c3aed;">
-            &#9997;&#65039; 여기에 질문을 적어 봐!
-          </label>
-          <textarea name="student_question[question_text]" id="question-text-input" class="q-input-area__textarea"
-                    placeholder="위에서 감정이나 따라쓰기를 고르면 여기에 자동으로 적혀요! 직접 써도 좋아요!"
-                    required maxlength="500" aria-label="발문 입력"
-                    style="font-size: 18px; min-height: 100px; border: 3px solid #e5e7eb; border-radius: 16px; padding: 16px;"></textarea>
-        <% else %>
-          <label class="q-input-area__label" for="question-text-input">발문을 작성하세요</label>
-          <textarea name="student_question[question_text]" id="question-text-input" class="q-input-area__textarea"
-                    placeholder="읽기 지문에 대한 발문을 작성해 보세요..." required
-                    maxlength="500" aria-label="발문 입력"></textarea>
-        <% end %>
+        <label class="q-input-area__label" for="question-text-input">발문을 작성하세요</label>
+        <textarea name="student_question[question_text]" id="question-text-input" class="q-input-area__textarea"
+                  placeholder="읽기 지문에 대한 발문을 작성해 보세요..." required
+                  maxlength="500" aria-label="발문 입력"></textarea>
         <div class="q-input-area__char-count">
           <span id="char-count">0</span>/500자
         </div>
@@ -386,20 +346,13 @@
         <div class="q-action-bar__left">
         </div>
         <div class="q-action-bar__right">
-          <% if current_level == "elementary_low" %>
-            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg rp-btn--full" id="submit-btn"
-                    style="font-size: 20px; padding: 16px 32px; border-radius: 16px; width: 100%;">
-              &#128640; 제출하기!
-            </button>
-          <% else %>
-            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg" id="submit-btn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-              발문 제출하기
-            </button>
-          <% end %>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg" id="submit-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            발문 제출하기
+          </button>
         </div>
       </div>
     <% end %>
@@ -422,62 +375,45 @@
 
     <% if stage_published && stage_has_unconfirmed %>
       <!-- 배포됨 + 미확인 → 피드백 내용 표시 + "확인" / "더 해보기" 버튼 -->
-      <%
-        is_l1 = current_level == "elementary_low"
-        published_questions = questions_for_stage.select(&:feedback_published?)
-      %>
-      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 2px solid #818cf8; border-radius: <%= is_l1 ? '20px' : 'var(--rp-radius-lg)' %>; text-align: center;">
+      <% published_questions = questions_for_stage.select(&:feedback_published?) %>
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 2px solid #818cf8; border-radius: var(--rp-radius-lg); text-align: center;">
         <div style="margin-bottom: var(--rp-space-2);">
-          <% if is_l1 %>
-            <span style="font-size: 48px; display: block; margin-bottom: 8px;">&#128140;</span>
-          <% else %>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-          <% end %>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
         </div>
-        <h3 style="font-size: <%= is_l1 ? '24px' : 'var(--rp-font-size-lg)' %>; font-weight: <%= is_l1 ? '800' : 'var(--rp-font-weight-semibold)' %>; color: #312e81; margin: 0 0 var(--rp-space-2);">
-          <% if is_l1 %>
-            선생님이 답장을 보내줬어!
-          <% else %>
-            선생님 피드백이 도착했습니다!
-          <% end %>
+        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #312e81; margin: 0 0 var(--rp-space-2);">
+          선생님 피드백이 도착했습니다!
         </h3>
-        <p style="font-size: <%= is_l1 ? '16px' : 'var(--rp-font-size-sm)' %>; color: #4338ca; margin: 0 0 var(--rp-space-4);">
-          <% if is_l1 %>
-            아래 내용을 읽어 보고, "확인" 버튼을 눌러!
-          <% else %>
-            아래 피드백을 확인하고, 다음 중 하나를 선택하세요.
-          <% end %>
+        <p style="font-size: var(--rp-font-size-sm); color: #4338ca; margin: 0 0 var(--rp-space-4);">
+          아래 피드백을 확인하고, 다음 중 하나를 선택하세요.
         </p>
 
         <!-- 피드백 내용 직접 표시 -->
         <div style="text-align: left; margin-bottom: var(--rp-space-5);">
           <% published_questions.each_with_index do |q, idx| %>
-            <div style="padding: <%= is_l1 ? '16px 20px' : 'var(--rp-space-4)' %>; background: white; border: 1px solid #c7d2fe; border-radius: <%= is_l1 ? '16px' : 'var(--rp-radius-md)' %>; margin-bottom: var(--rp-space-3);">
+            <div style="padding: var(--rp-space-4); background: white; border: 1px solid #c7d2fe; border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-3);">
               <!-- 학생 발문 -->
-              <div style="display: flex; align-items: flex-start; gap: <%= is_l1 ? '12px' : 'var(--rp-space-2)' %>; margin-bottom: var(--rp-space-3);">
-                <span style="font-size: <%= is_l1 ? '14px' : 'var(--rp-font-size-xs)' %>; font-weight: 700; color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full); flex-shrink: 0;">
+              <div style="display: flex; align-items: flex-start; gap: var(--rp-space-2); margin-bottom: var(--rp-space-3);">
+                <span style="font-size: var(--rp-font-size-xs); font-weight: 700; color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full); flex-shrink: 0;">
                   Q<%= idx + 1 %>
                 </span>
-                <span style="font-size: <%= is_l1 ? '18px' : 'var(--rp-font-size-sm)' %>; color: var(--rp-text-body); line-height: 1.6;">
+                <span style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.6;">
                   <%= q.question_text %>
                 </span>
               </div>
 
               <!-- AI 피드백 -->
               <% if q.ai_feedback.present? %>
-                <div style="padding: <%= is_l1 ? '14px 16px' : 'var(--rp-space-3)' %>; background: #f5f3ff; border-radius: <%= is_l1 ? '12px' : 'var(--rp-radius-sm)' %>; margin-bottom: var(--rp-space-2);">
+                <div style="padding: var(--rp-space-3); background: #f5f3ff; border-radius: var(--rp-radius-sm); margin-bottom: var(--rp-space-2);">
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                     <span style="background: #7c3aed; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--rp-radius-full);">AI</span>
-                    <span style="font-size: <%= is_l1 ? '15px' : '12px' %>; font-weight: 600; color: #6b21a8;">
-                      <% if is_l1 %>AI 선생님의 이야기<% else %>AI 튜터 피드백<% end %>
-                    </span>
+                    <span style="font-size: 12px; font-weight: 600; color: #6b21a8;">AI 튜터 피드백</span>
                     <% if q.ai_score.present? %>
                       <span style="font-size: 12px; font-weight: 700; color: #7c3aed; margin-left: auto;"><%= q.ai_score %>점</span>
                     <% end %>
                   </div>
-                  <div style="font-size: <%= is_l1 ? '17px' : 'var(--rp-font-size-sm)' %>; color: #4c1d95; line-height: <%= is_l1 ? '1.9' : '1.6' %>;">
+                  <div style="font-size: var(--rp-font-size-sm); color: #4c1d95; line-height: 1.6;">
                     <%= simple_format(q.ai_feedback) %>
                   </div>
                 </div>
@@ -485,20 +421,18 @@
 
               <!-- 교사 피드백 -->
               <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
-                <div style="padding: <%= is_l1 ? '14px 16px' : 'var(--rp-space-3)' %>; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: <%= is_l1 ? '12px' : 'var(--rp-radius-sm)' %>;">
+                <div style="padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-sm);">
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    <span style="font-size: <%= is_l1 ? '15px' : '12px' %>; font-weight: 600; color: #166534;">
-                      <% if is_l1 %>선생님의 한마디<% else %>선생님 피드백<% end %>
-                    </span>
+                    <span style="font-size: 12px; font-weight: 600; color: #166534;">선생님 피드백</span>
                     <% if q.teacher_score.present? %>
                       <span style="font-size: 12px; font-weight: 700; color: #166534; margin-left: auto;"><%= q.teacher_score %>점</span>
                     <% end %>
                   </div>
-                  <div style="font-size: <%= is_l1 ? '17px' : 'var(--rp-font-size-sm)' %>; color: #15803d; line-height: <%= is_l1 ? '1.9' : '1.6' %>;">
+                  <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">
                     <%= simple_format(q.teacher_feedback) %>
                   </div>
                 </div>
@@ -510,14 +444,14 @@
         <div style="display: flex; gap: var(--rp-space-3); justify-content: center; flex-wrap: wrap;">
           <%= form_with url: confirm_feedback_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do |f| %>
             <%= hidden_field_tag :stage, current_stage %>
-            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg" style="<%= 'font-size: 20px; padding: 16px 32px; border-radius: 16px;' if is_l1 %>">
+            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              <% if is_l1 %>읽었어요!<% else %>확인했습니다<% end %>
+              확인했습니다
             </button>
           <% end %>
-          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg" style="<%= 'font-size: 18px; padding: 14px 28px; border-radius: 16px;' if is_l1 %>"
+          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg"
                   onclick="document.getElementById('questioning-form-area').scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('question-text-input').focus();">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -856,46 +790,22 @@
      Questioning Report (if published)
      ============================================ -->
 <% if @report.present? && @report.published? %>
-  <%
-    sections = @report.report_sections || {}
-    level = @questioning_session.questioning_module.level
-    is_l1 = level == "elementary_low"
-  %>
+  <% sections = @report.report_sections || {} %>
   <div class="rp-card" style="margin-top: var(--rp-space-6);">
     <div class="rp-card__header" style="display: flex; align-items: center; gap: var(--rp-space-3);">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
         <polyline points="14 2 14 8 20 8"></polyline>
       </svg>
-      <h3 class="rp-card__title" style="margin: 0;">
-        <% if is_l1 %>
-          나의 읽기 보고서
-        <% else %>
-          문해력 종합 보고서
-        <% end %>
-      </h3>
+      <h3 class="rp-card__title" style="margin: 0;">문해력 종합 보고서</h3>
     </div>
     <div class="rp-card__body">
       <!-- Level Badge -->
       <div style="text-align: center; padding: var(--rp-space-4); margin-bottom: var(--rp-space-4); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-lg);">
-        <% if is_l1 %>
-          <div style="font-size: 48px; margin-bottom: var(--rp-space-2);">
-            <% if @report.literacy_level == "beginning" %>&#127793;
-            <% elsif @report.literacy_level == "developing" %>&#127775;
-            <% elsif @report.literacy_level == "proficient" %>&#11088;
-            <% elsif @report.literacy_level == "advanced" %>&#127941;
-            <% end %>
-          </div>
-          <div style="font-size: 20px; font-weight: 800; color: var(--rp-primary);"><%= @report.literacy_level_label %></div>
-          <% if @report.overall_summary.present? %>
-            <div style="margin-top: var(--rp-space-3); font-size: 16px; line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(@report.overall_summary) %></div>
-          <% end %>
-        <% else %>
-          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-2);">종합 문해력 수준</div>
-          <div style="font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= @report.literacy_level_label %></div>
-          <% if @report.overall_summary.present? %>
-            <div style="margin-top: var(--rp-space-3); font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body); text-align: left;"><%= simple_format(@report.overall_summary) %></div>
-          <% end %>
+        <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-2);">종합 문해력 수준</div>
+        <div style="font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= @report.literacy_level_label %></div>
+        <% if @report.overall_summary.present? %>
+          <div style="margin-top: var(--rp-space-3); font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body); text-align: left;"><%= simple_format(@report.overall_summary) %></div>
         <% end %>
       </div>
 

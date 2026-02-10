@@ -34,6 +34,11 @@ class Student::QuestioningSessionsController < ApplicationController
       @guided_reading_summary = gr_service.summary_for_stage(@questioning_session.current_stage)
       @guided_reading_questions = gr_service.questions_for_stage(@questioning_session.current_stage)
     end
+
+    # L1 전용 뷰 렌더링
+    if @module.level == "elementary_low"
+      render "show_l1" and return
+    end
   rescue StandardError => e
     Rails.logger.error("SESSION SHOW ERROR: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
@@ -203,8 +208,9 @@ class Student::QuestioningSessionsController < ApplicationController
       return
     end
 
-    # 피드백 확인 완료 여부 체크
-    unless @questioning_session.can_advance_stage?
+    # 피드백 확인 완료 여부 체크 (L1은 교사 피드백 확인 불필요)
+    module_level = @questioning_session.questioning_module&.level
+    unless module_level == "elementary_low" || @questioning_session.can_advance_stage?
       redirect_to student_questioning_session_path(@questioning_session), alert: "선생님 피드백을 확인해야 다음 단계로 이동할 수 있습니다."
       return
     end
@@ -238,11 +244,14 @@ class Student::QuestioningSessionsController < ApplicationController
   def complete_session
     @current_page = "questioning"
 
-    # 3단계 피드백 확인 체크 (배포된 피드백이 있으면 확인 필요)
-    published_3 = @questioning_session.student_questions.where(stage: 3).where.not(feedback_published_at: nil)
-    if published_3.any? && published_3.where(student_confirmed_at: nil).any?
-      redirect_to student_questioning_session_path(@questioning_session), alert: "3단계 피드백을 확인해야 세션을 완료할 수 있습니다."
-      return
+    # 3단계 피드백 확인 체크 (L1은 교사 피드백 확인 불필요)
+    module_level = @questioning_session.questioning_module&.level
+    unless module_level == "elementary_low"
+      published_3 = @questioning_session.student_questions.where(stage: 3).where.not(feedback_published_at: nil)
+      if published_3.any? && published_3.where(student_confirmed_at: nil).any?
+        redirect_to student_questioning_session_path(@questioning_session), alert: "3단계 피드백을 확인해야 세션을 완료할 수 있습니다."
+        return
+      end
     end
 
     # Calculate stage scores

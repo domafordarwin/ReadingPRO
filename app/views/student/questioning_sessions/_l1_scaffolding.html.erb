@@ -1,6 +1,8 @@
 <%#
-  L1 초저(초1-2) 수준 스캐폴딩 UI - V3
-  "이야기 속으로" 가이드 리딩 → AI 요약 → 발문 작성
+  L1 초저(초1-2) 수준 스캐폴딩 UI
+  "이야기 속으로" 가이드 리딩 → AI 요약 → 발문 작성 안내
+
+  디자인 토큰은 부모 뷰(show_l1.html.erb)에서 정의됨.
 
   Local variables:
     - current_stage (Integer, 1-3)
@@ -9,180 +11,167 @@
 %>
 
 <%
-  scaffolding_level = 3
-  if defined?(@student) && @student.present? && module_obj.present?
-    progress = @student.questioning_progresses.find_by(
-      evaluation_indicator: module_obj.questioning_templates.first&.evaluation_indicator
-    )
-    scaffolding_level = progress&.current_scaffolding || 3
-  end
-
-  stage_emojis = { 1 => "&#128218;", 2 => "&#128483;", 3 => "&#127793;" }
   stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
-
   has_summary = @guided_reading_summary.present?
   gr_questions = @guided_reading_questions || GuidedReadingService::STAGE_QUESTIONS[current_stage]
 %>
 
 <style>
-  /* ============================================
-     L1 Kid-Friendly UI - Bright & Big
-     ============================================ */
+  /* === L1 Scaffolding Components (tokens from parent) === */
 
-  .l1-kid {
-    font-size: 18px;
-    line-height: 1.7;
+  .l1-scaffolding {
+    font-size: var(--l1-font-label);
+    line-height: var(--l1-lh-body);
   }
 
-  /* --- Header Banner --- */
-  .l1-kid__banner {
+  /* Banner */
+  .l1-scaffolding__banner {
     text-align: center;
-    padding: 24px 20px 20px;
+    padding: var(--l1-space) var(--l1-gap);
     background: linear-gradient(135deg, #fef3c7, #fbcfe8, #ddd6fe);
-    border-radius: 20px;
-    margin-bottom: 20px;
-    border: 2px solid #fde68a;
+    border-radius: var(--l1-radius);
+    margin-bottom: var(--l1-gap);
+    border: 2px solid var(--l1-warm-border);
   }
-
-  .l1-kid__banner-mascot {
+  .l1-scaffolding__banner-mascot {
     font-size: 48px;
     line-height: 1;
     margin-bottom: 8px;
   }
-
-  .l1-kid__banner-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #7c3aed;
+  .l1-scaffolding__banner-title {
+    font-size: var(--l1-font-hero);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
     margin: 0;
   }
-
-  .l1-kid__banner-sub {
-    font-size: 16px;
-    color: #6b21a8;
+  .l1-scaffolding__banner-sub {
+    font-size: var(--l1-font-meta);
+    color: var(--l1-primary-dark);
     margin-top: 4px;
   }
 
-  /* --- Guided Reading Form --- */
-  .l1-kid__gr-card {
-    padding: 24px;
-    background: white;
-    border: 3px solid #93c5fd;
-    border-radius: 20px;
-    margin-bottom: 20px;
+  /* Guide Bubble */
+  .l1-scaffolding__guide {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: var(--l1-gap);
+    padding: var(--l1-gap);
+    background: #fef9c3;
+    border: 2px solid var(--l1-warm-border);
+    border-radius: var(--l1-radius);
+  }
+  .l1-scaffolding__guide-mascot {
+    font-size: 40px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .l1-scaffolding__guide-text {
+    font-size: var(--l1-font-label);
+    color: var(--l1-warm-text);
+    line-height: var(--l1-lh-body);
+    font-weight: var(--l1-weight-medium);
   }
 
-  .l1-kid__gr-title {
+  /* Guided Reading Form */
+  .l1-gr-card {
+    padding: var(--l1-space);
+    background: white;
+    border: var(--l1-bw) solid #93c5fd;
+    border-radius: var(--l1-radius);
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-gr-title {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: var(--l1-gap);
     padding-bottom: 14px;
-    border-bottom: 2px dashed #bfdbfe;
+    border-bottom: 2px dashed var(--l1-blue-light);
   }
-
-  .l1-kid__gr-title-icon {
-    font-size: 40px;
-    line-height: 1;
+  .l1-gr-title__icon { font-size: 40px; line-height: 1; }
+  .l1-gr-title__text {
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-blue-dark);
   }
-
-  .l1-kid__gr-title-text {
-    font-size: 22px;
-    font-weight: 800;
-    color: #1e40af;
-  }
-
-  .l1-kid__gr-question {
-    margin-bottom: 20px;
-  }
-
-  .l1-kid__gr-label {
+  .l1-gr-question { margin-bottom: var(--l1-gap); }
+  .l1-gr-label {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
   }
-
-  .l1-kid__gr-label-num {
+  .l1-gr-label__num {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 36px;
     height: 36px;
-    background: #3b82f6;
+    background: var(--l1-blue);
     color: white;
-    font-size: 18px;
-    font-weight: 800;
+    font-size: var(--l1-font-label);
+    font-weight: var(--l1-weight-heavy);
     border-radius: 50%;
     flex-shrink: 0;
   }
-
-  .l1-kid__gr-label-text {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1e3a5f;
+  .l1-gr-label__text {
+    font-size: var(--l1-font-body);
+    font-weight: var(--l1-weight-bold);
+    color: var(--l1-text);
   }
-
-  .l1-kid__gr-input {
+  .l1-gr-input {
     width: 100%;
     padding: 16px 18px;
-    font-size: 20px;
+    font-size: var(--l1-font-body);
     font-family: inherit;
     line-height: 1.6;
-    border: 3px solid #e5e7eb;
-    border-radius: 16px;
+    border: var(--l1-bw) solid var(--l1-border);
+    border-radius: var(--l1-radius-input);
     background: #fafbff;
-    transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-
-  .l1-kid__gr-input:focus {
+  .l1-gr-input:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--l1-blue);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
     background: white;
   }
-
-  .l1-kid__gr-input::placeholder {
+  .l1-gr-input::placeholder {
     color: #9ca3af;
-    font-size: 17px;
+    font-size: var(--l1-font-label);
   }
-
-  .l1-kid__gr-submit {
+  .l1-gr-submit {
     display: block;
     width: 100%;
     padding: 18px 32px;
-    font-size: 22px;
-    font-weight: 800;
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-heavy);
     font-family: inherit;
     color: white;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background: linear-gradient(135deg, var(--l1-blue), #2563eb);
     border: none;
-    border-radius: 16px;
+    border-radius: var(--l1-radius-input);
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     margin-top: 8px;
   }
-
-  .l1-kid__gr-submit:hover {
+  .l1-gr-submit:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
   }
+  .l1-gr-submit:active { transform: translateY(0); }
 
-  .l1-kid__gr-submit:active {
-    transform: translateY(0);
+  /* AI Summary */
+  .l1-summary {
+    padding: var(--l1-space);
+    background: linear-gradient(135deg, var(--l1-success-light), #d1fae5);
+    border: var(--l1-bw) solid var(--l1-success-border);
+    border-radius: var(--l1-radius);
+    margin-bottom: var(--l1-gap);
   }
-
-  /* --- AI Summary Card --- */
-  .l1-kid__summary {
-    padding: 24px;
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-    border: 3px solid #6ee7b7;
-    border-radius: 20px;
-    margin-bottom: 24px;
-  }
-
-  .l1-kid__summary-header {
+  .l1-summary__header {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -190,130 +179,98 @@
     padding-bottom: 12px;
     border-bottom: 2px dashed #a7f3d0;
   }
-
-  .l1-kid__summary-icon {
-    font-size: 36px;
-    line-height: 1;
+  .l1-summary__icon { font-size: 36px; line-height: 1; }
+  .l1-summary__title {
+    font-size: var(--l1-font-body);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-success-dark);
   }
-
-  .l1-kid__summary-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: #065f46;
-  }
-
-  .l1-kid__summary-body {
-    font-size: 20px;
+  .l1-summary__body {
+    font-size: var(--l1-font-body);
     line-height: 2.0;
     color: #064e3b;
     word-break: keep-all;
   }
+  .l1-summary__body p { margin: 0 0 12px; }
+  .l1-summary__body p:last-child { margin-bottom: 0; }
 
-  .l1-kid__summary-body p {
-    margin: 0 0 12px;
-  }
-
-  .l1-kid__summary-body p:last-child {
-    margin-bottom: 0;
-  }
-
-  .l1-kid__summary-arrow {
-    text-align: center;
-    margin: 16px 0 8px;
-    font-size: 32px;
-    color: #10b981;
-  }
-
-  /* --- Character Guide (speech bubble) --- */
-  .l1-kid__guide {
+  /* Writing Tips */
+  .l1-tip {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 16px 20px;
-    background: #fef9c3;
-    border: 2px solid #fde68a;
-    border-radius: 20px;
-    position: relative;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--l1-radius-sm);
+    border: 1px solid;
+    margin-bottom: 8px;
   }
+  .l1-tip:last-child { margin-bottom: 0; }
+  .l1-tip__icon { font-size: 24px; flex-shrink: 0; }
+  .l1-tip__text {
+    font-size: var(--l1-font-meta);
+    font-weight: var(--l1-weight-medium);
+  }
+  .l1-tip--warm {
+    background: var(--l1-warm-light);
+    border-color: var(--l1-warm-border);
+  }
+  .l1-tip--warm .l1-tip__text { color: var(--l1-warm-text); }
+  .l1-tip--pink {
+    background: var(--l1-pink-light);
+    border-color: var(--l1-pink-border);
+  }
+  .l1-tip--pink .l1-tip__text { color: var(--l1-pink-text); }
 
-  .l1-kid__guide-mascot {
-    font-size: 40px;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .l1-kid__guide-text {
-    font-size: 18px;
-    color: #92400e;
-    line-height: 1.7;
-    font-weight: 600;
-  }
-
-  /* --- Section Divider --- */
-  .l1-kid__divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 20px 0; color: #9ca3af; font-size: 15px; font-weight: 600;
-  }
-  .l1-kid__divider::before, .l1-kid__divider::after {
-    content: ""; flex: 1; height: 2px; background: #e5e7eb; border-radius: 1px;
-  }
-
-  /* --- Responsive --- */
+  /* Responsive */
   @media (max-width: 768px) {
-    .l1-kid { font-size: 16px; }
-    .l1-kid__banner-title { font-size: 20px; }
-    .l1-kid__banner-mascot { font-size: 40px; }
-    .l1-kid__guide-text { font-size: 16px; }
-    .l1-kid__guide-mascot { font-size: 32px; }
-    .l1-kid__gr-label-text { font-size: 18px; }
-    .l1-kid__gr-input { font-size: 18px; padding: 14px 16px; }
-    .l1-kid__gr-submit { font-size: 20px; padding: 16px 28px; }
-    .l1-kid__summary-body { font-size: 18px; }
+    .l1-scaffolding__banner-mascot { font-size: 40px; }
+    .l1-scaffolding__guide-mascot { font-size: 32px; }
+    .l1-gr-input { padding: 14px 16px; }
+    .l1-gr-submit { padding: 16px 28px; }
   }
 </style>
 
-<div class="l1-kid" id="l1-scaffolding-panel">
+<div class="l1-scaffolding" id="l1-scaffolding-panel">
 
 <% unless has_summary %>
   <!-- ============================================
        STEP 1: 이야기 속으로 (Guided Reading)
        ============================================ -->
-  <div class="l1-kid__banner">
-    <div class="l1-kid__banner-mascot">&#128218;</div>
-    <h2 class="l1-kid__banner-title">이야기 속으로!</h2>
-    <div class="l1-kid__banner-sub"><%= stage_names[current_stage] %> 단계</div>
+  <div class="l1-scaffolding__banner">
+    <div class="l1-scaffolding__banner-mascot">&#128218;</div>
+    <h2 class="l1-scaffolding__banner-title">이야기 속으로!</h2>
+    <div class="l1-scaffolding__banner-sub"><%= stage_names[current_stage] %> 단계</div>
   </div>
 
-  <div class="l1-kid__guide">
-    <span class="l1-kid__guide-mascot">&#129412;</span>
-    <span class="l1-kid__guide-text">
+  <div class="l1-scaffolding__guide">
+    <span class="l1-scaffolding__guide-mascot">&#129412;</span>
+    <span class="l1-scaffolding__guide-text">
       먼저 이야기에 대해 이야기해 보자!<br>
       아래 질문에 답해 주면, 선생님이 정리해 줄게!
     </span>
   </div>
 
   <%= form_with url: submit_guided_reading_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, local: true do |f| %>
-    <div class="l1-kid__gr-card">
-      <div class="l1-kid__gr-title">
-        <span class="l1-kid__gr-title-icon">&#128214;</span>
-        <span class="l1-kid__gr-title-text"><%= gr_questions[:title] %></span>
+    <div class="l1-gr-card">
+      <div class="l1-gr-title">
+        <span class="l1-gr-title__icon">&#128214;</span>
+        <span class="l1-gr-title__text"><%= gr_questions[:title] %></span>
       </div>
 
       <% gr_questions[:questions].each_with_index do |q, idx| %>
-        <div class="l1-kid__gr-question">
-          <div class="l1-kid__gr-label">
-            <span class="l1-kid__gr-label-num"><%= idx + 1 %></span>
-            <label class="l1-kid__gr-label-text" for="gr_<%= q[:key] %>"><%= q[:label] %></label>
+        <div class="l1-gr-question">
+          <div class="l1-gr-label">
+            <span class="l1-gr-label__num"><%= idx + 1 %></span>
+            <label class="l1-gr-label__text" for="gr_<%= q[:key] %>"><%= q[:label] %></label>
           </div>
           <input type="text" name="gr_<%= q[:key] %>" id="gr_<%= q[:key] %>"
-                 class="l1-kid__gr-input"
+                 class="l1-gr-input"
                  placeholder="<%= q[:placeholder] %>"
                  autocomplete="off">
         </div>
       <% end %>
 
-      <button type="submit" class="l1-kid__gr-submit" id="gr-submit-btn">
+      <button type="submit" class="l1-gr-submit" id="gr-submit-btn">
         &#9997;&#65039; 정리해 줘!
       </button>
     </div>
@@ -323,55 +280,49 @@
   <!-- ============================================
        STEP 2: AI 요약 → 바로 글쓰기
        ============================================ -->
-
-  <!-- Banner -->
-  <div class="l1-kid__banner">
-    <div class="l1-kid__banner-mascot">&#127775;</div>
-    <h2 class="l1-kid__banner-title">오늘의 질문을 만들어요!</h2>
-    <div class="l1-kid__banner-sub"><%= stage_names[current_stage] %> 단계</div>
+  <div class="l1-scaffolding__banner">
+    <div class="l1-scaffolding__banner-mascot">&#127775;</div>
+    <h2 class="l1-scaffolding__banner-title">오늘의 질문을 만들어요!</h2>
+    <div class="l1-scaffolding__banner-sub"><%= stage_names[current_stage] %> 단계</div>
   </div>
 
-  <!-- AI Summary Card -->
-  <div class="l1-kid__summary">
-    <div class="l1-kid__summary-header">
-      <span class="l1-kid__summary-icon">&#128218;</span>
-      <span class="l1-kid__summary-title">이야기 정리</span>
+  <div class="l1-summary">
+    <div class="l1-summary__header">
+      <span class="l1-summary__icon">&#128218;</span>
+      <span class="l1-summary__title">이야기 정리</span>
     </div>
-    <div class="l1-kid__summary-body">
+    <div class="l1-summary__body">
       <%= simple_format(@guided_reading_summary.content) %>
     </div>
   </div>
 
-  <!-- 바로 글쓰기 안내 -->
-  <div class="l1-kid__guide">
-    <span class="l1-kid__guide-mascot">&#128640;</span>
-    <span class="l1-kid__guide-text">
+  <div class="l1-scaffolding__guide">
+    <span class="l1-scaffolding__guide-mascot">&#128640;</span>
+    <span class="l1-scaffolding__guide-text">
       위 정리를 읽고, 궁금한 것을 아래에 써 봐!<br>
       아무 질문이나 좋아!
     </span>
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
-      <span style="font-size: 24px;">&#128161;</span>
-      <span style="font-size: 16px; color: #92400e; font-weight: 600;">한 번에 한 가지만 물어보면 돼!</span>
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--l1-gap);">
+    <div class="l1-tip l1-tip--warm">
+      <span class="l1-tip__icon">&#128161;</span>
+      <span class="l1-tip__text">한 번에 한 가지만 물어보면 돼!</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fdf2f8; border-radius: 12px; border: 1px solid #fbcfe8;">
-      <span style="font-size: 24px;">&#128151;</span>
-      <span style="font-size: 16px; color: #9d174d; font-weight: 600;">"왜 그랬을까?", "어떤 마음이었을까?" 같은 질문이 좋아!</span>
+    <div class="l1-tip l1-tip--pink">
+      <span class="l1-tip__icon">&#128151;</span>
+      <span class="l1-tip__text">"왜 그랬을까?", "어떤 마음이었을까?" 같은 질문이 좋아!</span>
     </div>
   </div>
 
 <% end %>
 
-</div><!-- /.l1-kid -->
+</div><!-- /.l1-scaffolding -->
 
-<!-- ============================== -->
-<!-- L1 JavaScript                  -->
-<!-- ============================== -->
+<!-- L1 Scaffolding JavaScript -->
 <script>
-  // Guided reading form submit loading
   (function() {
+    // Guided reading form submit loading
     var grForm = document.querySelector('form[action*="submit_guided_reading"]');
     if (grForm) {
       grForm.addEventListener('submit', function() {
@@ -383,15 +334,13 @@
         }
       });
     }
-  })();
 
-  // Auto-scroll to form area after guided reading summary
-  (function() {
-    var summary = document.querySelector('.l1-kid__summary');
+    // Auto-scroll to form area after guided reading summary
+    var summary = document.querySelector('.l1-summary');
     if (summary) {
       setTimeout(function() {
         var formArea = document.getElementById('questioning-form-area');
-        if (formArea) { formArea.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        if (formArea) formArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 500);
     }
   })();

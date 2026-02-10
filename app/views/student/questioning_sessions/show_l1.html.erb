@@ -1,0 +1,973 @@
+<%#
+  L1 (초등 1-2학년) 전용 발문 학습 세션 뷰
+  - 일관된 디자인 토큰 시스템
+  - 교사 피드백 차단 없이 자연스러운 흐름
+  - AI 피드백 즉시 인라인 표시
+  - 30초 자동 새로고침 없음
+%>
+<% content_for :page_title do %>발문 학습 세션<% end %>
+
+<%
+  session = @questioning_session
+  current_stage = session&.current_stage || 1
+  current_level = "elementary_low"
+
+  level_stage_info = QuestioningLevelConfig.stage_description_for(current_level, current_stage)
+  stage_names = {
+    1 => "책문열기",
+    2 => "이야기나누기",
+    3 => "삶적용"
+  }
+  stage_emojis = { 1 => "&#128218;", 2 => "&#128483;", 3 => "&#127793;" }
+
+  is_completed = session&.status_completed? || false
+  is_reviewed = session&.status_reviewed? || false
+  is_finished = is_completed || is_reviewed
+  questions_for_stage = @questions_by_stage[current_stage] || []
+  has_questions = questions_for_stage.any?
+  has_guided_reading = @guided_reading_summary.present?
+%>
+
+<!-- ============================================
+     L1 Design Tokens & CSS
+     ============================================ -->
+<style>
+  /* === L1 Design Tokens === */
+  .l1-page {
+    --l1-font-hero: 28px;
+    --l1-font-title: 22px;
+    --l1-font-body: 20px;
+    --l1-font-label: 18px;
+    --l1-font-meta: 16px;
+    --l1-font-small: 14px;
+    --l1-weight-heavy: 800;
+    --l1-weight-bold: 700;
+    --l1-weight-medium: 600;
+    --l1-lh-reading: 2.2;
+    --l1-lh-body: 1.8;
+    --l1-primary: #7c3aed;
+    --l1-primary-light: #ede9fe;
+    --l1-primary-dark: #5b21b6;
+    --l1-blue: #3b82f6;
+    --l1-blue-light: #dbeafe;
+    --l1-blue-dark: #1e40af;
+    --l1-success: #10b981;
+    --l1-success-light: #ecfdf5;
+    --l1-success-border: #6ee7b7;
+    --l1-success-dark: #065f46;
+    --l1-warm: #f59e0b;
+    --l1-warm-light: #fffbeb;
+    --l1-warm-border: #fde68a;
+    --l1-warm-text: #92400e;
+    --l1-pink-light: #fdf2f8;
+    --l1-pink-border: #fbcfe8;
+    --l1-pink-text: #9d174d;
+    --l1-text: #1f2937;
+    --l1-text-muted: #6b7280;
+    --l1-border: #e5e7eb;
+    --l1-radius: 20px;
+    --l1-radius-sm: 12px;
+    --l1-radius-input: 16px;
+    --l1-bw: 3px;
+    --l1-space: 24px;
+    --l1-gap: 20px;
+    font-family: var(--rp-font-family, 'Pretendard', sans-serif);
+  }
+
+  @media (max-width: 768px) {
+    .l1-page {
+      --l1-font-hero: 24px;
+      --l1-font-title: 20px;
+      --l1-font-body: 18px;
+      --l1-font-label: 16px;
+      --l1-font-meta: 14px;
+      --l1-radius: 16px;
+      --l1-space: 18px;
+      --l1-gap: 16px;
+    }
+  }
+
+  /* === L1 Components === */
+
+  /* Back Link */
+  .l1-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--l1-font-meta);
+    color: var(--l1-text-muted);
+    text-decoration: none;
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-back:hover { color: var(--l1-primary); }
+
+  /* Page Header */
+  .l1-page-header {
+    text-align: center;
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-page-header__title {
+    font-size: var(--l1-font-hero);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
+    margin: 0 0 8px;
+  }
+  .l1-page-header__badge {
+    display: inline-block;
+    font-size: var(--l1-font-small);
+    font-weight: var(--l1-weight-bold);
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: var(--l1-success-light);
+    color: var(--l1-success-dark);
+    border: 2px solid var(--l1-success-border);
+  }
+
+  /* Stage Path */
+  .l1-stage-path {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: var(--l1-gap) 0;
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-stage-path__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .l1-stage-path__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: var(--l1-bw) solid var(--l1-border);
+    background: white;
+    transition: all 0.3s;
+  }
+  .l1-stage-path__name {
+    font-size: var(--l1-font-small);
+    font-weight: var(--l1-weight-medium);
+    color: var(--l1-text-muted);
+  }
+  .l1-stage-path__step--active .l1-stage-path__icon {
+    border-color: var(--l1-primary);
+    background: var(--l1-primary-light);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+  }
+  .l1-stage-path__step--active .l1-stage-path__name {
+    color: var(--l1-primary);
+    font-weight: var(--l1-weight-bold);
+  }
+  .l1-stage-path__step--done .l1-stage-path__icon {
+    border-color: var(--l1-success);
+    background: var(--l1-success-light);
+    color: var(--l1-success);
+  }
+  .l1-stage-path__step--done .l1-stage-path__name {
+    color: var(--l1-success-dark);
+  }
+  .l1-stage-path__connector {
+    width: 48px;
+    height: 3px;
+    background: var(--l1-border);
+    margin: 0 4px;
+    margin-bottom: 24px;
+    border-radius: 2px;
+  }
+  .l1-stage-path__connector--done {
+    background: var(--l1-success);
+  }
+  .l1-stage-path__connector--active {
+    background: linear-gradient(90deg, var(--l1-success), var(--l1-primary));
+  }
+
+  /* Cards */
+  .l1-card {
+    padding: var(--l1-space);
+    border-radius: var(--l1-radius);
+    border: var(--l1-bw) solid var(--l1-border);
+    margin-bottom: var(--l1-gap);
+    background: white;
+  }
+  .l1-card--story {
+    background: var(--l1-warm-light);
+    border-color: var(--l1-warm-border);
+  }
+  .l1-card--question {
+    background: white;
+    border-color: var(--l1-primary);
+    border-width: 2px;
+  }
+  .l1-card--form {
+    background: #faf5ff;
+    border-color: var(--l1-primary);
+  }
+
+  /* Passage Panel */
+  .l1-passage-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--l1-space);
+    background: linear-gradient(135deg, #fef3c7, var(--l1-warm-border));
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: var(--l1-radius) var(--l1-radius) 0 0;
+  }
+  .l1-passage-toggle__text {
+    font-size: var(--l1-font-body);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-warm-text);
+  }
+  .l1-passage-toggle__icon {
+    transition: transform 0.3s;
+  }
+  .l1-passage-body {
+    padding: var(--l1-space);
+    font-size: var(--l1-font-body);
+    line-height: var(--l1-lh-reading);
+    color: var(--l1-text);
+    word-break: keep-all;
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.3s;
+  }
+  .l1-passage-body--collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  .l1-passage-body p { margin: 0 0 12px; }
+  .l1-passage-body p:last-child { margin-bottom: 0; }
+
+  /* Stage Title */
+  .l1-stage-title {
+    text-align: center;
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-stage-title__main {
+    font-size: var(--l1-font-hero);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
+    margin: 0 0 6px;
+  }
+  .l1-stage-title__sub {
+    font-size: var(--l1-font-meta);
+    color: var(--l1-text-muted);
+    margin: 0;
+  }
+
+  /* Question Items */
+  .l1-questions { margin-bottom: var(--l1-gap); }
+  .l1-questions__title {
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-bold);
+    color: var(--l1-primary);
+    margin: 0 0 var(--l1-gap);
+    text-align: center;
+  }
+  .l1-q-item {
+    padding: var(--l1-space);
+    background: #faf5ff;
+    border: 2px solid var(--l1-primary-light);
+    border-radius: var(--l1-radius);
+    margin-bottom: 16px;
+  }
+  .l1-q-item:last-child { margin-bottom: 0; }
+  .l1-q-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .l1-q-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--l1-primary);
+    color: white;
+    font-size: var(--l1-font-label);
+    font-weight: var(--l1-weight-heavy);
+    flex-shrink: 0;
+  }
+  .l1-q-stars {
+    margin-left: auto;
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+  .l1-q-text {
+    font-size: var(--l1-font-body);
+    line-height: var(--l1-lh-body);
+    color: var(--l1-text);
+    word-break: keep-all;
+  }
+
+  /* Feedback Bubbles */
+  .l1-feedback {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: var(--l1-radius-sm);
+  }
+  .l1-feedback--ai {
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #c4b5fd;
+  }
+  .l1-feedback--teacher {
+    background: var(--l1-success-light);
+    border: 1px solid var(--l1-success-border);
+  }
+  .l1-feedback__mascot {
+    font-size: 32px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .l1-feedback__content { flex: 1; min-width: 0; }
+  .l1-feedback__name {
+    font-size: var(--l1-font-small);
+    font-weight: var(--l1-weight-bold);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .l1-feedback--ai .l1-feedback__name { color: var(--l1-primary-dark); }
+  .l1-feedback--teacher .l1-feedback__name { color: var(--l1-success-dark); }
+  .l1-feedback__text {
+    font-size: var(--l1-font-label);
+    line-height: var(--l1-lh-body);
+    color: var(--l1-text);
+  }
+  .l1-feedback__text p { margin: 0 0 8px; }
+  .l1-feedback__text p:last-child { margin-bottom: 0; }
+  .l1-feedback__details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd6fe;
+    font-size: var(--l1-font-meta);
+  }
+
+  /* Form Area */
+  .l1-form-title {
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
+    text-align: center;
+    margin: 0 0 var(--l1-gap);
+  }
+  .l1-form-label {
+    display: block;
+    font-size: var(--l1-font-label);
+    font-weight: var(--l1-weight-bold);
+    color: var(--l1-primary);
+    margin-bottom: 10px;
+  }
+  .l1-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    font-size: var(--l1-font-body);
+    font-family: inherit;
+    line-height: 1.6;
+    border: var(--l1-bw) solid var(--l1-border);
+    border-radius: var(--l1-radius-input);
+    background: white;
+    box-sizing: border-box;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .l1-textarea:focus {
+    outline: none;
+    border-color: var(--l1-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+  }
+  .l1-textarea::placeholder {
+    color: #9ca3af;
+    font-size: var(--l1-font-label);
+  }
+  .l1-char-count {
+    text-align: right;
+    font-size: var(--l1-font-small);
+    color: var(--l1-text-muted);
+    margin-top: 6px;
+  }
+
+  /* Buttons */
+  .l1-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 18px 32px;
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-heavy);
+    font-family: inherit;
+    border: none;
+    border-radius: var(--l1-radius-input);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+    text-align: center;
+  }
+  .l1-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+  .l1-btn:active { transform: translateY(0); }
+  .l1-btn--primary {
+    background: linear-gradient(135deg, var(--l1-primary), var(--l1-primary-dark));
+    color: white;
+  }
+  .l1-btn--success {
+    background: linear-gradient(135deg, var(--l1-success), #059669);
+    color: white;
+  }
+  .l1-btn--secondary {
+    background: white;
+    color: var(--l1-primary);
+    border: 2px solid var(--l1-primary-light);
+    font-size: var(--l1-font-label);
+    padding: 14px 24px;
+  }
+  .l1-btn--secondary:hover {
+    background: var(--l1-primary-light);
+  }
+  .l1-btn + .l1-btn { margin-top: 12px; }
+
+  /* Stage Action Area */
+  .l1-stage-action {
+    margin-top: var(--l1-gap);
+    padding: var(--l1-space);
+    background: linear-gradient(135deg, #f0f4ff, var(--l1-primary-light));
+    border: 2px solid #c4b5fd;
+    border-radius: var(--l1-radius);
+    text-align: center;
+  }
+  .l1-stage-action__title {
+    font-size: var(--l1-font-title);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary-dark);
+    margin: 0 0 8px;
+  }
+  .l1-stage-action__sub {
+    font-size: var(--l1-font-meta);
+    color: var(--l1-primary);
+    margin: 0 0 var(--l1-gap);
+  }
+
+  /* Summary (completed session) */
+  .l1-summary-header {
+    text-align: center;
+    padding: var(--l1-space);
+    background: linear-gradient(135deg, var(--l1-primary-light), #f0f4ff);
+    border: 2px solid var(--l1-primary);
+    border-radius: var(--l1-radius);
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-summary-header__emoji { font-size: 48px; margin-bottom: 8px; }
+  .l1-summary-header__title {
+    font-size: var(--l1-font-hero);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
+    margin: 0 0 8px;
+  }
+  .l1-summary-header__meta {
+    font-size: var(--l1-font-meta);
+    color: var(--l1-text-muted);
+  }
+
+  .l1-score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: var(--l1-gap);
+  }
+  .l1-score-card {
+    padding: 16px;
+    background: white;
+    border: 2px solid var(--l1-border);
+    border-radius: var(--l1-radius-sm);
+    text-align: center;
+  }
+  .l1-score-card__label {
+    font-size: var(--l1-font-small);
+    color: var(--l1-text-muted);
+    margin-bottom: 6px;
+  }
+  .l1-score-card__value {
+    font-size: var(--l1-font-hero);
+    font-weight: var(--l1-weight-heavy);
+    color: var(--l1-primary);
+  }
+  .l1-score-card--stage .l1-score-card__value {
+    font-size: var(--l1-font-title);
+    color: var(--l1-text);
+  }
+
+  /* Report */
+  .l1-report {
+    margin-top: var(--l1-gap);
+    padding: var(--l1-space);
+    background: white;
+    border: 2px solid var(--l1-warm-border);
+    border-radius: var(--l1-radius);
+  }
+
+  /* AI Loading */
+  .l1-loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: var(--l1-space);
+    color: var(--l1-text-muted);
+    font-size: var(--l1-font-label);
+  }
+  .l1-spinner {
+    width: 24px; height: 24px;
+    border: 3px solid var(--l1-border);
+    border-top-color: var(--l1-primary);
+    border-radius: 50%;
+    animation: l1-spin 0.8s linear infinite;
+  }
+  @keyframes l1-spin { to { transform: rotate(360deg); } }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .l1-score-grid { grid-template-columns: repeat(2, 1fr); }
+    .l1-stage-path__connector { width: 32px; }
+    .l1-stage-path__icon { width: 44px; height: 44px; font-size: 20px; }
+  }
+</style>
+
+<!-- ============================================ -->
+<!-- L1 Page Content                              -->
+<!-- ============================================ -->
+<div class="l1-page">
+
+<!-- 1. Back Link -->
+<%= link_to student_questioning_index_path, class: "l1-back" do %>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+  돌아가기
+<% end %>
+
+<!-- 2. Page Header -->
+<div class="l1-page-header">
+  <h1 class="l1-page-header__title"><%= @module&.title || "발문 학습 세션" %></h1>
+  <% if is_finished %>
+    <span class="l1-page-header__badge">
+      &#127942; <%= session.status_label %>
+    </span>
+  <% end %>
+</div>
+
+<!-- 3. Stage Path -->
+<div class="l1-stage-path" role="navigation" aria-label="학습 단계">
+  <% (1..3).each do |stage| %>
+    <%
+      if is_finished || stage < current_stage
+        step_class = "l1-stage-path__step--done"
+      elsif stage == current_stage
+        step_class = "l1-stage-path__step--active"
+      else
+        step_class = ""
+      end
+    %>
+    <div class="l1-stage-path__step <%= step_class %>">
+      <div class="l1-stage-path__icon">
+        <% if is_finished || stage < current_stage %>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        <% else %>
+          <%= stage_emojis[stage] %>
+        <% end %>
+      </div>
+      <span class="l1-stage-path__name"><%= stage_names[stage] %></span>
+    </div>
+    <% if stage < 3 %>
+      <%
+        if is_finished || stage < current_stage
+          conn_class = "l1-stage-path__connector--done"
+        elsif stage == current_stage
+          conn_class = "l1-stage-path__connector--active"
+        else
+          conn_class = ""
+        end
+      %>
+      <div class="l1-stage-path__connector <%= conn_class %>"></div>
+    <% end %>
+  <% end %>
+</div>
+
+<% unless is_finished %>
+  <!-- ============================== -->
+  <!-- 4. Reading Passage             -->
+  <!-- ============================== -->
+  <div class="l1-card l1-card--story" id="passage-panel" style="padding: 0; overflow: hidden;">
+    <button type="button" class="l1-passage-toggle"
+            aria-expanded="true" aria-controls="l1-passage-body"
+            onclick="var b=document.getElementById('l1-passage-body'); var e=this.getAttribute('aria-expanded')==='true'; this.setAttribute('aria-expanded', String(!e)); b.classList.toggle('l1-passage-body--collapsed'); this.querySelector('.l1-passage-toggle__icon').style.transform = e ? 'rotate(180deg)' : '';">
+      <span class="l1-passage-toggle__text">
+        &#128214; <%= @stimulus&.title || "오늘의 이야기" %>
+      </span>
+      <svg class="l1-passage-toggle__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= '#92400e' %>" stroke-width="3">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div class="l1-passage-body" id="l1-passage-body">
+      <% if @stimulus&.body.present? %>
+        <%= simple_format(@stimulus.body) %>
+      <% else %>
+        <p style="color: var(--l1-text-muted);">이야기가 아직 없어요.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 5. Stage Title                 -->
+  <!-- ============================== -->
+  <div class="l1-stage-title">
+    <h2 class="l1-stage-title__main">
+      <%= stage_emojis[current_stage] %> <%= current_stage %>단계: <%= stage_names[current_stage] %>
+    </h2>
+    <p class="l1-stage-title__sub">
+      <%= level_stage_info[:description] rescue "이야기에 대해 생각해 봐요!" %>
+    </p>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 6. Scaffolding (Guided Reading)-->
+  <!-- ============================== -->
+  <%= render partial: "student/questioning_sessions/l1_scaffolding",
+            locals: { current_stage: current_stage, module_obj: @module, stimulus: @stimulus } rescue nil %>
+
+  <!-- ============================== -->
+  <!-- 7. Previous Questions + Feedback -->
+  <!-- ============================== -->
+  <% if has_questions %>
+    <div class="l1-questions">
+      <h3 class="l1-questions__title">
+        &#128221; 내가 쓴 질문 (<%= questions_for_stage.size %>개)
+      </h3>
+      <% questions_for_stage.each_with_index do |q, idx| %>
+        <div class="l1-q-item" id="<%= 'latest-question' if idx == questions_for_stage.size - 1 && flash[:notice]&.include?('제출') %>">
+          <div class="l1-q-header">
+            <span class="l1-q-num">Q<%= idx + 1 %></span>
+            <span style="font-size: var(--l1-font-small); color: var(--l1-text-muted);"><%= q.type_label %></span>
+            <% if q.ai_score.present? %>
+              <span class="l1-q-stars">
+                <% stars = q.ai_score >= 80 ? 3 : (q.ai_score >= 50 ? 2 : 1) %>
+                <% stars.times do %>&#11088;<% end %>
+              </span>
+            <% end %>
+          </div>
+          <div class="l1-q-text"><%= q.question_text %></div>
+
+          <!-- AI 피드백: 즉시 표시 -->
+          <% if q.ai_feedback.present? %>
+            <div class="l1-feedback l1-feedback--ai">
+              <span class="l1-feedback__mascot">&#129302;</span>
+              <div class="l1-feedback__content">
+                <span class="l1-feedback__name">AI 선생님</span>
+                <div class="l1-feedback__text"><%= simple_format(q.ai_feedback) %></div>
+                <% if q.ai_strengths.present? %>
+                  <div class="l1-feedback__details">
+                    <strong style="color: var(--l1-success);">&#127775; 잘한 점:</strong>
+                    <%= Array(q.ai_strengths).join(", ") %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- 교사 피드백: 있으면 자연스럽게 표시 (차단 없음) -->
+          <% if q.feedback_published? && q.teacher_reviewed? && q.teacher_feedback.present? %>
+            <div class="l1-feedback l1-feedback--teacher">
+              <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+              <div class="l1-feedback__content">
+                <span class="l1-feedback__name">선생님</span>
+                <div class="l1-feedback__text"><%= simple_format(q.teacher_feedback) %></div>
+                <% if q.teacher_score.present? %>
+                  <div class="l1-feedback__details">
+                    <strong style="color: var(--l1-success-dark);">점수:</strong> <%= q.teacher_score %>점
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- ============================== -->
+  <!-- 8. Question Form               -->
+  <!-- ============================== -->
+  <% show_form = has_guided_reading %>
+  <div class="l1-card l1-card--form" id="questioning-form-area"<%= ' style="display:none;"'.html_safe unless show_form %>>
+    <h3 class="l1-form-title">&#128221; 나의 질문</h3>
+
+    <%= form_with url: submit_question_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, id: "questioning-form" do |f| %>
+      <%= hidden_field_tag "student_question[question_type]", "free", id: "question-type-field" %>
+      <%= hidden_field_tag "student_question[scaffolding_used]", 0, id: "scaffolding-used-field" %>
+      <%= hidden_field_tag "student_question[questioning_template_id]", "", id: "template-id-field" %>
+
+      <label class="l1-form-label" for="question-text-input">
+        &#9997;&#65039; 여기에 질문을 적어 봐!
+      </label>
+      <textarea name="student_question[question_text]" id="question-text-input" class="l1-textarea"
+                placeholder="이야기를 읽고 궁금한 것을 써 봐! 예: '왜 그랬을까?', '어떤 마음이었을까?'"
+                required maxlength="500" aria-label="질문 입력"></textarea>
+      <div class="l1-char-count"><span id="char-count">0</span>/500자</div>
+
+      <div style="margin-top: var(--l1-gap);">
+        <button type="submit" class="l1-btn l1-btn--primary" id="submit-btn">
+          &#128640; 제출하기!
+        </button>
+      </div>
+    <% end %>
+
+    <div class="l1-loading" id="ai-feedback-loading">
+      <div class="l1-spinner"></div>
+      <span>AI 선생님이 읽고 있어요...</span>
+    </div>
+  </div>
+
+  <!-- ============================== -->
+  <!-- 9. Stage Action (non-blocking) -->
+  <!-- ============================== -->
+  <% if has_questions %>
+    <div class="l1-stage-action">
+      <% if current_stage < 3 %>
+        <h3 class="l1-stage-action__title">&#127775; 잘했어!</h3>
+        <p class="l1-stage-action__sub">질문을 더 쓸 수도 있고, 다음 단계로 갈 수도 있어!</p>
+        <%= form_with url: next_stage_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do %>
+          <button type="submit" class="l1-btn l1-btn--primary">
+            다음 단계로 가자! &#10145;&#65039;
+          </button>
+        <% end %>
+      <% else %>
+        <% all_count = @questions_by_stage.values.flatten.size %>
+        <h3 class="l1-stage-action__title">&#127942; 대단해!</h3>
+        <p class="l1-stage-action__sub">총 <%= all_count %>개의 질문을 만들었어!</p>
+        <%= form_with url: complete_session_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do %>
+          <button type="submit" class="l1-btn l1-btn--success"
+                  onclick="return confirm('학습을 완료할까요?');">
+            &#127881; 학습 완료!
+          </button>
+        <% end %>
+      <% end %>
+      <button type="button" class="l1-btn l1-btn--secondary"
+              onclick="document.getElementById('questioning-form-area').scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('question-text-input').focus();">
+        &#9997;&#65039; 질문 더 쓰기
+      </button>
+    </div>
+  <% end %>
+
+<% else %>
+  <!-- ============================== -->
+  <!-- 10. Session Summary (completed)-->
+  <!-- ============================== -->
+  <div class="l1-summary-header">
+    <div class="l1-summary-header__emoji">&#127942;</div>
+    <h2 class="l1-summary-header__title">
+      학습 <%= is_reviewed ? "검토 완료" : "완료" %>!
+    </h2>
+    <div class="l1-summary-header__meta">
+      <%= session.started_at&.strftime("%Y년 %m월 %d일") %>
+      <% if session.time_spent_seconds.present? && session.time_spent_seconds > 0 %>
+        &middot; <%= session.time_spent_seconds / 60 %>분 <%= session.time_spent_seconds % 60 %>초
+      <% end %>
+      &middot; 질문 <%= session.student_questions_count %>개
+    </div>
+  </div>
+
+  <!-- Score Cards -->
+  <div class="l1-score-grid">
+    <div class="l1-score-card">
+      <div class="l1-score-card__label">총점</div>
+      <div class="l1-score-card__value"><%= session.total_score || "-" %></div>
+    </div>
+    <% (1..3).each do |stage| %>
+      <div class="l1-score-card l1-score-card--stage">
+        <div class="l1-score-card__label"><%= stage_names[stage] %></div>
+        <div class="l1-score-card__value">
+          <%= session.stage_scores&.dig(stage.to_s) || session.stage_scores&.dig(stage) || "-" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Teacher Comment -->
+  <% if session.teacher_comment.present? %>
+    <div class="l1-feedback l1-feedback--teacher" style="margin-bottom: var(--l1-gap);">
+      <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+      <div class="l1-feedback__content">
+        <span class="l1-feedback__name">선생님 총평</span>
+        <div class="l1-feedback__text"><%= simple_format(session.teacher_comment) %></div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- All Questions by Stage -->
+  <% (1..3).each do |stage| %>
+    <% stage_questions = @questions_by_stage[stage] || [] %>
+    <% next if stage_questions.empty? %>
+    <div style="margin-bottom: var(--l1-gap);">
+      <h3 class="l1-questions__title">
+        <%= stage_emojis[stage] %> <%= stage %>단계: <%= stage_names[stage] %> (<%= stage_questions.size %>개)
+      </h3>
+      <% stage_questions.each_with_index do |q, idx| %>
+        <div class="l1-q-item">
+          <div class="l1-q-header">
+            <span class="l1-q-num">Q<%= idx + 1 %></span>
+            <% if q.final_score.present? %>
+              <span class="l1-q-stars" style="margin-left: auto;">
+                <% stars = q.final_score >= 80 ? 3 : (q.final_score >= 50 ? 2 : 1) %>
+                <% stars.times do %>&#11088;<% end %>
+                <span style="font-size: var(--l1-font-small); color: var(--l1-text-muted); margin-left: 4px;"><%= q.final_score %>점</span>
+              </span>
+            <% end %>
+          </div>
+          <div class="l1-q-text"><%= q.question_text %></div>
+
+          <% if q.ai_feedback.present? %>
+            <div class="l1-feedback l1-feedback--ai">
+              <span class="l1-feedback__mascot">&#129302;</span>
+              <div class="l1-feedback__content">
+                <span class="l1-feedback__name">AI 선생님</span>
+                <div class="l1-feedback__text"><%= simple_format(q.ai_feedback) %></div>
+              </div>
+            </div>
+          <% end %>
+
+          <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
+            <div class="l1-feedback l1-feedback--teacher">
+              <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+              <div class="l1-feedback__content">
+                <span class="l1-feedback__name">선생님</span>
+                <div class="l1-feedback__text"><%= simple_format(q.teacher_feedback) %></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Back to List -->
+  <div style="text-align: center; padding-top: var(--l1-gap);">
+    <%= link_to student_questioning_index_path, class: "l1-btn l1-btn--secondary", style: "display: inline-flex; width: auto;" do %>
+      &#8592; 목록으로 돌아가기
+    <% end %>
+  </div>
+<% end %>
+
+<!-- ============================================ -->
+<!-- Report (if published)                        -->
+<!-- ============================================ -->
+<% if @report.present? && @report.published? %>
+  <% sections = @report.report_sections || {} %>
+  <div class="l1-report">
+    <h3 class="l1-questions__title" style="margin-bottom: var(--l1-gap);">
+      &#128214; 나의 읽기 보고서
+    </h3>
+
+    <!-- Level Badge -->
+    <div style="text-align: center; padding: var(--l1-space); margin-bottom: var(--l1-gap); background: linear-gradient(135deg, var(--l1-primary-light), #f0f4ff); border-radius: var(--l1-radius);">
+      <div style="font-size: 48px; margin-bottom: 8px;">
+        <% if @report.literacy_level == "beginning" %>&#127793;
+        <% elsif @report.literacy_level == "developing" %>&#127775;
+        <% elsif @report.literacy_level == "proficient" %>&#11088;
+        <% elsif @report.literacy_level == "advanced" %>&#127941;
+        <% end %>
+      </div>
+      <div style="font-size: var(--l1-font-body); font-weight: var(--l1-weight-heavy); color: var(--l1-primary);">
+        <%= @report.literacy_level_label %>
+      </div>
+      <% if @report.overall_summary.present? %>
+        <div style="margin-top: 12px; font-size: var(--l1-font-meta); line-height: var(--l1-lh-body); color: var(--l1-text);">
+          <%= simple_format(@report.overall_summary) %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Section Scores -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+      <% QuestioningReport::SECTION_LABELS.each do |key, label| %>
+        <% section = sections[key] || {}; score = section["score"]; next if score.nil? %>
+        <% bar_color = score >= 80 ? 'var(--l1-success)' : (score >= 60 ? 'var(--l1-blue)' : (score >= 40 ? 'var(--l1-warm)' : '#dc2626')) %>
+        <div style="padding: 14px; background: #f9fafb; border-radius: var(--l1-radius-sm);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: var(--l1-font-small); font-weight: var(--l1-weight-bold); color: var(--l1-text);"><%= label %></span>
+            <span style="font-size: var(--l1-font-meta); font-weight: var(--l1-weight-heavy); color: <%= bar_color %>;"><%= score %></span>
+          </div>
+          <div style="width: 100%; height: 6px; background: var(--l1-border); border-radius: 3px; overflow: hidden;">
+            <div style="width: <%= score %>%; height: 100%; background: <%= bar_color %>; border-radius: 3px;"></div>
+          </div>
+          <% if section["feedback"].present? %>
+            <div style="font-size: 12px; color: var(--l1-text-muted); margin-top: 6px; line-height: 1.5;">
+              <%= section["feedback"]&.truncate(100) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+</div><!-- /.l1-page -->
+
+<!-- ============================================ -->
+<!-- JavaScript (minimal, no auto-refresh)        -->
+<!-- ============================================ -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Character counter
+    var textarea = document.getElementById('question-text-input');
+    var counter = document.getElementById('char-count');
+    if (textarea && counter) {
+      textarea.addEventListener('input', function() {
+        counter.textContent = this.value.length;
+      });
+    }
+
+    // Form submit loading
+    var form = document.getElementById('questioning-form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        var loading = document.getElementById('ai-feedback-loading');
+        if (loading) loading.style.display = 'flex';
+        var btn = document.getElementById('submit-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'AI 선생님이 읽고 있어요...';
+        }
+      });
+    }
+
+    // Scroll to latest question after submission
+    var latest = document.getElementById('latest-question');
+    if (latest) {
+      setTimeout(function() {
+        latest.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  });
+</script>
