@@ -1094,50 +1094,94 @@
 }
 
 /* ============================================
-   14. Show Page (2-column: passage + activity)
+   14. Session Page Layout (top/bottom + left/right panels)
+   Font sizes: 1.8x enlarged for student readability
    ============================================ */
-.q-show-layout {
+.q-session-page {
+  /* Font size overrides: 1.8x of design system defaults */
+  --rp-font-size-xs: 22px;
+  --rp-font-size-sm: 23px;
+  --rp-font-size-base: 25px;
+  --rp-font-size-md: 27px;
+  --rp-font-size-lg: 32px;
+  --rp-font-size-xl: 36px;
+  --rp-font-size-2xl: 43px;
+  --rp-font-size-3xl: 50px;
+
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px);
+  overflow: hidden;
+}
+
+.q-session-page__header {
+  flex-shrink: 0;
+  padding-bottom: var(--rp-space-3);
+  border-bottom: 1px solid var(--rp-border);
+}
+
+.q-session-page__body {
+  flex: 1;
   display: grid;
   grid-template-columns: 2fr 3fr;
-  gap: var(--rp-space-6);
-  align-items: start;
+  gap: var(--rp-space-4);
+  min-height: 0;
+  overflow: hidden;
+  padding-top: var(--rp-space-3);
 }
 
-.q-show-layout__passage {
-  position: sticky;
-  top: 16px;
+.q-session-page__passage {
+  overflow-y: auto;
+  min-height: 0;
 }
 
-.q-show-layout__content {
-  min-width: 0;
+.q-session-page__activity {
+  overflow-y: auto;
+  min-height: 0;
 }
 
-/* Desktop: passage always visible, toggle becomes header-only */
-@media (min-width: 1025px) {
-  .q-show-layout__passage .q-passage-panel__toggle {
-    pointer-events: none;
-    cursor: default;
-  }
-  .q-show-layout__passage .q-passage-panel__toggle-icon {
-    display: none;
-  }
-  .q-show-layout__passage .q-passage-panel__body {
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
-  }
-  .q-show-layout__passage .q-passage-panel__body--collapsed {
-    max-height: calc(100vh - 140px);
-    padding: var(--rp-space-4);
-    overflow-y: auto;
-  }
+/* Passage panel in session page: always open, no toggle */
+.q-session-page__passage .q-passage-panel__toggle {
+  pointer-events: none;
+  cursor: default;
 }
 
+.q-session-page__passage .q-passage-panel__toggle-icon {
+  display: none;
+}
+
+/* Custom scrollbar for both panels */
+.q-session-page__passage::-webkit-scrollbar,
+.q-session-page__activity::-webkit-scrollbar {
+  width: 6px;
+}
+.q-session-page__passage::-webkit-scrollbar-track,
+.q-session-page__activity::-webkit-scrollbar-track {
+  background: transparent;
+}
+.q-session-page__passage::-webkit-scrollbar-thumb,
+.q-session-page__activity::-webkit-scrollbar-thumb {
+  background: var(--rp-border);
+  border-radius: 3px;
+}
+.q-session-page__passage::-webkit-scrollbar-thumb:hover,
+.q-session-page__activity::-webkit-scrollbar-thumb:hover {
+  background: var(--rp-text-muted);
+}
+
+/* Tablet/Mobile: stack vertically, normal scroll */
 @media (max-width: 1024px) {
-  .q-show-layout {
-    grid-template-columns: 1fr;
+  .q-session-page {
+    height: auto;
+    overflow: visible;
   }
-  .q-show-layout__passage {
-    position: static;
+  .q-session-page__body {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .q-session-page__passage,
+  .q-session-page__activity {
+    overflow-y: visible;
   }
 }
 
@@ -1293,10 +1337,6 @@
 
   .q-stage-connector {
     width: 30px;
-  }
-
-  .q-show-layout {
-    grid-template-columns: 1fr;
   }
 
   .q-score-gauge {

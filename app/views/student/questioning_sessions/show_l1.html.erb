@@ -32,14 +32,14 @@
      L1 Design Tokens & CSS
      ============================================ -->
 <style>
-  /* === L1 Design Tokens === */
+  /* === L1 Design Tokens (1.8x enlarged) === */
   .l1-page {
-    --l1-font-hero: 28px;
-    --l1-font-title: 22px;
-    --l1-font-body: 20px;
-    --l1-font-label: 18px;
-    --l1-font-meta: 16px;
-    --l1-font-small: 14px;
+    --l1-font-hero: 50px;
+    --l1-font-title: 40px;
+    --l1-font-body: 36px;
+    --l1-font-label: 32px;
+    --l1-font-meta: 29px;
+    --l1-font-small: 25px;
     --l1-weight-heavy: 800;
     --l1-weight-bold: 700;
     --l1-weight-medium: 600;
@@ -76,11 +76,11 @@
 
   @media (max-width: 768px) {
     .l1-page {
-      --l1-font-hero: 24px;
-      --l1-font-title: 20px;
-      --l1-font-body: 18px;
-      --l1-font-label: 16px;
-      --l1-font-meta: 14px;
+      --l1-font-hero: 43px;
+      --l1-font-title: 36px;
+      --l1-font-body: 32px;
+      --l1-font-label: 29px;
+      --l1-font-meta: 25px;
       --l1-radius: 16px;
       --l1-space: 18px;
       --l1-gap: 16px;
@@ -545,48 +545,69 @@
   }
   @keyframes l1-spin { to { transform: rotate(360deg); } }
 
-  /* === 2-Column Layout === */
+  /* === Full-height Layout (top/bottom + left/right panels) === */
+  .l1-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 72px);
+    overflow: hidden;
+  }
+  .l1-page__header {
+    flex-shrink: 0;
+    padding-bottom: var(--l1-gap);
+    border-bottom: 2px dashed var(--l1-border);
+  }
   .l1-layout {
+    flex: 1;
     display: grid;
     grid-template-columns: 2fr 3fr;
     gap: calc(var(--l1-gap) * 1.5);
-    align-items: start;
+    min-height: 0;
+    overflow: hidden;
+    padding-top: var(--l1-gap);
   }
   .l1-layout__passage {
-    position: sticky;
-    top: 16px;
+    overflow-y: auto;
+    min-height: 0;
   }
   .l1-layout__content {
-    min-width: 0;
+    overflow-y: auto;
+    min-height: 0;
   }
 
-  /* Desktop: passage always visible, toggle becomes header */
-  @media (min-width: 1025px) {
-    .l1-layout__passage .l1-passage-toggle {
-      pointer-events: none;
-      cursor: default;
-    }
-    .l1-layout__passage .l1-passage-toggle__icon {
-      display: none;
-    }
-    .l1-layout__passage .l1-passage-body {
-      max-height: calc(100vh - 140px);
-      overflow-y: auto;
-    }
-    .l1-layout__passage .l1-passage-body--collapsed {
-      max-height: calc(100vh - 140px);
-      padding: var(--l1-space);
-      overflow-y: auto;
-    }
+  /* Passage always visible, toggle becomes header */
+  .l1-layout__passage .l1-passage-toggle {
+    pointer-events: none;
+    cursor: default;
+  }
+  .l1-layout__passage .l1-passage-toggle__icon {
+    display: none;
   }
 
-  /* Tablet/Mobile: single column */
+  /* Custom scrollbar */
+  .l1-layout__passage::-webkit-scrollbar,
+  .l1-layout__content::-webkit-scrollbar {
+    width: 6px;
+  }
+  .l1-layout__passage::-webkit-scrollbar-thumb,
+  .l1-layout__content::-webkit-scrollbar-thumb {
+    background: var(--l1-border);
+    border-radius: 3px;
+  }
+
+  /* Tablet/Mobile: stack vertically */
   @media (max-width: 1024px) {
+    .l1-page {
+      height: auto;
+      overflow: visible;
+    }
     .l1-layout {
       grid-template-columns: 1fr;
+      overflow: visible;
     }
-    .l1-layout__passage {
-      position: static;
+    .l1-layout__passage,
+    .l1-layout__content {
+      overflow-y: visible;
     }
   }
 
@@ -602,6 +623,11 @@
 <!-- L1 Page Content                              -->
 <!-- ============================================ -->
 <div class="l1-page">
+
+<!-- ============================== -->
+<!-- TOP: Header Section            -->
+<!-- ============================== -->
+<div class="l1-page__header">
 
 <!-- 1. Back Link -->
 <%= link_to student_questioning_index_path, class: "l1-back" do %>
@@ -660,23 +686,21 @@
   <% end %>
 </div>
 
-<% unless is_finished %>
-  <div class="l1-layout">
-  <!-- ============================== -->
-  <!-- LEFT: Reading Passage (sticky) -->
-  <!-- ============================== -->
+</div><!-- /.l1-page__header -->
+
+<!-- ============================== -->
+<!-- BOTTOM: 2-Panel Body           -->
+<!-- ============================== -->
+<div class="l1-layout">
+
+  <!-- LEFT: Reading Passage (independent scroll) -->
   <div class="l1-layout__passage">
   <div class="l1-card l1-card--story" id="passage-panel" style="padding: 0; overflow: hidden;">
-    <button type="button" class="l1-passage-toggle"
-            aria-expanded="true" aria-controls="l1-passage-body"
-            onclick="var b=document.getElementById('l1-passage-body'); var e=this.getAttribute('aria-expanded')==='true'; this.setAttribute('aria-expanded', String(!e)); b.classList.toggle('l1-passage-body--collapsed'); this.querySelector('.l1-passage-toggle__icon').style.transform = e ? 'rotate(180deg)' : '';">
+    <div class="l1-passage-toggle">
       <span class="l1-passage-toggle__text">
         📖 <%= @stimulus&.title || "오늘의 이야기" %>
       </span>
-      <svg class="l1-passage-toggle__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= '#92400e' %>" stroke-width="3">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-    </button>
+    </div>
     <div class="l1-passage-body" id="l1-passage-body">
       <% if @stimulus&.body.present? %>
         <%= simple_format(@stimulus.body) %>
@@ -687,10 +711,10 @@
   </div>
   </div><!-- /.l1-layout__passage -->
 
-  <!-- ============================== -->
-  <!-- RIGHT: Learning Content        -->
-  <!-- ============================== -->
+  <!-- RIGHT: Activity Content (independent scroll) -->
   <div class="l1-layout__content">
+
+<% unless is_finished %>
 
   <!-- ============================== -->
   <!-- 5. Stage Title                 -->
@@ -833,10 +857,9 @@
     </div>
   <% end %>
 
-  </div><!-- /.l1-layout__content -->
-  </div><!-- /.l1-layout -->
+<% end %><!-- end unless is_finished -->
 
-<% else %>
+<% if is_finished %>
   <!-- ============================== -->
   <!-- 10. Session Summary (completed)-->
   <!-- ============================== -->
@@ -933,15 +956,15 @@
       ← 목록으로 돌아가기
     <% end %>
   </div>
-<% end %>
+<% end %><!-- end if is_finished -->
 
-<!-- ============================================ -->
-<!-- Report (if published)                        -->
-<!-- ============================================ -->
+<!-- Report (inside activity panel for scrollability) -->
 <% if @report.present? && @report.published? %>
   <%= render "student/questioning_sessions/student_report", report: @report, level: "elementary_low" %>
 <% end %>
 
+  </div><!-- /.l1-layout__content -->
+</div><!-- /.l1-layout -->
 </div><!-- /.l1-page -->
 
 <!-- ============================================ -->
