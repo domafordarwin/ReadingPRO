@@ -1095,19 +1095,9 @@
 
 /* ============================================
    14. Session Page Layout (top/bottom + left/right panels)
-   Font sizes: 1.8x enlarged for student readability
+   Font sizes: inherited from design_system.css (1.3x base)
    ============================================ */
 .q-session-page {
-  /* Font size overrides: 1.8x of design system defaults */
-  --rp-font-size-xs: 22px;
-  --rp-font-size-sm: 23px;
-  --rp-font-size-base: 25px;
-  --rp-font-size-md: 27px;
-  --rp-font-size-lg: 32px;
-  --rp-font-size-xl: 36px;
-  --rp-font-size-2xl: 43px;
-  --rp-font-size-3xl: 50px;
-
   display: flex;
   flex-direction: column;
   height: calc(100vh - 72px);
