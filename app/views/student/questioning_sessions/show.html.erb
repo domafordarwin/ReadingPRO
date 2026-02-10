@@ -202,10 +202,14 @@
                   &middot; 도움 사용
                 <% end %>
               </span>
-              <!-- 점수: 배포된 경우에만 표시 -->
+              <!-- 점수 표시: AI 점수 즉시, 최종점수는 배포 후 -->
               <% if q.feedback_published? && q.final_score.present? %>
                 <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); margin-left: auto;">
                   <%= q.final_score %>점
+                </span>
+              <% elsif q.ai_score.present? %>
+                <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #7c3aed; margin-left: auto;">
+                  AI <%= q.ai_score %>점
                 </span>
               <% end %>
             </div>
@@ -213,68 +217,52 @@
               <%= q.question_text %>
             </div>
 
-            <!-- AI Feedback: 배포 여부에 따라 다르게 표시 -->
-            <% if q.feedback_published? %>
-              <!-- 배포됨: 피드백 표시 -->
-              <% if q.ai_feedback.present? %>
-                <div class="q-ai-feedback" style="margin-top: var(--rp-space-3);">
-                  <div class="q-ai-feedback__bubble">
-                    <div class="q-ai-feedback__header">
-                      <div class="q-ai-feedback__avatar">AI</div>
-                      <span class="q-ai-feedback__name">AI 튜터</span>
-                    </div>
-                    <div class="q-ai-feedback__body">
-                      <%= simple_format(q.ai_feedback) %>
-                    </div>
-                    <% if q.ai_strengths.present? || q.ai_improvements.present? %>
-                      <div style="margin-top: var(--rp-space-3); padding-top: var(--rp-space-3); border-top: 1px solid var(--rp-border);">
-                        <% if q.ai_strengths.present? %>
-                          <div style="font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">
-                            <strong style="color: var(--rp-success-dark);">강점:</strong> <%= q.ai_strengths %>
-                          </div>
-                        <% end %>
-                        <% if q.ai_improvements.present? %>
-                          <div style="font-size: var(--rp-font-size-sm);">
-                            <strong style="color: var(--rp-warning-dark);">개선점:</strong> <%= q.ai_improvements %>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
+            <!-- AI 피드백: 즉시 표시 -->
+            <% if q.ai_feedback.present? %>
+              <div class="q-ai-feedback" style="margin-top: var(--rp-space-3);">
+                <div class="q-ai-feedback__bubble">
+                  <div class="q-ai-feedback__header">
+                    <div class="q-ai-feedback__avatar">AI</div>
+                    <span class="q-ai-feedback__name"><%= current_level == 'elementary_low' ? 'AI 선생님' : 'AI 튜터' %></span>
                   </div>
+                  <div class="q-ai-feedback__body">
+                    <%= simple_format(q.ai_feedback) %>
+                  </div>
+                  <% if q.ai_strengths.present? || q.ai_improvements.present? %>
+                    <div style="margin-top: var(--rp-space-3); padding-top: var(--rp-space-3); border-top: 1px solid var(--rp-border);">
+                      <% if q.ai_strengths.present? %>
+                        <div style="font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">
+                          <strong style="color: var(--rp-success-dark);">강점:</strong> <%= q.ai_strengths %>
+                        </div>
+                      <% end %>
+                      <% if q.ai_improvements.present? %>
+                        <div style="font-size: var(--rp-font-size-sm);">
+                          <strong style="color: var(--rp-warning-dark);">개선점:</strong> <%= q.ai_improvements %>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
                 </div>
-              <% end %>
+              </div>
+            <% end %>
 
-              <!-- 교사 피드백 (배포 후에만 표시) -->
-              <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
-                <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
-                  <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #166534;">선생님 피드백</span>
-                    <% if q.teacher_score.present? %>
-                      <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-left: auto;">
-                        <%= q.teacher_score %>점
-                      </span>
-                    <% end %>
-                  </div>
-                  <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">
-                    <%= simple_format(q.teacher_feedback) %>
-                  </div>
-                </div>
-              <% end %>
-            <% elsif q.ai_score.present? %>
-              <!-- 미배포: 피드백 대기중 표시 -->
-              <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--rp-radius-md); text-align: center;">
-                <div style="display: flex; align-items: center; justify-content: center; gap: var(--rp-space-2);">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
+            <!-- 교사 피드백: 배포 후에만 표시 -->
+            <% if q.feedback_published? && q.teacher_reviewed? && q.teacher_feedback.present? %>
+              <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
+                <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  <span style="font-size: var(--rp-font-size-sm); color: #92400e; font-weight: var(--rp-font-weight-medium);">
-                    선생님이 피드백을 검토하고 있습니다. 잠시만 기다려 주세요.
-                  </span>
+                  <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #166534;">선생님 피드백</span>
+                  <% if q.teacher_score.present? %>
+                    <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-left: auto;">
+                      <%= q.teacher_score %>점
+                    </span>
+                  <% end %>
+                </div>
+                <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">
+                  <%= simple_format(q.teacher_feedback) %>
                 </div>
               </div>
             <% end %>
