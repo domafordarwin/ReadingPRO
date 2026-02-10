@@ -4,92 +4,318 @@
     - report (QuestioningReport)
 %>
 
-<% sections = report.report_sections || {} %>
+<%
+  sections = report.report_sections || {}
 
-<!-- Overall Summary -->
-<div style="padding: var(--rp-space-4); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-5); border: 1px solid #c7d2fe;">
-  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-3);">
+  # 11개 영역을 9개 역량으로 매핑 (3그룹 × 3역량)
+  radar_mapping = [
+    { key: "reading_comprehension", label: "읽기 이해력", group: "이해력" },
+    { key: "inferential_reasoning", label: "추론 능력", group: "이해력" },
+    { key: "critical_thinking", label: "비판적 사고력", group: "이해력" },
+    { key: "creative_thinking", label: "창의적 사고력", group: "사고력", merge: "argumentative_writing" },
+    { key: "metacognition", label: "메타인지", group: "사고력" },
+    { key: "vocabulary_usage", label: "어휘 활용", group: "사고력" },
+    { key: "text_connection", label: "텍스트 연결", group: "소통·적용력" },
+    { key: "communication", label: "의사소통", group: "소통·적용력", merge: "discussion_competency" },
+    { key: "personal_application", label: "삶 적용", group: "소통·적용력" }
+  ]
+
+  radar_data = radar_mapping.map do |item|
+    score = sections.dig(item[:key], "score")
+    if item[:merge]
+      merge_score = sections.dig(item[:merge], "score")
+      if score && merge_score
+        score = ((score + merge_score) / 2.0).round(1)
+      elsif merge_score
+        score = merge_score
+      end
+    end
+    { name: item[:label], group: item[:group], score: score || 0 }
+  end
+%>
+
+<!-- ════════════════════════════════════════════
+     1. 종합 문해력 수준 + 레이더 차트
+     ════════════════════════════════════════════ -->
+<div style="padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5); border: 1px solid #c7d2fe;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-4);">
     <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 문해력 수준</div>
     <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
       <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
     </div>
   </div>
-  <% if report.overall_summary.present? %>
-    <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(report.overall_summary) %></div>
-  <% end %>
-</div>
 
-<!-- Section Scores Grid -->
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--rp-space-4);">
-  <% QuestioningReport::SECTION_LABELS.each do |key, label| %>
-    <%
-      section = sections[key] || {}
-      score = section["score"]
-      feedback = section["feedback"]
-      strengths = section["strengths"] || []
-      improvements = section["improvements"] || []
+  <!-- Radar Chart + Summary Split -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-5); align-items: start;">
+    <!-- Left: Radar Chart -->
+    <div style="text-align: center;">
+      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;">9개 역량 프로필</h4>
+      <div style="display: flex; justify-content: center;">
+        <svg id="qr-radar-svg" viewBox="0 0 460 420" style="max-width: 400px; width: 100%; height: auto;"></svg>
+      </div>
+      <div id="qr-radar-legend" style="display: flex; justify-content: center; gap: 16px; margin-top: var(--rp-space-2); flex-wrap: wrap;"></div>
+    </div>
 
-      # Score color
-      score_color = if score.nil?
-        "var(--rp-text-muted)"
-      elsif score >= 80
-        "#16a34a"
-      elsif score >= 60
-        "#2563eb"
-      elsif score >= 40
-        "#f59e0b"
-      else
-        "#dc2626"
-      end
-    %>
-    <div style="padding: var(--rp-space-4); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md);">
-      <!-- Section Header -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-3);">
-        <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= label %></div>
-        <% if score.present? %>
-          <div style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: <%= score_color %>;"><%= score %></div>
-        <% else %>
-          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">N/A</div>
+    <!-- Right: Overall Summary -->
+    <div>
+      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;">종합 평가</h4>
+      <% if report.overall_summary.present? %>
+        <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(report.overall_summary) %></div>
+      <% end %>
+
+      <!-- Score Summary Table -->
+      <div style="margin-top: var(--rp-space-3);">
+        <% radar_data.each do |rd| %>
+          <%
+            sc = rd[:score]
+            bar_color = sc >= 80 ? "#16a34a" : sc >= 60 ? "#2563eb" : sc >= 40 ? "#f59e0b" : "#dc2626"
+          %>
+          <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: 6px;">
+            <span style="font-size: 11px; color: var(--rp-text-muted); width: 70px; flex-shrink: 0; text-align: right;"><%= rd[:name] %></span>
+            <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+              <div style="width: <%= sc %>%; height: 100%; background: <%= bar_color %>; border-radius: 4px;"></div>
+            </div>
+            <span style="font-size: 11px; font-weight: 600; color: <%= bar_color %>; width: 32px; text-align: right;"><%= sc.to_i %></span>
+          </div>
         <% end %>
       </div>
+    </div>
+  </div>
+</div>
 
-      <!-- Score Bar -->
-      <% if score.present? %>
-        <div style="width: 100%; height: 6px; background: var(--rp-bg-subtle); border-radius: 3px; margin-bottom: var(--rp-space-3); overflow: hidden;">
-          <div style="width: <%= score %>%; height: 100%; background: <%= score_color %>; border-radius: 3px; transition: width 0.5s;"></div>
-        </div>
-      <% end %>
+<!-- ════════════════════════════════════════════
+     2. 9개 역량별 상세 분석 카드
+     ════════════════════════════════════════════ -->
+<%
+  group_colors = {
+    "이해력" => { bg: "#eff6ff", border: "#bfdbfe", title: "#1e40af", bar: "#3b82f6" },
+    "사고력" => { bg: "#faf5ff", border: "#e9d5ff", title: "#6b21a8", bar: "#8b5cf6" },
+    "소통·적용력" => { bg: "#f0fdf4", border: "#bbf7d0", title: "#166534", bar: "#16a34a" }
+  }
+%>
 
-      <!-- Feedback -->
-      <% if feedback.present? %>
-        <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= feedback %></div>
-      <% end %>
+<% ["이해력", "사고력", "소통·적용력"].each do |group_name| %>
+  <% group_items = radar_mapping.select { |r| r[:group] == group_name } %>
+  <% gc = group_colors[group_name] %>
 
-      <!-- Strengths & Improvements -->
-      <% if strengths.any? %>
-        <div style="margin-top: var(--rp-space-2);">
-          <% strengths.each do |s| %>
-            <div style="font-size: 12px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-              <span style="flex-shrink: 0;">+</span> <%= s %>
+  <div style="margin-bottom: var(--rp-space-5);">
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: <%= gc[:title] %>; margin: 0 0 var(--rp-space-3) 0; padding-bottom: var(--rp-space-2); border-bottom: 2px solid <%= gc[:border] %>;">
+      <%= group_name %>
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--rp-space-4);">
+      <% group_items.each do |item| %>
+        <%
+          section = sections[item[:key]] || {}
+          merge_section = item[:merge] ? (sections[item[:merge]] || {}) : nil
+          score = section["score"]
+          feedback = section["feedback"]
+          strengths = section["strengths"] || []
+          improvements = section["improvements"] || []
+
+          if merge_section
+            merge_strengths = merge_section["strengths"] || []
+            merge_improvements = merge_section["improvements"] || []
+            strengths = (strengths + merge_strengths).uniq
+            improvements = (improvements + merge_improvements).uniq
+            if feedback.present? && merge_section["feedback"].present?
+              feedback = feedback + "\n" + merge_section["feedback"]
+            elsif merge_section["feedback"].present?
+              feedback = merge_section["feedback"]
+            end
+            merge_score = merge_section["score"]
+            if score && merge_score
+              score = ((score + merge_score) / 2.0).round(1)
+            elsif merge_score
+              score = merge_score
+            end
+          end
+
+          score_color = if score.nil?
+            "var(--rp-text-muted)"
+          elsif score >= 80
+            "#16a34a"
+          elsif score >= 60
+            "#2563eb"
+          elsif score >= 40
+            "#f59e0b"
+          else
+            "#dc2626"
+          end
+        %>
+        <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
+          <!-- Header -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-2);">
+            <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= item[:label] %></span>
+            <% if score.present? %>
+              <span style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: <%= score_color %>;"><%= score.is_a?(Float) ? score.round(1) : score %></span>
+            <% else %>
+              <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">N/A</span>
+            <% end %>
+          </div>
+
+          <!-- Score Bar -->
+          <% if score.present? %>
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.6); border-radius: 3px; margin-bottom: var(--rp-space-3); overflow: hidden;">
+              <div style="width: <%= score %>%; height: 100%; background: <%= gc[:bar] %>; border-radius: 3px;"></div>
             </div>
           <% end %>
-        </div>
-      <% end %>
-      <% if improvements.any? %>
-        <div style="margin-top: var(--rp-space-1);">
-          <% improvements.each do |imp| %>
-            <div style="font-size: 12px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-              <span style="flex-shrink: 0;">*</span> <%= imp %>
+
+          <!-- Feedback -->
+          <% if feedback.present? %>
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
+          <% end %>
+
+          <!-- Strengths -->
+          <% if strengths.any? %>
+            <div style="margin-top: var(--rp-space-2);">
+              <% strengths.first(3).each do |s| %>
+                <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                  <span style="flex-shrink: 0;">&#10003;</span> <%= s %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- Improvements -->
+          <% if improvements.any? %>
+            <div style="margin-top: var(--rp-space-1);">
+              <% improvements.first(3).each do |imp| %>
+                <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                  <span style="flex-shrink: 0;">&#9651;</span> <%= imp %>
+                </div>
+              <% end %>
             </div>
           <% end %>
         </div>
       <% end %>
     </div>
+  </div>
+<% end %>
+
+<!-- ════════════════════════════════════════════
+     3. 종합 의견
+     ════════════════════════════════════════════ -->
+<%
+  all_strengths = radar_mapping.flat_map { |item|
+    s = (sections.dig(item[:key], "strengths") || [])
+    s += (sections.dig(item[:merge], "strengths") || []) if item[:merge]
+    s.map { |st| { area: item[:label], text: st } }
+  }.uniq { |x| x[:text] }
+
+  all_improvements = radar_mapping.flat_map { |item|
+    imp = (sections.dig(item[:key], "improvements") || [])
+    imp += (sections.dig(item[:merge], "improvements") || []) if item[:merge]
+    imp.map { |i| { area: item[:label], text: i } }
+  }.uniq { |x| x[:text] }
+
+  avg_score = radar_data.any? ? (radar_data.sum { |d| d[:score] } / radar_data.size.to_f).round(1) : 0
+  top_areas = radar_data.sort_by { |d| -d[:score] }.first(3)
+  weak_areas = radar_data.sort_by { |d| d[:score] }.first(3)
+%>
+
+<div style="padding: var(--rp-space-5); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5);">
+  <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+    </svg>
+    <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);">종합 의견</h3>
+  </div>
+
+  <!-- 평균 점수 -->
+  <div style="display: flex; align-items: center; gap: var(--rp-space-4); margin-bottom: var(--rp-space-4); padding: var(--rp-space-3); background: linear-gradient(135deg, #f0f4ff, #f5f3ff); border-radius: var(--rp-radius-md);">
+    <div style="text-align: center; padding: 0 var(--rp-space-4); border-right: 1px solid #e0e7ff;">
+      <div style="font-size: 28px; font-weight: 700; color: var(--rp-primary);"><%= avg_score %></div>
+      <div style="font-size: 11px; color: var(--rp-text-muted);">9개 역량 평균</div>
+    </div>
+    <div style="flex: 1;">
+      <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.6;">
+        <strong>우수 영역:</strong> <%= top_areas.map { |a| "#{a[:name]}(#{a[:score].to_i}점)" }.join(", ") %><br>
+        <strong>보완 영역:</strong> <%= weak_areas.map { |a| "#{a[:name]}(#{a[:score].to_i}점)" }.join(", ") %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주요 강점 -->
+  <% if all_strengths.any? %>
+    <div style="margin-bottom: var(--rp-space-4);">
+      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin: 0 0 var(--rp-space-2) 0;">주요 강점</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <% all_strengths.first(6).each do |s| %>
+          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
+            <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">&#10003;</span>
+            <span><strong style="color: #166534;"><%= s[:area] %></strong> &mdash; <%= s[:text] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- 보완이 필요한 부분 -->
+  <% if all_improvements.any? %>
+    <div>
+      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #f59e0b; margin: 0 0 var(--rp-space-2) 0;">보완이 필요한 부분</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <% all_improvements.first(6).each do |imp| %>
+          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
+            <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">&#9651;</span>
+            <span><strong style="color: #92400e;"><%= imp[:area] %></strong> &mdash; <%= imp[:text] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 </div>
 
+<!-- ════════════════════════════════════════════
+     4. 학습 권고사항
+     ════════════════════════════════════════════ -->
+<div style="padding: var(--rp-space-5); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5);">
+  <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+    </svg>
+    <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);">학습 권고사항</h3>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: var(--rp-space-3);">
+    <% weak_areas.each_with_index do |area, idx| %>
+      <%
+        mapping = radar_mapping.find { |m| m[:label] == area[:name] }
+        section_data = mapping ? (sections[mapping[:key]] || {}) : {}
+        improvements = section_data["improvements"] || []
+        if mapping && mapping[:merge]
+          merge_imp = sections.dig(mapping[:merge], "improvements") || []
+          improvements = (improvements + merge_imp).uniq
+        end
+        gc = group_colors[mapping&.dig(:group)] || group_colors["이해력"]
+      %>
+      <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
+        <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: <%= gc[:bar] %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
+          <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= area[:name] %></span>
+          <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-left: auto;"><%= area[:score].to_i %>점 / 100</span>
+        </div>
+        <% if improvements.any? %>
+          <ul style="margin: 0; padding-left: 20px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
+            <% improvements.first(3).each do |imp| %>
+              <li><%= imp %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">해당 영역의 구체적인 권고사항이 없습니다.</div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
 <!-- Report Metadata -->
-<div style="margin-top: var(--rp-space-4); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: flex; gap: var(--rp-space-4); flex-wrap: wrap;">
+<div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: flex; gap: var(--rp-space-4); flex-wrap: wrap;">
   <% if report.generated_by.present? %>
     <span>생성: <%= report.generated_by.name %></span>
   <% end %>
@@ -98,3 +324,128 @@
     <span>배포일: <%= report.published_at.strftime('%Y-%m-%d %H:%M') %></span>
   <% end %>
 </div>
+
+<!-- ════════════════════════════════════════════
+     레이더 차트 스크립트
+     ════════════════════════════════════════════ -->
+<script>
+(function() {
+  var radarData = <%= raw radar_data.to_json %>;
+
+  function draw() {
+    var svg = document.getElementById('qr-radar-svg');
+    var legend = document.getElementById('qr-radar-legend');
+    if (!svg || !radarData || radarData.length === 0) return;
+
+    var ns = 'http://www.w3.org/2000/svg';
+    var cx = 230, cy = 195, radius = 150;
+    var n = radarData.length;
+    var levels = 5;
+    var groupColors = {
+      '이해력': { fill: 'rgba(59,130,246,0.12)', stroke: '#3b82f6', dot: '#2563eb' },
+      '사고력': { fill: 'rgba(139,92,246,0.12)', stroke: '#8b5cf6', dot: '#7c3aed' },
+      '소통·적용력': { fill: 'rgba(22,163,74,0.12)', stroke: '#16a34a', dot: '#15803d' }
+    };
+
+    function getPoint(index, value) {
+      var angle = (Math.PI * 2 * index / n) - Math.PI / 2;
+      var r = radius * (value / 100);
+      return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+    }
+
+    // Grid polygons
+    for (var lvl = 1; lvl <= levels; lvl++) {
+      var r = radius * lvl / levels;
+      var pts = [];
+      for (var i = 0; i < n; i++) {
+        var angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+        pts.push((cx + r * Math.cos(angle)) + ',' + (cy + r * Math.sin(angle)));
+      }
+      var polygon = document.createElementNS(ns, 'polygon');
+      polygon.setAttribute('points', pts.join(' '));
+      polygon.setAttribute('fill', lvl % 2 === 0 ? 'rgba(241,245,249,0.5)' : 'none');
+      polygon.setAttribute('stroke', lvl === levels ? '#cbd5e1' : '#e2e8f0');
+      polygon.setAttribute('stroke-width', lvl === levels ? '1.5' : '0.8');
+      svg.appendChild(polygon);
+      if (lvl % 2 === 0 || lvl === levels) {
+        var pct = document.createElementNS(ns, 'text');
+        pct.setAttribute('x', cx + 4); pct.setAttribute('y', cy - r + 12);
+        pct.setAttribute('fill', '#94a3b8'); pct.setAttribute('font-size', '10');
+        pct.textContent = (lvl * 20) + '';
+        svg.appendChild(pct);
+      }
+    }
+
+    // Axis lines & labels
+    radarData.forEach(function(d, i) {
+      var angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+      var endX = cx + radius * Math.cos(angle);
+      var endY = cy + radius * Math.sin(angle);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+      line.setAttribute('x2', endX); line.setAttribute('y2', endY);
+      line.setAttribute('stroke', '#e2e8f0'); line.setAttribute('stroke-width', '0.8');
+      svg.appendChild(line);
+
+      var labelR = radius + 28;
+      var lx = cx + labelR * Math.cos(angle);
+      var ly = cy + labelR * Math.sin(angle);
+      var colors = groupColors[d.group] || { stroke: '#64748b' };
+
+      var label = document.createElementNS(ns, 'text');
+      label.setAttribute('x', lx); label.setAttribute('y', ly);
+      label.setAttribute('text-anchor', 'middle'); label.setAttribute('dominant-baseline', 'middle');
+      label.setAttribute('fill', colors.stroke); label.setAttribute('font-size', '11'); label.setAttribute('font-weight', '600');
+      label.textContent = d.name;
+      svg.appendChild(label);
+
+      var scoreLabel = document.createElementNS(ns, 'text');
+      scoreLabel.setAttribute('x', lx); scoreLabel.setAttribute('y', ly + 14);
+      scoreLabel.setAttribute('text-anchor', 'middle'); scoreLabel.setAttribute('fill', '#94a3b8'); scoreLabel.setAttribute('font-size', '10');
+      scoreLabel.textContent = d.score + '점';
+      svg.appendChild(scoreLabel);
+    });
+
+    // Data polygon
+    var dataPoints = radarData.map(function(d, i) {
+      var pt = getPoint(i, d.score);
+      return pt.x + ',' + pt.y;
+    });
+    var dataPolygon = document.createElementNS(ns, 'polygon');
+    dataPolygon.setAttribute('points', dataPoints.join(' '));
+    dataPolygon.setAttribute('fill', 'rgba(99,102,241,0.12)');
+    dataPolygon.setAttribute('stroke', '#6366f1');
+    dataPolygon.setAttribute('stroke-width', '2.5');
+    svg.appendChild(dataPolygon);
+
+    // Data dots
+    radarData.forEach(function(d, i) {
+      var pt = getPoint(i, d.score);
+      var colors = groupColors[d.group] || { dot: '#475569' };
+      var dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y); dot.setAttribute('r', '5');
+      dot.setAttribute('fill', colors.dot); dot.setAttribute('stroke', 'white'); dot.setAttribute('stroke-width', '2');
+      svg.appendChild(dot);
+    });
+
+    // Legend
+    if (legend) {
+      legend.innerHTML = '';
+      ['이해력', '사고력', '소통·적용력'].forEach(function(group) {
+        var colors = groupColors[group];
+        var item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;font-weight:500;';
+        item.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:' + colors.stroke + ';flex-shrink:0;"></span><span>' + group + '</span>';
+        legend.appendChild(item);
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', draw);
+  } else {
+    draw();
+  }
+  document.addEventListener('turbo:load', draw);
+})();
+</script>
