@@ -1326,36 +1326,38 @@
     }
   });
 
-  // Initialize: sync all editors to hidden fields + sync before form submit
-  function initEditorSync() {
-    // Initial sync for prompt
+  // Sync all editors (prompt + choices) — called before form submission
+  function syncAllEditors() {
     syncPromptToForms();
-
-    // Initial sync for choice editors
     document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
       var choiceId = editor.dataset.choiceId;
       if (choiceId) syncChoiceContent(choiceId);
     });
-
-    // Sync all editors before form submit
-    document.querySelectorAll('form.rp-form').forEach(function(form) {
-      if (form.dataset.syncAttached) return; // prevent double-binding
-      form.dataset.syncAttached = '1';
-      form.addEventListener('submit', function() {
-        syncPromptToForms();
-        document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
-          var choiceId = editor.dataset.choiceId;
-          if (choiceId) syncChoiceContent(choiceId);
-        });
-      });
-    });
   }
 
-  // Support both regular page load and Turbo navigation
+  // Reliable sync via click delegation: fires BEFORE submit event
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[type="submit"], input[type="submit"]');
+    if (!btn) return;
+    var form = btn.closest('form.rp-form');
+    if (!form) return;
+    syncAllEditors();
+  }, true); // capture phase — runs before any other handler
+
+  // Also sync on form submit event (safety net)
+  document.addEventListener('submit', function(e) {
+    var form = e.target.closest ? e.target.closest('form.rp-form') : null;
+    if (!form && e.target.classList && e.target.classList.contains('rp-form')) form = e.target;
+    if (form) syncAllEditors();
+  }, true); // capture phase
+
+  // Initial sync on page load
+  function initEditorSync() {
+    syncAllEditors();
+  }
+
   document.addEventListener('DOMContentLoaded', initEditorSync);
   document.addEventListener('turbo:load', initEditorSync);
-
-  // Also run immediately if DOM is already loaded (Turbo page visit)
   if (document.readyState !== 'loading') {
     initEditorSync();
   }

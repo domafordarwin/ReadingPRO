@@ -328,7 +328,7 @@
     </p>
   </div>
 
-  <form action="<%= researcher_items_path %>" method="post">
+  <form action="<%= researcher_items_path %>" method="post" data-turbo="false">
     <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
     <!-- 기본 정보 카드 -->
@@ -592,17 +592,14 @@
     }
   }
 
-  // Keyboard shortcuts + form sync
-  function initPromptSync() {
-    var form = document.querySelector('form');
-    if (form && !form.dataset.syncAttached) {
-      form.dataset.syncAttached = '1';
-      form.addEventListener('submit', function() { syncPrompt(); });
-    }
-  }
-  document.addEventListener('DOMContentLoaded', initPromptSync);
-  document.addEventListener('turbo:load', initPromptSync);
-  if (document.readyState !== 'loading') initPromptSync();
+  // Reliable sync via click delegation (fires BEFORE submit event)
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[type="submit"], input[type="submit"]');
+    if (btn) syncPrompt();
+  }, true);
+
+  // Also sync on form submit event (safety net)
+  document.addEventListener('submit', function() { syncPrompt(); }, true);
 
   document.addEventListener('keydown', function(e) {
     if (e.target.id !== 'prompt-editor') return;

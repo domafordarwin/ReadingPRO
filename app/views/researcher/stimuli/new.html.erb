@@ -11,7 +11,7 @@
 <section class="portal-card">
   <h2 class="portal-card-title">지문 정보</h2>
 
-  <%= form_with model: @stimulus, url: researcher_stimuli_path, method: :post, local: true, multipart: true do |f| %>
+  <%= form_with model: @stimulus, url: researcher_stimuli_path, method: :post, data: { turbo: false }, multipart: true do |f| %>
     <% if @stimulus.errors.any? %>
       <div class="alert alert-danger">
         <h4><%= pluralize(@stimulus.errors.count, "error") %> prohibited this stimulus from being saved:</h4>
@@ -88,7 +88,7 @@
     </div>
 
     <div class="form-actions">
-      <%= f.submit "등록", class: "btn btn-primary" %>
+      <%= f.submit "등록", class: "btn btn-primary", onclick: "syncBody()" %>
       <%= link_to "취소", researcher_passages_path, class: "btn btn-secondary" %>
     </div>
   <% end %>
@@ -247,16 +247,14 @@
     }
   }
 
-  function initBodySync() {
-    const form = document.querySelector('form');
-    if (form && !form.dataset.syncAttached) {
-      form.dataset.syncAttached = '1';
-      form.addEventListener('submit', function() { syncBody(); });
-    }
-  }
-  document.addEventListener('DOMContentLoaded', initBodySync);
-  document.addEventListener('turbo:load', initBodySync);
-  if (document.readyState !== 'loading') initBodySync();
+  // Reliable sync via click delegation (fires BEFORE submit event)
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('button[type="submit"], input[type="submit"]');
+    if (btn) syncBody();
+  }, true);
+
+  // Also sync on form submit event (safety net)
+  document.addEventListener('submit', function() { syncBody(); }, true);
 
   document.addEventListener('keydown', function(e) {
     if (e.target.id !== 'body-editor') return;
