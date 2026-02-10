@@ -35,10 +35,12 @@
       </div>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <%= link_to "문항 편집", edit_items_researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  class: "btn btn-primary", style: "font-size: 13px;" %>
       <%= link_to "엑셀 다운로드", download_template_researcher_reading_proficiency_diagnostic_path(@diagnostic),
                   class: "btn btn-outline-primary", style: "font-size: 13px;" %>
-      <%= link_to "편집", edit_researcher_reading_proficiency_diagnostic_path(@diagnostic),
-                  class: "btn btn-primary", style: "font-size: 13px;" %>
+      <%= link_to "정보 편집", edit_researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  class: "btn btn-outline-secondary", style: "font-size: 13px;" %>
       <%= link_to "목록", researcher_reading_proficiency_diagnostics_path,
                   class: "btn btn-secondary", style: "font-size: 13px;" %>
     </div>
@@ -94,7 +96,14 @@
                                     end %>
                   <tr class="rp-table__row">
                     <td class="rp-table__cell" style="text-align: center; font-weight: 600;"><%= item.position %></td>
-                    <td class="rp-table__cell"><%= item.prompt %></td>
+                    <td class="rp-table__cell">
+                      <div><%= sanitize item.prompt, tags: %w[b strong i em u s br span], attributes: %w[style class] %></div>
+                      <% if item.image.attached? %>
+                        <div style="margin-top: 8px;">
+                          <%= image_tag item.image, style: "max-width: 300px; max-height: 200px; border-radius: 6px; border: 1px solid #e2e8f0;" %>
+                        </div>
+                      <% end %>
+                    </td>
                     <td class="rp-table__cell" style="text-align: center;">
                       <span class="rp-badge rp-badge--pill rp-badge--info">
                         <%= item.item_type == "mcq" ? "객관식" : "서술형" %>

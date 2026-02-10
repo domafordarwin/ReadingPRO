@@ -1,0 +1,301 @@
+<% content_for :portal_title do %>
+  문항 편집
+<% end %>
+<% content_for :portal_subtitle do %>
+  <%= @diagnostic.name %> - 문항을 편집할 수 있습니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :reading_proficiency %>
+<% end %>
+
+<%
+  factor_colors = {
+    "cognitive" => "#3b82f6",
+    "emotional" => "#f59e0b",
+    "behavioral" => "#10b981",
+    "social" => "#8b5cf6"
+  }
+%>
+
+<%= form_with url: update_items_researcher_reading_proficiency_diagnostic_path(@diagnostic),
+              method: :patch, local: true, multipart: true,
+              data: { turbo: false }, id: "edit-items-form" do %>
+
+<div class="portal-card">
+  <div class="portal-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <h2 class="portal-card-title" style="margin: 0;"><%= @diagnostic.name %> - 문항 편집</h2>
+    <div style="display: flex; gap: 8px;">
+      <button type="button" class="btn btn-outline-primary" style="font-size: 13px;" onclick="addNewItem()">+ 문항 추가</button>
+      <button type="submit" class="btn btn-success" style="font-size: 13px;">저장</button>
+      <%= link_to "취소", researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  class: "btn btn-secondary", style: "font-size: 13px;" %>
+    </div>
+  </div>
+
+  <div style="padding: 20px 0;">
+    <p style="color: var(--rp-text-muted, #64748B); font-size: 13px; margin: 0 0 16px;">
+      총 <strong id="item-count"><%= @items.size %></strong>건 &middot;
+      발문에 <strong>굵게</strong>, <em>기울임</em>, <u>밑줄</u> 서식을 적용할 수 있습니다.
+    </p>
+
+    <div id="items-container">
+      <% @items.each do |item| %>
+        <% border_color = factor_colors[item.measurement_factor] || "#6b7280" %>
+        <div class="rp-card rp-item-card" id="item-card-<%= item.id %>"
+             style="margin-bottom: 16px; border-left: 4px solid <%= border_color %>; position: relative;">
+          <div class="rp-card__body" style="padding: 16px 20px;">
+            <!-- Header row: position + type + factor + delete -->
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+              <span style="font-weight: 700; font-size: 16px; color: var(--rp-primary, #4f46e5); min-width: 36px;">
+                #<%= item.position %>
+              </span>
+              <select name="items[<%= item.id %>][item_type]" class="rp-select" style="font-size: 13px; width: 100px;">
+                <option value="mcq" <%= "selected" if item.mcq? %>>객관식</option>
+                <option value="constructed" <%= "selected" if item.constructed? %>>서술형</option>
+              </select>
+              <select name="items[<%= item.id %>][measurement_factor]" class="rp-select"
+                      style="font-size: 13px; width: 130px;"
+                      onchange="updateCardBorder(this, '<%= item.id %>')">
+                <% ReadingProficiencyItem::FACTOR_LABELS.each do |key, label| %>
+                  <option value="<%= key %>" <%= "selected" if item.measurement_factor == key %>><%= label %></option>
+                <% end %>
+              </select>
+              <div style="flex: 1;"></div>
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 4px; color: #ef4444; font-size: 13px;"
+                     title="삭제 선택">
+                <input type="checkbox" name="delete_item_ids[]" value="<%= item.id %>"
+                       style="width: 15px; height: 15px; cursor: pointer;"
+                       onchange="this.closest('.rp-item-card').style.opacity = this.checked ? '0.35' : '1'">
+                삭제
+              </label>
+            </div>
+
+            <!-- Prompt editing with formatting toolbar -->
+            <div style="margin-bottom: 12px;">
+              <label class="rp-label" style="font-size: 12px; margin-bottom: 4px;">발문</label>
+              <div class="rp-editor-toolbar" style="display: flex; gap: 4px; margin-bottom: 4px; padding: 4px 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 6px 6px 0 0;">
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                <span style="border-left: 1px solid #e2e8f0; margin: 0 4px;"></span>
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'strikeThrough')" title="취소선"><s>S</s></button>
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+              </div>
+              <div contenteditable="true"
+                   class="rp-editor-area"
+                   data-item-id="<%= item.id %>"
+                   style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: 14px; line-height: 1.6; outline: none; background: #fff;"
+                   oninput="syncToTextarea(this)"
+                   onfocus="this.style.borderColor='#4f46e5'"
+                   onblur="this.style.borderColor='#e2e8f0'"><%= raw item.prompt %></div>
+              <textarea name="items[<%= item.id %>][prompt]"
+                        id="prompt-textarea-<%= item.id %>"
+                        style="display: none;"><%= item.prompt %></textarea>
+            </div>
+
+            <!-- Image section -->
+            <div style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                <label class="rp-label" style="font-size: 12px; margin-bottom: 4px;">이미지 첨부</label>
+                <input type="file" name="items[<%= item.id %>][image]"
+                       accept="image/*" class="rp-input" style="font-size: 13px;">
+              </div>
+              <% if item.image.attached? %>
+                <div style="flex-shrink: 0; position: relative;">
+                  <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                    <%= image_tag item.image, style: "max-width: 160px; max-height: 100px; display: block;" %>
+                  </div>
+                  <label style="display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: #ef4444; cursor: pointer;">
+                    <input type="checkbox" name="items[<%= item.id %>][remove_image]" value="1"
+                           style="width: 13px; height: 13px;">
+                    이미지 삭제
+                  </label>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- New items container -->
+    <div id="new-items-container"></div>
+
+    <% if @items.empty? %>
+      <div class="rp-empty-state" id="empty-state">
+        <p>등록된 문항이 없습니다. "문항 추가" 버튼을 눌러 문항을 추가하세요.</p>
+      </div>
+    <% end %>
+
+    <!-- Bottom actions -->
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+      <%= link_to "취소", researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  class: "rp-btn rp-btn--secondary", style: "height: 38px; padding: 0 16px; line-height: 38px;" %>
+      <button type="submit" class="rp-btn rp-btn--primary" style="height: 38px; padding: 0 24px;">저장</button>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<style>
+  .rp-fmt-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #334155;
+    min-width: 28px;
+    text-align: center;
+  }
+  .rp-fmt-btn:hover {
+    background: #e2e8f0;
+  }
+  .rp-editor-area:focus {
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+  }
+  .rp-editor-area u { text-decoration: underline; }
+  .rp-editor-area b, .rp-editor-area strong { font-weight: 700; }
+  .rp-editor-area i, .rp-editor-area em { font-style: italic; }
+  .rp-editor-area s { text-decoration: line-through; }
+</style>
+
+<script>
+  const FACTOR_COLORS = {
+    cognitive: "#3b82f6",
+    emotional: "#f59e0b",
+    behavioral: "#10b981",
+    social: "#8b5cf6"
+  };
+
+  // Sync contenteditable → hidden textarea
+  function syncToTextarea(editorEl) {
+    const itemId = editorEl.dataset.itemId;
+    const textarea = document.getElementById('prompt-textarea-' + itemId);
+    if (textarea) textarea.value = editorEl.innerHTML;
+  }
+
+  // Sync all editors before submit
+  document.getElementById('edit-items-form').addEventListener('submit', function() {
+    document.querySelectorAll('.rp-editor-area').forEach(function(el) {
+      syncToTextarea(el);
+    });
+    // Also sync new item editors
+    document.querySelectorAll('.rp-new-editor-area').forEach(function(el) {
+      const textarea = el.closest('.rp-card').querySelector('textarea[name*="[prompt]"]');
+      if (textarea) textarea.value = el.innerHTML;
+    });
+  });
+
+  // Format text in the nearest contenteditable
+  function formatText(btn, command) {
+    const card = btn.closest('.rp-card') || btn.closest('.rp-item-card');
+    const editor = card.querySelector('[contenteditable="true"]');
+    if (editor) {
+      editor.focus();
+      document.execCommand(command, false, null);
+      syncToTextarea(editor);
+    }
+  }
+
+  // Update card border color when factor changes
+  function updateCardBorder(select, itemId) {
+    const card = document.getElementById('item-card-' + itemId);
+    if (card) {
+      card.style.borderLeftColor = FACTOR_COLORS[select.value] || '#6b7280';
+    }
+  }
+
+  // Add new item
+  let newItemIndex = 0;
+  function addNewItem() {
+    const container = document.getElementById('new-items-container');
+    const existingCount = document.querySelectorAll('.rp-item-card').length + container.children.length;
+    const nextPosition = existingCount + 1;
+    const idx = newItemIndex++;
+
+    const div = document.createElement('div');
+    div.className = 'rp-card rp-item-card';
+    div.style.cssText = 'margin-bottom: 16px; border-left: 4px solid #10b981; position: relative; background: #f0fdf4;';
+    div.innerHTML = `
+      <div class="rp-card__body" style="padding: 16px 20px;">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+          <span style="font-weight: 700; font-size: 14px; color: #16a34a; min-width: 60px;">
+            신규 #<input type="number" name="new_items[${idx}][position]" value="${nextPosition}"
+                   class="rp-input" style="width: 50px; text-align: center; font-size: 13px; display: inline-block;" min="1" required>
+          </span>
+          <select name="new_items[${idx}][item_type]" class="rp-select" style="font-size: 13px; width: 100px;">
+            <option value="mcq">객관식</option>
+            <option value="constructed">서술형</option>
+          </select>
+          <select name="new_items[${idx}][measurement_factor]" class="rp-select" style="font-size: 13px; width: 130px;">
+            <option value="cognitive">인지적 요인</option>
+            <option value="emotional">정서적 요인</option>
+            <option value="behavioral">행동적 요인</option>
+            <option value="social">사회적 요인</option>
+          </select>
+          <div style="flex: 1;"></div>
+          <button type="button" onclick="this.closest('.rp-item-card').remove(); updateCount();"
+                  style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; padding: 4px;" title="행 제거">
+            &times;
+          </button>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label class="rp-label" style="font-size: 12px; margin-bottom: 4px;">발문</label>
+          <div class="rp-editor-toolbar" style="display: flex; gap: 4px; margin-bottom: 4px; padding: 4px 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 6px 6px 0 0;">
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'bold')" title="굵게"><strong>B</strong></button>
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'italic')" title="기울임"><em>I</em></button>
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'underline')" title="밑줄"><u>U</u></button>
+            <span style="border-left: 1px solid #e2e8f0; margin: 0 4px;"></span>
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'strikeThrough')" title="취소선"><s>S</s></button>
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+          </div>
+          <div contenteditable="true"
+               class="rp-new-editor-area"
+               data-item-id="new_${idx}"
+               style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: 14px; line-height: 1.6; outline: none; background: #fff;"
+               oninput="syncNewToTextarea(this, ${idx})"
+               onfocus="this.style.borderColor='#4f46e5'"
+               onblur="this.style.borderColor='#e2e8f0'"
+               data-placeholder="발문을 입력하세요"></div>
+          <textarea name="new_items[${idx}][prompt]"
+                    id="prompt-textarea-new_${idx}"
+                    style="display: none;"></textarea>
+        </div>
+        <div>
+          <label class="rp-label" style="font-size: 12px; margin-bottom: 4px;">이미지 첨부</label>
+          <input type="file" name="new_items[${idx}][image]" accept="image/*" class="rp-input" style="font-size: 13px;">
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+
+    const emptyState = document.getElementById('empty-state');
+    if (emptyState) emptyState.style.display = 'none';
+
+    updateCount();
+    div.querySelector('[contenteditable]').focus();
+  }
+
+  function syncNewToTextarea(editorEl, idx) {
+    const textarea = document.getElementById('prompt-textarea-new_' + idx);
+    if (textarea) textarea.value = editorEl.innerHTML;
+  }
+
+  function updateCount() {
+    const count = document.querySelectorAll('.rp-item-card').length;
+    document.getElementById('item-count').textContent = count;
+  }
+
+  // Keyboard shortcuts in editors
+  document.addEventListener('keydown', function(e) {
+    if (e.target.getAttribute('contenteditable') !== 'true') return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); }
+    }
+  });
+</script>

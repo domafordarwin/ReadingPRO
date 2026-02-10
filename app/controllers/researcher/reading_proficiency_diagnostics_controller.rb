@@ -3,7 +3,7 @@ class Researcher::ReadingProficiencyDiagnosticsController < ApplicationControlle
   before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_role
-  before_action :set_diagnostic, only: %i[show edit update destroy download_template]
+  before_action :set_diagnostic, only: %i[show edit update destroy download_template edit_items update_items]
 
   def index
     @diagnostics = ReadingProficiencyDiagnostic
@@ -96,6 +96,67 @@ class Researcher::ReadingProficiencyDiagnosticsController < ApplicationControlle
               type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   end
 
+  def edit_items
+    @items = @diagnostic.reading_proficiency_items.order(:position)
+  end
+
+  def update_items
+    errors = []
+
+    # Update existing items
+    (params[:items] || {}).each do |item_id, item_attrs|
+      item = @diagnostic.reading_proficiency_items.find_by(id: item_id)
+      next unless item
+
+      attrs = {
+        prompt: sanitize_prompt(item_attrs[:prompt]),
+        item_type: item_attrs[:item_type],
+        measurement_factor: item_attrs[:measurement_factor]
+      }
+      attrs[:image] = item_attrs[:image] if item_attrs[:image].present?
+
+      # Remove image if requested
+      if item_attrs[:remove_image] == "1"
+        item.image.purge if item.image.attached?
+      end
+
+      unless item.update(attrs)
+        errors << "문항 #{item.position}: #{item.errors.full_messages.join(', ')}"
+      end
+    end
+
+    # Add new items
+    (params[:new_items] || {}).each do |_idx, item_attrs|
+      next if item_attrs[:prompt].to_s.strip.blank?
+
+      item = @diagnostic.reading_proficiency_items.build(
+        position: item_attrs[:position].to_i,
+        prompt: sanitize_prompt(item_attrs[:prompt]),
+        item_type: item_attrs[:item_type] || "mcq",
+        measurement_factor: item_attrs[:measurement_factor] || "cognitive"
+      )
+
+      if item.save
+        item.image.attach(item_attrs[:image]) if item_attrs[:image].present?
+      else
+        errors << "새 문항 #{item.position}: #{item.errors.full_messages.join(', ')}"
+      end
+    end
+
+    # Delete items
+    if params[:delete_item_ids].present?
+      @diagnostic.reading_proficiency_items.where(id: params[:delete_item_ids]).destroy_all
+    end
+
+    if errors.any?
+      redirect_to edit_items_researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  alert: errors.join("; ")
+    else
+      redirect_to researcher_reading_proficiency_diagnostic_path(@diagnostic),
+                  notice: "문항이 수정되었습니다."
+    end
+  end
+
   def import
     unless params[:file].present?
       redirect_to researcher_reading_proficiency_diagnostics_path,
@@ -127,5 +188,13 @@ class Researcher::ReadingProficiencyDiagnosticsController < ApplicationControlle
 
   def diagnostic_params
     params.require(:reading_proficiency_diagnostic).permit(:name, :year, :level, :description, :status)
+  end
+
+  def sanitize_prompt(text)
+    ActionController::Base.helpers.sanitize(
+      text.to_s.strip,
+      tags: %w[b strong i em u s br span],
+      attributes: %w[style class]
+    )
   end
 end

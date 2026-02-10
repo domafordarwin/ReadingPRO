@@ -319,6 +319,8 @@ Rails.application.routes.draw do
     resources :reading_proficiency_diagnostics do
       member do
         get :download_template
+        get :edit_items
+        patch :update_items
       end
       collection do
         get  :blank_template

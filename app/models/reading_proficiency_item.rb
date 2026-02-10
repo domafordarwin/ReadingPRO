@@ -1,5 +1,6 @@
 class ReadingProficiencyItem < ApplicationRecord
   belongs_to :reading_proficiency_diagnostic, counter_cache: :item_count
+  has_one_attached :image
 
   enum :item_type, { mcq: "mcq", constructed: "constructed" }
   enum :measurement_factor, {
