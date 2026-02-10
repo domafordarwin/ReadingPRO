@@ -146,13 +146,14 @@
     <!-- Stage Body (Collapsible) -->
     <div id="stage-body-<%= stage_num %>" style="display: block;">
       <% if questions.any? %>
-        <!-- Per-stage publish form -->
+        <!-- Per-stage publish form (미배포 시에만) -->
         <% unless stage_published %>
           <%= form_with url: publish_stage_feedback_diagnostic_teacher_questioning_session_path(@questioning_session),
                         method: :patch,
                         data: { turbo: false },
                         id: "publish-form-#{stage_num}" do |f| %>
             <%= hidden_field_tag :stage, stage_num %>
+          <% end %>
         <% end %>
 
         <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
@@ -220,6 +221,7 @@
                       <label style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: block; margin-bottom: var(--rp-space-1);">점수 (0~100)</label>
                       <input type="number"
                              name="questions[<%= question.id %>][teacher_score]"
+                             form="publish-form-<%= stage_num %>"
                              value="<%= question.teacher_score %>"
                              min="0" max="100" step="1"
                              placeholder="0~100"
@@ -228,6 +230,7 @@
                     <div style="flex: 1; min-width: 200px;">
                       <label style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: block; margin-bottom: var(--rp-space-1);">피드백</label>
                       <textarea name="questions[<%= question.id %>][teacher_feedback]"
+                                form="publish-form-<%= stage_num %>"
                                 rows="2"
                                 placeholder="학생 발문에 대한 피드백을 입력하세요..."
                                 style="width: 100%; padding: var(--rp-space-2); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-sm); font-size: var(--rp-font-size-sm); font-family: inherit; resize: vertical; line-height: 1.5;"><%= question.teacher_feedback %></textarea>
@@ -291,7 +294,6 @@
               <%= stage_num %>단계 피드백 배포
             </button>
           </div>
-          <% end %><!-- end form_with -->
         <% end %>
       <% else %>
         <div style="text-align: center; padding: var(--rp-space-6); color: var(--rp-text-muted);">
