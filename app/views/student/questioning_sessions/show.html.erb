@@ -306,10 +306,9 @@
 
     <%= form_with url: submit_question_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, id: "questioning-form" do |f| %>
       <!-- Hidden fields -->
-      <%= hidden_field_tag :stage, current_stage %>
-      <%= hidden_field_tag :question_type, "free", id: "question-type-field" %>
-      <%= hidden_field_tag :scaffolding_used, false, id: "scaffolding-used-field" %>
-      <%= hidden_field_tag :questioning_template_id, "", id: "template-id-field" %>
+      <%= hidden_field_tag "student_question[question_type]", "free", id: "question-type-field" %>
+      <%= hidden_field_tag "student_question[scaffolding_used]", 0, id: "scaffolding-used-field" %>
+      <%= hidden_field_tag "student_question[questioning_template_id]", "", id: "template-id-field" %>
 
       <!-- Question type toggle -->
       <div style="display: flex; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
@@ -326,7 +325,7 @@
       <!-- Textarea -->
       <div class="q-input-area">
         <label class="q-input-area__label" for="question-text-input">발문을 작성하세요</label>
-        <textarea name="question_text" id="question-text-input" class="q-input-area__textarea"
+        <textarea name="student_question[question_text]" id="question-text-input" class="q-input-area__textarea"
                   placeholder="읽기 지문에 대한 발문을 작성해 보세요..." required
                   maxlength="500" aria-label="발문 입력"></textarea>
         <div class="q-input-area__char-count">
@@ -553,7 +552,7 @@
     // Set hidden fields
     document.getElementById('template-id-field').value = templateId;
     document.getElementById('question-type-field').value = 'guided';
-    document.getElementById('scaffolding-used-field').value = 'true';
+    document.getElementById('scaffolding-used-field').value = '1';
     // Update type buttons
     updateTypeButtons('guided');
     // Pre-fill textarea hint if template text exists
@@ -569,7 +568,7 @@
     document.getElementById('question-type-field').value = type;
     if (type === 'free') {
       document.getElementById('template-id-field').value = '';
-      document.getElementById('scaffolding-used-field').value = 'false';
+      document.getElementById('scaffolding-used-field').value = '0';
       // Clear template selection
       document.querySelectorAll('.q-template-card[data-template-id]').forEach(function(c) {
         c.style.borderColor = '';
