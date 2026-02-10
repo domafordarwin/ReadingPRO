@@ -461,12 +461,12 @@
             <strong>굵게</strong>, <em>기울임</em>, <u>밑줄</u> 서식을 적용할 수 있습니다. (Ctrl+B / Ctrl+I / Ctrl+U)
           </small>
           <div class="rp-editor-toolbar">
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
           </div>
           <div contenteditable="true"
                id="prompt-editor"
@@ -593,12 +593,16 @@
   }
 
   // Keyboard shortcuts + form sync
-  document.addEventListener('DOMContentLoaded', function() {
+  function initPromptSync() {
     var form = document.querySelector('form');
-    if (form) {
+    if (form && !form.dataset.syncAttached) {
+      form.dataset.syncAttached = '1';
       form.addEventListener('submit', function() { syncPrompt(); });
     }
-  });
+  }
+  document.addEventListener('DOMContentLoaded', initPromptSync);
+  document.addEventListener('turbo:load', initPromptSync);
+  if (document.readyState !== 'loading') initPromptSync();
 
   document.addEventListener('keydown', function(e) {
     if (e.target.id !== 'prompt-editor') return;

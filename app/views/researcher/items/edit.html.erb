@@ -139,11 +139,11 @@
           </svg>
           <h3>문항 발문</h3>
           <div class="prompt-format-toolbar">
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
           </div>
         </div>
         <div contenteditable="true"
@@ -190,7 +190,7 @@
     <!-- MCQ Default Mode -->
     <section class="rp-frame" data-state="mcq-default" style="<%= 'display: none;' unless @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Choices Selection -->
@@ -206,11 +206,11 @@
                 <!-- Choice formatting toolbar -->
                 <div class="rp-choice-format-toolbar">
                   <span class="rp-choice-format-label">서식:</span>
-                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
-                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
-                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
-                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
-                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
+                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
                 </div>
 
                 <div class="rp-choices-list">
@@ -228,7 +228,8 @@
                            class="rp-choice-editor"
                            data-choice-id="<%= choice.id %>"
                            oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
-                      <input type="hidden" name="choice_contents[<%= choice.id %>]" id="choice-hidden-<%= choice.id %>" value="">
+                      <input type="hidden" name="choice_contents[<%= choice.id %>]" id="choice-hidden-<%= choice.id %>"
+                             value="<%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>">
                     </div>
                   <% end %>
                 </div>
@@ -418,7 +419,7 @@
     <!-- MCQ Proximity Mode -->
     <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Proximity Score Setting -->
@@ -665,7 +666,7 @@
     <!-- Essay Rubric Mode -->
     <section class="rp-frame" data-state="essay-rubric" style="<%= 'display: none;' if @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Model Answer + Rubric Builder -->
@@ -1327,7 +1328,7 @@
   });
 
   // Initialize: sync all editors to hidden fields + sync before form submit
-  document.addEventListener('DOMContentLoaded', function() {
+  function initEditorSync() {
     // Initial sync for prompt
     syncPromptToForms();
 
@@ -1339,6 +1340,8 @@
 
     // Sync all editors before form submit
     document.querySelectorAll('form.rp-form').forEach(function(form) {
+      if (form.dataset.syncAttached) return; // prevent double-binding
+      form.dataset.syncAttached = '1';
       form.addEventListener('submit', function() {
         syncPromptToForms();
         document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
@@ -1347,7 +1350,16 @@
         });
       });
     });
-  });
+  }
+
+  // Support both regular page load and Turbo navigation
+  document.addEventListener('DOMContentLoaded', initEditorSync);
+  document.addEventListener('turbo:load', initEditorSync);
+
+  // Also run immediately if DOM is already loaded (Turbo page visit)
+  if (document.readyState !== 'loading') {
+    initEditorSync();
+  }
 </script>
 
 <style>
