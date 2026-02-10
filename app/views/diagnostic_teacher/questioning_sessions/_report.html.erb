@@ -277,17 +277,9 @@
 <% end %>
 
 <!-- ════════════════════════════════════════════
-     3. 종합 의견
+     3. 종합 의견 (AI 생성)
      ════════════════════════════════════════════ -->
 <%
-  all_strengths = radar_mapping.flat_map { |item|
-    (sections.dig(item[:key], "strengths") || []).map { |st| { area: item[:label], text: st } }
-  }.uniq { |x| x[:text] }
-
-  all_improvements = radar_mapping.flat_map { |item|
-    (sections.dig(item[:key], "improvements") || []).map { |i| { area: item[:label], text: i } }
-  }.uniq { |x| x[:text] }
-
   avg_score = radar_data.any? ? (radar_data.sum { |d| d[:score] } / radar_data.size.to_f).round(1) : 0
   top_areas = radar_data.sort_by { |d| -d[:score] }.first(3)
   weak_areas = radar_data.sort_by { |d| d[:score] }.first(3)
@@ -304,7 +296,7 @@
     <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);">종합 의견</h3>
   </div>
 
-  <!-- 평균 점수 -->
+  <!-- 역량 요약 바 -->
   <div style="display: flex; align-items: center; gap: var(--rp-space-4); margin-bottom: var(--rp-space-4); padding: var(--rp-space-3); background: linear-gradient(135deg, #f0f4ff, #f5f3ff); border-radius: var(--rp-radius-md);">
     <div style="text-align: center; padding: 0 var(--rp-space-4); border-right: 1px solid #e0e7ff;">
       <div style="font-size: 28px; font-weight: 700; color: var(--rp-primary);"><%= avg_score %></div>
@@ -318,40 +310,64 @@
     </div>
   </div>
 
-  <!-- 주요 강점 -->
-  <% if all_strengths.any? %>
-    <div style="margin-bottom: var(--rp-space-4);">
-      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin: 0 0 var(--rp-space-2) 0;">주요 강점</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-        <% all_strengths.first(6).each do |s| %>
-          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
-            <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">&#10003;</span>
-            <span><strong style="color: #166534;"><%= s[:area] %></strong> &mdash; <%= s[:text] %></span>
-          </div>
-        <% end %>
-      </div>
+  <!-- AI 생성 종합 의견 -->
+  <% if report.overall_summary.present? && report.overall_summary.length > 50 %>
+    <div style="font-size: var(--rp-font-size-sm); line-height: 1.9; color: var(--rp-text-body); padding: var(--rp-space-4); background: #fafbff; border: 1px solid #e0e7ff; border-radius: var(--rp-radius-md); border-left: 4px solid #6366f1;">
+      <%= simple_format(report.overall_summary) %>
     </div>
-  <% end %>
+  <% else %>
+    <%# 이전 보고서 호환: AI 종합 의견이 없으면 기존 강점/보완 표시 %>
+    <%
+      all_strengths = radar_mapping.flat_map { |item|
+        (sections.dig(item[:key], "strengths") || []).map { |st| { area: item[:label], text: st } }
+      }.uniq { |x| x[:text] }
+      all_improvements = radar_mapping.flat_map { |item|
+        (sections.dig(item[:key], "improvements") || []).map { |i| { area: item[:label], text: i } }
+      }.uniq { |x| x[:text] }
+    %>
 
-  <!-- 보완이 필요한 부분 -->
-  <% if all_improvements.any? %>
-    <div>
-      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #f59e0b; margin: 0 0 var(--rp-space-2) 0;">보완이 필요한 부분</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-        <% all_improvements.first(6).each do |imp| %>
-          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
-            <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">&#9651;</span>
-            <span><strong style="color: #92400e;"><%= imp[:area] %></strong> &mdash; <%= imp[:text] %></span>
-          </div>
-        <% end %>
+    <% if report.overall_summary.present? %>
+      <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body); margin-bottom: var(--rp-space-4);"><%= simple_format(report.overall_summary) %></div>
+    <% end %>
+
+    <% if all_strengths.any? %>
+      <div style="margin-bottom: var(--rp-space-4);">
+        <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin: 0 0 var(--rp-space-2) 0;">주요 강점</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <% all_strengths.first(6).each do |s| %>
+            <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
+              <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">&#10003;</span>
+              <span><strong style="color: #166534;"><%= s[:area] %></strong> &mdash; <%= s[:text] %></span>
+            </div>
+          <% end %>
+        </div>
       </div>
-    </div>
+    <% end %>
+
+    <% if all_improvements.any? %>
+      <div>
+        <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #f59e0b; margin: 0 0 var(--rp-space-2) 0;">보완이 필요한 부분</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <% all_improvements.first(6).each do |imp| %>
+            <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
+              <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">&#9651;</span>
+              <span><strong style="color: #92400e;"><%= imp[:area] %></strong> &mdash; <%= imp[:text] %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 </div>
 
 <!-- ════════════════════════════════════════════
-     4. 학습 권고사항
+     4. 심화 학습 방향 (AI 생성)
      ════════════════════════════════════════════ -->
+<%
+  reco = report.respond_to?(:learning_recommendations) ? (report.learning_recommendations || {}) : {}
+  has_reco = reco.is_a?(Hash) && (reco["priority_areas"].present? || reco["short_term"].present?)
+%>
+
 <div style="padding: var(--rp-space-5); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5);">
   <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
@@ -361,32 +377,156 @@
     <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= level_config[:recommendation_title] %></h3>
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: var(--rp-space-3);">
-    <% weak_areas.each_with_index do |area, idx| %>
-      <%
-        mapping = radar_mapping.find { |m| m[:label] == area[:name] }
-        section_data = mapping ? (sections[mapping[:key]] || {}) : {}
-        improvements = section_data["improvements"] || []
-        gc = group_colors[mapping&.dig(:group)] || group_colors["이해 역량"]
-      %>
-      <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
-        <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-          <span style="width: 24px; height: 24px; border-radius: 50%; background: <%= gc[:bar] %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
-          <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= area[:name] %></span>
-          <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-left: auto;"><%= area[:score].to_i %>점 / 100</span>
+  <% if has_reco %>
+    <%# === AI 생성 심화 학습 방향 === %>
+
+    <%# --- 우선 보완 영역 카드 --- %>
+    <% priority_areas = reco["priority_areas"] || [] %>
+    <% if priority_areas.any? %>
+      <div style="margin-bottom: var(--rp-space-5);">
+        <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #dc2626; margin: 0 0 var(--rp-space-3) 0;">
+          우선 보완 영역
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
+          <% area_colors = ["#3b82f6", "#8b5cf6", "#16a34a"] %>
+          <% priority_areas.each_with_index do |pa, idx| %>
+            <% ac = area_colors[idx % 3] %>
+            <div style="padding: var(--rp-space-4); background: #fafbff; border: 1px solid #e2e8f0; border-radius: var(--rp-radius-md); border-left: 4px solid <%= ac %>;">
+              <!-- 영역 헤더 -->
+              <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-3);">
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: <%= ac %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
+                <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= pa["area"] %></span>
+              </div>
+
+              <!-- 현재 수준 & 목표 -->
+              <% if pa["current_level"].present? || pa["target"].present? %>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3);">
+                  <% if pa["current_level"].present? %>
+                    <div style="padding: var(--rp-space-3); background: #fef2f2; border-radius: var(--rp-radius-sm);">
+                      <div style="font-size: 11px; font-weight: 600; color: #dc2626; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">현재 수준</div>
+                      <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6;"><%= pa["current_level"] %></div>
+                    </div>
+                  <% end %>
+                  <% if pa["target"].present? %>
+                    <div style="padding: var(--rp-space-3); background: #f0fdf4; border-radius: var(--rp-radius-sm);">
+                      <div style="font-size: 11px; font-weight: 600; color: #16a34a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">목표 수준</div>
+                      <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6;"><%= pa["target"] %></div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <!-- 학교 활동 -->
+              <% activities = pa["activities"] || [] %>
+              <% if activities.any? %>
+                <div style="margin-bottom: var(--rp-space-3);">
+                  <div style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 6px;">학교에서 할 수 있는 활동</div>
+                  <ul style="margin: 0; padding-left: 18px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
+                    <% activities.each do |act| %>
+                      <li><%= act %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+
+              <!-- 가정 활동 -->
+              <% home_acts = pa["home_activities"] || [] %>
+              <% if home_acts.any? %>
+                <div style="margin-bottom: var(--rp-space-3);">
+                  <div style="font-size: 12px; font-weight: 600; color: #7c3aed; margin-bottom: 6px;">가정에서 할 수 있는 활동</div>
+                  <ul style="margin: 0; padding-left: 18px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
+                    <% home_acts.each do |act| %>
+                      <li><%= act %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              <% end %>
+
+              <!-- 추천 도서 -->
+              <% books = pa["recommended_books"] || [] %>
+              <% if books.any? %>
+                <div>
+                  <div style="font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 6px;">추천 도서</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <% books.each do |book| %>
+                      <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; font-size: 12px; color: #92400e;">
+                        &#128214; <%= book %>
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         </div>
-        <% if improvements.any? %>
-          <ul style="margin: 0; padding-left: 20px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
-            <% improvements.first(3).each do |imp| %>
-              <li><%= imp %></li>
-            <% end %>
-          </ul>
-        <% else %>
-          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">해당 영역의 구체적인 권고사항이 없습니다.</div>
-        <% end %>
       </div>
     <% end %>
-  </div>
+
+    <%# --- 학습 목표 로드맵 --- %>
+    <% if reco["short_term"].present? || reco["mid_term"].present? || reco["long_term"].present? %>
+      <div style="margin-bottom: var(--rp-space-5);">
+        <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #1e40af; margin: 0 0 var(--rp-space-3) 0;">
+          학습 목표 로드맵
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--rp-space-3);">
+          <% [
+            { key: "short_term", label: "단기 (1-2주)", color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
+            { key: "mid_term", label: "중기 (1-2개월)", color: "#8b5cf6", bg: "#faf5ff", border: "#e9d5ff" },
+            { key: "long_term", label: "장기 (한 학기)", color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" }
+          ].each do |goal| %>
+            <% if reco[goal[:key]].present? %>
+              <div style="padding: var(--rp-space-4); background: <%= goal[:bg] %>; border: 1px solid <%= goal[:border] %>; border-radius: var(--rp-radius-md);">
+                <div style="font-size: 12px; font-weight: 700; color: <%= goal[:color] %>; margin-bottom: var(--rp-space-2); text-transform: uppercase; letter-spacing: 0.05em;"><%= goal[:label] %></div>
+                <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;"><%= simple_format(reco[goal[:key]]) %></div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# --- 강점 활용 전략 --- %>
+    <% if reco["strength_leverage"].present? %>
+      <div style="padding: var(--rp-space-4); background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border: 1px solid #a7f3d0; border-radius: var(--rp-radius-md);">
+        <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #166534;">강점 활용 전략</span>
+        </div>
+        <div style="font-size: var(--rp-font-size-xs); color: #064e3b; line-height: 1.8;"><%= simple_format(reco["strength_leverage"]) %></div>
+      </div>
+    <% end %>
+
+  <% else %>
+    <%# === 이전 보고서 호환: 기존 약점 영역 기반 표시 === %>
+    <div style="display: flex; flex-direction: column; gap: var(--rp-space-3);">
+      <% weak_areas.each_with_index do |area, idx| %>
+        <%
+          mapping = radar_mapping.find { |m| m[:label] == area[:name] }
+          section_data = mapping ? (sections[mapping[:key]] || {}) : {}
+          improvements = section_data["improvements"] || []
+          gc = group_colors[mapping&.dig(:group)] || group_colors["이해 역량"]
+        %>
+        <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
+          <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: <%= gc[:bar] %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
+            <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= area[:name] %></span>
+            <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-left: auto;"><%= area[:score].to_i %>점 / 100</span>
+          </div>
+          <% if improvements.any? %>
+            <ul style="margin: 0; padding-left: 20px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
+              <% improvements.first(3).each do |imp| %>
+                <li><%= imp %></li>
+              <% end %>
+            </ul>
+          <% else %>
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">해당 영역의 구체적인 권고사항이 없습니다.</div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>
 
 <!-- Report Metadata -->
