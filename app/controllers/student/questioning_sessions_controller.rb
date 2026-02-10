@@ -61,6 +61,27 @@ class Student::QuestioningSessionsController < ApplicationController
     end
   end
 
+  def next_stage
+    current = @questioning_session.current_stage
+
+    if current >= 3
+      redirect_to student_questioning_session_path(@questioning_session), alert: "이미 마지막 단계입니다."
+      return
+    end
+
+    # 현재 단계에서 최소 1개 발문을 작성했는지 확인
+    stage_count = @questioning_session.student_questions.where(stage: current).count
+    if stage_count == 0
+      redirect_to student_questioning_session_path(@questioning_session), alert: "현재 단계에서 최소 1개의 발문을 작성해 주세요."
+      return
+    end
+
+    @questioning_session.update!(current_stage: current + 1)
+    stage_names = { 2 => "이야기나누기", 3 => "삶적용" }
+    redirect_to student_questioning_session_path(@questioning_session),
+                notice: "#{current + 1}단계: #{stage_names[current + 1]}로 이동했습니다."
+  end
+
   def complete_session
     @current_page = "questioning"
 

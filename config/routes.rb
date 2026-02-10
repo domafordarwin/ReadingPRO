@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       member do
         post :submit_question
         patch :complete_session
+        patch :next_stage
       end
     end
     get "questioning_progress", to: "questioning#progress"
