@@ -53,7 +53,15 @@ class DiagnosticTeacher::StudentResponsesController < ApplicationController
     service = StudentResponseImportService.new(form, file, current_user)
     results = service.import!
 
-    flash[:upload_results] = results.to_json
+    # flash에는 요약 데이터만 저장 (CookieOverflow 방지 - 4KB 제한)
+    flash[:upload_results] = {
+      students_processed: results[:students_processed],
+      attempts_created: results[:attempts_created],
+      responses_created: results[:responses_created],
+      mcq_scored: results[:mcq_scored],
+      skipped: results[:skipped],
+      errors: results[:errors].first(5)
+    }.to_json
     flash[:upload_form_id] = form.id.to_s
     redirect_to diagnostic_teacher_student_responses_path
   end

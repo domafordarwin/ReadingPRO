@@ -120,11 +120,14 @@ class StudentResponseImportService
   private
 
   def find_student(student_id_str)
-    # 1) email prefix로 검색 (rps_0001 → rps_0001@...)
-    user = User.where("email LIKE ?", "#{student_id_str}@%").where(role: "student").first
+    # 대소문자 통일 (Excel에서 RPS_0001로 올 수 있음, DB는 rps_0001)
+    normalized = student_id_str.downcase
 
-    # 2) 정확한 email로 검색
-    user ||= User.find_by(email: student_id_str, role: "student")
+    # 1) email prefix로 검색 (rps_0001 → rps_0001@...)
+    user = User.where("LOWER(email) LIKE ?", "#{normalized}@%").where(role: "student").first
+
+    # 2) 정확한 email로 검색 (case-insensitive)
+    user ||= User.where("LOWER(email) = ?", normalized).where(role: "student").first
 
     # 3) student id(숫자)로 검색
     if user.nil? && student_id_str.match?(/\A\d+\z/)
