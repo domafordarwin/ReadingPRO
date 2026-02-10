@@ -152,7 +152,7 @@
              oninput="syncPromptToForms()"><%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
       </div>
 
-      <!-- MCQ Choices Preview (only for MCQ items) - 마지막에 표시 -->
+      <!-- MCQ Choices Editor (only for MCQ items) - 발문 아래 편집 가능 -->
       <% if @item.mcq? && @choices.any? %>
         <div class="item-choices-preview">
           <div class="item-choices-header">
@@ -160,13 +160,23 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             <h3>선택지</h3>
+            <div class="choice-format-toolbar-top">
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+            </div>
           </div>
           <div class="choices-grid">
             <% @choices.each do |choice| %>
               <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
               <div class="choice-preview <%= 'choice-preview--correct' if choice.is_correct %>">
                 <div class="choice-preview-label"><%= option_letter %></div>
-                <div class="choice-preview-text"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
+                <div contenteditable="true"
+                     class="choice-preview-text rp-choice-editor"
+                     data-choice-id="<%= choice.id %>"
+                     oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
                 <% if choice.is_correct %>
                   <span class="correct-indicator">✓ 정답</span>
                 <% end %>
@@ -201,17 +211,7 @@
                 <span class="rp-badge rp-badge--info">총 <%= choices.count %>개 선택지</span>
               </div>
               <div class="rp-card__body">
-                <p class="rp-instruction-text">올바른 선택지를 클릭하여 정답으로 지정하세요. 선택지 텍스트를 클릭하면 서식을 편집할 수 있습니다.</p>
-
-                <!-- Choice formatting toolbar -->
-                <div class="rp-choice-format-toolbar">
-                  <span class="rp-choice-format-label">서식:</span>
-                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
-                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
-                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
-                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
-                  <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
-                </div>
+                <p class="rp-instruction-text">올바른 선택지를 클릭하여 정답으로 지정하세요. 선택지 내용은 위 미리보기에서 편집할 수 있습니다.</p>
 
                 <div class="rp-choices-list">
                   <% choices.each do |choice| %>
@@ -224,10 +224,7 @@
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
                       </label>
-                      <div contenteditable="true"
-                           class="rp-choice-editor"
-                           data-choice-id="<%= choice.id %>"
-                           oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
+                      <span class="rp-choice-text" id="choice-display-<%= choice.id %>"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
                       <input type="hidden" name="choice_contents[<%= choice.id %>]" id="choice-hidden-<%= choice.id %>"
                              value="<%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>">
                     </div>
@@ -1310,11 +1307,13 @@
     if (choiceId) syncChoiceContent(choiceId);
   }
 
-  // Sync contenteditable → hidden field
+  // Sync contenteditable → hidden field + tab display
   function syncChoiceContent(choiceId) {
     var editor = document.querySelector('.rp-choice-editor[data-choice-id="' + choiceId + '"]');
     var hidden = document.getElementById('choice-hidden-' + choiceId);
+    var display = document.getElementById('choice-display-' + choiceId);
     if (editor && hidden) hidden.value = editor.innerHTML;
+    if (editor && display) display.innerHTML = editor.innerHTML;
   }
 
   // Keyboard shortcuts in choice editors
@@ -1756,6 +1755,34 @@
     font-size: 14px;
     line-height: 1.5;
     color: #374151;
+    min-height: 20px;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .choice-preview-text[contenteditable="true"]:hover {
+    border-color: #d1d5db;
+    background: rgba(255,255,255,0.7);
+  }
+
+  .choice-preview-text[contenteditable="true"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+    background: #fff;
+  }
+
+  .choice-preview-text u { text-decoration: underline; }
+  .choice-preview-text b, .choice-preview-text strong { font-weight: 700; }
+  .choice-preview-text i, .choice-preview-text em { font-style: italic; }
+  .choice-preview-text s { text-decoration: line-through; }
+
+  .choice-format-toolbar-top {
+    display: flex;
+    gap: 3px;
+    margin-left: auto;
   }
 
   .correct-indicator {
