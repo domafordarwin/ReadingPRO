@@ -3,7 +3,12 @@
 # 엑셀 일괄 등록으로 StudentAttempt는 있지만 DiagnosticAssignment가 없는 경우 보정
 class BackfillDiagnosticAssignmentsForImportedAttempts < ActiveRecord::Migration[8.1]
   def up
-    admin_user = User.find_by(role: "admin")
+    # assigned_by에 사용할 사용자 (admin > researcher > 아무나)
+    assigner = User.find_by(role: "admin") ||
+               User.find_by(role: "researcher") ||
+               User.first
+
+    return unless assigner # 사용자가 없으면 건너뜀
 
     StudentAttempt.where(status: %w[completed submitted]).find_each do |attempt|
       student = attempt.student
@@ -30,7 +35,7 @@ class BackfillDiagnosticAssignmentsForImportedAttempts < ActiveRecord::Migration
         DiagnosticAssignment.create!(
           diagnostic_form_id: attempt.diagnostic_form_id,
           student_id: student.id,
-          assigned_by: admin_user,
+          assigned_by: assigner,
           assigned_at: attempt.started_at || attempt.created_at,
           status: "completed"
         )

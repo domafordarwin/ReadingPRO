@@ -142,7 +142,9 @@ class StudentResponseImportService
     )
     return if already_completed
 
-    assigned_by = @current_user || User.find_by(role: "admin")
+    assigned_by = @current_user || User.find_by(role: "admin") || User.find_by(role: "researcher") || User.first
+    return unless assigned_by
+
     DiagnosticAssignment.create!(
       diagnostic_form_id: @form.id,
       student_id: student.id,

@@ -248,77 +248,53 @@
   <div class="reports-list">
     <% @attempts.each do |attempt| %>
       <% attempt_score = calculate_attempt_score(attempt) %>
-      <% if attempt.attempt_report %>
-        <a href="<%= student_show_report_path(attempt.id) %>" class="report-card report-card-link">
-          <div class="report-card-left">
-            <div class="report-title">
-              <%= attempt.diagnostic_form&.name || "진단 평가" %>
-            </div>
-
-            <div class="report-meta">
-              <% report_status = attempt.attempt_report.generated_at.present? ? "generated" : "draft" %>
-              <span class="status-badge status-<%= report_status %>">
-                <%= translate_report_status(report_status) %>
-              </span>
-
-              <span class="meta-item">
-                📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
-              </span>
-
-              <span class="meta-item">
-                상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
-              </span>
-            </div>
+      <% report = attempt.attempt_report %>
+      <% has_published_report = report&.report_status == "published" && report&.report_sections.present? %>
+      <div class="report-card" data-attempt-id="<%= attempt.id %>">
+        <div class="report-card-left">
+          <div class="report-title">
+            <%= attempt.diagnostic_form&.name || "진단 평가" %>
           </div>
 
-          <div class="report-card-right">
-            <div class="report-score">
-              <div class="score-number"><%= attempt_score %></div>
-              <div class="score-label">/100점</div>
-            </div>
+          <div class="report-meta">
+            <% if has_published_report %>
+              <span class="status-badge status-published">보고서 배포됨</span>
+            <% elsif report.present? %>
+              <span class="status-badge status-draft">보고서 생성됨</span>
+            <% else %>
+              <span class="status-badge status-generated">제점 완료</span>
+            <% end %>
 
-            <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
-              <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= student_show_attempt_path(attempt.id) %>');">
-                진단 결과 보기
-              </button>
-              <button type="button" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1;" onclick="event.preventDefault(); event.stopPropagation(); navigateTo('<%= student_comprehensive_report_show_path(attempt.id) %>');">
-                종합보고서 보기
-              </button>
-            </div>
-          </div>
-        </a>
-      <% else %>
-        <div class="report-card" data-attempt-id="<%= attempt.id %>">
-          <div class="report-card-left">
-            <div class="report-title">
-              <%= attempt.diagnostic_form&.name || "진단 평가" %>
-            </div>
+            <span class="meta-item">
+              📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
+            </span>
 
-            <div class="report-meta">
-              <span class="status-badge status-none">미생성</span>
-
+            <% if attempt.submitted_at.present? %>
               <span class="meta-item">
-                📅 <%= attempt.started_at&.strftime("%Y.%m.%d %H:%M") %>
+                완료: <%= attempt.submitted_at.strftime("%Y.%m.%d %H:%M") %>
               </span>
-
-              <span class="meta-item">
-                상태: <%= attempt.status == 'completed' ? '제점 완료' : '진행중' %>
-              </span>
-            </div>
-          </div>
-
-          <div class="report-card-right">
-            <div class="report-score">
-              <div class="score-number"><%= attempt_score %></div>
-              <div class="score-label">/100점</div>
-            </div>
-
-            <button class="report-action-btn" onclick="generateReport(<%= attempt.id %>)">
-              리포트 생성
-            </button>
+            <% end %>
           </div>
         </div>
-      <% end %>
+
+        <div class="report-card-right">
+          <div class="report-score">
+            <div class="score-number"><%= attempt_score %></div>
+            <div class="score-label">/100점</div>
+          </div>
+
+          <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
+            <a href="<%= student_show_attempt_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1; text-decoration: none;">
+              진단 결과 보기
+            </a>
+            <% if has_published_report %>
+              <a href="<%= student_comprehensive_report_show_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1; text-decoration: none;">
+                종합보고서 보기
+              </a>
+            <% end %>
+          </div>
+        </div>
+      </div>
     <% end %>
   </div>
 <% else %>
