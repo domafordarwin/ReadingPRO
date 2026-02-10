@@ -41,23 +41,31 @@
       <main class="rp-main" id="main-content">
         <div class="rp-main__container">
           <% if flash[:notice].present? %>
-            <div class="rp-flash rp-flash--notice">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 16v-4M12 8h.01"></path>
+            <div class="rp-toast rp-toast--success" id="flash-toast">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
-              <%= flash[:notice] %>
+              <span><%= flash[:notice] %></span>
+              <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;margin-left:auto;opacity:0.7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
+            <script>setTimeout(function(){var t=document.getElementById('flash-toast');if(t){t.style.opacity='0';t.style.transform='translateY(-20px)';setTimeout(function(){t.remove()},400);}},4000);</script>
           <% end %>
 
           <% if flash[:alert].present? %>
-            <div class="rp-flash rp-flash--alert">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="rp-toast rp-toast--alert" id="flash-toast-alert">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 8v4M12 16h.01"></path>
               </svg>
-              <%= flash[:alert] %>
+              <span><%= flash[:alert] %></span>
+              <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;margin-left:auto;opacity:0.7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
+            <script>setTimeout(function(){var t=document.getElementById('flash-toast-alert');if(t){t.style.opacity='0';t.style.transform='translateY(-20px)';setTimeout(function(){t.remove()},400);}},6000);</script>
           <% end %>
 
           <%= yield %>

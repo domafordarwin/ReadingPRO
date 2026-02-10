@@ -161,7 +161,8 @@
       </h3>
       <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
         <% questions_for_stage.each_with_index do |q, idx| %>
-          <div class="q-prev-question-item">
+          <div class="q-prev-question-item<%= ' q-new-question-highlight' if idx == questions_for_stage.size - 1 && flash[:notice].present? %>"
+               id="<%= 'latest-question' if idx == questions_for_stage.size - 1 %>">
             <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
               <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full);">
                 Q<%= idx + 1 %>
@@ -615,6 +616,14 @@
           submitBtn.textContent = '제출 중...';
         }
       });
+    }
+
+    // 새 발문 제출 후 해당 위치로 스크롤
+    var latest = document.getElementById('latest-question');
+    if (latest && latest.classList.contains('q-new-question-highlight')) {
+      setTimeout(function() {
+        latest.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
     }
   }
 </script>

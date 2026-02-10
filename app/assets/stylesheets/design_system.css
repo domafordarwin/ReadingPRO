@@ -1081,6 +1081,50 @@
   border: 1px solid #BBF7D0;
 }
 
+/* Toast Notifications */
+.rp-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  animation: rp-toast-in 0.35s ease-out;
+  transition: opacity 0.4s, transform 0.4s;
+  max-width: 420px;
+}
+.rp-toast--success {
+  background: #065f46;
+  color: #ffffff;
+  border: 1px solid #10b981;
+}
+.rp-toast--alert {
+  background: #991b1b;
+  color: #ffffff;
+  border: 1px solid #ef4444;
+}
+@keyframes rp-toast-in {
+  from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* New item highlight */
+@keyframes rp-highlight-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+  50%  { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+}
+.q-new-question-highlight {
+  animation: rp-highlight-pulse 1s ease-out 2;
+  border-left: 3px solid #2563eb !important;
+}
+
 /* ============================================
    20. Permission Matrix Table
    ============================================ */
