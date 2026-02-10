@@ -23,8 +23,9 @@ class Researcher::StimuliController < ApplicationController
 
     if @stimulus.save
       # Attach images
-      if params[:reading_stimulus][:images].present?
-        params[:reading_stimulus][:images].reject(&:blank?).each do |img|
+      uploaded_images = params.dig(:reading_stimulus, :images)
+      if uploaded_images.present?
+        uploaded_images.reject(&:blank?).each do |img|
           @stimulus.images.attach(img)
         end
       end
@@ -42,8 +43,9 @@ class Researcher::StimuliController < ApplicationController
     sanitized[:body] = sanitize_body(sanitized[:body]) if sanitized[:body].present?
 
     # Attach new images
-    if params[:reading_stimulus][:images].present?
-      params[:reading_stimulus][:images].reject(&:blank?).each do |img|
+    uploaded_images = params.dig(:reading_stimulus, :images)
+    if uploaded_images.present?
+      uploaded_images.reject(&:blank?).each do |img|
         @stimulus.images.attach(img)
       end
     end
