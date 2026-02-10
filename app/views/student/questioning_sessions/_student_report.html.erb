@@ -97,7 +97,7 @@
      1. 헤더 + 성취 수준
      ════════════════════════════════════════════ -->
 <div style="padding: var(--rp-space-5); background: <%= level_config[:header_gradient] %>; border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5); border: 1px solid <%= level_config[:accent_border] %>; text-align: center;">
-  <div style="font-size: <%= is_l1 ? '14px' : 'var(--rp-font-size-xs)' %>; font-weight: var(--rp-font-weight-semibold); color: <%= level_config[:accent_text] %>; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--rp-space-3);"><%= level_config[:title] %></div>
+  <div style="font-size: <%= is_l1 ? 'var(--rp-font-size-sm)' : 'var(--rp-font-size-xs)' %>; font-weight: var(--rp-font-weight-semibold); color: <%= level_config[:accent_text] %>; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--rp-space-3);"><%= level_config[:title] %></div>
 
   <!-- 성취 수준 이모지 + 라벨 -->
   <div style="font-size: <%= is_l1 ? '56px' : '40px' %>; margin-bottom: var(--rp-space-2);"><%= level_emoji %></div>
@@ -105,7 +105,7 @@
 
   <!-- 평균 점수 -->
   <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-2) var(--rp-space-4); background: rgba(255,255,255,0.7); border-radius: 999px; margin-bottom: var(--rp-space-3);">
-    <span style="font-size: <%= is_l1 ? '24px' : '20px' %>; font-weight: 700; color: <%= level_config[:accent_text] %>;"><%= avg_score %></span>
+    <span style="font-size: <%= is_l1 ? 'var(--rp-font-size-2xl)' : 'var(--rp-font-size-xl)' %>; font-weight: 700; color: <%= level_config[:accent_text] %>;"><%= avg_score %></span>
     <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">/ 100</span>
   </div>
 
@@ -137,11 +137,11 @@
         bar_color = sc >= 80 ? "#16a34a" : sc >= 60 ? "#2563eb" : sc >= 40 ? "#f59e0b" : "#dc2626"
       %>
       <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: 6px;">
-        <span style="font-size: 11px; color: var(--rp-text-muted); width: 75px; flex-shrink: 0; text-align: right;"><%= rd[:name] %></span>
+        <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); width: 85px; flex-shrink: 0; text-align: right;"><%= rd[:name] %></span>
         <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
           <div style="width: <%= sc %>%; height: 100%; background: <%= bar_color %>; border-radius: 4px;"></div>
         </div>
-        <span style="font-size: 11px; font-weight: 600; color: <%= bar_color %>; width: 32px; text-align: right;"><%= sc.to_i %></span>
+        <span style="font-size: var(--rp-font-size-xs); font-weight: 600; color: <%= bar_color %>; width: 32px; text-align: right;"><%= sc.to_i %></span>
       </div>
     <% end %>
   </div>
@@ -152,7 +152,7 @@
      2. 이모지 점수 카드 (L1 전용)
      ════════════════════════════════════════════ -->
 <div style="padding: var(--rp-space-4); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5);">
-  <h3 style="font-size: 16px; font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4) 0; text-align: center;">📊 내가 잘한 것은?</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4) 0; text-align: center;">📊 내가 잘한 것은?</h3>
   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--rp-space-3);">
     <% radar_data.each do |rd| %>
       <%
@@ -163,7 +163,7 @@
       %>
       <div style="padding: var(--rp-space-3); background: <%= card_bg %>; border: 1px solid <%= card_border %>; border-radius: var(--rp-radius-md); text-align: center;">
         <div style="font-size: 24px; margin-bottom: 4px;"><%= rd[:emoji] %></div>
-        <div style="font-size: 12px; font-weight: 600; color: var(--rp-text-title); margin-bottom: 6px; line-height: 1.3;"><%= rd[:name] %></div>
+        <div style="font-size: var(--rp-font-size-xs); font-weight: 600; color: var(--rp-text-title); margin-bottom: 6px; line-height: 1.3;"><%= rd[:name] %></div>
         <div style="font-size: 16px; letter-spacing: 2px;"><% stars.times do %>⭐<% end %></div>
       </div>
     <% end %>
@@ -193,22 +193,22 @@
         <div style="padding: var(--rp-space-4); background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--rp-radius-md);">
           <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
             <span style="font-size: 20px;"><%= rd[:emoji] %></span>
-            <span style="font-size: 14px; font-weight: 600; color: #92400e;"><%= rd[:name] %></span>
-            <span style="margin-left: auto; font-size: 14px; letter-spacing: 2px;"><% stars.times do %>⭐<% end %></span>
+            <span style="font-size: var(--rp-font-size-sm); font-weight: 600; color: #92400e;"><%= rd[:name] %></span>
+            <span style="margin-left: auto; font-size: var(--rp-font-size-sm); letter-spacing: 2px;"><% stars.times do %>⭐<% end %></span>
           </div>
           <% if feedback.present? %>
-            <div style="font-size: 13px; line-height: 1.7; color: var(--rp-text-body); margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
+            <div style="font-size: var(--rp-font-size-sm); line-height: 1.7; color: var(--rp-text-body); margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
           <% end %>
           <% if strengths.any? %>
             <% strengths.first(2).each do |s| %>
-              <div style="font-size: 12px; color: #16a34a; display: flex; align-items: flex-start; gap: 6px; margin-bottom: 2px;">
+              <div style="font-size: var(--rp-font-size-xs); color: #16a34a; display: flex; align-items: flex-start; gap: 6px; margin-bottom: 2px;">
                 <span style="flex-shrink: 0;">✅</span> <span><%= s %></span>
               </div>
             <% end %>
           <% end %>
           <% if improvements.any? %>
             <% improvements.first(1).each do |imp| %>
-              <div style="font-size: 12px; color: #d97706; display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
+              <div style="font-size: var(--rp-font-size-xs); color: #d97706; display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
                 <span style="flex-shrink: 0;">💡</span> <span><%= imp %></span>
               </div>
             <% end %>
@@ -279,7 +279,7 @@
               <% if strengths.any? %>
                 <div style="margin-top: var(--rp-space-2);">
                   <% strengths.first(3).each do |s| %>
-                    <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                    <div style="font-size: var(--rp-font-size-xs); color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                       <span style="flex-shrink: 0;">✓</span> <span><%= s %></span>
                     </div>
                   <% end %>
@@ -290,7 +290,7 @@
               <% if improvements.any? %>
                 <div style="margin-top: var(--rp-space-1);">
                   <% improvements.first(3).each do |imp| %>
-                    <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                    <div style="font-size: var(--rp-font-size-xs); color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                       <span style="flex-shrink: 0;">△</span> <span><%= imp %></span>
                     </div>
                   <% end %>
@@ -357,7 +357,7 @@
     <div style="padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
       <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin-bottom: var(--rp-space-2);"><%= is_l1 ? "🌟 잘한 것!" : "✓ 우수 영역" %></div>
       <% top_areas.each do |a| %>
-        <div style="font-size: 12px; color: var(--rp-text-body); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
           <span style="font-weight: 600; color: #166534;"><%= a[:name] %></span>
           <span style="color: #16a34a; font-weight: 600;"><%= a[:score].to_i %>점</span>
         </div>
@@ -367,7 +367,7 @@
     <div style="padding: var(--rp-space-3); background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--rp-radius-md);">
       <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #d97706; margin-bottom: var(--rp-space-2);"><%= is_l1 ? "💪 더 해보자!" : "△ 보완 영역" %></div>
       <% weak_areas.each do |a| %>
-        <div style="font-size: 12px; color: var(--rp-text-body); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
           <span style="font-weight: 600; color: #92400e;"><%= a[:name] %></span>
           <span style="color: #d97706; font-weight: 600;"><%= a[:score].to_i %>점</span>
         </div>
@@ -391,7 +391,7 @@
       <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin: 0 0 var(--rp-space-2) 0;"><%= is_l1 ? "✅ 잘한 점" : "주요 강점" %></h4>
       <div style="display: grid; grid-template-columns: 1fr <%= is_l1 ? '' : '1fr' %>; gap: 6px;">
         <% all_strengths.first(is_l1 ? 4 : 6).each do |s| %>
-          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
             <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">✓</span>
             <span><strong style="color: #166534;"><%= s[:area] %></strong> — <%= s[:text] %></span>
           </div>
@@ -405,7 +405,7 @@
       <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #d97706; margin: 0 0 var(--rp-space-2) 0;"><%= is_l1 ? "💡 다음에 해보자" : level_config[:rec_title] %></h4>
       <div style="display: grid; grid-template-columns: 1fr <%= is_l1 ? '' : '1fr' %>; gap: 6px;">
         <% all_improvements.first(is_l1 ? 3 : 6).each do |imp| %>
-          <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
             <span style="color: #d97706; flex-shrink: 0; font-weight: 600;">△</span>
             <span><strong style="color: #92400e;"><%= imp[:area] %></strong> — <%= imp[:text] %></span>
           </div>
@@ -529,7 +529,7 @@
       ['이해 역량', '사고 역량', '소통·적용 역량'].forEach(function(group) {
         var colors = groupColors[group];
         var item = document.createElement('div');
-        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;font-weight:500;';
+        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:16px;color:#475569;font-weight:500;';
         item.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:' + colors.stroke + ';flex-shrink:0;"></span><span>' + group + '</span>';
         legend.appendChild(item);
       });
