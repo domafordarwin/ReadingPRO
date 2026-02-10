@@ -1336,6 +1336,24 @@
     });
   }
 
+  // Inject choice content hidden fields into the submitting form
+  function injectChoiceContentsIntoForm(form) {
+    document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
+      var choiceId = editor.dataset.choiceId;
+      if (!choiceId) return;
+      var fieldName = 'choice_contents[' + choiceId + ']';
+      var hidden = form.querySelector('input[name="' + fieldName + '"]');
+      if (!hidden) {
+        hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = fieldName;
+        form.appendChild(hidden);
+      }
+      hidden.value = editor.innerHTML;
+      console.log('[injectChoice] id=' + choiceId, 'value=' + hidden.value.substring(0, 80));
+    });
+  }
+
   // Reliable sync via click delegation: fires BEFORE submit event
   document.addEventListener('click', function(e) {
     var btn = e.target.closest('button[type="submit"], input[type="submit"]');
@@ -1343,20 +1361,17 @@
     var form = btn.closest('form.rp-form');
     if (!form) return;
     syncAllEditors();
-    // Debug: log form data before submission
-    var fd = new FormData(form);
-    fd.forEach(function(v, k) {
-      if (k.indexOf('choice_contents') >= 0 || k === 'item[prompt]') {
-        console.log('[FormData]', k, '=', v.substring(0, 120));
-      }
-    });
+    injectChoiceContentsIntoForm(form);
   }, true); // capture phase — runs before any other handler
 
   // Also sync on form submit event (safety net)
   document.addEventListener('submit', function(e) {
     var form = e.target.closest ? e.target.closest('form.rp-form') : null;
     if (!form && e.target.classList && e.target.classList.contains('rp-form')) form = e.target;
-    if (form) syncAllEditors();
+    if (form) {
+      syncAllEditors();
+      injectChoiceContentsIntoForm(form);
+    }
   }, true); // capture phase
 
   // Initial sync on page load
