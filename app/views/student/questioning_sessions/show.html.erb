@@ -765,11 +765,10 @@
       <div style="text-align: center; padding: var(--rp-space-4); margin-bottom: var(--rp-space-4); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-lg);">
         <% if is_l1 %>
           <div style="font-size: 48px; margin-bottom: var(--rp-space-2);">
-            <% case @report.literacy_level %>
-            <% when "beginning" %>&#127793;
-            <% when "developing" %>&#127775;
-            <% when "proficient" %>&#11088;
-            <% when "advanced" %>&#127941;
+            <% if @report.literacy_level == "beginning" %>&#127793;
+            <% elsif @report.literacy_level == "developing" %>&#127775;
+            <% elsif @report.literacy_level == "proficient" %>&#11088;
+            <% elsif @report.literacy_level == "advanced" %>&#127941;
             <% end %>
           </div>
           <div style="font-size: 20px; font-weight: 800; color: var(--rp-primary);"><%= @report.literacy_level_label %></div>

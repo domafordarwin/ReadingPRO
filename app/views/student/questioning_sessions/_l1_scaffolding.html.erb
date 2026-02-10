@@ -409,17 +409,16 @@
 
   <!-- Scaffolding Level Badge -->
   <div class="l1-kid__level-badge" aria-label="스캐폴딩 안내">
-    <% case scaffolding_level %>
-    <% when 3 %>
+    <% if scaffolding_level == 3 %>
       <span class="l1-kid__level-badge-icon">&#127919;</span>
       <span class="l1-kid__level-badge-text">도움 많이 받기 - 감정 고르기, O/X, 따라 쓰기를 사용해요!</span>
-    <% when 2 %>
+    <% elsif scaffolding_level == 2 %>
       <span class="l1-kid__level-badge-icon">&#128170;</span>
       <span class="l1-kid__level-badge-text">조금만 도움받기 - 감정 고르기와 따라 쓰기를 참고해요!</span>
-    <% when 1 %>
+    <% elsif scaffolding_level == 1 %>
       <span class="l1-kid__level-badge-icon">&#11088;</span>
       <span class="l1-kid__level-badge-text">힌트만 보기 - 팁을 참고해서 발문을 만들어요!</span>
-    <% when 0 %>
+    <% elsif scaffolding_level == 0 %>
       <span class="l1-kid__level-badge-icon">&#127941;</span>
       <span class="l1-kid__level-badge-text">혼자서 해보기 - 멋진 발문을 자유롭게 만들어 봐!</span>
     <% end %>
