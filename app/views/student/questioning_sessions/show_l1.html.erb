@@ -939,53 +939,7 @@
 <!-- Report (if published)                        -->
 <!-- ============================================ -->
 <% if @report.present? && @report.published? %>
-  <% sections = @report.report_sections || {} %>
-  <div class="l1-report">
-    <h3 class="l1-questions__title" style="margin-bottom: var(--l1-gap);">
-      &#128214; 나의 읽기 보고서
-    </h3>
-
-    <!-- Level Badge -->
-    <div style="text-align: center; padding: var(--l1-space); margin-bottom: var(--l1-gap); background: linear-gradient(135deg, var(--l1-primary-light), #f0f4ff); border-radius: var(--l1-radius);">
-      <div style="font-size: 48px; margin-bottom: 8px;">
-        <% if @report.literacy_level == "beginning" %>&#127793;
-        <% elsif @report.literacy_level == "developing" %>&#127775;
-        <% elsif @report.literacy_level == "proficient" %>&#11088;
-        <% elsif @report.literacy_level == "advanced" %>&#127941;
-        <% end %>
-      </div>
-      <div style="font-size: var(--l1-font-body); font-weight: var(--l1-weight-heavy); color: var(--l1-primary);">
-        <%= @report.literacy_level_label %>
-      </div>
-      <% if @report.overall_summary.present? %>
-        <div style="margin-top: 12px; font-size: var(--l1-font-meta); line-height: var(--l1-lh-body); color: var(--l1-text);">
-          <%= simple_format(@report.overall_summary) %>
-        </div>
-      <% end %>
-    </div>
-
-    <!-- Section Scores -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
-      <% QuestioningReport::SECTION_LABELS.each do |key, label| %>
-        <% section = sections[key] || {}; score = section["score"]; next if score.nil? %>
-        <% bar_color = score >= 80 ? 'var(--l1-success)' : (score >= 60 ? 'var(--l1-blue)' : (score >= 40 ? 'var(--l1-warm)' : '#dc2626')) %>
-        <div style="padding: 14px; background: #f9fafb; border-radius: var(--l1-radius-sm);">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-            <span style="font-size: var(--l1-font-small); font-weight: var(--l1-weight-bold); color: var(--l1-text);"><%= label %></span>
-            <span style="font-size: var(--l1-font-meta); font-weight: var(--l1-weight-heavy); color: <%= bar_color %>;"><%= score %></span>
-          </div>
-          <div style="width: 100%; height: 6px; background: var(--l1-border); border-radius: 3px; overflow: hidden;">
-            <div style="width: <%= score %>%; height: 100%; background: <%= bar_color %>; border-radius: 3px;"></div>
-          </div>
-          <% if section["feedback"].present? %>
-            <div style="font-size: 12px; color: var(--l1-text-muted); margin-top: 6px; line-height: 1.5;">
-              <%= section["feedback"]&.truncate(100) %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-  </div>
+  <%= render "student/questioning_sessions/student_report", report: @report, level: "elementary_low" %>
 <% end %>
 
 </div><!-- /.l1-page -->
