@@ -158,7 +158,7 @@
               <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
               <div class="choice-preview <%= 'choice-preview--correct' if choice.is_correct %>">
                 <div class="choice-preview-label"><%= option_letter %></div>
-                <div class="choice-preview-text"><%= choice.content %></div>
+                <div class="choice-preview-text"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
                 <% if choice.is_correct %>
                   <span class="correct-indicator">✓ 정답</span>
                 <% end %>
@@ -192,21 +192,35 @@
                 <span class="rp-badge rp-badge--info">총 <%= choices.count %>개 선택지</span>
               </div>
               <div class="rp-card__body">
-                <p class="rp-instruction-text">올바른 선택지를 클릭하여 정답으로 지정하세요.</p>
+                <p class="rp-instruction-text">올바른 선택지를 클릭하여 정답으로 지정하세요. 선택지 텍스트를 클릭하면 서식을 편집할 수 있습니다.</p>
+
+                <!-- Choice formatting toolbar -->
+                <div class="rp-choice-format-toolbar">
+                  <span class="rp-choice-format-label">서식:</span>
+                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
+                  <button type="button" class="rp-fmt-btn" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+                </div>
 
                 <div class="rp-choices-list">
                   <% choices.each do |choice| %>
                     <% option_letter = choice.choice_no.to_i.between?(1, 26) ? ("A".ord + choice.choice_no.to_i - 1).chr : choice.choice_no %>
-                    <label class="rp-choice-option <%= 'rp-choice-option--correct' if choice.is_correct %>">
-                      <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct, class: "rp-radio" %>
-                      <div class="rp-choice-content">
+                    <div class="rp-choice-option <%= 'rp-choice-option--correct' if choice.is_correct %>">
+                      <label class="rp-choice-select-area" for="choice_radio_<%= choice.id %>">
+                        <%= radio_button_tag "correct_choice_id", choice.id, choice.is_correct, class: "rp-radio", id: "choice_radio_#{choice.id}" %>
                         <span class="rp-choice-label"><%= option_letter %></span>
-                        <span class="rp-choice-text"><%= choice.content %></span>
                         <% if choice.is_correct %>
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
-                      </div>
-                    </label>
+                      </label>
+                      <div contenteditable="true"
+                           class="rp-choice-editor"
+                           data-choice-id="<%= choice.id %>"
+                           oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
+                      <input type="hidden" name="choice_contents[<%= choice.id %>]" id="choice-hidden-<%= choice.id %>" value="">
+                    </div>
                   <% end %>
                 </div>
               </div>
@@ -428,7 +442,7 @@
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
                       </div>
-                      <div class="rp-choice-text-display"><%= choice.content %></div>
+                      <div class="rp-choice-text-display"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
                       <div class="rp-proximity-score-bottom">
                         <div class="rp-proximity-score-input-group">
                           <label class="rp-score-input-label">점수 비율</label>
@@ -1230,6 +1244,66 @@
       });
     });
   })();
+
+  // === Choice content formatting ===
+  var lastFocusedChoiceEditor = null;
+
+  // Track which choice editor was last focused
+  document.addEventListener('focusin', function(e) {
+    if (e.target.classList && e.target.classList.contains('rp-choice-editor')) {
+      lastFocusedChoiceEditor = e.target;
+    }
+  });
+
+  // Apply format command to the last focused choice editor
+  function choiceFmt(cmd) {
+    if (!lastFocusedChoiceEditor) {
+      // Focus the first choice editor if none focused
+      var first = document.querySelector('.rp-choice-editor');
+      if (first) { first.focus(); lastFocusedChoiceEditor = first; }
+      else return;
+    }
+    lastFocusedChoiceEditor.focus();
+    document.execCommand(cmd, false, null);
+    var choiceId = lastFocusedChoiceEditor.dataset.choiceId;
+    if (choiceId) syncChoiceContent(choiceId);
+  }
+
+  // Sync contenteditable → hidden field
+  function syncChoiceContent(choiceId) {
+    var editor = document.querySelector('.rp-choice-editor[data-choice-id="' + choiceId + '"]');
+    var hidden = document.getElementById('choice-hidden-' + choiceId);
+    if (editor && hidden) hidden.value = editor.innerHTML;
+  }
+
+  // Keyboard shortcuts in choice editors
+  document.addEventListener('keydown', function(e) {
+    if (!e.target.classList || !e.target.classList.contains('rp-choice-editor')) return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); syncChoiceContent(e.target.dataset.choiceId); }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); syncChoiceContent(e.target.dataset.choiceId); }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); syncChoiceContent(e.target.dataset.choiceId); }
+    }
+  });
+
+  // Initialize: sync all choice editors to hidden fields + sync before form submit
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initial sync
+    document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
+      var choiceId = editor.dataset.choiceId;
+      if (choiceId) syncChoiceContent(choiceId);
+    });
+
+    // Sync before form submit
+    document.querySelectorAll('form.rp-form').forEach(function(form) {
+      form.addEventListener('submit', function() {
+        document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
+          var choiceId = editor.dataset.choiceId;
+          if (choiceId) syncChoiceContent(choiceId);
+        });
+      });
+    });
+  });
 </script>
 
 <style>
@@ -2222,6 +2296,38 @@
     gap: 12px;
   }
 
+  .rp-choice-format-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+  }
+
+  .rp-choice-format-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-right: 4px;
+    font-weight: 500;
+  }
+
+  .rp-choice-format-toolbar .rp-fmt-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #334155;
+    min-width: 28px;
+    text-align: center;
+  }
+  .rp-choice-format-toolbar .rp-fmt-btn:hover { background: #e2e8f0; }
+
   .rp-choice-option {
     display: flex;
     align-items: flex-start;
@@ -2229,7 +2335,6 @@
     padding: 14px 16px;
     border: 2px solid #e5e7eb;
     border-radius: 8px;
-    cursor: pointer;
     transition: all 0.2s;
   }
 
@@ -2241,6 +2346,14 @@
   .rp-choice-option--correct {
     border-color: #6ee7b7;
     background: #d1fae5;
+  }
+
+  .rp-choice-select-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
   }
 
   .rp-radio {
@@ -2277,6 +2390,36 @@
     color: #1f2937;
     line-height: 1.6;
   }
+
+  .rp-choice-editor {
+    flex: 1;
+    min-height: 24px;
+    padding: 4px 8px;
+    font-size: 14px;
+    color: #1f2937;
+    line-height: 1.6;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: text;
+  }
+
+  .rp-choice-editor:hover {
+    border-color: #d1d5db;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .rp-choice-editor:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+    background: #fff;
+  }
+
+  .rp-choice-editor u { text-decoration: underline; }
+  .rp-choice-editor b, .rp-choice-editor strong { font-weight: 700; }
+  .rp-choice-editor i, .rp-choice-editor em { font-style: italic; }
+  .rp-choice-editor s { text-decoration: line-through; }
 
   /* Info Row */
   .rp-info-row {

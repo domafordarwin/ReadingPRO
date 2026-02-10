@@ -226,7 +226,7 @@
                 <% item.item_choices.order(:choice_no).each do |choice| %>
                   <div class="choice <%= 'correct' if choice.is_correct %>">
                     <span class="choice-num"><%= choice.choice_no.to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
-                    <%= choice.content %>
+                    <%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>
                     <% if choice.is_correct %>
                       <span class="correct-marker">정답</span>
                     <% end %>

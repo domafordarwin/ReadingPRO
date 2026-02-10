@@ -228,7 +228,7 @@
                       </div>
                       <span class="choice-number"><%= choice.choice_no %></span>
                       <span class="choice-content">
-                        <%= choice.content %>
+                        <%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>
                         <% if choice.is_correct %>
                           <strong class="correct-label">✓ 정답</strong>
                         <% end %>

@@ -634,7 +634,7 @@
                 <div class="sa-answer-box__label">정답</div>
                 <div class="sa-answer-box__value">
                   <% if correct_choice %>
-                    <%= correct_choice.choice_no %>번 <%= correct_choice.content&.truncate(25) %>
+                    <%= correct_choice.choice_no %>번 <%= strip_tags(correct_choice.content)&.truncate(25) %>
                   <% else %>
                     -
                   <% end %>
@@ -644,7 +644,7 @@
                 <div class="sa-answer-box__label">학생 답</div>
                 <div class="sa-answer-box__value">
                   <% if student_choice %>
-                    <%= student_choice.choice_no %>번 <%= student_choice.content&.truncate(25) %>
+                    <%= student_choice.choice_no %>번 <%= strip_tags(student_choice.content)&.truncate(25) %>
                   <% else %>
                     미응답
                   <% end %>
@@ -664,7 +664,7 @@
                 %>
                 <li class="sa-choice-item <%= css_class.join(' ') %>">
                   <span class="sa-choice-no"><%= choice.choice_no %></span>
-                  <span><%= choice.content&.truncate(50) %></span>
+                  <span><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
                   <span class="sa-choice-marker">
                     <% if is_this_correct && is_student_pick %>
                       &#10003; 정답

@@ -137,11 +137,18 @@ class Researcher::ItemsController < ApplicationController
   def update_choice_scores!
     correct_choice_id = params[:correct_choice_id].to_s
     choice_params = params.fetch(:choice_scores, {})
+    choice_content_params = params.fetch(:choice_contents, {})
     has_proximity_params = choice_params.present?
 
     @item.item_choices.each do |choice|
       is_correct = (choice.id.to_s == correct_choice_id)
       attrs = { is_correct: is_correct }
+
+      # Update choice content if provided (HTML formatting support)
+      raw_content = choice_content_params[choice.id.to_s]
+      if raw_content.present?
+        attrs[:content] = sanitize_choice_content(raw_content)
+      end
 
       if has_proximity_params
         # MCQ 근접점수 탭에서 제출: proximity_score + proximity_reason 업데이트
@@ -200,6 +207,14 @@ class Researcher::ItemsController < ApplicationController
       level_record = criterion.rubric_levels.find_or_initialize_by(level: level_int)
       level_record.update(score: level_int, description: descriptor)
     end
+  end
+
+  def sanitize_choice_content(text)
+    ActionController::Base.helpers.sanitize(
+      text.to_s.strip,
+      tags: %w[b strong i em u s br span],
+      attributes: %w[style class]
+    )
   end
 
   def create_new_criterion!

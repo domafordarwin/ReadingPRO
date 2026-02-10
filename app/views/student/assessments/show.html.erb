@@ -126,7 +126,7 @@
                              data-item-id="<%= item.id %>"
                              <%= 'checked' if response.selected_choice_id == choice.id %>>
                       <span class="choice-number"><%= choice.choice_no %></span>
-                      <span class="choice-content"><%= choice.content %></span>
+                      <span class="choice-content"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
                     </label>
                   <% end %>
                 </div>

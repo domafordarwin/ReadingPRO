@@ -113,7 +113,7 @@
                   %>
                   <li class="mcq-choice-item <%= css_class %>">
                     <span class="mcq-choice-no"><%= choice.choice_no %></span>
-                    <span class="mcq-choice-text"><%= choice.content %></span>
+                    <span class="mcq-choice-text"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
                     <% if choice.is_correct? %>
                       <span class="mcq-choice-marker">✓</span>
                     <% elsif selected&.id == choice.id %>
