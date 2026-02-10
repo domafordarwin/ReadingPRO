@@ -2,36 +2,36 @@
   문해력 종합 보고서 파셜
   Local variables:
     - report (QuestioningReport)
+  데이터 소스: QuestioningReport.report_sections (발문 학습 데이터 기반 GPT-4o-mini 평가)
 %>
 
 <%
   sections = report.report_sections || {}
 
-  # 11개 영역을 9개 역량으로 매핑 (3그룹 × 3역량)
+  # 9개 필수 역량 (발문 학습에서 항상 평가되는 영역)
+  # discussion_competency, argumentative_writing은 조건부(토론/에세이 데이터 필요)이므로 별도 처리
   radar_mapping = [
-    { key: "reading_comprehension", label: "읽기 이해력", group: "이해력" },
-    { key: "inferential_reasoning", label: "추론 능력", group: "이해력" },
-    { key: "critical_thinking", label: "비판적 사고력", group: "이해력" },
-    { key: "creative_thinking", label: "창의적 사고력", group: "사고력", merge: "argumentative_writing" },
-    { key: "metacognition", label: "메타인지", group: "사고력" },
-    { key: "vocabulary_usage", label: "어휘 활용", group: "사고력" },
-    { key: "text_connection", label: "텍스트 연결", group: "소통·적용력" },
-    { key: "communication", label: "의사소통", group: "소통·적용력", merge: "discussion_competency" },
-    { key: "personal_application", label: "삶 적용", group: "소통·적용력" }
+    { key: "reading_comprehension", label: "읽기 이해력", group: "이해 역량" },
+    { key: "inferential_reasoning", label: "추론 능력", group: "이해 역량" },
+    { key: "critical_thinking", label: "비판적 사고력", group: "이해 역량" },
+    { key: "creative_thinking", label: "창의적 사고력", group: "사고 역량" },
+    { key: "metacognition", label: "메타인지", group: "사고 역량" },
+    { key: "vocabulary_usage", label: "어휘 활용", group: "사고 역량" },
+    { key: "text_connection", label: "텍스트 연결", group: "소통·적용 역량" },
+    { key: "communication", label: "의사소통", group: "소통·적용 역량" },
+    { key: "personal_application", label: "삶 적용", group: "소통·적용 역량" }
   ]
 
   radar_data = radar_mapping.map do |item|
-    score = sections.dig(item[:key], "score")
-    if item[:merge]
-      merge_score = sections.dig(item[:merge], "score")
-      if score && merge_score
-        score = ((score + merge_score) / 2.0).round(1)
-      elsif merge_score
-        score = merge_score
-      end
-    end
-    { name: item[:label], group: item[:group], score: score || 0 }
+    score = sections.dig(item[:key], "score") || 0
+    { name: item[:label], group: item[:group], score: score }
   end
+
+  # 조건부 역량 (토론/에세이 데이터가 있는 경우만)
+  conditional_sections = [
+    { key: "discussion_competency", label: "토론 역량", icon: "discussion" },
+    { key: "argumentative_writing", label: "논증적 글쓰기", icon: "essay" }
+  ].select { |cs| sections.dig(cs[:key], "score").present? }
 %>
 
 <!-- ════════════════════════════════════════════
@@ -89,13 +89,13 @@
      ════════════════════════════════════════════ -->
 <%
   group_colors = {
-    "이해력" => { bg: "#eff6ff", border: "#bfdbfe", title: "#1e40af", bar: "#3b82f6" },
-    "사고력" => { bg: "#faf5ff", border: "#e9d5ff", title: "#6b21a8", bar: "#8b5cf6" },
-    "소통·적용력" => { bg: "#f0fdf4", border: "#bbf7d0", title: "#166534", bar: "#16a34a" }
+    "이해 역량" => { bg: "#eff6ff", border: "#bfdbfe", title: "#1e40af", bar: "#3b82f6" },
+    "사고 역량" => { bg: "#faf5ff", border: "#e9d5ff", title: "#6b21a8", bar: "#8b5cf6" },
+    "소통·적용 역량" => { bg: "#f0fdf4", border: "#bbf7d0", title: "#166534", bar: "#16a34a" }
   }
 %>
 
-<% ["이해력", "사고력", "소통·적용력"].each do |group_name| %>
+<% ["이해 역량", "사고 역량", "소통·적용 역량"].each do |group_name| %>
   <% group_items = radar_mapping.select { |r| r[:group] == group_name } %>
   <% gc = group_colors[group_name] %>
 
@@ -107,29 +107,10 @@
       <% group_items.each do |item| %>
         <%
           section = sections[item[:key]] || {}
-          merge_section = item[:merge] ? (sections[item[:merge]] || {}) : nil
           score = section["score"]
           feedback = section["feedback"]
           strengths = section["strengths"] || []
           improvements = section["improvements"] || []
-
-          if merge_section
-            merge_strengths = merge_section["strengths"] || []
-            merge_improvements = merge_section["improvements"] || []
-            strengths = (strengths + merge_strengths).uniq
-            improvements = (improvements + merge_improvements).uniq
-            if feedback.present? && merge_section["feedback"].present?
-              feedback = feedback + "\n" + merge_section["feedback"]
-            elsif merge_section["feedback"].present?
-              feedback = merge_section["feedback"]
-            end
-            merge_score = merge_section["score"]
-            if score && merge_score
-              score = ((score + merge_score) / 2.0).round(1)
-            elsif merge_score
-              score = merge_score
-            end
-          end
 
           score_color = if score.nil?
             "var(--rp-text-muted)"
@@ -194,19 +175,85 @@
 <% end %>
 
 <!-- ════════════════════════════════════════════
+     2-1. 조건부 역량 (토론/에세이 데이터가 있는 경우만)
+     ════════════════════════════════════════════ -->
+<% if conditional_sections.any? %>
+  <div style="margin-bottom: var(--rp-space-5);">
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: #475569; margin: 0 0 var(--rp-space-3) 0; padding-bottom: var(--rp-space-2); border-bottom: 2px solid #e2e8f0;">
+      추가 역량 평가
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(<%= conditional_sections.size %>, 1fr); gap: var(--rp-space-4);">
+      <% conditional_sections.each do |cs| %>
+        <%
+          section = sections[cs[:key]] || {}
+          score = section["score"]
+          feedback = section["feedback"]
+          strengths = section["strengths"] || []
+          improvements = section["improvements"] || []
+
+          score_color = if score.nil?
+            "var(--rp-text-muted)"
+          elsif score >= 80
+            "#16a34a"
+          elsif score >= 60
+            "#2563eb"
+          elsif score >= 40
+            "#f59e0b"
+          else
+            "#dc2626"
+          end
+        %>
+        <div style="padding: var(--rp-space-4); background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--rp-radius-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-2);">
+            <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #334155;"><%= cs[:label] %></span>
+            <span style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: <%= score_color %>;"><%= score %></span>
+          </div>
+
+          <% if score.present? %>
+            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: var(--rp-space-3); overflow: hidden;">
+              <div style="width: <%= score %>%; height: 100%; background: #6366f1; border-radius: 3px;"></div>
+            </div>
+          <% end %>
+
+          <% if feedback.present? %>
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
+          <% end %>
+
+          <% if strengths.any? %>
+            <div style="margin-top: var(--rp-space-2);">
+              <% strengths.first(3).each do |s| %>
+                <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                  <span style="flex-shrink: 0;">&#10003;</span> <%= s %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if improvements.any? %>
+            <div style="margin-top: var(--rp-space-1);">
+              <% improvements.first(3).each do |imp| %>
+                <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                  <span style="flex-shrink: 0;">&#9651;</span> <%= imp %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- ════════════════════════════════════════════
      3. 종합 의견
      ════════════════════════════════════════════ -->
 <%
   all_strengths = radar_mapping.flat_map { |item|
-    s = (sections.dig(item[:key], "strengths") || [])
-    s += (sections.dig(item[:merge], "strengths") || []) if item[:merge]
-    s.map { |st| { area: item[:label], text: st } }
+    (sections.dig(item[:key], "strengths") || []).map { |st| { area: item[:label], text: st } }
   }.uniq { |x| x[:text] }
 
   all_improvements = radar_mapping.flat_map { |item|
-    imp = (sections.dig(item[:key], "improvements") || [])
-    imp += (sections.dig(item[:merge], "improvements") || []) if item[:merge]
-    imp.map { |i| { area: item[:label], text: i } }
+    (sections.dig(item[:key], "improvements") || []).map { |i| { area: item[:label], text: i } }
   }.uniq { |x| x[:text] }
 
   avg_score = radar_data.any? ? (radar_data.sum { |d| d[:score] } / radar_data.size.to_f).round(1) : 0
@@ -288,11 +335,7 @@
         mapping = radar_mapping.find { |m| m[:label] == area[:name] }
         section_data = mapping ? (sections[mapping[:key]] || {}) : {}
         improvements = section_data["improvements"] || []
-        if mapping && mapping[:merge]
-          merge_imp = sections.dig(mapping[:merge], "improvements") || []
-          improvements = (improvements + merge_imp).uniq
-        end
-        gc = group_colors[mapping&.dig(:group)] || group_colors["이해력"]
+        gc = group_colors[mapping&.dig(:group)] || group_colors["이해 역량"]
       %>
       <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
         <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
@@ -337,14 +380,16 @@
     var legend = document.getElementById('qr-radar-legend');
     if (!svg || !radarData || radarData.length === 0) return;
 
+    svg.innerHTML = '';
+
     var ns = 'http://www.w3.org/2000/svg';
     var cx = 230, cy = 195, radius = 150;
     var n = radarData.length;
     var levels = 5;
     var groupColors = {
-      '이해력': { fill: 'rgba(59,130,246,0.12)', stroke: '#3b82f6', dot: '#2563eb' },
-      '사고력': { fill: 'rgba(139,92,246,0.12)', stroke: '#8b5cf6', dot: '#7c3aed' },
-      '소통·적용력': { fill: 'rgba(22,163,74,0.12)', stroke: '#16a34a', dot: '#15803d' }
+      '이해 역량': { fill: 'rgba(59,130,246,0.12)', stroke: '#3b82f6', dot: '#2563eb' },
+      '사고 역량': { fill: 'rgba(139,92,246,0.12)', stroke: '#8b5cf6', dot: '#7c3aed' },
+      '소통·적용 역량': { fill: 'rgba(22,163,74,0.12)', stroke: '#16a34a', dot: '#15803d' }
     };
 
     function getPoint(index, value) {
@@ -431,7 +476,7 @@
     // Legend
     if (legend) {
       legend.innerHTML = '';
-      ['이해력', '사고력', '소통·적용력'].forEach(function(group) {
+      ['이해 역량', '사고 역량', '소통·적용 역량'].forEach(function(group) {
         var colors = groupColors[group];
         var item = document.createElement('div');
         item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;font-weight:500;';
