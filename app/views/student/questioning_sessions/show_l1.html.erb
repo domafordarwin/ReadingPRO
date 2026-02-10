@@ -545,6 +545,51 @@
   }
   @keyframes l1-spin { to { transform: rotate(360deg); } }
 
+  /* === 2-Column Layout === */
+  .l1-layout {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: calc(var(--l1-gap) * 1.5);
+    align-items: start;
+  }
+  .l1-layout__passage {
+    position: sticky;
+    top: 16px;
+  }
+  .l1-layout__content {
+    min-width: 0;
+  }
+
+  /* Desktop: passage always visible, toggle becomes header */
+  @media (min-width: 1025px) {
+    .l1-layout__passage .l1-passage-toggle {
+      pointer-events: none;
+      cursor: default;
+    }
+    .l1-layout__passage .l1-passage-toggle__icon {
+      display: none;
+    }
+    .l1-layout__passage .l1-passage-body {
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+    }
+    .l1-layout__passage .l1-passage-body--collapsed {
+      max-height: calc(100vh - 140px);
+      padding: var(--l1-space);
+      overflow-y: auto;
+    }
+  }
+
+  /* Tablet/Mobile: single column */
+  @media (max-width: 1024px) {
+    .l1-layout {
+      grid-template-columns: 1fr;
+    }
+    .l1-layout__passage {
+      position: static;
+    }
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .l1-score-grid { grid-template-columns: repeat(2, 1fr); }
@@ -616,9 +661,11 @@
 </div>
 
 <% unless is_finished %>
+  <div class="l1-layout">
   <!-- ============================== -->
-  <!-- 4. Reading Passage             -->
+  <!-- LEFT: Reading Passage (sticky) -->
   <!-- ============================== -->
+  <div class="l1-layout__passage">
   <div class="l1-card l1-card--story" id="passage-panel" style="padding: 0; overflow: hidden;">
     <button type="button" class="l1-passage-toggle"
             aria-expanded="true" aria-controls="l1-passage-body"
@@ -638,6 +685,12 @@
       <% end %>
     </div>
   </div>
+  </div><!-- /.l1-layout__passage -->
+
+  <!-- ============================== -->
+  <!-- RIGHT: Learning Content        -->
+  <!-- ============================== -->
+  <div class="l1-layout__content">
 
   <!-- ============================== -->
   <!-- 5. Stage Title                 -->
@@ -779,6 +832,9 @@
       </button>
     </div>
   <% end %>
+
+  </div><!-- /.l1-layout__content -->
+  </div><!-- /.l1-layout -->
 
 <% else %>
   <!-- ============================== -->
