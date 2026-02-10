@@ -567,7 +567,7 @@
     padding-top: var(--l1-gap);
   }
   .l1-layout__passage {
-    overflow-y: auto;
+    overflow-y: hidden;
     min-height: 0;
   }
   .l1-layout__content {
@@ -575,13 +575,27 @@
     min-height: 0;
   }
 
+  /* Passage card fills full height */
+  .l1-layout__passage .l1-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-bottom: 0;
+  }
+
   /* Passage always visible, toggle becomes header */
   .l1-layout__passage .l1-passage-toggle {
     pointer-events: none;
     cursor: default;
+    flex-shrink: 0;
   }
   .l1-layout__passage .l1-passage-toggle__icon {
     display: none;
+  }
+  .l1-layout__passage .l1-passage-body {
+    flex: 1;
+    max-height: none;
+    overflow-y: auto;
   }
 
   /* Custom scrollbar */

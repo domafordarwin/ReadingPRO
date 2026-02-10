@@ -1121,7 +1121,7 @@
 }
 
 .q-session-page__passage {
-  overflow-y: auto;
+  overflow-y: hidden;
   min-height: 0;
 }
 
@@ -1130,14 +1130,28 @@
   min-height: 0;
 }
 
-/* Passage panel in session page: always open, no toggle */
+/* Passage panel in session page: fill height, always open, no toggle */
+.q-session-page__passage .q-passage-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin-bottom: 0;
+}
+
 .q-session-page__passage .q-passage-panel__toggle {
   pointer-events: none;
   cursor: default;
+  flex-shrink: 0;
 }
 
 .q-session-page__passage .q-passage-panel__toggle-icon {
   display: none;
+}
+
+.q-session-page__passage .q-passage-panel__body {
+  flex: 1;
+  max-height: none;
+  overflow-y: auto;
 }
 
 /* Custom scrollbar for both panels */
