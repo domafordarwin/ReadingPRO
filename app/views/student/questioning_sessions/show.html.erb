@@ -432,31 +432,103 @@
     %>
 
     <% if stage_published && stage_has_unconfirmed %>
-      <!-- 배포됨 + 미확인 → "확인" / "더 해보기" / "도움받아 작성하기" 3버튼 -->
-      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 2px solid #818cf8; border-radius: var(--rp-radius-lg); text-align: center;">
+      <!-- 배포됨 + 미확인 → 피드백 내용 표시 + "확인" / "더 해보기" 버튼 -->
+      <%
+        is_l1 = current_level == "elementary_low"
+        published_questions = questions_for_stage.select(&:feedback_published?)
+      %>
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 2px solid #818cf8; border-radius: <%= is_l1 ? '20px' : 'var(--rp-radius-lg)' %>; text-align: center;">
         <div style="margin-bottom: var(--rp-space-2);">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
+          <% if is_l1 %>
+            <span style="font-size: 48px; display: block; margin-bottom: 8px;">&#128140;</span>
+          <% else %>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          <% end %>
         </div>
-        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #312e81; margin: 0 0 var(--rp-space-2);">
-          선생님 피드백이 도착했습니다!
+        <h3 style="font-size: <%= is_l1 ? '24px' : 'var(--rp-font-size-lg)' %>; font-weight: <%= is_l1 ? '800' : 'var(--rp-font-weight-semibold)' %>; color: #312e81; margin: 0 0 var(--rp-space-2);">
+          <% if is_l1 %>
+            선생님이 답장을 보내줬어!
+          <% else %>
+            선생님 피드백이 도착했습니다!
+          <% end %>
         </h3>
-        <p style="font-size: var(--rp-font-size-sm); color: #4338ca; margin: 0 0 var(--rp-space-5);">
-          위의 피드백을 확인하고, 다음 중 하나를 선택하세요.
+        <p style="font-size: <%= is_l1 ? '16px' : 'var(--rp-font-size-sm)' %>; color: #4338ca; margin: 0 0 var(--rp-space-4);">
+          <% if is_l1 %>
+            아래 내용을 읽어 보고, "확인" 버튼을 눌러!
+          <% else %>
+            아래 피드백을 확인하고, 다음 중 하나를 선택하세요.
+          <% end %>
         </p>
+
+        <!-- 피드백 내용 직접 표시 -->
+        <div style="text-align: left; margin-bottom: var(--rp-space-5);">
+          <% published_questions.each_with_index do |q, idx| %>
+            <div style="padding: <%= is_l1 ? '16px 20px' : 'var(--rp-space-4)' %>; background: white; border: 1px solid #c7d2fe; border-radius: <%= is_l1 ? '16px' : 'var(--rp-radius-md)' %>; margin-bottom: var(--rp-space-3);">
+              <!-- 학생 발문 -->
+              <div style="display: flex; align-items: flex-start; gap: <%= is_l1 ? '12px' : 'var(--rp-space-2)' %>; margin-bottom: var(--rp-space-3);">
+                <span style="font-size: <%= is_l1 ? '14px' : 'var(--rp-font-size-xs)' %>; font-weight: 700; color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full); flex-shrink: 0;">
+                  Q<%= idx + 1 %>
+                </span>
+                <span style="font-size: <%= is_l1 ? '18px' : 'var(--rp-font-size-sm)' %>; color: var(--rp-text-body); line-height: 1.6;">
+                  <%= q.question_text %>
+                </span>
+              </div>
+
+              <!-- AI 피드백 -->
+              <% if q.ai_feedback.present? %>
+                <div style="padding: <%= is_l1 ? '14px 16px' : 'var(--rp-space-3)' %>; background: #f5f3ff; border-radius: <%= is_l1 ? '12px' : 'var(--rp-radius-sm)' %>; margin-bottom: var(--rp-space-2);">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="background: #7c3aed; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--rp-radius-full);">AI</span>
+                    <span style="font-size: <%= is_l1 ? '15px' : '12px' %>; font-weight: 600; color: #6b21a8;">
+                      <% if is_l1 %>AI 선생님의 이야기<% else %>AI 튜터 피드백<% end %>
+                    </span>
+                    <% if q.ai_score.present? %>
+                      <span style="font-size: 12px; font-weight: 700; color: #7c3aed; margin-left: auto;"><%= q.ai_score %>점</span>
+                    <% end %>
+                  </div>
+                  <div style="font-size: <%= is_l1 ? '17px' : 'var(--rp-font-size-sm)' %>; color: #4c1d95; line-height: <%= is_l1 ? '1.9' : '1.6' %>;">
+                    <%= simple_format(q.ai_feedback) %>
+                  </div>
+                </div>
+              <% end %>
+
+              <!-- 교사 피드백 -->
+              <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
+                <div style="padding: <%= is_l1 ? '14px 16px' : 'var(--rp-space-3)' %>; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: <%= is_l1 ? '12px' : 'var(--rp-radius-sm)' %>;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span style="font-size: <%= is_l1 ? '15px' : '12px' %>; font-weight: 600; color: #166534;">
+                      <% if is_l1 %>선생님의 한마디<% else %>선생님 피드백<% end %>
+                    </span>
+                    <% if q.teacher_score.present? %>
+                      <span style="font-size: 12px; font-weight: 700; color: #166534; margin-left: auto;"><%= q.teacher_score %>점</span>
+                    <% end %>
+                  </div>
+                  <div style="font-size: <%= is_l1 ? '17px' : 'var(--rp-font-size-sm)' %>; color: #15803d; line-height: <%= is_l1 ? '1.9' : '1.6' %>;">
+                    <%= simple_format(q.teacher_feedback) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
 
         <div style="display: flex; gap: var(--rp-space-3); justify-content: center; flex-wrap: wrap;">
           <%= form_with url: confirm_feedback_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do |f| %>
             <%= hidden_field_tag :stage, current_stage %>
-            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
+            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg" style="<%= 'font-size: 20px; padding: 16px 32px; border-radius: 16px;' if is_l1 %>">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              확인했습니다
+              <% if is_l1 %>읽었어요!<% else %>확인했습니다<% end %>
             </button>
           <% end %>
-          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg"
+          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg" style="<%= 'font-size: 18px; padding: 14px 28px; border-radius: 16px;' if is_l1 %>"
                   onclick="document.getElementById('questioning-form-area').scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('question-text-input').focus();">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -770,6 +842,26 @@
     }
   }
 </script>
+
+<!-- Auto-refresh: 교사 피드백 배포 대기 시 30초마다 새로고침 -->
+<% if !is_finished && questions_for_stage.any? { |q| q.ai_score.present? } && !stage_published %>
+<script>
+  (function() {
+    var REFRESH_INTERVAL = 30000; // 30초
+    var timer = setTimeout(function() {
+      window.location.reload();
+    }, REFRESH_INTERVAL);
+    // 사용자가 입력 중이면 새로고침 중지
+    var textarea = document.getElementById('question-text-input');
+    if (textarea) {
+      textarea.addEventListener('focus', function() { clearTimeout(timer); });
+      textarea.addEventListener('blur', function() {
+        timer = setTimeout(function() { window.location.reload(); }, REFRESH_INTERVAL);
+      });
+    }
+  })();
+</script>
+<% end %>
 
 <!-- ============================================
      Questioning Report (if published)

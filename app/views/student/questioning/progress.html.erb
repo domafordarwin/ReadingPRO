@@ -227,6 +227,13 @@
                 </div>
               <% end %>
             </div>
+
+            <!-- Detail Button -->
+            <%= link_to student_questioning_session_path(session),
+                  class: "rp-btn rp-btn--secondary rp-btn--sm",
+                  style: "flex-shrink: 0; margin-left: var(--rp-space-3);" do %>
+              상세보기
+            <% end %>
           </div>
         <% end %>
       </div>
