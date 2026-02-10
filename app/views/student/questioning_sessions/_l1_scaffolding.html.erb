@@ -185,6 +185,31 @@
     color: #374151;
   }
 
+  /* --- O/X Statement Box --- */
+  .l1-kid__ox-statement {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    background: #fff7ed;
+    border: 3px solid #fdba74;
+    border-radius: 16px;
+  }
+
+  .l1-kid__ox-statement-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .l1-kid__ox-statement-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #9a3412;
+    line-height: 1.5;
+  }
+
   /* --- Big O/X Buttons --- */
   .l1-kid__ox-row {
     display: flex;
@@ -520,7 +545,21 @@
       <div class="l1-kid__guide">
         <span class="l1-kid__guide-mascot">&#129302;</span>
         <span class="l1-kid__guide-text">
-          맞다고 생각하면 O, 아니라고 생각하면 X를 눌러!
+          아래 문장을 읽고, 맞으면 O, 아니면 X를 눌러!
+        </span>
+      </div>
+
+      <!-- 판단 대상 문장 -->
+      <div class="l1-kid__ox-statement" id="l1-ox-statement">
+        <span class="l1-kid__ox-statement-icon">&#128172;</span>
+        <span class="l1-kid__ox-statement-text">
+          <% if current_stage == 1 %>
+            "이 이야기의 주인공은 행복했을 거야."
+          <% elsif current_stage == 2 %>
+            "주인공이 한 행동은 옳았어."
+          <% else %>
+            "나도 주인공처럼 했을 거야."
+          <% end %>
         </span>
       </div>
 
@@ -696,11 +735,19 @@
     allBtns.forEach(function(b) { b.classList.remove('l1-kid__ox-btn--selected'); });
     btn.classList.add('l1-kid__ox-btn--selected');
 
+    // 판단 문장 가져오기
+    var statementEl = document.getElementById('l1-ox-statement');
+    var statement = '';
+    if (statementEl) {
+      var textEl = statementEl.querySelector('.l1-kid__ox-statement-text');
+      if (textEl) statement = textEl.textContent.trim().replace(/^"|"$/g, '');
+    }
+
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
       textarea.value = isO
-        ? '맞아요. 왜 그렇게 생각했냐면...'
-        : '아니에요. 왜 그렇게 생각했냐면...';
+        ? statement + ' → 맞아요! 왜냐하면...'
+        : statement + ' → 아니에요! 왜냐하면...';
       textarea.focus();
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       var counter = document.getElementById('char-count');
