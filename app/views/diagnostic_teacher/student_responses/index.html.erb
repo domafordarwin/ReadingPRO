@@ -1,0 +1,386 @@
+<% content_for :page_title, "학생답 관리" %>
+
+<div class="rp-page-header">
+  <h1 class="rp-page-header__title">학생답 관리</h1>
+  <p class="rp-page-header__subtitle">진단지별 학생 응답을 엑셀로 일괄 등록하고, AI 피드백을 생성합니다</p>
+</div>
+
+<!-- 통계 카드 -->
+<div class="rp-stats-grid">
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">활성 진단지</div>
+    <div class="rp-stat-value"><%= @diagnostic_forms.count %></div>
+  </div>
+  <div class="rp-stat-card">
+    <div class="rp-stat-label">총 등록 학생</div>
+    <div class="rp-stat-value rp-stat-value--info"><%= @attempt_counts.values.sum %></div>
+  </div>
+</div>
+
+<% if @diagnostic_forms.any? %>
+  <div class="sr-cards-grid">
+    <% @diagnostic_forms.each do |form| %>
+      <%
+        mcq_count = form.items.count { |i| i.mcq? }
+        constructed_count = form.items.count { |i| i.constructed? }
+        attempt_count = @attempt_counts[form.id] || 0
+
+        # 업로드 결과 표시 (이 진단지에 해당하는 경우)
+        show_results = @upload_form_id == form.id.to_s && @upload_results.present?
+        upload_data = show_results ? JSON.parse(@upload_results) : nil
+      %>
+      <div class="sr-card" id="form-card-<%= form.id %>">
+        <div class="sr-card__header">
+          <h3 class="sr-card__title"><%= form.name %></h3>
+          <span class="sr-card__badge"><%= form.item_count %>문항</span>
+        </div>
+
+        <div class="sr-card__meta">
+          <div class="sr-card__meta-item">
+            <span class="sr-card__meta-label">객관식</span>
+            <span class="sr-card__meta-value sr-card__meta-value--mcq"><%= mcq_count %>개</span>
+          </div>
+          <div class="sr-card__meta-item">
+            <span class="sr-card__meta-label">서술형</span>
+            <span class="sr-card__meta-value sr-card__meta-value--constructed"><%= constructed_count %>개</span>
+          </div>
+          <div class="sr-card__meta-item">
+            <span class="sr-card__meta-label">등록 학생</span>
+            <span class="sr-card__meta-value"><%= attempt_count %>명</span>
+          </div>
+        </div>
+
+        <% if form.description.present? %>
+          <p class="sr-card__desc"><%= form.description.truncate(80) %></p>
+        <% end %>
+
+        <!-- 업로드 결과 표시 영역 -->
+        <% if show_results && upload_data %>
+          <div class="sr-upload-result <%= upload_data['errors']&.any? ? 'sr-upload-result--warning' : 'sr-upload-result--success' %>">
+            <div class="sr-upload-result__header">
+              <strong>업로드 결과</strong>
+            </div>
+            <div class="sr-upload-result__stats">
+              <span>처리: <%= upload_data['students_processed'] || 0 %>명</span>
+              <span>등록: <%= upload_data['attempts_created'] || 0 %>명</span>
+              <span>응답: <%= upload_data['responses_created'] || 0 %>개</span>
+              <span>채점: <%= upload_data['mcq_scored'] || 0 %>개</span>
+              <% if (upload_data['skipped'] || 0) > 0 %>
+                <span>건너뜀: <%= upload_data['skipped'] %>명</span>
+              <% end %>
+            </div>
+            <% if upload_data['errors']&.any? %>
+              <div class="sr-upload-result__errors">
+                <% upload_data['errors'].first(5).each do |err| %>
+                  <div class="sr-upload-result__error-item"><%= err %></div>
+                <% end %>
+                <% if upload_data['errors'].size > 5 %>
+                  <div class="sr-upload-result__error-item">... 외 <%= upload_data['errors'].size - 5 %>건</div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- 피드백 생성 결과 표시 영역 -->
+        <div class="sr-feedback-result" id="feedback-result-<%= form.id %>" style="display: none;"></div>
+
+        <div class="sr-card__actions">
+          <!-- 템플릿 다운로드 -->
+          <%= link_to diagnostic_teacher_student_response_template_path(diagnostic_form_id: form.id),
+              class: "rp-btn rp-btn--outline rp-btn--sm sr-btn-full", data: { turbo: false } do %>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            템플릿 다운로드
+          <% end %>
+
+          <!-- 파일 업로드 -->
+          <%= form_with url: diagnostic_teacher_student_response_upload_path, method: :post,
+              multipart: true, data: { turbo: false }, class: "sr-upload-form" do |f| %>
+            <%= f.hidden_field :diagnostic_form_id, value: form.id %>
+            <div class="sr-upload-row">
+              <label class="sr-file-label">
+                <input type="file" name="file" accept=".xlsx" class="sr-file-input"
+                       onchange="this.closest('.sr-upload-form').querySelector('.sr-file-name').textContent = this.files[0]?.name || '파일 선택'">
+                <span class="rp-btn rp-btn--ghost rp-btn--sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  파일 선택
+                </span>
+                <span class="sr-file-name">선택된 파일 없음</span>
+              </label>
+              <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                업로드
+              </button>
+            </div>
+          <% end %>
+
+          <!-- 피드백 일괄 생성 -->
+          <% if attempt_count > 0 %>
+            <button class="rp-btn rp-btn--success rp-btn--sm sr-btn-full sr-feedback-btn"
+                    data-form-id="<%= form.id %>"
+                    onclick="generateFeedback(this, <%= form.id %>)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              피드백 일괄 생성 (AI)
+            </button>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="rp-card" style="text-align: center; padding: 60px 20px;">
+    <p style="color: var(--rp-text-muted, #64748B); font-size: 16px; margin-bottom: 8px;">활성 진단지가 없습니다</p>
+    <p style="color: var(--rp-text-muted, #64748B); font-size: 14px;">연구원이 진단지를 활성화하면 여기에 표시됩니다</p>
+  </div>
+<% end %>
+
+<style>
+  .sr-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  .sr-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    transition: box-shadow 0.2s;
+  }
+
+  .sr-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .sr-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .sr-card__title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .sr-card__badge {
+    background: #eff6ff;
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .sr-card__meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .sr-card__meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    padding: 10px 8px;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+
+  .sr-card__meta-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .sr-card__meta-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .sr-card__meta-value--mcq { color: #059669; }
+  .sr-card__meta-value--constructed { color: #d97706; }
+
+  .sr-card__desc {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+  }
+
+  .sr-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .sr-btn-full { width: 100%; justify-content: center; }
+
+  .sr-upload-form { width: 100%; }
+
+  .sr-upload-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .sr-file-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .sr-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  .sr-file-name {
+    font-size: 12px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  /* 업로드 결과 */
+  .sr-upload-result {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .sr-upload-result--success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+
+  .sr-upload-result--warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+  }
+
+  .sr-upload-result__header {
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  .sr-upload-result__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: #475569;
+  }
+
+  .sr-upload-result__errors {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .sr-upload-result__error-item {
+    color: #dc2626;
+    font-size: 12px;
+    padding: 2px 0;
+  }
+
+  /* 피드백 결과 */
+  .sr-feedback-result {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+  }
+
+  .sr-feedback-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    .sr-cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sr-card__meta {
+      flex-wrap: wrap;
+    }
+
+    .sr-upload-row {
+      flex-direction: column;
+    }
+
+    .sr-file-label {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  async function generateFeedback(button, formId) {
+    if (!confirm('이 진단지에 등록된 모든 학생의 AI 피드백을 생성합니다.\n객관식 오답 분석 + 서술형 채점/피드백이 포함됩니다.\n\n계속하시겠습니까?')) {
+      return;
+    }
+
+    const resultDiv = document.getElementById('feedback-result-' + formId);
+    button.disabled = true;
+    button.innerHTML = '<span class="sr-spinner"></span> 피드백 생성 중...';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<strong>AI 피드백 생성 중...</strong><br>학생 수에 따라 시간이 걸릴 수 있습니다.';
+
+    try {
+      const response = await fetch('/diagnostic_teacher/student_responses/' + formId + '/generate_feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        resultDiv.innerHTML = '<strong>피드백 생성 완료!</strong><br>' +
+          '학생 ' + data.student_count + '명 처리<br>' +
+          '객관식 피드백: ' + data.mcq_feedback_count + '개<br>' +
+          '서술형 피드백: ' + data.constructed_feedback_count + '개';
+        resultDiv.style.background = '#f0fdf4';
+        resultDiv.style.borderColor = '#bbf7d0';
+      } else {
+        resultDiv.innerHTML = '<strong>오류 발생</strong><br>' + (data.error || data.errors?.join('<br>') || '알 수 없는 오류');
+        resultDiv.style.background = '#fef2f2';
+        resultDiv.style.borderColor = '#fecaca';
+      }
+    } catch (err) {
+      resultDiv.innerHTML = '<strong>네트워크 오류</strong><br>' + err.message;
+      resultDiv.style.background = '#fef2f2';
+      resultDiv.style.borderColor = '#fecaca';
+    } finally {
+      button.disabled = false;
+      button.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 피드백 일괄 생성 (AI)';
+    }
+  }
+</script>

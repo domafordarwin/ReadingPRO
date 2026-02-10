@@ -176,6 +176,12 @@ Rails.application.routes.draw do
     get "items", to: "dashboard#items", as: "items"
     get "reports", to: "dashboard#reports", as: "reports"
 
+    # 학생답 관리
+    get  "student_responses", to: "student_responses#index", as: "student_responses"
+    get  "student_responses/template/:diagnostic_form_id", to: "student_responses#download_template", as: "student_response_template"
+    post "student_responses/upload", to: "student_responses#upload", as: "student_response_upload"
+    post "student_responses/:diagnostic_form_id/generate_feedback", to: "student_responses#generate_feedback", as: "student_response_generate_feedback"
+
     # 진단 시도 삭제
     delete "attempts/:id", to: "dashboard#destroy_attempt", as: "destroy_attempt"
 
