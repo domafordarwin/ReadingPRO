@@ -79,6 +79,9 @@ class StudentResponseImportService
         )
         results[:attempts_created] += 1
 
+        # DiagnosticAssignment 완료 처리 (학생 대시보드에서 진단 완료로 표시)
+        ensure_assignment_completed(student, attempt)
+
         # 각 문항 열 순회 (Column C부터 = column index 3)
         @items.each_with_index do |item, idx|
           col_num = idx + 3 # C=3, D=4, E=5, ...
@@ -118,6 +121,36 @@ class StudentResponseImportService
   end
 
   private
+
+  def ensure_assignment_completed(student, attempt)
+    # 1) 기존 배정이 있으면 completed로 업데이트
+    assignment = DiagnosticAssignment.where(diagnostic_form_id: @form.id)
+      .where("student_id = ? OR school_id = ?", student.id, student.school_id)
+      .where(status: %w[assigned in_progress])
+      .first
+
+    if assignment
+      assignment.update!(status: "completed")
+      return
+    end
+
+    # 2) 배정이 없으면 completed 상태로 신규 생성 (일괄 등록 = 배정+완료 동시처리)
+    already_completed = DiagnosticAssignment.exists?(
+      diagnostic_form_id: @form.id,
+      student_id: student.id,
+      status: "completed"
+    )
+    return if already_completed
+
+    assigned_by = @current_user || User.find_by(role: "admin")
+    DiagnosticAssignment.create!(
+      diagnostic_form_id: @form.id,
+      student_id: student.id,
+      assigned_by: assigned_by,
+      assigned_at: attempt.started_at,
+      status: "completed"
+    )
+  end
 
   def find_student(student_id_str)
     # 대소문자 통일 (Excel에서 RPS_0001로 올 수 있음, DB는 rps_0001)
