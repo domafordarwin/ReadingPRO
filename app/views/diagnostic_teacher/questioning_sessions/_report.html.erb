@@ -1,5 +1,5 @@
 <%#
-  문해력 종합 보고서 파셜
+  발문 역량 종합 보고서 파셜
   Local variables:
     - report (QuestioningReport)
   데이터 소스: QuestioningReport.report_sections (발문 학습 데이터 기반 GPT-4o-mini 평가)
@@ -35,12 +35,12 @@
 %>
 
 <!-- ════════════════════════════════════════════
-     1. 종합 문해력 수준 + 레이더 차트
+     1. 종합 발문 역량 수준 + 레이더 차트
      ════════════════════════════════════════════ -->
 <div style="padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5); border: 1px solid #c7d2fe;">
   <!-- Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-4);">
-    <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 문해력 수준</div>
+    <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 발문 역량 수준</div>
     <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
       <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
     </div>
