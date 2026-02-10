@@ -1,12 +1,6 @@
 <% content_for :page_title do %>세션 상세 - <%= @student&.user&.name || @student&.name || "학생" %><% end %>
 
 <%
-  # @questioning_session - QuestioningSession with all attributes
-  # @module - QuestioningModule
-  # @stimulus - ReadingStimulus
-  # @student - Student (has user with name, class_name, grade)
-  # @questions_by_stage - Hash {1 => [...], 2 => [...], 3 => [...]}
-
   student_name = @student&.respond_to?(:user) && @student.user ? @student.user.name : (@student&.name || "학생")
   student_grade = @student&.respond_to?(:grade) ? @student.grade : nil
   student_class = @student&.respond_to?(:class_name) ? @student.class_name : nil
@@ -19,7 +13,7 @@
 
   is_completed = @questioning_session.status_completed?
   is_reviewed = @questioning_session.status_reviewed?
-  can_review = is_completed && !is_reviewed
+  is_in_progress = @questioning_session.status_in_progress?
 %>
 
 <!-- Back Link -->
@@ -95,19 +89,14 @@
   </div>
 </div>
 
-<!-- Review Form Wrapper (for completed sessions) -->
-<% if can_review %>
-  <%= form_with url: review_diagnostic_teacher_questioning_session_path(@questioning_session),
-                method: :patch,
-                data: { turbo: false },
-                style: "margin: 0;" do |f| %>
-<% end %>
-
-<!-- Student Questions by Stage -->
+<!-- Student Questions by Stage (with per-stage publish) -->
 <% (1..3).each do |stage_num| %>
   <%
     questions = @questions_by_stage[stage_num] || []
     stage_score = @questioning_session.stage_score(stage_num)
+    stage_published = @questioning_session.stage_feedback_published?(stage_num)
+    has_unpublished = questions.any? { |q| q.ai_score.present? && !q.feedback_published? }
+    all_confirmed = @questioning_session.stage_confirmed?(stage_num)
   %>
   <div class="rp-card rp-mb-6" style="border-left: 3px solid var(<%= stage_colors[stage_num] %>);">
     <!-- Stage Header (Accordion Toggle) -->
@@ -131,14 +120,41 @@
           </span>
         </div>
       </div>
-      <svg id="stage-chevron-<%= stage_num %>" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-text-muted)" stroke-width="2" style="transition: transform 0.2s;">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
+      <div style="display: flex; align-items: center; gap: var(--rp-space-2);">
+        <!-- 배포 상태 배지 -->
+        <% if questions.any? %>
+          <% if stage_published && all_confirmed %>
+            <span style="font-size: var(--rp-font-size-xs); padding: 3px 10px; background: #dcfce7; color: #166534; border-radius: var(--rp-radius-full); font-weight: var(--rp-font-weight-medium);">
+              확인 완료
+            </span>
+          <% elsif stage_published %>
+            <span style="font-size: var(--rp-font-size-xs); padding: 3px 10px; background: #dbeafe; color: #1e40af; border-radius: var(--rp-radius-full); font-weight: var(--rp-font-weight-medium);">
+              배포됨
+            </span>
+          <% elsif has_unpublished %>
+            <span style="font-size: var(--rp-font-size-xs); padding: 3px 10px; background: #fef3c7; color: #92400e; border-radius: var(--rp-radius-full); font-weight: var(--rp-font-weight-medium);">
+              배포 대기
+            </span>
+          <% end %>
+        <% end %>
+        <svg id="stage-chevron-<%= stage_num %>" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rp-text-muted)" stroke-width="2" style="transition: transform 0.2s;">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
     </div>
 
     <!-- Stage Body (Collapsible) -->
     <div id="stage-body-<%= stage_num %>" style="display: block;">
       <% if questions.any? %>
+        <!-- Per-stage publish form -->
+        <% unless stage_published %>
+          <%= form_with url: publish_stage_feedback_diagnostic_teacher_questioning_session_path(@questioning_session),
+                        method: :patch,
+                        data: { turbo: false },
+                        id: "publish-form-#{stage_num}" do |f| %>
+            <%= hidden_field_tag :stage, stage_num %>
+        <% end %>
+
         <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
           <% questions.each_with_index do |question, idx| %>
             <div style="padding: var(--rp-space-4); background: <%= stage_bg_colors[stage_num] %>; border: 1px solid <%= stage_border_colors[stage_num] %>; border-radius: var(--rp-radius-md);">
@@ -146,18 +162,13 @@
               <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--rp-space-3); gap: var(--rp-space-2);">
                 <div style="display: flex; align-items: center; gap: var(--rp-space-2); flex-wrap: wrap;">
                   <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-muted);">#<%= idx + 1 %></span>
-                  <!-- Type Badge -->
-                  <span class="q-scaffolding-step">
-                    <%= question.type_label %>
-                  </span>
-                  <!-- Scaffolding Badge -->
+                  <span class="q-scaffolding-step"><%= question.type_label %></span>
                   <% if question.scaffolding_used.present? && question.scaffolding_used > 0 %>
                     <span style="font-size: var(--rp-font-size-xs); padding: 2px 8px; background: #faf5ff; color: #7c3aed; border-radius: var(--rp-radius-full); font-weight: var(--rp-font-weight-medium);">
                       도움 <%= question.scaffolding_used %>단계
                     </span>
                   <% end %>
                 </div>
-                <!-- Score Display -->
                 <% if question.final_score.present? %>
                   <div style="text-align: right; flex-shrink: 0;">
                     <span style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);">
@@ -173,7 +184,7 @@
                 <%= simple_format(question.question_text) %>
               </div>
 
-              <!-- AI Evaluation -->
+              <!-- AI Evaluation (항상 교사에게 표시) -->
               <% if question.ai_score.present? || question.ai_feedback.present? %>
                 <div style="margin-bottom: var(--rp-space-3); padding: var(--rp-space-3); background: linear-gradient(135deg, #f0f4ff 0%, #f5f3ff 100%); border: 1px solid #e0e7ff; border-radius: var(--rp-radius-md);">
                   <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
@@ -181,6 +192,11 @@
                     <% if question.ai_score.present? %>
                       <span style="font-size: var(--rp-font-size-xs); padding: 1px 6px; background: #e0e7ff; color: #4338ca; border-radius: var(--rp-radius-full);">
                         <%= question.ai_score.respond_to?(:round) ? question.ai_score.round(1) : question.ai_score %>점
+                      </span>
+                    <% end %>
+                    <% unless question.feedback_published? %>
+                      <span style="font-size: var(--rp-font-size-xs); padding: 1px 6px; background: #fef3c7; color: #92400e; border-radius: var(--rp-radius-full); margin-left: auto;">
+                        학생에게 미공개
                       </span>
                     <% end %>
                   </div>
@@ -193,14 +209,13 @@
               <% end %>
 
               <!-- Teacher Review Section -->
-              <% if can_review %>
-                <!-- Editable review fields -->
+              <% unless stage_published %>
+                <!-- 미배포: 편집 가능한 교사 평가 필드 -->
                 <div style="padding: var(--rp-space-3); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md);">
                   <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin-bottom: var(--rp-space-2);">
-                    교사 평가
+                    교사 평가 (선택)
                   </div>
                   <div style="display: flex; gap: var(--rp-space-4); align-items: flex-start; flex-wrap: wrap;">
-                    <!-- Teacher Score -->
                     <div style="flex-shrink: 0;">
                       <label style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: block; margin-bottom: var(--rp-space-1);">점수 (0~100)</label>
                       <input type="number"
@@ -210,7 +225,6 @@
                              placeholder="0~100"
                              style="width: 100px; padding: var(--rp-space-2); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-sm); font-size: var(--rp-font-size-sm); text-align: center;" />
                     </div>
-                    <!-- Teacher Feedback -->
                     <div style="flex: 1; min-width: 200px;">
                       <label style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: block; margin-bottom: var(--rp-space-1);">피드백</label>
                       <textarea name="questions[<%= question.id %>][teacher_feedback]"
@@ -220,27 +234,65 @@
                     </div>
                   </div>
                 </div>
-              <% elsif is_reviewed && (question.teacher_score.present? || question.teacher_feedback.present?) %>
-                <!-- Display existing teacher review -->
-                <div style="padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
-                  <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-                    <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534;">교사 평가</span>
-                    <% if question.teacher_score.present? %>
-                      <span style="font-size: var(--rp-font-size-xs); padding: 1px 6px; background: #dcfce7; color: #166534; border-radius: var(--rp-radius-full);">
-                        <%= question.teacher_score.respond_to?(:round) ? question.teacher_score.round(1) : question.teacher_score %>점
-                      </span>
+              <% else %>
+                <!-- 배포 완료: 읽기 전용 교사 평가 표시 -->
+                <% if question.teacher_score.present? || question.teacher_feedback.present? %>
+                  <div style="padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
+                    <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+                      <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534;">교사 평가</span>
+                      <% if question.teacher_score.present? %>
+                        <span style="font-size: var(--rp-font-size-xs); padding: 1px 6px; background: #dcfce7; color: #166534; border-radius: var(--rp-radius-full);">
+                          <%= question.teacher_score.respond_to?(:round) ? question.teacher_score.round(1) : question.teacher_score %>점
+                        </span>
+                      <% end %>
+                    </div>
+                    <% if question.teacher_feedback.present? %>
+                      <div style="font-size: var(--rp-font-size-sm); line-height: 1.6; color: var(--rp-text-body);">
+                        <%= simple_format(question.teacher_feedback) %>
+                      </div>
                     <% end %>
                   </div>
-                  <% if question.teacher_feedback.present? %>
-                    <div style="font-size: var(--rp-font-size-sm); line-height: 1.6; color: var(--rp-text-body);">
-                      <%= simple_format(question.teacher_feedback) %>
-                    </div>
+                <% end %>
+
+                <!-- 학생 확인 상태 -->
+                <div style="margin-top: var(--rp-space-2); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
+                  <% if question.student_confirmed? %>
+                    <span style="color: #166534;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align: middle; margin-right: 2px;">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      학생 확인 완료 (<%= question.student_confirmed_at.strftime("%m/%d %H:%M") %>)
+                    </span>
+                  <% else %>
+                    <span style="color: #92400e;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 2px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                      학생 미확인
+                    </span>
                   <% end %>
                 </div>
               <% end %>
             </div>
           <% end %>
         </div>
+
+        <!-- Publish Button (미배포 단계) -->
+        <% if has_unpublished && !stage_published %>
+          <div style="margin-top: var(--rp-space-4); display: flex; justify-content: flex-end;">
+            <button type="submit" form="publish-form-<%= stage_num %>" class="rp-btn rp-btn--primary"
+                    onclick="return confirm('<%= stage_num %>단계 피드백을 학생에게 배포하시겠습니까?');">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <%= stage_num %>단계 피드백 배포
+            </button>
+          </div>
+          <% end %><!-- end form_with -->
+        <% end %>
       <% else %>
         <div style="text-align: center; padding: var(--rp-space-6); color: var(--rp-text-muted);">
           <p style="margin: 0; font-size: var(--rp-font-size-sm);">이 단계에서 생성된 발문이 없습니다.</p>
@@ -250,29 +302,33 @@
   </div>
 <% end %>
 
-<!-- Review Form Submit Area (for completed sessions) -->
+<!-- Review Form (for completed sessions - final review) -->
+<% can_review = is_completed && !is_reviewed %>
 <% if can_review %>
   <div class="rp-card rp-mb-6">
-    <h3 style="margin: 0 0 var(--rp-space-3) 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">
-      전체 코멘트
-    </h3>
-    <textarea name="teacher_comment"
-              rows="4"
-              placeholder="세션 전반에 대한 교사 코멘트를 입력하세요..."
-              style="width: 100%; padding: var(--rp-space-3); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm); font-family: inherit; resize: vertical; line-height: 1.6; margin-bottom: var(--rp-space-4);"><%= @questioning_session.teacher_comment %></textarea>
-    <div style="display: flex; justify-content: flex-end; gap: var(--rp-space-3);">
-      <%= link_to "취소",
-            sessions_diagnostic_teacher_questioning_module_path(@module),
-            class: "rp-btn rp-btn--secondary" %>
-      <button type="submit" class="rp-btn rp-btn--primary">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        리뷰 완료
-      </button>
-    </div>
+    <%= form_with url: review_diagnostic_teacher_questioning_session_path(@questioning_session),
+                  method: :patch,
+                  data: { turbo: false } do |f| %>
+      <h3 style="margin: 0 0 var(--rp-space-3) 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">
+        전체 코멘트
+      </h3>
+      <textarea name="teacher_comment"
+                rows="4"
+                placeholder="세션 전반에 대한 교사 코멘트를 입력하세요..."
+                style="width: 100%; padding: var(--rp-space-3); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm); font-family: inherit; resize: vertical; line-height: 1.6; margin-bottom: var(--rp-space-4);"><%= @questioning_session.teacher_comment %></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: var(--rp-space-3);">
+        <%= link_to "취소",
+              sessions_diagnostic_teacher_questioning_module_path(@module),
+              class: "rp-btn rp-btn--secondary" %>
+        <button type="submit" class="rp-btn rp-btn--primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          리뷰 완료
+        </button>
+      </div>
+    <% end %>
   </div>
-  <% end %><!-- end form_with -->
 <% end %>
 
 <!-- Session Summary (when reviewed) -->

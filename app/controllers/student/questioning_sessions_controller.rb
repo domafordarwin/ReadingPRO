@@ -76,14 +76,46 @@ class Student::QuestioningSessionsController < ApplicationController
       return
     end
 
+    # 피드백 확인 완료 여부 체크
+    unless @questioning_session.can_advance_stage?
+      redirect_to student_questioning_session_path(@questioning_session), alert: "선생님 피드백을 확인해야 다음 단계로 이동할 수 있습니다."
+      return
+    end
+
     @questioning_session.update!(current_stage: current + 1)
     stage_names = { 2 => "이야기나누기", 3 => "삶적용" }
     redirect_to student_questioning_session_path(@questioning_session),
                 notice: "#{current + 1}단계: #{stage_names[current + 1]}로 이동했습니다."
   end
 
+  def confirm_feedback
+    @current_page = "questioning"
+    stage = params[:stage].to_i
+
+    unless stage.in?(1..3)
+      redirect_to student_questioning_session_path(@questioning_session), alert: "잘못된 단계입니다."
+      return
+    end
+
+    # 배포된 질문들의 student_confirmed_at 설정
+    @questioning_session.student_questions
+      .where(stage: stage)
+      .where.not(feedback_published_at: nil)
+      .where(student_confirmed_at: nil)
+      .update_all(student_confirmed_at: Time.current)
+
+    redirect_to student_questioning_session_path(@questioning_session),
+                notice: "#{stage}단계 피드백을 확인했습니다."
+  end
+
   def complete_session
     @current_page = "questioning"
+
+    # 3단계 피드백 확인 체크
+    unless @questioning_session.stage_confirmed?(3)
+      redirect_to student_questioning_session_path(@questioning_session), alert: "3단계 피드백을 확인해야 세션을 완료할 수 있습니다."
+      return
+    end
 
     # Calculate stage scores
     stage_scores = {}

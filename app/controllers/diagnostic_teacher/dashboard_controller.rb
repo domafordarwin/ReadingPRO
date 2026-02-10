@@ -393,6 +393,13 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     @completed_sessions = QuestioningSession.finished.count
     @avg_score = QuestioningSession.finished.where.not(total_score: nil).reorder(nil).pick(Arel.sql("AVG(total_score)"))
 
+    # 피드백 대기 세션 수 (미배포 피드백이 있는 진행중 세션)
+    @pending_feedback_sessions = QuestioningSession.active
+      .joins(:student_questions)
+      .where(student_questions: { feedback_published_at: nil })
+      .where.not(student_questions: { ai_score: nil })
+      .distinct.count
+
     # 필터
     @status_filter = params[:status].to_s.strip
     @module_filter = params[:module_id].to_s.strip
@@ -402,6 +409,12 @@ class DiagnosticTeacher::DashboardController < ApplicationController
     base = case @status_filter
            when "active"    then base.active
            when "completed" then base.finished
+           when "pending_feedback"
+             base.active
+               .joins(:student_questions)
+               .where(student_questions: { feedback_published_at: nil })
+               .where.not(student_questions: { ai_score: nil })
+               .distinct
            else                  base
            end
 

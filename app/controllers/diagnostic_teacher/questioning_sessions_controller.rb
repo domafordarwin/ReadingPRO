@@ -79,6 +79,40 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
                 notice: "리뷰가 완료되었습니다."
   end
 
+  def publish_stage_feedback
+    @current_page = "questioning_modules"
+    stage = params[:stage].to_i
+
+    unless stage.in?(1..3)
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session), alert: "잘못된 단계입니다."
+      return
+    end
+
+    # Update teacher scores/feedback for the stage questions
+    if params[:questions].present?
+      params[:questions].each do |question_id, question_attrs|
+        question = @questioning_session.student_questions.find_by(id: question_id, stage: stage)
+        next unless question
+
+        question.update!(
+          teacher_score: question_attrs[:teacher_score].presence,
+          teacher_feedback: question_attrs[:teacher_feedback].presence
+        )
+      end
+    end
+
+    # Publish all questions in this stage
+    @questioning_session.student_questions.where(stage: stage).find_each do |q|
+      q.update!(
+        feedback_published_at: Time.current,
+        feedback_published_by_id: current_user.id
+      )
+    end
+
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                notice: "#{stage}단계 피드백이 배포되었습니다."
+  end
+
   private
 
   def set_role

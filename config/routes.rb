@@ -95,6 +95,7 @@ Rails.application.routes.draw do
         post :submit_question
         patch :complete_session
         patch :next_stage
+        patch :confirm_feedback
       end
     end
     get "questioning_progress", to: "questioning#progress"
@@ -254,6 +255,7 @@ Rails.application.routes.draw do
     resources :questioning_sessions, only: [:show, :update] do
       member do
         patch :review
+        patch :publish_stage_feedback
       end
     end
 

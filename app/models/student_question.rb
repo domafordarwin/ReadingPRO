@@ -6,6 +6,7 @@ class StudentQuestion < ApplicationRecord
   belongs_to :questioning_template, optional: true
   belongs_to :evaluation_indicator, optional: true
   belongs_to :sub_indicator, optional: true
+  belongs_to :feedback_publisher, class_name: "User", foreign_key: "feedback_published_by_id", optional: true
 
   # Enums
   enum :question_type, {
@@ -37,6 +38,10 @@ class StudentQuestion < ApplicationRecord
   scope :evaluated, -> { where.not(final_score: nil) }
   scope :pending_review, -> { where(teacher_score: nil).where.not(ai_score: nil) }
   scope :recent, -> { order(created_at: :desc) }
+  scope :feedback_unpublished, -> { where(feedback_published_at: nil).where.not(ai_score: nil) }
+  scope :feedback_published, -> { where.not(feedback_published_at: nil) }
+  scope :student_unconfirmed, -> { where(student_confirmed_at: nil).where.not(feedback_published_at: nil) }
+  scope :student_confirmed, -> { where.not(student_confirmed_at: nil) }
 
   # Labels
   STAGE_LABELS = {
@@ -78,10 +83,23 @@ class StudentQuestion < ApplicationRecord
     teacher_score.present?
   end
 
+  def feedback_published?
+    feedback_published_at.present?
+  end
+
+  def student_confirmed?
+    student_confirmed_at.present?
+  end
+
   private
 
   def calculate_final_score
-    self.final_score = teacher_score || ai_score
+    # 배포 전에는 final_score를 설정하지 않음
+    if feedback_published_at.present?
+      self.final_score = teacher_score || ai_score
+    else
+      self.final_score = nil
+    end
   end
 
   def increment_module_questions_count

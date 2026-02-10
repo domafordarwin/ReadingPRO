@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_100004) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -861,6 +861,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_100004) do
     t.decimal "ai_score", precision: 5, scale: 2
     t.datetime "created_at", null: false
     t.bigint "evaluation_indicator_id"
+    t.datetime "feedback_published_at"
+    t.bigint "feedback_published_by_id"
     t.decimal "final_score", precision: 5, scale: 2
     t.text "question_text", null: false
     t.string "question_type", default: "guided", null: false
@@ -868,11 +870,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_100004) do
     t.bigint "questioning_template_id"
     t.integer "scaffolding_used", default: 0, null: false
     t.integer "stage", null: false
+    t.datetime "student_confirmed_at"
     t.bigint "sub_indicator_id"
     t.text "teacher_feedback"
     t.decimal "teacher_score", precision: 5, scale: 2
     t.datetime "updated_at", null: false
     t.index ["evaluation_indicator_id"], name: "index_student_questions_on_evaluation_indicator_id"
+    t.index ["feedback_published_at"], name: "index_student_questions_on_feedback_published_at"
     t.index ["questioning_session_id", "stage"], name: "index_sq_on_session_and_stage"
     t.index ["questioning_session_id"], name: "index_student_questions_on_questioning_session_id"
     t.index ["questioning_template_id"], name: "index_student_questions_on_questioning_template_id"
@@ -1019,6 +1023,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_100004) do
   add_foreign_key "student_questions", "questioning_sessions"
   add_foreign_key "student_questions", "questioning_templates"
   add_foreign_key "student_questions", "sub_indicators"
+  add_foreign_key "student_questions", "users", column: "feedback_published_by_id"
   add_foreign_key "students", "schools"
   add_foreign_key "students", "users"
   add_foreign_key "sub_indicators", "evaluation_indicators", on_delete: :cascade

@@ -60,6 +60,36 @@ class QuestioningSession < ApplicationRecord
     (time_spent_seconds / 60.0).round(1)
   end
 
+  # 해당 단계의 모든 질문이 배포되었는지
+  def stage_feedback_published?(stage_number)
+    questions = student_questions.where(stage: stage_number)
+    questions.any? && questions.where(feedback_published_at: nil).where.not(ai_score: nil).none?
+  end
+
+  # 해당 단계에 배포되었지만 미확인 피드백이 있는지
+  def stage_has_unconfirmed?(stage_number)
+    student_questions.where(stage: stage_number)
+      .where.not(feedback_published_at: nil)
+      .where(student_confirmed_at: nil)
+      .exists?
+  end
+
+  # 해당 단계 피드백 확인 완료 여부
+  def stage_confirmed?(stage_number)
+    published = student_questions.where(stage: stage_number).where.not(feedback_published_at: nil)
+    published.any? && published.where(student_confirmed_at: nil).none?
+  end
+
+  # 다음 단계로 이동 가능 여부 (현재 단계 피드백 확인 완료)
+  def can_advance_stage?
+    stage_confirmed?(current_stage)
+  end
+
+  # 피드백 미배포 질문 수
+  def unpublished_feedback_count
+    student_questions.where(feedback_published_at: nil).where.not(ai_score: nil).count
+  end
+
   def complete!
     update!(
       status: "completed",

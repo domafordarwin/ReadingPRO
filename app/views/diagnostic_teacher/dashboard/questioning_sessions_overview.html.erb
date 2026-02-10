@@ -20,6 +20,10 @@
     <div class="rp-stat-value rp-stat-value--success"><%= @completed_sessions %></div>
   </div>
   <div class="rp-stat-card">
+    <div class="rp-stat-label">피드백 대기</div>
+    <div class="rp-stat-value rp-stat-value--danger"><%= @pending_feedback_sessions %></div>
+  </div>
+  <div class="rp-stat-card">
     <div class="rp-stat-label">평균 점수</div>
     <div class="rp-stat-value rp-stat-value--primary"><%= @avg_score ? "#{@avg_score.round(1)}점" : "-" %></div>
   </div>
@@ -40,6 +44,8 @@
           class: "rp-filter-tab #{@status_filter == 'active' ? 'rp-filter-tab--active' : ''}" %>
       <%= link_to "완료", diagnostic_teacher_questioning_sessions_overview_path(status: "completed", module_id: @module_filter.presence),
           class: "rp-filter-tab #{@status_filter == 'completed' ? 'rp-filter-tab--active' : ''}" %>
+      <%= link_to "피드백 대기", diagnostic_teacher_questioning_sessions_overview_path(status: "pending_feedback", module_id: @module_filter.presence),
+          class: "rp-filter-tab #{@status_filter == 'pending_feedback' ? 'rp-filter-tab--active' : ''}" %>
     </div>
 
     <!-- 모듈 필터 -->
@@ -66,8 +72,10 @@
             <th>현재 단계</th>
             <th>상태</th>
             <th>점수</th>
+            <th>피드백</th>
             <th>시작일</th>
             <th>소요시간</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -105,6 +113,20 @@
                   <span style="color: #94a3b8;">-</span>
                 <% end %>
               </td>
+              <td>
+                <% unpub = session.unpublished_feedback_count %>
+                <% if unpub > 0 %>
+                  <span style="font-size: 12px; padding: 3px 8px; background: #fef3c7; color: #92400e; border-radius: 4px; font-weight: 500;">
+                    대기 <%= unpub %>
+                  </span>
+                <% elsif session.student_questions.any? %>
+                  <span style="font-size: 12px; padding: 3px 8px; background: #dcfce7; color: #166534; border-radius: 4px; font-weight: 500;">
+                    배포완료
+                  </span>
+                <% else %>
+                  <span style="color: #94a3b8;">-</span>
+                <% end %>
+              </td>
               <td style="font-size: 13px; color: #64748b;">
                 <%= session.started_at&.strftime("%Y.%m.%d %H:%M") || "-" %>
               </td>
@@ -115,6 +137,12 @@
                   <span style="color: #2563eb;">진행중</span>
                 <% else %>
                   -
+                <% end %>
+              </td>
+              <td>
+                <%= link_to diagnostic_teacher_questioning_session_path(session),
+                    style: "font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;" do %>
+                  상세
                 <% end %>
               </td>
             </tr>

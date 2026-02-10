@@ -30,6 +30,12 @@
   level_writing_tips = QuestioningLevelConfig.writing_tips_for(current_level)
   level_partial_map = { "elementary_low" => "l1", "elementary_high" => "l2", "middle" => "l3", "high" => "l4" }
   scaffolding_partial_name = level_partial_map[current_level] || "l1"
+
+  # 피드백 워크플로우 상태
+  stage_published = session.stage_feedback_published?(current_stage)
+  stage_has_unconfirmed = session.stage_has_unconfirmed?(current_stage)
+  stage_confirmed = session.stage_confirmed?(current_stage)
+  can_advance = session.can_advance_stage?
 %>
 
 <!-- Back Link -->
@@ -161,7 +167,7 @@
       </h3>
       <div style="display: flex; flex-direction: column; gap: var(--rp-space-4);">
         <% questions_for_stage.each_with_index do |q, idx| %>
-          <div class="q-prev-question-item<%= ' q-new-question-highlight' if idx == questions_for_stage.size - 1 && flash[:notice].present? %>"
+          <div class="q-prev-question-item<%= ' q-new-question-highlight' if idx == questions_for_stage.size - 1 && flash[:notice].present? && flash[:notice].include?('제출') %>"
                id="<%= 'latest-question' if idx == questions_for_stage.size - 1 %>">
             <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
               <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full);">
@@ -169,17 +175,14 @@
               </span>
               <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
                 <%= q.type_label %>
-                <% if q.scaffolding_used %>
+                <% if q.scaffolding_used && q.scaffolding_used > 0 %>
                   &middot; 도움 사용
                 <% end %>
               </span>
-              <% if q.final_score.present? %>
+              <!-- 점수: 배포된 경우에만 표시 -->
+              <% if q.feedback_published? && q.final_score.present? %>
                 <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); margin-left: auto;">
                   <%= q.final_score %>점
-                </span>
-              <% elsif q.ai_score.present? %>
-                <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); margin-left: auto;">
-                  AI <%= q.ai_score %>점
                 </span>
               <% end %>
             </div>
@@ -187,52 +190,68 @@
               <%= q.question_text %>
             </div>
 
-            <!-- AI Feedback Bubble -->
-            <% if q.evaluated? && q.ai_feedback.present? %>
-              <div class="q-ai-feedback" style="margin-top: var(--rp-space-3);">
-                <div class="q-ai-feedback__bubble">
-                  <div class="q-ai-feedback__header">
-                    <div class="q-ai-feedback__avatar">AI</div>
-                    <span class="q-ai-feedback__name">AI 튜터</span>
-                  </div>
-                  <div class="q-ai-feedback__body">
-                    <%= simple_format(q.ai_feedback) %>
-                  </div>
-                  <% if q.ai_strengths.present? || q.ai_improvements.present? %>
-                    <div style="margin-top: var(--rp-space-3); padding-top: var(--rp-space-3); border-top: 1px solid var(--rp-border);">
-                      <% if q.ai_strengths.present? %>
-                        <div style="font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">
-                          <strong style="color: var(--rp-success-dark);">강점:</strong> <%= q.ai_strengths %>
-                        </div>
-                      <% end %>
-                      <% if q.ai_improvements.present? %>
-                        <div style="font-size: var(--rp-font-size-sm);">
-                          <strong style="color: var(--rp-warning-dark);">개선점:</strong> <%= q.ai_improvements %>
-                        </div>
-                      <% end %>
+            <!-- AI Feedback: 배포 여부에 따라 다르게 표시 -->
+            <% if q.feedback_published? %>
+              <!-- 배포됨: 피드백 표시 -->
+              <% if q.ai_feedback.present? %>
+                <div class="q-ai-feedback" style="margin-top: var(--rp-space-3);">
+                  <div class="q-ai-feedback__bubble">
+                    <div class="q-ai-feedback__header">
+                      <div class="q-ai-feedback__avatar">AI</div>
+                      <span class="q-ai-feedback__name">AI 튜터</span>
                     </div>
-                  <% end %>
+                    <div class="q-ai-feedback__body">
+                      <%= simple_format(q.ai_feedback) %>
+                    </div>
+                    <% if q.ai_strengths.present? || q.ai_improvements.present? %>
+                      <div style="margin-top: var(--rp-space-3); padding-top: var(--rp-space-3); border-top: 1px solid var(--rp-border);">
+                        <% if q.ai_strengths.present? %>
+                          <div style="font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">
+                            <strong style="color: var(--rp-success-dark);">강점:</strong> <%= q.ai_strengths %>
+                          </div>
+                        <% end %>
+                        <% if q.ai_improvements.present? %>
+                          <div style="font-size: var(--rp-font-size-sm);">
+                            <strong style="color: var(--rp-warning-dark);">개선점:</strong> <%= q.ai_improvements %>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  </div>
                 </div>
-              </div>
-            <% end %>
+              <% end %>
 
-            <!-- Teacher Feedback -->
-            <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
-              <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
-                <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #166534;">선생님 피드백</span>
-                  <% if q.teacher_score.present? %>
-                    <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-left: auto;">
-                      <%= q.teacher_score %>점
-                    </span>
-                  <% end %>
+              <!-- 교사 피드백 (배포 후에만 표시) -->
+              <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
+                <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
+                  <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #166534;">선생님 피드백</span>
+                    <% if q.teacher_score.present? %>
+                      <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-left: auto;">
+                        <%= q.teacher_score %>점
+                      </span>
+                    <% end %>
+                  </div>
+                  <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">
+                    <%= simple_format(q.teacher_feedback) %>
+                  </div>
                 </div>
-                <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">
-                  <%= simple_format(q.teacher_feedback) %>
+              <% end %>
+            <% elsif q.ai_score.present? %>
+              <!-- 미배포: 피드백 대기중 표시 -->
+              <div style="margin-top: var(--rp-space-3); padding: var(--rp-space-3); background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--rp-radius-md); text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: var(--rp-space-2);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span style="font-size: var(--rp-font-size-sm); color: #92400e; font-weight: var(--rp-font-weight-medium);">
+                    선생님이 피드백을 검토하고 있습니다. 잠시만 기다려 주세요.
+                  </span>
                 </div>
               </div>
             <% end %>
@@ -296,7 +315,7 @@
   <!-- ============================== -->
   <!-- 6. Question Submission Form    -->
   <!-- ============================== -->
-  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;">
+  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;" id="questioning-form-area">
     <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4);">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -337,7 +356,6 @@
       <!-- Action bar -->
       <div class="q-action-bar">
         <div class="q-action-bar__left">
-          <!-- Intentionally empty for alignment -->
         </div>
         <div class="q-action-bar__right">
           <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg" id="submit-btn">
@@ -359,52 +377,125 @@
   </div>
 
   <!-- ============================== -->
-  <!-- 7. Next Stage / Complete        -->
+  <!-- 7. Feedback Status & Actions   -->
   <!-- ============================== -->
-  <% all_questions = @questions_by_stage.values.flatten %>
+  <% if questions_for_stage.any? %>
+    <%
+      # 현재 단계의 피드백 워크플로우 상태 결정
+      has_ai_evaluated = questions_for_stage.any? { |q| q.ai_score.present? }
+    %>
 
-  <% if current_stage < 3 && questions_for_stage.any? %>
-    <!-- 다음 단계로 이동 버튼 -->
-    <% next_stage_names = { 2 => "이야기나누기", 3 => "삶적용" } %>
-    <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #f0f4ff 100%); border: 1px solid #93c5fd; border-radius: var(--rp-radius-lg); text-align: center;">
-      <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #1e40af; margin: 0 0 var(--rp-space-2);">
-        <%= current_stage %>단계에서 <%= questions_for_stage.size %>개의 발문을 작성했습니다
-      </h3>
-      <p style="font-size: var(--rp-font-size-sm); color: #3b82f6; margin: 0 0 var(--rp-space-4);">
-        더 작성하거나, 준비가 되면 다음 단계로 이동하세요.
-      </p>
-      <%= form_with url: next_stage_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false } do |f| %>
-        <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
+    <% if stage_published && stage_has_unconfirmed %>
+      <!-- 상태 2: 배포됨 + 미확인 → "확인" / "더 해보기" / "도움받아 작성하기" 3버튼 -->
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border: 2px solid #818cf8; border-radius: var(--rp-radius-lg); text-align: center;">
+        <div style="margin-bottom: var(--rp-space-2);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
-          <%= current_stage + 1 %>단계: <%= next_stage_names[current_stage + 1] %>로 이동
-        </button>
-      <% end %>
-    </div>
-  <% end %>
+        </div>
+        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #312e81; margin: 0 0 var(--rp-space-2);">
+          선생님 피드백이 도착했습니다!
+        </h3>
+        <p style="font-size: var(--rp-font-size-sm); color: #4338ca; margin: 0 0 var(--rp-space-5);">
+          위의 피드백을 확인하고, 다음 중 하나를 선택하세요.
+        </p>
 
-  <% if current_stage == 3 && questions_for_stage.any? %>
-    <!-- 세션 완료 버튼 -->
-    <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #bbf7d0; border-radius: var(--rp-radius-lg); text-align: center;">
-      <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #166534; margin: 0 0 var(--rp-space-2);">
-        모든 단계를 완료했습니다!
-      </h3>
-      <p style="font-size: var(--rp-font-size-sm); color: #15803d; margin: 0 0 var(--rp-space-4);">
-        총 <%= all_questions.size %>개의 발문을 작성했습니다. 세션을 완료하시겠습니까?
-      </p>
-      <%= form_with url: complete_session_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false } do |f| %>
-        <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg"
-                onclick="return confirm('세션을 완료하시겠습니까? 완료 후에는 추가 발문을 작성할 수 없습니다.');">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          세션 완료하기
-        </button>
-      <% end %>
-    </div>
+        <div style="display: flex; gap: var(--rp-space-3); justify-content: center; flex-wrap: wrap;">
+          <!-- 확인 버튼 -->
+          <%= form_with url: confirm_feedback_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do |f| %>
+            <%= hidden_field_tag :stage, current_stage %>
+            <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              확인했습니다
+            </button>
+          <% end %>
+
+          <!-- 더 해보기 버튼 -->
+          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg"
+                  onclick="document.getElementById('questioning-form-area').scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('question-text-input').focus();">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            더 해보기
+          </button>
+
+          <!-- 도움받아 작성하기 버튼 -->
+          <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg"
+                  onclick="document.getElementById('template-cards')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); setQuestionType('guided');">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            도움받아 작성하기
+          </button>
+        </div>
+      </div>
+
+    <% elsif stage_confirmed && current_stage < 3 %>
+      <!-- 상태 3: 확인됨 + 1-2단계 → "다음 단계로 이동" 버튼 -->
+      <% next_stage_names = { 2 => "이야기나누기", 3 => "삶적용" } %>
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #eff6ff 0%, #f0f4ff 100%); border: 1px solid #93c5fd; border-radius: var(--rp-radius-lg); text-align: center;">
+        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #1e40af; margin: 0 0 var(--rp-space-2);">
+          <%= current_stage %>단계를 완료했습니다!
+        </h3>
+        <p style="font-size: var(--rp-font-size-sm); color: #3b82f6; margin: 0 0 var(--rp-space-4);">
+          더 작성하거나, 준비가 되면 다음 단계로 이동하세요.
+        </p>
+        <%= form_with url: next_stage_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false } do |f| %>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+            <%= current_stage + 1 %>단계: <%= next_stage_names[current_stage + 1] %>로 이동
+          </button>
+        <% end %>
+      </div>
+
+    <% elsif stage_confirmed && current_stage == 3 %>
+      <!-- 상태 4: 확인됨 + 3단계 → "세션 완료하기" 버튼 -->
+      <% all_questions = @questions_by_stage.values.flatten %>
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #bbf7d0; border-radius: var(--rp-radius-lg); text-align: center;">
+        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #166534; margin: 0 0 var(--rp-space-2);">
+          모든 단계를 완료했습니다!
+        </h3>
+        <p style="font-size: var(--rp-font-size-sm); color: #15803d; margin: 0 0 var(--rp-space-4);">
+          총 <%= all_questions.size %>개의 발문을 작성했습니다. 세션을 완료하시겠습니까?
+        </p>
+        <%= form_with url: complete_session_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false } do |f| %>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg"
+                  onclick="return confirm('세션을 완료하시겠습니까? 완료 후에는 추가 발문을 작성할 수 없습니다.');">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            세션 완료하기
+          </button>
+        <% end %>
+      </div>
+
+    <% elsif has_ai_evaluated && !stage_published %>
+      <!-- 상태 1: 미배포 → "선생님 피드백 대기중" 안내 -->
+      <div style="margin-top: var(--rp-space-6); padding: var(--rp-space-5); background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fde68a; border-radius: var(--rp-radius-lg); text-align: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.5" style="margin-bottom: var(--rp-space-2);">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <h3 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #92400e; margin: 0 0 var(--rp-space-2);">
+          선생님 피드백 대기중
+        </h3>
+        <p style="font-size: var(--rp-font-size-sm); color: #b45309; margin: 0 0 var(--rp-space-3);">
+          선생님이 피드백을 검토하고 있습니다. 피드백이 도착하면 확인 후 다음 단계로 이동할 수 있습니다.
+        </p>
+        <p style="font-size: var(--rp-font-size-sm); color: #92400e; margin: 0;">
+          기다리는 동안 추가 발문을 작성할 수 있습니다.
+        </p>
+      </div>
+    <% end %>
   <% end %>
 
 <% end %><!-- end unless is_finished -->
@@ -487,7 +578,7 @@
                 </span>
                 <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">
                   <%= q.type_label %>
-                  <% if q.scaffolding_used %>
+                  <% if q.scaffolding_used && q.scaffolding_used > 0 %>
                     &middot; 도움 사용
                   <% end %>
                 </span>
@@ -566,21 +657,16 @@
 <script>
   // Template selection
   function selectTemplate(card, templateId, templateText) {
-    // Clear all selected states
     document.querySelectorAll('.q-template-card[data-template-id]').forEach(function(c) {
       c.style.borderColor = '';
       c.style.background = '';
     });
-    // Highlight selected
     card.style.borderColor = 'var(--rp-primary)';
     card.style.background = 'var(--rp-primary-softer, #f0f4ff)';
-    // Set hidden fields
     document.getElementById('template-id-field').value = templateId;
     document.getElementById('question-type-field').value = 'guided';
     document.getElementById('scaffolding-used-field').value = '1';
-    // Update type buttons
     updateTypeButtons('guided');
-    // Pre-fill textarea hint if template text exists
     var textarea = document.getElementById('question-text-input');
     if (textarea && !textarea.value && templateText) {
       textarea.placeholder = templateText + ' ...을 바탕으로 발문을 만들어 보세요';
@@ -594,7 +680,6 @@
     if (type === 'free') {
       document.getElementById('template-id-field').value = '';
       document.getElementById('scaffolding-used-field').value = '0';
-      // Clear template selection
       document.querySelectorAll('.q-template-card[data-template-id]').forEach(function(c) {
         c.style.borderColor = '';
         c.style.background = '';
