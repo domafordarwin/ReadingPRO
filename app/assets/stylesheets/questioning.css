@@ -1094,17 +1094,50 @@
 }
 
 /* ============================================
-   14. Show Page (2-column)
+   14. Show Page (2-column: passage + activity)
    ============================================ */
 .q-show-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 3fr;
   gap: var(--rp-space-6);
+  align-items: start;
+}
+
+.q-show-layout__passage {
+  position: sticky;
+  top: 16px;
+}
+
+.q-show-layout__content {
+  min-width: 0;
+}
+
+/* Desktop: passage always visible, toggle becomes header-only */
+@media (min-width: 1025px) {
+  .q-show-layout__passage .q-passage-panel__toggle {
+    pointer-events: none;
+    cursor: default;
+  }
+  .q-show-layout__passage .q-passage-panel__toggle-icon {
+    display: none;
+  }
+  .q-show-layout__passage .q-passage-panel__body {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+  .q-show-layout__passage .q-passage-panel__body--collapsed {
+    max-height: calc(100vh - 140px);
+    padding: var(--rp-space-4);
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 1024px) {
   .q-show-layout {
     grid-template-columns: 1fr;
+  }
+  .q-show-layout__passage {
+    position: static;
   }
 }
 

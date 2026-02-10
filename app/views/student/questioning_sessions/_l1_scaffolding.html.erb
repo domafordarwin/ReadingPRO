@@ -237,13 +237,13 @@
        STEP 1: 이야기 속으로 (Guided Reading)
        ============================================ -->
   <div class="l1-scaffolding__banner">
-    <div class="l1-scaffolding__banner-mascot">&#128218;</div>
+    <div class="l1-scaffolding__banner-mascot">📚</div>
     <h2 class="l1-scaffolding__banner-title">이야기 속으로!</h2>
     <div class="l1-scaffolding__banner-sub"><%= stage_names[current_stage] %> 단계</div>
   </div>
 
   <div class="l1-scaffolding__guide">
-    <span class="l1-scaffolding__guide-mascot">&#129412;</span>
+    <span class="l1-scaffolding__guide-mascot">🦄</span>
     <span class="l1-scaffolding__guide-text">
       먼저 이야기에 대해 이야기해 보자!<br>
       아래 질문에 답해 주면, 선생님이 정리해 줄게!
@@ -253,7 +253,7 @@
   <%= form_with url: submit_guided_reading_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, local: true do |f| %>
     <div class="l1-gr-card">
       <div class="l1-gr-title">
-        <span class="l1-gr-title__icon">&#128214;</span>
+        <span class="l1-gr-title__icon">📖</span>
         <span class="l1-gr-title__text"><%= gr_questions[:title] %></span>
       </div>
 
@@ -271,7 +271,7 @@
       <% end %>
 
       <button type="submit" class="l1-gr-submit" id="gr-submit-btn">
-        &#9997;&#65039; 정리해 줘!
+        ✍️ 정리해 줘!
       </button>
     </div>
   <% end %>
@@ -281,14 +281,14 @@
        STEP 2: AI 요약 → 바로 글쓰기
        ============================================ -->
   <div class="l1-scaffolding__banner">
-    <div class="l1-scaffolding__banner-mascot">&#127775;</div>
+    <div class="l1-scaffolding__banner-mascot">🌟</div>
     <h2 class="l1-scaffolding__banner-title">오늘의 질문을 만들어요!</h2>
     <div class="l1-scaffolding__banner-sub"><%= stage_names[current_stage] %> 단계</div>
   </div>
 
   <div class="l1-summary">
     <div class="l1-summary__header">
-      <span class="l1-summary__icon">&#128218;</span>
+      <span class="l1-summary__icon">📚</span>
       <span class="l1-summary__title">이야기 정리</span>
     </div>
     <div class="l1-summary__body">
@@ -297,7 +297,7 @@
   </div>
 
   <div class="l1-scaffolding__guide">
-    <span class="l1-scaffolding__guide-mascot">&#128640;</span>
+    <span class="l1-scaffolding__guide-mascot">🚀</span>
     <span class="l1-scaffolding__guide-text">
       위 정리를 읽고, 궁금한 것을 아래에 써 봐!<br>
       아무 질문이나 좋아!
@@ -306,11 +306,11 @@
 
   <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--l1-gap);">
     <div class="l1-tip l1-tip--warm">
-      <span class="l1-tip__icon">&#128161;</span>
+      <span class="l1-tip__icon">💡</span>
       <span class="l1-tip__text">한 번에 한 가지만 물어보면 돼!</span>
     </div>
     <div class="l1-tip l1-tip--pink">
-      <span class="l1-tip__icon">&#128151;</span>
+      <span class="l1-tip__icon">💗</span>
       <span class="l1-tip__text">"왜 그랬을까?", "어떤 마음이었을까?" 같은 질문이 좋아!</span>
     </div>
   </div>

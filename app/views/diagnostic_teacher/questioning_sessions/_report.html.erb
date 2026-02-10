@@ -184,7 +184,7 @@
             <div style="margin-top: var(--rp-space-2);">
               <% strengths.first(3).each do |s| %>
                 <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-                  <span style="flex-shrink: 0;">&#10003;</span> <%= s %>
+                  <span style="flex-shrink: 0;">✓</span> <%= s %>
                 </div>
               <% end %>
             </div>
@@ -195,7 +195,7 @@
             <div style="margin-top: var(--rp-space-1);">
               <% improvements.first(3).each do |imp| %>
                 <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-                  <span style="flex-shrink: 0;">&#9651;</span> <%= imp %>
+                  <span style="flex-shrink: 0;">△</span> <%= imp %>
                 </div>
               <% end %>
             </div>
@@ -255,7 +255,7 @@
             <div style="margin-top: var(--rp-space-2);">
               <% strengths.first(3).each do |s| %>
                 <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-                  <span style="flex-shrink: 0;">&#10003;</span> <%= s %>
+                  <span style="flex-shrink: 0;">✓</span> <%= s %>
                 </div>
               <% end %>
             </div>
@@ -265,7 +265,7 @@
             <div style="margin-top: var(--rp-space-1);">
               <% improvements.first(3).each do |imp| %>
                 <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
-                  <span style="flex-shrink: 0;">&#9651;</span> <%= imp %>
+                  <span style="flex-shrink: 0;">△</span> <%= imp %>
                 </div>
               <% end %>
             </div>
@@ -336,7 +336,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <% all_strengths.first(6).each do |s| %>
             <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
-              <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">&#10003;</span>
+              <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">✓</span>
               <span><strong style="color: #166534;"><%= s[:area] %></strong> &mdash; <%= s[:text] %></span>
             </div>
           <% end %>
@@ -350,7 +350,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <% all_improvements.first(6).each do |imp| %>
             <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
-              <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">&#9651;</span>
+              <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">△</span>
               <span><strong style="color: #92400e;"><%= imp[:area] %></strong> &mdash; <%= imp[:text] %></span>
             </div>
           <% end %>
@@ -450,7 +450,7 @@
                   <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                     <% books.each do |book| %>
                       <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; font-size: 12px; color: #92400e;">
-                        &#128214; <%= book %>
+                        📖 <%= book %>
                       </span>
                     <% end %>
                   </div>

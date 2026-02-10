@@ -18,7 +18,7 @@
     2 => "이야기나누기",
     3 => "삶적용"
   }
-  stage_emojis = { 1 => "&#128218;", 2 => "&#128483;", 3 => "&#127793;" }
+  stage_emojis = { 1 => "📚", 2 => "🗣", 3 => "🌱" }
 
   is_completed = session&.status_completed? || false
   is_reviewed = session&.status_reviewed? || false
@@ -616,7 +616,7 @@
   <h1 class="l1-page-header__title"><%= @module&.title || "발문 학습 세션" %></h1>
   <% if is_finished %>
     <span class="l1-page-header__badge">
-      &#127942; <%= session.status_label %>
+      🏆 <%= session.status_label %>
     </span>
   <% end %>
 </div>
@@ -671,7 +671,7 @@
             aria-expanded="true" aria-controls="l1-passage-body"
             onclick="var b=document.getElementById('l1-passage-body'); var e=this.getAttribute('aria-expanded')==='true'; this.setAttribute('aria-expanded', String(!e)); b.classList.toggle('l1-passage-body--collapsed'); this.querySelector('.l1-passage-toggle__icon').style.transform = e ? 'rotate(180deg)' : '';">
       <span class="l1-passage-toggle__text">
-        &#128214; <%= @stimulus&.title || "오늘의 이야기" %>
+        📖 <%= @stimulus&.title || "오늘의 이야기" %>
       </span>
       <svg class="l1-passage-toggle__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= '#92400e' %>" stroke-width="3">
         <polyline points="6 9 12 15 18 9"></polyline>
@@ -716,7 +716,7 @@
   <% if has_questions %>
     <div class="l1-questions">
       <h3 class="l1-questions__title">
-        &#128221; 내가 쓴 질문 (<%= questions_for_stage.size %>개)
+        📝 내가 쓴 질문 (<%= questions_for_stage.size %>개)
       </h3>
       <% questions_for_stage.each_with_index do |q, idx| %>
         <div class="l1-q-item" id="<%= 'latest-question' if idx == questions_for_stage.size - 1 && flash[:notice]&.include?('제출') %>">
@@ -726,7 +726,7 @@
             <% if q.ai_score.present? %>
               <span class="l1-q-stars">
                 <% stars = q.ai_score >= 80 ? 3 : (q.ai_score >= 50 ? 2 : 1) %>
-                <% stars.times do %>&#11088;<% end %>
+                <% stars.times do %>⭐<% end %>
               </span>
             <% end %>
           </div>
@@ -735,13 +735,13 @@
           <!-- AI 피드백: 즉시 표시 -->
           <% if q.ai_feedback.present? %>
             <div class="l1-feedback l1-feedback--ai">
-              <span class="l1-feedback__mascot">&#129302;</span>
+              <span class="l1-feedback__mascot">🤖</span>
               <div class="l1-feedback__content">
                 <span class="l1-feedback__name">AI 선생님</span>
                 <div class="l1-feedback__text"><%= simple_format(q.ai_feedback) %></div>
                 <% if q.ai_strengths.present? %>
                   <div class="l1-feedback__details">
-                    <strong style="color: var(--l1-success);">&#127775; 잘한 점:</strong>
+                    <strong style="color: var(--l1-success);">🌟 잘한 점:</strong>
                     <%= Array(q.ai_strengths).join(", ") %>
                   </div>
                 <% end %>
@@ -752,7 +752,7 @@
           <!-- 교사 피드백: 있으면 자연스럽게 표시 (차단 없음) -->
           <% if q.feedback_published? && q.teacher_reviewed? && q.teacher_feedback.present? %>
             <div class="l1-feedback l1-feedback--teacher">
-              <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+              <span class="l1-feedback__mascot">👩‍🏫</span>
               <div class="l1-feedback__content">
                 <span class="l1-feedback__name">선생님</span>
                 <div class="l1-feedback__text"><%= simple_format(q.teacher_feedback) %></div>
@@ -774,7 +774,7 @@
   <!-- ============================== -->
   <% show_form = has_guided_reading %>
   <div class="l1-card l1-card--form" id="questioning-form-area"<%= ' style="display:none;"'.html_safe unless show_form %>>
-    <h3 class="l1-form-title">&#128221; 나의 질문</h3>
+    <h3 class="l1-form-title">📝 나의 질문</h3>
 
     <%= form_with url: submit_question_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, id: "questioning-form" do |f| %>
       <%= hidden_field_tag "student_question[question_type]", "free", id: "question-type-field" %>
@@ -782,7 +782,7 @@
       <%= hidden_field_tag "student_question[questioning_template_id]", "", id: "template-id-field" %>
 
       <label class="l1-form-label" for="question-text-input">
-        &#9997;&#65039; 여기에 질문을 적어 봐!
+        ✍️ 여기에 질문을 적어 봐!
       </label>
       <textarea name="student_question[question_text]" id="question-text-input" class="l1-textarea"
                 placeholder="이야기를 읽고 궁금한 것을 써 봐! 예: '왜 그랬을까?', '어떤 마음이었을까?'"
@@ -791,7 +791,7 @@
 
       <div style="margin-top: var(--l1-gap);">
         <button type="submit" class="l1-btn l1-btn--primary" id="submit-btn">
-          &#128640; 제출하기!
+          🚀 제출하기!
         </button>
       </div>
     <% end %>
@@ -808,27 +808,27 @@
   <% if has_questions %>
     <div class="l1-stage-action">
       <% if current_stage < 3 %>
-        <h3 class="l1-stage-action__title">&#127775; 잘했어!</h3>
+        <h3 class="l1-stage-action__title">🌟 잘했어!</h3>
         <p class="l1-stage-action__sub">질문을 더 쓸 수도 있고, 다음 단계로 갈 수도 있어!</p>
         <%= form_with url: next_stage_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do %>
           <button type="submit" class="l1-btn l1-btn--primary">
-            다음 단계로 가자! &#10145;&#65039;
+            다음 단계로 가자! ➡️
           </button>
         <% end %>
       <% else %>
         <% all_count = @questions_by_stage.values.flatten.size %>
-        <h3 class="l1-stage-action__title">&#127942; 대단해!</h3>
+        <h3 class="l1-stage-action__title">🏆 대단해!</h3>
         <p class="l1-stage-action__sub">총 <%= all_count %>개의 질문을 만들었어!</p>
         <%= form_with url: complete_session_student_questioning_session_path(@questioning_session), method: :patch, data: { turbo: false }, style: "display: inline;" do %>
           <button type="submit" class="l1-btn l1-btn--success"
                   onclick="return confirm('학습을 완료할까요?');">
-            &#127881; 학습 완료!
+            🎉 학습 완료!
           </button>
         <% end %>
       <% end %>
       <button type="button" class="l1-btn l1-btn--secondary"
               onclick="document.getElementById('questioning-form-area').scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('question-text-input').focus();">
-        &#9997;&#65039; 질문 더 쓰기
+        ✍️ 질문 더 쓰기
       </button>
     </div>
   <% end %>
@@ -841,7 +841,7 @@
   <!-- 10. Session Summary (completed)-->
   <!-- ============================== -->
   <div class="l1-summary-header">
-    <div class="l1-summary-header__emoji">&#127942;</div>
+    <div class="l1-summary-header__emoji">🏆</div>
     <h2 class="l1-summary-header__title">
       학습 <%= is_reviewed ? "검토 완료" : "완료" %>!
     </h2>
@@ -873,7 +873,7 @@
   <!-- Teacher Comment -->
   <% if session.teacher_comment.present? %>
     <div class="l1-feedback l1-feedback--teacher" style="margin-bottom: var(--l1-gap);">
-      <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+      <span class="l1-feedback__mascot">👩‍🏫</span>
       <div class="l1-feedback__content">
         <span class="l1-feedback__name">선생님 총평</span>
         <div class="l1-feedback__text"><%= simple_format(session.teacher_comment) %></div>
@@ -896,7 +896,7 @@
             <% if q.final_score.present? %>
               <span class="l1-q-stars" style="margin-left: auto;">
                 <% stars = q.final_score >= 80 ? 3 : (q.final_score >= 50 ? 2 : 1) %>
-                <% stars.times do %>&#11088;<% end %>
+                <% stars.times do %>⭐<% end %>
                 <span style="font-size: var(--l1-font-small); color: var(--l1-text-muted); margin-left: 4px;"><%= q.final_score %>점</span>
               </span>
             <% end %>
@@ -905,7 +905,7 @@
 
           <% if q.ai_feedback.present? %>
             <div class="l1-feedback l1-feedback--ai">
-              <span class="l1-feedback__mascot">&#129302;</span>
+              <span class="l1-feedback__mascot">🤖</span>
               <div class="l1-feedback__content">
                 <span class="l1-feedback__name">AI 선생님</span>
                 <div class="l1-feedback__text"><%= simple_format(q.ai_feedback) %></div>
@@ -915,7 +915,7 @@
 
           <% if q.teacher_reviewed? && q.teacher_feedback.present? %>
             <div class="l1-feedback l1-feedback--teacher">
-              <span class="l1-feedback__mascot">&#128105;&#8205;&#127979;</span>
+              <span class="l1-feedback__mascot">👩‍🏫</span>
               <div class="l1-feedback__content">
                 <span class="l1-feedback__name">선생님</span>
                 <div class="l1-feedback__text"><%= simple_format(q.teacher_feedback) %></div>
@@ -930,7 +930,7 @@
   <!-- Back to List -->
   <div style="text-align: center; padding-top: var(--l1-gap);">
     <%= link_to student_questioning_index_path, class: "l1-btn l1-btn--secondary", style: "display: inline-flex; width: auto;" do %>
-      &#8592; 목록으로 돌아가기
+      ← 목록으로 돌아가기
     <% end %>
   </div>
 <% end %>
