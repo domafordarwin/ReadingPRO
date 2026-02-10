@@ -93,6 +93,9 @@ Rails.application.routes.draw do
     resources :questioning_sessions, only: [:show] do
       member do
         post :submit_question
+        post :send_discussion
+        patch :confirm_hypothesis
+        post :submit_essay
         patch :complete_session
         patch :next_stage
         patch :confirm_feedback
@@ -256,6 +259,9 @@ Rails.application.routes.draw do
       member do
         patch :review
         patch :publish_stage_feedback
+        post :generate_report
+        patch :publish_report
+        patch :update_essay_feedback
       end
     end
 

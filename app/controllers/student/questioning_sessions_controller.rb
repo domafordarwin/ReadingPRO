@@ -22,6 +22,11 @@ class Student::QuestioningSessionsController < ApplicationController
 
     # Load templates for current stage
     @current_templates = @module.templates_for_stage(@questioning_session.current_stage)
+
+    # Load discussion messages, essay, and report for L4
+    @discussion_messages = @questioning_session.discussion_messages_for_stage(@questioning_session.current_stage)
+    @essay = @questioning_session.argumentative_essay
+    @report = @questioning_session.questioning_report
   end
 
   def submit_question
@@ -58,6 +63,89 @@ class Student::QuestioningSessionsController < ApplicationController
     else
       redirect_to student_questioning_session_path(@questioning_session),
                   alert: "발문 제출에 실패했습니다: #{question.errors.full_messages.join(', ')}"
+    end
+  end
+
+  # POST /student/questioning_sessions/:id/send_discussion
+  def send_discussion
+    @current_page = "questioning"
+    message = params[:message]&.strip
+
+    if message.blank?
+      redirect_to student_questioning_session_path(@questioning_session), alert: "메시지를 입력해 주세요."
+      return
+    end
+
+    service = QuestioningDiscussionService.new(@questioning_session, stage: @questioning_session.current_stage)
+
+    unless service.can_continue?
+      redirect_to student_questioning_session_path(@questioning_session), alert: "토론 최대 횟수(10턴)에 도달했습니다."
+      return
+    end
+
+    begin
+      service.respond_to_student!(message)
+    rescue StandardError => e
+      Rails.logger.error("Discussion error: #{e.message}")
+      redirect_to student_questioning_session_path(@questioning_session), alert: "토론 처리 중 오류가 발생했습니다."
+      return
+    end
+
+    redirect_to student_questioning_session_path(@questioning_session, anchor: "discussion-panel")
+  end
+
+  # PATCH /student/questioning_sessions/:id/confirm_hypothesis
+  def confirm_hypothesis
+    @current_page = "questioning"
+
+    hypothesis_data = {
+      "hypothesis" => params[:hypothesis],
+      "evidence" => params[:evidence],
+      "counterargument" => params[:counterargument],
+      "conclusion" => params[:conclusion]
+    }
+
+    service = QuestioningDiscussionService.new(@questioning_session, stage: @questioning_session.current_stage)
+    service.confirm_hypothesis!(hypothesis_data)
+
+    redirect_to student_questioning_session_path(@questioning_session),
+                notice: "가설논증 구조가 확정되었습니다."
+  end
+
+  # POST /student/questioning_sessions/:id/submit_essay
+  def submit_essay
+    @current_page = "questioning"
+
+    topic = params[:essay_topic]&.strip
+    essay_text = params[:essay_text]&.strip
+
+    if topic.blank? || essay_text.blank?
+      redirect_to student_questioning_session_path(@questioning_session), alert: "주제와 에세이 본문을 모두 입력해 주세요."
+      return
+    end
+
+    @module = @questioning_session.questioning_module
+    @stimulus = @module.reading_stimulus
+
+    essay = @questioning_session.build_argumentative_essay(
+      topic: topic,
+      essay_text: essay_text,
+      submitted_at: Time.current
+    )
+
+    if essay.save
+      # AI 평가
+      begin
+        ArgumentativeEssayEvaluationService.new(essay).evaluate!
+      rescue StandardError => e
+        Rails.logger.error("Essay evaluation failed: #{e.message}")
+      end
+
+      redirect_to student_questioning_session_path(@questioning_session),
+                  notice: "논증적 글쓰기가 제출되었습니다."
+    else
+      redirect_to student_questioning_session_path(@questioning_session),
+                  alert: "에세이 제출에 실패했습니다: #{essay.errors.full_messages.join(', ')}"
     end
   end
 

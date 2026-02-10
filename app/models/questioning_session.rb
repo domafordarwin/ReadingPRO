@@ -5,6 +5,9 @@ class QuestioningSession < ApplicationRecord
   belongs_to :student
   belongs_to :questioning_module, counter_cache: :sessions_count
   has_many :student_questions, dependent: :destroy
+  has_many :discussion_messages, dependent: :destroy
+  has_one :argumentative_essay, dependent: :destroy
+  has_one :questioning_report, dependent: :destroy
 
   # Enums
   enum :status, {
@@ -88,6 +91,21 @@ class QuestioningSession < ApplicationRecord
   # 피드백 미배포 질문 수
   def unpublished_feedback_count
     student_questions.where(feedback_published_at: nil).where.not(ai_score: nil).count
+  end
+
+  # 가설 확정 여부
+  def hypothesis_confirmed?
+    hypothesis_confirmed == true
+  end
+
+  # 특정 단계의 토론 메시지
+  def discussion_messages_for_stage(stage_number)
+    discussion_messages.for_stage(stage_number).ordered
+  end
+
+  # 토론 턴 수
+  def discussion_turn_count(stage_number = 2)
+    discussion_messages.for_stage(stage_number).maximum(:turn_number) || 0
   end
 
   def complete!

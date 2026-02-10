@@ -1,5 +1,7 @@
 <%#
-  L1 초저(초1-2) 수준 스캐폴딩 UI
+  L1 초저(초1-2) 수준 스캐폴딩 UI - V2 전면 개선
+  큰 글자, 큰 버튼, 밝은 파스텔, 단계별 순차 표시
+
   Local variables:
     - current_stage (Integer, 1-3)
     - module_obj (QuestioningModule)
@@ -7,7 +9,6 @@
 %>
 
 <%
-  # Determine current scaffolding level for the student (default 3 = maximum help)
   scaffolding_level = 3
   if defined?(@student) && @student.present? && module_obj.present?
     progress = @student.questioning_progresses.find_by(
@@ -16,247 +17,658 @@
     scaffolding_level = progress&.current_scaffolding || 3
   end
 
+  stage_emojis = { 1 => "&#128218;", 2 => "&#128483;", 3 => "&#127793;" }
   stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
 %>
 
-<!-- ============================== -->
-<!-- L1 Scaffolding Widgets         -->
-<!-- ============================== -->
-<div class="q-level--l1" id="l1-scaffolding-panel">
+<style>
+  /* ============================================
+     L1 Kid-Friendly UI - Bright & Big
+     ============================================ */
 
-  <!-- (A) Writing Tips -->
-  <div class="l1-widget" id="l1-tips-widget">
-    <button class="l1-widget__toggle" type="button" aria-expanded="true"
-            aria-controls="l1-tips-body" onclick="toggleL1Widget(this, 'l1-tips-body')">
-      <span class="l1-widget__toggle-label">
-        <span class="l1-widget__toggle-icon-left">&#128161;</span>
-        발문 작성 팁
-      </span>
-      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </button>
-    <div class="l1-widget__body" id="l1-tips-body">
-      <div class="l1-tips-grid">
-        <div class="l1-tip-card" aria-label="팁 1: 한 가지만 물어보기">
-          <div class="l1-tip-card__icon">&#9757;</div>
-          <div class="l1-tip-card__text">한 번에 <strong>한 가지</strong>만 물어보세요</div>
-        </div>
-        <div class="l1-tip-card" aria-label="팁 2: 느낌 물어보기">
-          <div class="l1-tip-card__icon">&#128151;</div>
-          <div class="l1-tip-card__text">"<strong>어떤 마음이 들었니?</strong>"처럼 느낌을 물어보면 좋아요</div>
-        </div>
-        <div class="l1-tip-card" aria-label="팁 3: 나라면 어떻게">
-          <div class="l1-tip-card__icon">&#129300;</div>
-          <div class="l1-tip-card__text">"<strong>나라면 어떻게 했을까?</strong>"도 좋은 발문이에요</div>
-        </div>
-      </div>
-    </div>
+  .l1-kid {
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  /* --- Header Banner --- */
+  .l1-kid__banner {
+    text-align: center;
+    padding: 24px 20px 20px;
+    background: linear-gradient(135deg, #fef3c7, #fbcfe8, #ddd6fe);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 2px solid #fde68a;
+  }
+
+  .l1-kid__banner-mascot {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .l1-kid__banner-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #7c3aed;
+    margin: 0;
+  }
+
+  .l1-kid__banner-sub {
+    font-size: 16px;
+    color: #6b21a8;
+    margin-top: 4px;
+  }
+
+  /* --- Step Tabs --- */
+  .l1-kid__tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 0 4px;
+  }
+
+  .l1-kid__tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 8px;
+    background: white;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    font-size: 15px;
+    font-weight: 700;
+    color: #6b7280;
+  }
+
+  .l1-kid__tab--active {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    color: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  }
+
+  .l1-kid__tab-emoji {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .l1-kid__tab-label {
+    font-size: 13px;
+  }
+
+  /* --- Step Panels --- */
+  .l1-kid__panel {
+    display: none;
+  }
+
+  .l1-kid__panel--active {
+    display: block;
+  }
+
+  /* --- Character Guide (speech bubble) --- */
+  .l1-kid__guide {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: #fef9c3;
+    border: 2px solid #fde68a;
+    border-radius: 20px;
+    position: relative;
+  }
+
+  .l1-kid__guide-mascot {
+    font-size: 40px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .l1-kid__guide-text {
+    font-size: 18px;
+    color: #92400e;
+    line-height: 1.7;
+    font-weight: 600;
+  }
+
+  /* --- Big Emoji Selector --- */
+  .l1-kid__emoji-grid {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+  }
+
+  .l1-kid__emoji-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: white;
+    border: 3px solid #e5e7eb;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    min-width: 88px;
+  }
+
+  .l1-kid__emoji-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+
+  .l1-kid__emoji-btn--selected {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    transform: scale(1.12);
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+  }
+
+  .l1-kid__emoji-face {
+    font-size: 48px;
+    line-height: 1;
+  }
+
+  .l1-kid__emoji-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  /* --- Big O/X Buttons --- */
+  .l1-kid__ox-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 12px 0;
+  }
+
+  .l1-kid__ox-btn {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    border: 4px solid;
+  }
+
+  .l1-kid__ox-btn:hover {
+    transform: scale(1.08);
+  }
+
+  .l1-kid__ox-btn--o {
+    background: #f0fdf4;
+    border-color: #86efac;
+  }
+
+  .l1-kid__ox-btn--o:hover {
+    background: #dcfce7;
+    border-color: #22c55e;
+  }
+
+  .l1-kid__ox-btn--x {
+    background: #fef2f2;
+    border-color: #fca5a5;
+  }
+
+  .l1-kid__ox-btn--x:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+  }
+
+  .l1-kid__ox-symbol {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .l1-kid__ox-btn--o .l1-kid__ox-symbol { color: #16a34a; }
+  .l1-kid__ox-btn--x .l1-kid__ox-symbol { color: #dc2626; }
+
+  .l1-kid__ox-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .l1-kid__ox-btn--selected {
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  .l1-kid__ox-btn--o.l1-kid__ox-btn--selected {
+    background: #dcfce7;
+    border-color: #16a34a;
+  }
+
+  .l1-kid__ox-btn--x.l1-kid__ox-btn--selected {
+    background: #fee2e2;
+    border-color: #dc2626;
+  }
+
+  /* --- Template Cards (1-column, big) --- */
+  .l1-kid__template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .l1-kid__template-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: white;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .l1-kid__template-card:hover {
+    border-color: #8b5cf6;
+    background: #faf5ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+  }
+
+  .l1-kid__template-card--selected {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  }
+
+  .l1-kid__template-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .l1-kid__template-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.5;
+  }
+
+  .l1-kid__template-text strong {
+    color: #7c3aed;
+  }
+
+  /* --- Section Divider --- */
+  .l1-kid__divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: #9ca3af;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .l1-kid__divider::before,
+  .l1-kid__divider::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: #e5e7eb;
+    border-radius: 1px;
+  }
+
+  /* --- Scaffolding Badge --- */
+  .l1-kid__level-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #eff6ff;
+    border: 2px solid #bfdbfe;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
+  .l1-kid__level-badge-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .l1-kid__level-badge-text {
+    font-size: 16px;
+    color: #1e40af;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .l1-kid { font-size: 16px; }
+    .l1-kid__banner-title { font-size: 20px; }
+    .l1-kid__banner-mascot { font-size: 40px; }
+    .l1-kid__emoji-face { font-size: 40px; }
+    .l1-kid__emoji-btn { min-width: 72px; padding: 12px; }
+    .l1-kid__ox-btn { width: 100px; height: 100px; }
+    .l1-kid__ox-symbol { font-size: 32px; }
+    .l1-kid__template-icon { font-size: 28px; }
+    .l1-kid__template-text { font-size: 16px; }
+    .l1-kid__tab { padding: 10px 6px; }
+    .l1-kid__tab-emoji { font-size: 22px; }
+    .l1-kid__tab-label { font-size: 11px; }
+    .l1-kid__guide-text { font-size: 16px; }
+    .l1-kid__guide-mascot { font-size: 32px; }
+  }
+</style>
+
+<div class="l1-kid" id="l1-scaffolding-panel">
+
+  <!-- Banner -->
+  <div class="l1-kid__banner">
+    <div class="l1-kid__banner-mascot">&#127775;</div>
+    <h2 class="l1-kid__banner-title">오늘의 질문을 만들어요!</h2>
+    <div class="l1-kid__banner-sub"><%= stage_names[current_stage] %> 단계</div>
   </div>
 
-  <% if scaffolding_level >= 2 %>
-  <!-- (B) Emoji Feeling Selector -->
-  <div class="l1-widget q-l1-emoji-prompt" id="l1-emoji-widget">
-    <button class="l1-widget__toggle" type="button" aria-expanded="true"
-            aria-controls="l1-emoji-body" onclick="toggleL1Widget(this, 'l1-emoji-body')">
-      <span class="l1-widget__toggle-label">
-        <span class="l1-widget__toggle-icon-left">&#128522;</span>
-        감정 골라보기
-      </span>
-      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  <!-- Step Tabs -->
+  <div class="l1-kid__tabs" role="tablist" aria-label="도움 단계 선택">
+    <button type="button" class="l1-kid__tab l1-kid__tab--active" role="tab"
+            aria-selected="true" onclick="l1SwitchTab(this, 'l1-panel-feel')" id="l1-tab-feel">
+      <span class="l1-kid__tab-emoji">&#128522;</span>
+      <span class="l1-kid__tab-label">감정 고르기</span>
     </button>
-    <div class="l1-widget__body" id="l1-emoji-body">
-      <p class="l1-widget__hint">인물의 마음은 어땠을까요? 감정을 골라 보세요!</p>
-      <div class="q-emoji-selector" role="group" aria-label="감정 선택">
-        <div class="l1-emoji-item">
-          <button type="button" class="q-emoji-selector__btn" aria-label="기쁨"
-                  onclick="l1SelectEmotion(this, '기쁨', '&#128522;')">&#128522;</button>
-          <div class="q-emoji-selector__label">기쁨</div>
-        </div>
-        <div class="l1-emoji-item">
-          <button type="button" class="q-emoji-selector__btn" aria-label="슬픔"
-                  onclick="l1SelectEmotion(this, '슬픔', '&#128546;')">&#128546;</button>
-          <div class="q-emoji-selector__label">슬픔</div>
-        </div>
-        <div class="l1-emoji-item">
-          <button type="button" class="q-emoji-selector__btn" aria-label="놀람"
-                  onclick="l1SelectEmotion(this, '놀람', '&#128558;')">&#128558;</button>
-          <div class="q-emoji-selector__label">놀람</div>
-        </div>
-        <div class="l1-emoji-item">
-          <button type="button" class="q-emoji-selector__btn" aria-label="화남"
-                  onclick="l1SelectEmotion(this, '화남', '&#128544;')">&#128544;</button>
-          <div class="q-emoji-selector__label">화남</div>
-        </div>
-        <div class="l1-emoji-item">
-          <button type="button" class="q-emoji-selector__btn" aria-label="무서움"
-                  onclick="l1SelectEmotion(this, '무서움', '&#128552;')">&#128552;</button>
-          <div class="q-emoji-selector__label">무서움</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <% end %>
-
-  <% if scaffolding_level >= 3 %>
-  <!-- (C) O/X Selection Widget -->
-  <div class="l1-widget" id="l1-ox-widget">
-    <button class="l1-widget__toggle" type="button" aria-expanded="true"
-            aria-controls="l1-ox-body" onclick="toggleL1Widget(this, 'l1-ox-body')">
-      <span class="l1-widget__toggle-label">
-        <span class="l1-widget__toggle-icon-left">&#9898;</span>
-        O / X 골라보기
-      </span>
-      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    <% if scaffolding_level >= 2 %>
+      <button type="button" class="l1-kid__tab" role="tab"
+              aria-selected="false" onclick="l1SwitchTab(this, 'l1-panel-template')" id="l1-tab-template">
+        <span class="l1-kid__tab-emoji">&#128172;</span>
+        <span class="l1-kid__tab-label">따라 쓰기</span>
+      </button>
+    <% end %>
+    <button type="button" class="l1-kid__tab" role="tab"
+            aria-selected="false" onclick="l1SwitchTab(this, 'l1-panel-free')" id="l1-tab-free">
+      <span class="l1-kid__tab-emoji">&#9997;</span>
+      <span class="l1-kid__tab-label">직접 쓰기</span>
     </button>
-    <div class="l1-widget__body" id="l1-ox-body">
-      <p class="l1-widget__hint">맞다고 생각하면 O, 아니라고 생각하면 X를 눌러 보세요!</p>
-      <div class="l1-ox-selector" role="group" aria-label="O/X 선택">
-        <button type="button" class="l1-ox-btn l1-ox-btn--o" aria-label="맞아요 (O)"
-                onclick="l1SelectOX(this, true)">
-          <span class="l1-ox-btn__symbol">O</span>
-          <span class="l1-ox-btn__label">맞아요</span>
-        </button>
-        <button type="button" class="l1-ox-btn l1-ox-btn--x" aria-label="아니에요 (X)"
-                onclick="l1SelectOX(this, false)">
-          <span class="l1-ox-btn__symbol">X</span>
-          <span class="l1-ox-btn__label">아니에요</span>
-        </button>
-      </div>
-    </div>
-  </div>
-  <% end %>
-
-  <!-- (D) Short Question Templates -->
-  <div class="l1-widget" id="l1-templates-widget">
-    <button class="l1-widget__toggle" type="button" aria-expanded="true"
-            aria-controls="l1-templates-body" onclick="toggleL1Widget(this, 'l1-templates-body')">
-      <span class="l1-widget__toggle-label">
-        <span class="l1-widget__toggle-icon-left">&#128172;</span>
-        발문 따라하기
-      </span>
-      <svg class="l1-widget__toggle-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </button>
-    <div class="l1-widget__body" id="l1-templates-body">
-      <p class="l1-widget__hint">마음에 드는 발문을 골라보세요. 자동으로 입력돼요!</p>
-      <div class="l1-template-grid">
-        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 어떤 마음이 들었니?"
-                onclick="l1UseTemplate(this, '(장면)에서 어떤 마음이 들었니?')">
-          <span class="l1-template-card__icon">&#128151;</span>
-          <span class="l1-template-card__text">(장면)에서 <strong>어떤 마음</strong>이 들었니?</span>
-        </button>
-        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 그렇게 한 이유는?"
-                onclick="l1UseTemplate(this, '(인물)이 그렇게 한 이유는 뭐라고 생각해?')">
-          <span class="l1-template-card__icon">&#129488;</span>
-          <span class="l1-template-card__text">(인물)이 그렇게 한 이유는 <strong>뭐라고 생각해?</strong></span>
-        </button>
-        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 나라면 어떻게 했을까?"
-                onclick="l1UseTemplate(this, '나라면 어떻게 했을까?')">
-          <span class="l1-template-card__icon">&#128588;</span>
-          <span class="l1-template-card__text">나라면 <strong>어떻게 했을까?</strong></span>
-        </button>
-        <button type="button" class="l1-template-card" aria-label="발문 템플릿: 지금 할 수 있는 작은 실천"
-                onclick="l1UseTemplate(this, '우리 반에서 지금 할 수 있는 작은 실천은 뭐가 있을까?')">
-          <span class="l1-template-card__icon">&#127793;</span>
-          <span class="l1-template-card__text">우리 반에서 <strong>지금 할 수 있는 작은 실천</strong>은 뭐가 있을까?</span>
-        </button>
-      </div>
-    </div>
   </div>
 
-  <!-- (E) Scaffolding Level Guide -->
-  <div class="l1-scaffolding-guide" aria-label="스캐폴딩 안내">
+  <!-- Scaffolding Level Badge -->
+  <div class="l1-kid__level-badge" aria-label="스캐폴딩 안내">
     <% case scaffolding_level %>
     <% when 3 %>
-      <div class="l1-scaffolding-guide__icon">&#127919;</div>
-      <div class="l1-scaffolding-guide__text">
-        <strong>단계 3</strong> &mdash; O/X 선택, 이모지 선택, 발문 따라하기 등 <strong>시각적 도구</strong>로 쉽게 시작해요
-      </div>
+      <span class="l1-kid__level-badge-icon">&#127919;</span>
+      <span class="l1-kid__level-badge-text">도움 많이 받기 - 감정 고르기, O/X, 따라 쓰기를 사용해요!</span>
     <% when 2 %>
-      <div class="l1-scaffolding-guide__icon">&#128170;</div>
-      <div class="l1-scaffolding-guide__text">
-        <strong>단계 2</strong> &mdash; 감정 선택과 발문 따라하기를 참고해서 나만의 발문을 만들어 보세요
-      </div>
+      <span class="l1-kid__level-badge-icon">&#128170;</span>
+      <span class="l1-kid__level-badge-text">조금만 도움받기 - 감정 고르기와 따라 쓰기를 참고해요!</span>
     <% when 1 %>
-      <div class="l1-scaffolding-guide__icon">&#11088;</div>
-      <div class="l1-scaffolding-guide__text">
-        <strong>단계 1</strong> &mdash; 팁을 참고해서 조금만 도움받아 발문을 작성해 보세요
-      </div>
+      <span class="l1-kid__level-badge-icon">&#11088;</span>
+      <span class="l1-kid__level-badge-text">힌트만 보기 - 팁을 참고해서 발문을 만들어요!</span>
     <% when 0 %>
-      <div class="l1-scaffolding-guide__icon">&#127941;</div>
-      <div class="l1-scaffolding-guide__text">
-        <strong>자유 단계</strong> &mdash; 도움 없이 자기만의 발문을 자유롭게 만들어 보세요!
+      <span class="l1-kid__level-badge-icon">&#127941;</span>
+      <span class="l1-kid__level-badge-text">혼자서 해보기 - 멋진 발문을 자유롭게 만들어 봐!</span>
+    <% end %>
+  </div>
+
+  <!-- ============================================
+       Panel 1: 감정 고르기 (Feel)
+       ============================================ -->
+  <div class="l1-kid__panel l1-kid__panel--active" id="l1-panel-feel" role="tabpanel">
+
+    <!-- Character Guide -->
+    <div class="l1-kid__guide">
+      <span class="l1-kid__guide-mascot">&#129412;</span>
+      <span class="l1-kid__guide-text">
+        <% if current_stage == 1 %>
+          책 속 친구는 어떤 기분일까? 감정을 하나 골라 봐!
+        <% elsif current_stage == 2 %>
+          이 장면에서 인물은 어떤 마음일까? 골라 봐!
+        <% else %>
+          나라면 어떤 기분이 들었을까? 골라 봐!
+        <% end %>
+      </span>
+    </div>
+
+    <!-- Emoji Selector -->
+    <div class="l1-kid__emoji-grid" role="group" aria-label="감정 선택">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="기쁨"
+              onclick="l1SelectEmotion(this, '기쁨')">
+        <span class="l1-kid__emoji-face">&#128522;</span>
+        <span class="l1-kid__emoji-label">기쁨</span>
+      </button>
+      <button type="button" class="l1-kid__emoji-btn" aria-label="슬픔"
+              onclick="l1SelectEmotion(this, '슬픔')">
+        <span class="l1-kid__emoji-face">&#128546;</span>
+        <span class="l1-kid__emoji-label">슬픔</span>
+      </button>
+      <button type="button" class="l1-kid__emoji-btn" aria-label="놀람"
+              onclick="l1SelectEmotion(this, '놀람')">
+        <span class="l1-kid__emoji-face">&#128558;</span>
+        <span class="l1-kid__emoji-label">놀람</span>
+      </button>
+      <button type="button" class="l1-kid__emoji-btn" aria-label="화남"
+              onclick="l1SelectEmotion(this, '화남')">
+        <span class="l1-kid__emoji-face">&#128544;</span>
+        <span class="l1-kid__emoji-label">화남</span>
+      </button>
+      <button type="button" class="l1-kid__emoji-btn" aria-label="무서움"
+              onclick="l1SelectEmotion(this, '무서움')">
+        <span class="l1-kid__emoji-face">&#128552;</span>
+        <span class="l1-kid__emoji-label">무서움</span>
+      </button>
+    </div>
+
+    <% if scaffolding_level >= 3 %>
+      <div class="l1-kid__divider">또는</div>
+
+      <!-- O/X Selector -->
+      <div class="l1-kid__guide">
+        <span class="l1-kid__guide-mascot">&#129302;</span>
+        <span class="l1-kid__guide-text">
+          맞다고 생각하면 O, 아니라고 생각하면 X를 눌러!
+        </span>
+      </div>
+
+      <div class="l1-kid__ox-row" role="group" aria-label="O/X 선택">
+        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--o" aria-label="맞아요 (O)"
+                onclick="l1SelectOX(this, true)">
+          <span class="l1-kid__ox-symbol">O</span>
+          <span class="l1-kid__ox-text">맞아요</span>
+        </button>
+        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--x" aria-label="아니에요 (X)"
+                onclick="l1SelectOX(this, false)">
+          <span class="l1-kid__ox-symbol">X</span>
+          <span class="l1-kid__ox-text">아니에요</span>
+        </button>
       </div>
     <% end %>
   </div>
 
-</div><!-- /#l1-scaffolding-panel -->
+  <!-- ============================================
+       Panel 2: 따라 쓰기 (Template)
+       ============================================ -->
+  <% if scaffolding_level >= 2 %>
+    <div class="l1-kid__panel" id="l1-panel-template" role="tabpanel">
+
+      <div class="l1-kid__guide">
+        <span class="l1-kid__guide-mascot">&#128038;</span>
+        <span class="l1-kid__guide-text">
+          마음에 드는 질문을 골라 봐! 자동으로 적혀요!
+        </span>
+      </div>
+
+      <div class="l1-kid__template-list">
+        <% if current_stage == 1 %>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '이 이야기를 읽으면 어떤 마음이 들까?')">
+            <span class="l1-kid__template-icon">&#128151;</span>
+            <span class="l1-kid__template-text">이 이야기를 읽으면 <strong>어떤 마음</strong>이 들까?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '제목을 보니까 어떤 이야기일 것 같아?')">
+            <span class="l1-kid__template-icon">&#128270;</span>
+            <span class="l1-kid__template-text">제목을 보니까 <strong>어떤 이야기</strong>일 것 같아?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '나는 이런 경험을 한 적이 있어!')">
+            <span class="l1-kid__template-icon">&#128588;</span>
+            <span class="l1-kid__template-text">나는 <strong>이런 경험</strong>을 한 적이 있어!</span>
+          </button>
+        <% elsif current_stage == 2 %>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '(인물)은(는) 어떤 마음이었을까?')">
+            <span class="l1-kid__template-icon">&#128151;</span>
+            <span class="l1-kid__template-text">(인물)은(는) <strong>어떤 마음</strong>이었을까?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '(인물)이 그렇게 한 이유는 뭐라고 생각해?')">
+            <span class="l1-kid__template-icon">&#129488;</span>
+            <span class="l1-kid__template-text">(인물)이 그렇게 한 <strong>이유</strong>는 뭐라고 생각해?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '이 장면에서 무슨 일이 일어났어?')">
+            <span class="l1-kid__template-icon">&#127912;</span>
+            <span class="l1-kid__template-text">이 장면에서 <strong>무슨 일</strong>이 일어났어?</span>
+          </button>
+        <% else %>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '나라면 어떻게 했을까?')">
+            <span class="l1-kid__template-icon">&#128588;</span>
+            <span class="l1-kid__template-text"><strong>나라면</strong> 어떻게 했을까?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '가장 좋았던 장면은 어디야? 왜 좋았어?')">
+            <span class="l1-kid__template-icon">&#127775;</span>
+            <span class="l1-kid__template-text"><strong>가장 좋았던 장면</strong>은 어디야? 왜 좋았어?</span>
+          </button>
+          <button type="button" class="l1-kid__template-card"
+                  onclick="l1UseTemplate(this, '우리 반에서 지금 할 수 있는 작은 실천은 뭐가 있을까?')">
+            <span class="l1-kid__template-icon">&#127793;</span>
+            <span class="l1-kid__template-text">우리 반에서 할 수 있는 <strong>작은 실천</strong>은 뭐가 있을까?</span>
+          </button>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- ============================================
+       Panel 3: 직접 쓰기 (Free)
+       ============================================ -->
+  <div class="l1-kid__panel" id="l1-panel-free" role="tabpanel">
+
+    <div class="l1-kid__guide">
+      <span class="l1-kid__guide-mascot">&#128640;</span>
+      <span class="l1-kid__guide-text">
+        내가 궁금한 것을 자유롭게 써 봐! 아무 질문이나 좋아!
+      </span>
+    </div>
+
+    <!-- Tips (smaller, for reference) -->
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
+        <span style="font-size: 24px;">&#128161;</span>
+        <span style="font-size: 16px; color: #92400e; font-weight: 600;">
+          한 번에 한 가지만 물어보면 돼!
+        </span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fdf2f8; border-radius: 12px; border: 1px solid #fbcfe8;">
+        <span style="font-size: 24px;">&#128151;</span>
+        <span style="font-size: 16px; color: #9d174d; font-weight: 600;">
+          "어떤 마음이 들었니?" 같은 느낌을 물어보면 좋아!
+        </span>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: #6b7280; font-size: 15px;">
+      아래 입력칸에 나만의 질문을 적어 봐!
+    </p>
+  </div>
+
+</div><!-- /.l1-kid -->
 
 <!-- ============================== -->
-<!-- L1 Scaffolding JavaScript      -->
+<!-- L1 JavaScript                  -->
 <!-- ============================== -->
 <script>
-  // Accordion toggle for L1 widgets
-  function toggleL1Widget(btn, bodyId) {
-    var body = document.getElementById(bodyId);
-    if (!body) return;
-    var expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!expanded));
-    body.classList.toggle('l1-widget__body--collapsed');
+  // Tab switching
+  function l1SwitchTab(btn, panelId) {
+    // Deactivate all tabs
+    var tabs = document.querySelectorAll('.l1-kid__tab');
+    tabs.forEach(function(t) {
+      t.classList.remove('l1-kid__tab--active');
+      t.setAttribute('aria-selected', 'false');
+    });
+
+    // Hide all panels
+    var panels = document.querySelectorAll('.l1-kid__panel');
+    panels.forEach(function(p) {
+      p.classList.remove('l1-kid__panel--active');
+    });
+
+    // Activate selected
+    btn.classList.add('l1-kid__tab--active');
+    btn.setAttribute('aria-selected', 'true');
+    var panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('l1-kid__panel--active');
   }
 
-  // Emoji emotion selector -> fills textarea
-  function l1SelectEmotion(btn, emotionName, emojiChar) {
-    // Toggle selection state
-    var allBtns = btn.closest('.q-emoji-selector').querySelectorAll('.q-emoji-selector__btn');
-    allBtns.forEach(function(b) { b.classList.remove('q-emoji-selector__btn--selected'); });
-    btn.classList.add('q-emoji-selector__btn--selected');
+  // Emoji emotion selector
+  function l1SelectEmotion(btn, emotionName) {
+    var allBtns = document.querySelectorAll('.l1-kid__emoji-btn');
+    allBtns.forEach(function(b) { b.classList.remove('l1-kid__emoji-btn--selected'); });
+    btn.classList.add('l1-kid__emoji-btn--selected');
 
-    // Fill textarea
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
       textarea.value = '(인물)은(는) ' + emotionName + ' 기분일 것 같아요. 왜냐하면...';
       textarea.focus();
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-      // Update char counter
       var counter = document.getElementById('char-count');
       if (counter) counter.textContent = textarea.value.length;
     }
-
-    // Mark as guided
     l1MarkAsGuided();
   }
 
-  // O/X selector -> fills textarea
+  // O/X selector
   function l1SelectOX(btn, isO) {
-    // Toggle selection state
-    var allBtns = btn.closest('.l1-ox-selector').querySelectorAll('.l1-ox-btn');
-    allBtns.forEach(function(b) { b.classList.remove('l1-ox-btn--selected'); });
-    btn.classList.add('l1-ox-btn--selected');
+    var allBtns = document.querySelectorAll('.l1-kid__ox-btn');
+    allBtns.forEach(function(b) { b.classList.remove('l1-kid__ox-btn--selected'); });
+    btn.classList.add('l1-kid__ox-btn--selected');
 
-    // Fill textarea
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
-      if (isO) {
-        textarea.value = '맞아요. 왜 그렇게 생각했냐면...';
-      } else {
-        textarea.value = '아니에요. 왜 그렇게 생각했냐면...';
-      }
+      textarea.value = isO
+        ? '맞아요. 왜 그렇게 생각했냐면...'
+        : '아니에요. 왜 그렇게 생각했냐면...';
       textarea.focus();
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       var counter = document.getElementById('char-count');
       if (counter) counter.textContent = textarea.value.length;
     }
-
     l1MarkAsGuided();
   }
 
-  // Template card selector -> fills textarea
+  // Template card selector
   function l1UseTemplate(btn, templateText) {
-    // Toggle selection state
-    var allCards = document.querySelectorAll('.l1-template-card');
-    allCards.forEach(function(c) { c.classList.remove('l1-template-card--selected'); });
-    btn.classList.add('l1-template-card--selected');
+    var allCards = document.querySelectorAll('.l1-kid__template-card');
+    allCards.forEach(function(c) { c.classList.remove('l1-kid__template-card--selected'); });
+    btn.classList.add('l1-kid__template-card--selected');
 
-    // Fill textarea
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
       textarea.value = templateText;
@@ -265,339 +677,17 @@
       var counter = document.getElementById('char-count');
       if (counter) counter.textContent = textarea.value.length;
     }
-
     l1MarkAsGuided();
   }
 
-  // Mark the form as "guided" question type
+  // Mark as guided question type
   function l1MarkAsGuided() {
     var typeField = document.getElementById('question-type-field');
     var scaffField = document.getElementById('scaffolding-used-field');
     if (typeField) typeField.value = 'guided';
     if (scaffField) scaffField.value = 'true';
-
-    // Update type toggle buttons if they exist
     if (typeof updateTypeButtons === 'function') {
       updateTypeButtons('guided');
     }
   }
 </script>
-
-<!-- ============================== -->
-<!-- L1 Scaffolding Styles          -->
-<!-- ============================== -->
-<style>
-  /* --- Widget Container --- */
-  .l1-widget {
-    background: var(--rp-surface);
-    border: 1px solid var(--rp-border);
-    border-radius: var(--rp-radius-lg);
-    margin-bottom: var(--rp-space-4);
-    overflow: hidden;
-  }
-
-  .l1-widget__toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: var(--rp-space-3) var(--rp-space-4);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-family: var(--rp-font-family);
-    font-size: var(--rp-font-size-base);
-    font-weight: var(--rp-font-weight-semibold);
-    color: var(--rp-text-title);
-    transition: background var(--rp-transition-fast);
-  }
-
-  .l1-widget__toggle:hover {
-    background: var(--rp-bg-subtle);
-  }
-
-  .l1-widget__toggle-label {
-    display: flex;
-    align-items: center;
-    gap: var(--rp-space-2);
-  }
-
-  .l1-widget__toggle-icon-left {
-    font-size: 1.3rem;
-  }
-
-  .l1-widget__toggle-arrow {
-    transition: transform var(--rp-transition-normal);
-    flex-shrink: 0;
-  }
-
-  .l1-widget__toggle[aria-expanded="false"] .l1-widget__toggle-arrow {
-    transform: rotate(-90deg);
-  }
-
-  .l1-widget__body {
-    padding: 0 var(--rp-space-4) var(--rp-space-4);
-  }
-
-  .l1-widget__body--collapsed {
-    display: none;
-  }
-
-  .l1-widget__hint {
-    font-size: var(--rp-font-size-sm);
-    color: var(--rp-text-muted);
-    margin: 0 0 var(--rp-space-3);
-    line-height: 1.5;
-  }
-
-  /* --- Writing Tips --- */
-  .l1-tips-grid {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rp-space-3);
-  }
-
-  .l1-tip-card {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--rp-space-3);
-    padding: var(--rp-space-3) var(--rp-space-4);
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: var(--rp-radius-md);
-  }
-
-  .l1-tip-card__icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    line-height: 1;
-    margin-top: 2px;
-  }
-
-  .l1-tip-card__text {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: var(--rp-text-body);
-  }
-
-  .l1-tip-card__text strong {
-    color: #92400e;
-  }
-
-  /* --- Emoji Selector --- */
-  .l1-emoji-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--rp-space-1);
-  }
-
-  .q-l1-emoji-prompt .q-emoji-selector__btn {
-    width: 64px;
-    height: 64px;
-    font-size: 32px;
-    border-radius: 50%;
-  }
-
-  .q-l1-emoji-prompt .q-emoji-selector__label {
-    font-size: var(--rp-font-size-sm);
-    font-weight: var(--rp-font-weight-medium);
-    color: var(--rp-text-body);
-  }
-
-  /* --- O/X Selector --- */
-  .l1-ox-selector {
-    display: flex;
-    gap: var(--rp-space-6);
-    justify-content: center;
-    padding: var(--rp-space-4) 0;
-  }
-
-  .l1-ox-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--rp-space-2);
-    padding: var(--rp-space-4);
-    border-radius: 50%;
-    width: 96px;
-    height: 96px;
-    justify-content: center;
-    border: 3px solid var(--rp-border);
-    background: var(--rp-surface);
-    cursor: pointer;
-    transition: all var(--rp-transition-fast);
-    font-family: var(--rp-font-family);
-  }
-
-  .l1-ox-btn:hover {
-    transform: scale(1.08);
-    box-shadow: var(--rp-shadow-md);
-  }
-
-  .l1-ox-btn--o {
-    border-color: #86efac;
-    background: #f0fdf4;
-  }
-
-  .l1-ox-btn--o:hover {
-    border-color: #22c55e;
-    background: #dcfce7;
-  }
-
-  .l1-ox-btn--x {
-    border-color: #fca5a5;
-    background: #fef2f2;
-  }
-
-  .l1-ox-btn--x:hover {
-    border-color: #ef4444;
-    background: #fee2e2;
-  }
-
-  .l1-ox-btn__symbol {
-    font-size: 2rem;
-    font-weight: var(--rp-font-weight-bold);
-    line-height: 1;
-  }
-
-  .l1-ox-btn--o .l1-ox-btn__symbol {
-    color: #16a34a;
-  }
-
-  .l1-ox-btn--x .l1-ox-btn__symbol {
-    color: #dc2626;
-  }
-
-  .l1-ox-btn__label {
-    font-size: var(--rp-font-size-xs);
-    font-weight: var(--rp-font-weight-medium);
-    color: var(--rp-text-body);
-  }
-
-  .l1-ox-btn--selected {
-    transform: scale(1.12);
-    box-shadow: var(--rp-shadow-lg);
-  }
-
-  .l1-ox-btn--o.l1-ox-btn--selected {
-    border-color: #16a34a;
-    background: #dcfce7;
-  }
-
-  .l1-ox-btn--x.l1-ox-btn--selected {
-    border-color: #dc2626;
-    background: #fee2e2;
-  }
-
-  /* --- Template Cards --- */
-  .l1-template-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--rp-space-3);
-  }
-
-  .l1-template-card {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--rp-space-3);
-    padding: var(--rp-space-4);
-    border: 2px solid var(--rp-border);
-    border-radius: var(--rp-radius-lg);
-    background: var(--rp-surface);
-    cursor: pointer;
-    text-align: left;
-    font-family: var(--rp-font-family);
-    transition: all var(--rp-transition-fast);
-    width: 100%;
-  }
-
-  .l1-template-card:hover {
-    border-color: var(--rp-primary);
-    box-shadow: var(--rp-shadow-md);
-    transform: translateY(-2px);
-  }
-
-  .l1-template-card--selected {
-    border-color: var(--rp-primary);
-    background: var(--rp-primary-soft);
-    box-shadow: 0 0 0 3px var(--rp-primary-soft);
-  }
-
-  .l1-template-card__icon {
-    font-size: 1.6rem;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .l1-template-card__text {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: var(--rp-text-body);
-  }
-
-  .l1-template-card__text strong {
-    color: var(--rp-primary);
-  }
-
-  /* --- Scaffolding Level Guide --- */
-  .l1-scaffolding-guide {
-    display: flex;
-    align-items: center;
-    gap: var(--rp-space-3);
-    padding: var(--rp-space-3) var(--rp-space-4);
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: var(--rp-radius-md);
-    margin-bottom: var(--rp-space-4);
-  }
-
-  .l1-scaffolding-guide__icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .l1-scaffolding-guide__text {
-    font-size: var(--rp-font-size-sm);
-    color: #1e40af;
-    line-height: 1.5;
-  }
-
-  .l1-scaffolding-guide__text strong {
-    font-weight: var(--rp-font-weight-semibold);
-  }
-
-  /* --- Responsive --- */
-  @media (max-width: 768px) {
-    .l1-template-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .l1-ox-selector {
-      gap: var(--rp-space-4);
-    }
-
-    .l1-ox-btn {
-      width: 80px;
-      height: 80px;
-    }
-
-    .l1-ox-btn__symbol {
-      font-size: 1.6rem;
-    }
-
-    .q-l1-emoji-prompt .q-emoji-selector__btn {
-      width: 54px;
-      height: 54px;
-      font-size: 26px;
-    }
-
-    .l1-tip-card {
-      padding: var(--rp-space-2) var(--rp-space-3);
-    }
-
-    .l1-tip-card__text {
-      font-size: 1rem;
-    }
-  }
-</style>

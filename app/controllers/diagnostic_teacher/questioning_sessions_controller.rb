@@ -17,6 +17,11 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
       2 => @questioning_session.questions_for_stage(2),
       3 => @questioning_session.questions_for_stage(3)
     }
+
+    # Load discussion messages, essay, and report
+    @discussion_messages = @questioning_session.discussion_messages.ordered
+    @essay = @questioning_session.argumentative_essay
+    @report = @questioning_session.questioning_report
   end
 
   def update
@@ -79,6 +84,60 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
                 notice: "리뷰가 완료되었습니다."
   end
 
+  # POST /diagnostic_teacher/questioning_sessions/:id/generate_report
+  def generate_report
+    @current_page = "questioning_modules"
+
+    begin
+      service = QuestioningReportService.new(@questioning_session, generated_by: current_user)
+      report = service.generate!
+
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  notice: "문해력 종합 보고서가 생성되었습니다. (#{report.literacy_level_label})"
+    rescue StandardError => e
+      Rails.logger.error("Report generation failed: #{e.message}")
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  alert: "보고서 생성 중 오류가 발생했습니다."
+    end
+  end
+
+  # PATCH /diagnostic_teacher/questioning_sessions/:id/publish_report
+  def publish_report
+    @current_page = "questioning_modules"
+    report = @questioning_session.questioning_report
+
+    unless report
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session), alert: "보고서가 없습니다. 먼저 보고서를 생성해 주세요."
+      return
+    end
+
+    report.update!(report_status: "published", published_at: Time.current)
+
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                notice: "문해력 종합 보고서가 배포되었습니다."
+  end
+
+  # PATCH /diagnostic_teacher/questioning_sessions/:id/update_essay_feedback
+  def update_essay_feedback
+    @current_page = "questioning_modules"
+    essay = @questioning_session.argumentative_essay
+
+    unless essay
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session), alert: "에세이가 없습니다."
+      return
+    end
+
+    essay.update!(
+      teacher_feedback: params[:teacher_feedback],
+      teacher_score: params[:teacher_score].presence,
+      feedback_published_at: Time.current,
+      feedback_published_by_id: current_user.id
+    )
+
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                notice: "에세이 피드백이 배포되었습니다."
+  end
+
   def publish_stage_feedback
     @current_page = "questioning_modules"
     stage = params[:stage].to_i
@@ -121,7 +180,8 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
 
   def set_session
     @questioning_session = QuestioningSession
-      .includes(questioning_module: :reading_stimulus, student_questions: [:evaluation_indicator, :sub_indicator])
+      .includes(questioning_module: :reading_stimulus, student_questions: [:evaluation_indicator, :sub_indicator],
+                discussion_messages: [], argumentative_essay: [])
       .find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to diagnostic_teacher_questioning_modules_path, alert: "세션을 찾을 수 없습니다."

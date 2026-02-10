@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_300004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,6 +25,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
     t.index ["priority"], name: "index_announcements_on_priority"
     t.index ["published_at"], name: "index_announcements_on_published_at"
     t.index ["published_by_id"], name: "index_announcements_on_published_by_id"
+  end
+
+  create_table "argumentative_essays", force: :cascade do |t|
+    t.jsonb "ai_feedback", default: {}
+    t.integer "ai_score"
+    t.datetime "created_at", null: false
+    t.text "essay_text", null: false
+    t.datetime "feedback_published_at"
+    t.bigint "feedback_published_by_id"
+    t.bigint "questioning_session_id", null: false
+    t.datetime "submitted_at"
+    t.text "teacher_feedback"
+    t.integer "teacher_score"
+    t.string "topic", null: false
+    t.datetime "updated_at", null: false
+    t.index ["feedback_published_by_id"], name: "index_argumentative_essays_on_feedback_published_by_id"
+    t.index ["questioning_session_id"], name: "index_argumentative_essays_on_questioning_session_id", unique: true
   end
 
   create_table "attempt_reports", force: :cascade do |t|
@@ -183,6 +200,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_diagnostic_forms_on_created_by_id"
     t.index ["status"], name: "index_diagnostic_forms_on_status"
+  end
+
+  create_table "discussion_messages", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.bigint "questioning_session_id", null: false
+    t.string "role", null: false
+    t.integer "stage", default: 2, null: false
+    t.integer "turn_number", default: 1, null: false
+    t.datetime "updated_at", null: false
+    t.index ["questioning_session_id", "stage", "turn_number"], name: "idx_discussion_messages_session_stage_turn"
+    t.index ["questioning_session_id"], name: "index_discussion_messages_on_questioning_session_id"
   end
 
   create_table "error_logs", force: :cascade do |t|
@@ -489,11 +519,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
     t.index ["student_id"], name: "index_questioning_progresses_on_student_id"
   end
 
+  create_table "questioning_reports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "generated_by_id"
+    t.string "literacy_level"
+    t.text "overall_summary"
+    t.datetime "published_at"
+    t.bigint "questioning_session_id", null: false
+    t.jsonb "report_sections", default: {}
+    t.string "report_status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.index ["generated_by_id"], name: "index_questioning_reports_on_generated_by_id"
+    t.index ["questioning_session_id"], name: "index_questioning_reports_on_questioning_session_id", unique: true
+  end
+
   create_table "questioning_sessions", force: :cascade do |t|
     t.jsonb "ai_summary", default: {}, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.integer "current_stage", default: 1, null: false
+    t.text "discussion_summary"
+    t.boolean "hypothesis_confirmed", default: false
+    t.jsonb "hypothesis_data", default: {}
     t.bigint "questioning_module_id", null: false
     t.jsonb "stage_scores", default: {}, null: false
     t.datetime "started_at", null: false
@@ -946,6 +993,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
   end
 
   add_foreign_key "announcements", "teachers", column: "published_by_id"
+  add_foreign_key "argumentative_essays", "questioning_sessions"
+  add_foreign_key "argumentative_essays", "users", column: "feedback_published_by_id"
   add_foreign_key "attempt_reports", "student_attempts"
   add_foreign_key "attempt_reports", "users", column: "generated_by_id"
   add_foreign_key "audit_logs", "users"
@@ -964,6 +1013,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
   add_foreign_key "diagnostic_form_items", "diagnostic_forms"
   add_foreign_key "diagnostic_form_items", "items"
   add_foreign_key "diagnostic_forms", "teachers", column: "created_by_id"
+  add_foreign_key "discussion_messages", "questioning_sessions"
   add_foreign_key "feedback_prompt_histories", "feedback_prompts"
   add_foreign_key "feedback_prompt_histories", "response_feedbacks"
   add_foreign_key "feedbacks", "responses"
@@ -990,6 +1040,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_200001) do
   add_foreign_key "questioning_modules", "teachers", column: "created_by_id"
   add_foreign_key "questioning_progresses", "evaluation_indicators"
   add_foreign_key "questioning_progresses", "students"
+  add_foreign_key "questioning_reports", "questioning_sessions"
+  add_foreign_key "questioning_reports", "users", column: "generated_by_id"
   add_foreign_key "questioning_sessions", "questioning_modules"
   add_foreign_key "questioning_sessions", "students"
   add_foreign_key "questioning_templates", "evaluation_indicators"

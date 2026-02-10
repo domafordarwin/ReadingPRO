@@ -453,6 +453,220 @@
     margin-bottom: var(--rp-space-2);
   }
 
+  /* Chat UI */
+  .l4-chat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-3);
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    margin-bottom: var(--rp-space-4);
+  }
+
+  .l4-chat__empty {
+    text-align: center;
+    color: #6b6484;
+    padding: var(--rp-space-6);
+    font-size: var(--rp-font-size-sm);
+  }
+
+  .l4-chat-bubble {
+    max-width: 80%;
+    padding: var(--rp-space-3) var(--rp-space-4);
+    border-radius: 16px;
+    font-size: var(--rp-font-size-sm);
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+
+  .l4-chat-bubble--ai {
+    align-self: flex-start;
+    background: #2d2a3e;
+    color: #e2dff0;
+    border-bottom-left-radius: 4px;
+  }
+
+  .l4-chat-bubble--student {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .l4-chat-bubble__role {
+    font-size: 11px;
+    font-weight: var(--rp-font-weight-semibold);
+    margin-bottom: var(--rp-space-1);
+    opacity: 0.7;
+  }
+
+  .l4-chat__input-row {
+    display: flex;
+    gap: var(--rp-space-2);
+    align-items: flex-end;
+  }
+
+  .l4-chat__input-row .l4-textarea {
+    flex: 1;
+    min-height: 48px;
+    max-height: 120px;
+  }
+
+  .l4-chat__send-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    border: none;
+    border-radius: var(--rp-radius-md);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .l4-chat__send-btn:hover {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+
+  .l4-chat__send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .l4-turn-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    padding: var(--rp-space-2) var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+  }
+
+  .l4-turn-counter__bar {
+    width: 60px;
+    height: 4px;
+    background: #3d3856;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .l4-turn-counter__fill {
+    height: 100%;
+    background: #a78bfa;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .l4-hypothesis-locked {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .l4-hypothesis-locked .l4-textarea {
+    background: #1c1833;
+    border-color: #2d2a3e;
+  }
+
+  .l4-confirmed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--rp-space-2);
+    padding: var(--rp-space-2) var(--rp-space-3);
+    background: #1e3a2f;
+    color: #6ee7b7;
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+  }
+
+  /* Essay Section */
+  .l4-essay-submitted {
+    padding: var(--rp-space-4);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    border: 1px solid #3d3856;
+  }
+
+  .l4-essay-submitted__text {
+    white-space: pre-wrap;
+    font-size: var(--rp-font-size-sm);
+    color: #c4bfdb;
+    line-height: 1.8;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .l4-essay-score-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--rp-space-3);
+    margin-bottom: var(--rp-space-3);
+  }
+
+  .l4-essay-score-bar__label {
+    font-size: var(--rp-font-size-xs);
+    color: #9b95b0;
+    min-width: 80px;
+  }
+
+  .l4-essay-score-bar__track {
+    flex: 1;
+    height: 8px;
+    background: #3d3856;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .l4-essay-score-bar__fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s;
+  }
+
+  .l4-essay-score-bar__value {
+    font-size: var(--rp-font-size-xs);
+    font-weight: var(--rp-font-weight-semibold);
+    color: #e2dff0;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .l4-feedback-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--rp-space-2);
+  }
+
+  .l4-feedback-list li {
+    padding: var(--rp-space-2) var(--rp-space-3);
+    background: #151223;
+    border-radius: var(--rp-radius-md);
+    font-size: var(--rp-font-size-sm);
+    color: #c4bfdb;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rp-space-2);
+  }
+
+  .l4-feedback-list li::before {
+    content: "•";
+    color: #a78bfa;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
   /* Responsive */
   @media (max-width: 768px) {
     .l4-tips {
@@ -463,6 +677,9 @@
     }
     .l4-debate-positions {
       grid-template-columns: 1fr;
+    }
+    .l4-chat-bubble {
+      max-width: 90%;
     }
   }
 </style>
@@ -507,6 +724,14 @@
      (Stage 2 only)
      ============================================ -->
 <% if current_stage == 2 %>
+  <%
+    hypo_data = @questioning_session.hypothesis_data || {}
+    hypo_confirmed = @questioning_session.hypothesis_confirmed?
+    discussion_msgs = @discussion_messages || []
+    student_turn_count = discussion_msgs.select { |m| m.role == "student" }.size
+    total_turn_count = discussion_msgs.size
+  %>
+
   <div class="l4-widget q-l4-metacognition-guide" id="l4-hypothesis-panel" aria-label="가설 검증 패널">
     <div class="l4-widget__header">
       <div class="l4-widget__icon" style="background: #1e3a2f;">
@@ -518,9 +743,17 @@
         <h3 class="l4-widget__title">가설 검증 논증 구조</h3>
         <div class="l4-widget__subtitle">학술적 논증 4단계: 가설 - 근거 - 반박 - 결론</div>
       </div>
+      <% if hypo_confirmed %>
+        <span class="l4-confirmed-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          구조 확정됨
+        </span>
+      <% end %>
     </div>
 
-    <div class="l4-hypothesis-flow">
+    <div class="l4-hypothesis-flow<%= ' l4-hypothesis-locked' if hypo_confirmed %>">
       <!-- Step 1: Hypothesis -->
       <div class="l4-hypothesis-step">
         <div class="l4-hypothesis-step__marker">
@@ -531,7 +764,8 @@
           <div class="l4-hypothesis-step__label l4-hypothesis-step__label--1">가설 (Hypothesis)</div>
           <textarea id="l4-hypo-hypothesis" class="l4-textarea" rows="2"
                     placeholder="텍스트에 대한 나의 가설을 세워 보세요..."
-                    aria-label="가설 입력"></textarea>
+                    aria-label="가설 입력"
+                    <%= 'readonly' if hypo_confirmed %>><%= hypo_data['hypothesis'] %></textarea>
         </div>
       </div>
 
@@ -545,7 +779,8 @@
           <div class="l4-hypothesis-step__label l4-hypothesis-step__label--2">뒷받침 근거 (Supporting Evidence)</div>
           <textarea id="l4-hypo-support" class="l4-textarea" rows="2"
                     placeholder="가설을 뒷받침하는 텍스트 근거를 찾아 적으세요..."
-                    aria-label="뒷받침 근거 입력"></textarea>
+                    aria-label="뒷받침 근거 입력"
+                    <%= 'readonly' if hypo_confirmed %>><%= hypo_data['evidence'] %></textarea>
         </div>
       </div>
 
@@ -559,7 +794,8 @@
           <div class="l4-hypothesis-step__label l4-hypothesis-step__label--3">반박 근거 (Counter Evidence)</div>
           <textarea id="l4-hypo-counter" class="l4-textarea" rows="2"
                     placeholder="가설에 반하는 근거나 반례를 적으세요..."
-                    aria-label="반박 근거 입력"></textarea>
+                    aria-label="반박 근거 입력"
+                    <%= 'readonly' if hypo_confirmed %>><%= hypo_data['counterargument'] %></textarea>
         </div>
       </div>
 
@@ -572,20 +808,119 @@
           <div class="l4-hypothesis-step__label l4-hypothesis-step__label--4">결론 (Conclusion)</div>
           <textarea id="l4-hypo-conclusion" class="l4-textarea" rows="2"
                     placeholder="종합적 결론을 내려 보세요..."
-                    aria-label="결론 입력"></textarea>
+                    aria-label="결론 입력"
+                    <%= 'readonly' if hypo_confirmed %>><%= hypo_data['conclusion'] %></textarea>
         </div>
       </div>
     </div>
 
-    <div style="text-align: right; margin-top: var(--rp-space-3);">
-      <button type="button" class="l4-btn" onclick="buildHypothesisQuestion();" aria-label="논증 발문 만들기">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-        논증 발문 만들기
-      </button>
+    <div style="display: flex; gap: var(--rp-space-3); justify-content: flex-end; margin-top: var(--rp-space-3); flex-wrap: wrap;">
+      <% unless hypo_confirmed %>
+        <button type="button" class="l4-btn" onclick="buildHypothesisQuestion();" aria-label="논증 발문 만들기">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          논증 발문 만들기
+        </button>
+        <button type="button" class="l4-btn" style="background: linear-gradient(135deg, #059669, #047857);" onclick="startDiscussion();" aria-label="AI와 토론하기">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          AI와 토론하기
+        </button>
+      <% end %>
     </div>
+  </div>
+
+  <!-- ============================================
+       AI Discussion Chat Panel (Stage 2)
+       ============================================ -->
+  <div class="l4-widget" id="discussion-panel" aria-label="AI 토론 채팅">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #1e293b;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">AI 토론</h3>
+        <div class="l4-widget__subtitle">가설논증 구조에 대해 AI와 토론하며 사고를 발전시킵니다</div>
+      </div>
+      <div class="l4-turn-counter">
+        <span><%= student_turn_count %>/10턴</span>
+        <div class="l4-turn-counter__bar">
+          <div class="l4-turn-counter__fill" style="width: <%= [(student_turn_count * 10), 100].min %>%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="l4-chat" id="l4-chat-area">
+      <% if discussion_msgs.empty? %>
+        <div class="l4-chat__empty">
+          가설논증 구조를 입력한 후 "AI와 토론하기" 버튼을 눌러 토론을 시작하세요.
+        </div>
+      <% else %>
+        <% discussion_msgs.each do |msg| %>
+          <div class="l4-chat-bubble l4-chat-bubble--<%= msg.role %>">
+            <div class="l4-chat-bubble__role"><%= msg.student? ? '나' : 'AI 토론 파트너' %></div>
+            <%= simple_format(msg.content, {}, wrapper_tag: 'span') %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <!-- Chat Input -->
+    <% if student_turn_count < 10 && !hypo_confirmed %>
+      <%= form_with url: send_discussion_student_questioning_session_path(@questioning_session),
+                    method: :post,
+                    data: { turbo: false },
+                    class: "l4-chat__input-row" do %>
+        <textarea name="message" class="l4-textarea" rows="2"
+                  placeholder="토론 메시지를 입력하세요..."
+                  aria-label="토론 메시지 입력"
+                  required></textarea>
+        <button type="submit" class="l4-chat__send-btn" aria-label="전송">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      <% end %>
+    <% elsif hypo_confirmed %>
+      <div style="text-align: center; padding: var(--rp-space-3); color: #6ee7b7; font-size: var(--rp-font-size-sm);">
+        구조가 확정되었습니다. 이제 발문을 작성해 주세요.
+      </div>
+    <% else %>
+      <div style="text-align: center; padding: var(--rp-space-3); color: #fbbf24; font-size: var(--rp-font-size-sm);">
+        토론 최대 횟수(10턴)에 도달했습니다.
+      </div>
+    <% end %>
+
+    <!-- Confirm Hypothesis Button -->
+    <% if student_turn_count >= 2 && !hypo_confirmed %>
+      <div style="text-align: center; margin-top: var(--rp-space-4); padding-top: var(--rp-space-4); border-top: 1px solid #2d2a3e;">
+        <%= form_with url: confirm_hypothesis_student_questioning_session_path(@questioning_session),
+                      method: :patch,
+                      data: { turbo: false } do %>
+          <input type="hidden" name="hypothesis" id="confirm-hypothesis-field">
+          <input type="hidden" name="evidence" id="confirm-evidence-field">
+          <input type="hidden" name="counterargument" id="confirm-counter-field">
+          <input type="hidden" name="conclusion" id="confirm-conclusion-field">
+          <button type="submit" class="l4-btn" style="background: linear-gradient(135deg, #059669, #047857); padding: var(--rp-space-3) var(--rp-space-6);"
+                  onclick="return prepareConfirmHypothesis();" aria-label="구조 확정하기">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            구조 확정하기
+          </button>
+          <div style="font-size: var(--rp-font-size-xs); color: #9b95b0; margin-top: var(--rp-space-2);">
+            확정 후에는 가설 구조를 수정할 수 없습니다. 발문 작성이 가능해집니다.
+          </div>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 <% end %>
 
@@ -919,7 +1254,153 @@
 <% end %>
 
 <!-- ============================================
-     Widget 7: Sequential Question Advanced Guide
+     Widget 7: Argumentative Essay (Stage 3 only)
+     ============================================ -->
+<% if current_stage == 3 %>
+  <div class="l4-widget" id="l4-essay-section" aria-label="논증적 글쓰기">
+    <div class="l4-widget__header">
+      <div class="l4-widget__icon" style="background: #3b1323;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="l4-widget__title">논증적 글쓰기</h3>
+        <div class="l4-widget__subtitle">토론과 발문 활동을 바탕으로 논증적 에세이를 작성합니다</div>
+      </div>
+    </div>
+
+    <% if @essay.present? %>
+      <!-- Essay Already Submitted -->
+      <div class="l4-field">
+        <div class="l4-label">주제</div>
+        <div style="padding: var(--rp-space-3); background: #151223; border-radius: var(--rp-radius-md); color: #e2dff0; font-size: var(--rp-font-size-sm);">
+          <%= @essay.topic %>
+        </div>
+      </div>
+
+      <div class="l4-field">
+        <div class="l4-label">에세이 본문</div>
+        <div class="l4-essay-submitted">
+          <div class="l4-essay-submitted__text"><%= @essay.essay_text %></div>
+        </div>
+      </div>
+
+      <% if @essay.ai_score.present? %>
+        <div class="l4-divider"></div>
+
+        <% if @essay.feedback_published? %>
+          <!-- AI + Teacher Feedback (Published) -->
+          <div class="l4-label">평가 결과</div>
+
+          <% score_sections = @essay.ai_section_scores %>
+          <% score_labels = { claim_clarity: '논점 명확성', evidence_quality: '근거 적절성', counterargument: '반론 고려', logical_structure: '논리 구조', language_quality: '언어 표현' } %>
+          <% score_colors = { claim_clarity: '#818cf8', evidence_quality: '#6ee7b7', counterargument: '#fca5a5', logical_structure: '#fbbf24', language_quality: '#60a5fa' } %>
+
+          <% score_labels.each do |key, label| %>
+            <% score = score_sections[key] || 0 %>
+            <div class="l4-essay-score-bar">
+              <div class="l4-essay-score-bar__label"><%= label %></div>
+              <div class="l4-essay-score-bar__track">
+                <div class="l4-essay-score-bar__fill" style="width: <%= score %>%; background: <%= score_colors[key] %>;"></div>
+              </div>
+              <div class="l4-essay-score-bar__value"><%= score %></div>
+            </div>
+          <% end %>
+
+          <div style="margin-top: var(--rp-space-4); padding: var(--rp-space-4); background: #151223; border-radius: var(--rp-radius-md);">
+            <div style="display: flex; align-items: center; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3);">
+              <span style="font-size: 28px; font-weight: var(--rp-font-weight-bold); color: #a78bfa;"><%= @essay.final_score %></span>
+              <span style="font-size: var(--rp-font-size-sm); color: #9b95b0;">/ 100점</span>
+            </div>
+            <p style="font-size: var(--rp-font-size-sm); color: #c4bfdb; line-height: 1.6;"><%= @essay.ai_feedback_text %></p>
+          </div>
+
+          <% if @essay.ai_strengths.any? %>
+            <div class="l4-field" style="margin-top: var(--rp-space-4);">
+              <div class="l4-label" style="color: #6ee7b7;">강점</div>
+              <ul class="l4-feedback-list">
+                <% @essay.ai_strengths.each do |s| %><li><%= s %></li><% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <% if @essay.ai_improvements.any? %>
+            <div class="l4-field">
+              <div class="l4-label" style="color: #fbbf24;">개선점</div>
+              <ul class="l4-feedback-list">
+                <% @essay.ai_improvements.each do |imp| %><li><%= imp %></li><% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <% if @essay.teacher_feedback.present? %>
+            <div class="l4-divider"></div>
+            <div class="l4-label" style="color: #60a5fa;">교사 피드백</div>
+            <div style="padding: var(--rp-space-3); background: #151223; border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm); color: #c4bfdb; line-height: 1.6;">
+              <%= simple_format(@essay.teacher_feedback) %>
+              <% if @essay.teacher_score.present? %>
+                <div style="margin-top: var(--rp-space-2); color: #60a5fa; font-weight: var(--rp-font-weight-semibold);">교사 점수: <%= @essay.teacher_score %>점</div>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <!-- AI Evaluated but Not Published -->
+          <div style="text-align: center; padding: var(--rp-space-4); color: #9b95b0; font-size: var(--rp-font-size-sm);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: var(--rp-space-2);">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <div>에세이가 제출되었습니다. 선생님이 피드백을 준비하고 있습니다.</div>
+          </div>
+        <% end %>
+      <% end %>
+
+    <% else %>
+      <!-- Essay Form -->
+      <p style="font-size: var(--rp-font-size-sm); color: #9b95b0; margin-bottom: var(--rp-space-4); line-height: 1.6;">
+        위 토론 활동에서 탐구한 쟁점을 바탕으로 논증적 에세이를 작성하세요.
+        주장-근거-반론-재반론의 구조를 활용하면 좋습니다.
+      </p>
+
+      <%= form_with url: submit_essay_student_questioning_session_path(@questioning_session),
+                    method: :post,
+                    data: { turbo: false } do %>
+        <div class="l4-field">
+          <div class="l4-label">주제 / 쟁점</div>
+          <input type="text" name="essay_topic" class="l4-input"
+                 placeholder="에세이의 핵심 주제나 쟁점을 한 문장으로 적으세요..."
+                 aria-label="에세이 주제 입력" required>
+        </div>
+
+        <div class="l4-field">
+          <div class="l4-label">에세이 본문</div>
+          <textarea name="essay_text" class="l4-textarea" rows="12" style="min-height: 240px;"
+                    placeholder="논증적 에세이를 자유롭게 작성하세요. (최소 200자, 최대 2000자)&#10;&#10;서론: 주장과 배경&#10;본론: 근거와 사례, 반론 검토&#10;결론: 종합 판단과 제언"
+                    aria-label="에세이 본문 입력"
+                    minlength="200" maxlength="2000" required></textarea>
+          <div style="text-align: right; font-size: var(--rp-font-size-xs); color: #6b6484; margin-top: var(--rp-space-1);">
+            200-2000자
+          </div>
+        </div>
+
+        <div style="text-align: right;">
+          <button type="submit" class="l4-btn" style="padding: var(--rp-space-3) var(--rp-space-6);" aria-label="에세이 제출하기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            에세이 제출하기
+          </button>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Widget 8: Sequential Question Advanced Guide
      (All stages)
      ============================================ -->
 <div class="l4-widget" id="l4-sequential-guide" aria-label="연속 발문 고급 가이드">
@@ -997,6 +1478,77 @@
      JavaScript: Question Builders
      ============================================ -->
 <script>
+  // Auto-scroll chat to bottom
+  document.addEventListener('DOMContentLoaded', function() {
+    var chatArea = document.getElementById('l4-chat-area');
+    if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+  });
+
+  // Start AI Discussion: send hypothesis as first message
+  function startDiscussion() {
+    var hypo = (document.getElementById('l4-hypo-hypothesis') || {}).value || '';
+    if (!hypo.trim()) {
+      alert('가설을 먼저 입력해 주세요.');
+      return;
+    }
+
+    // Build a message from the hypothesis fields
+    var support = (document.getElementById('l4-hypo-support') || {}).value || '';
+    var counter = (document.getElementById('l4-hypo-counter') || {}).value || '';
+    var conclusion = (document.getElementById('l4-hypo-conclusion') || {}).value || '';
+
+    var parts = ['제 가설논증 구조입니다.'];
+    parts.push('가설: ' + hypo.trim());
+    if (support.trim()) parts.push('근거: ' + support.trim());
+    if (counter.trim()) parts.push('반박: ' + counter.trim());
+    if (conclusion.trim()) parts.push('결론: ' + conclusion.trim());
+    parts.push('이 구조에 대해 토론해 주세요.');
+
+    // Create a temporary form and submit
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<%= send_discussion_student_questioning_session_path(@questioning_session) %>';
+    form.setAttribute('data-turbo', 'false');
+
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) {
+      var tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'authenticity_token';
+      tokenInput.value = csrfToken.content;
+      form.appendChild(tokenInput);
+    }
+
+    var msgInput = document.createElement('input');
+    msgInput.type = 'hidden';
+    msgInput.name = 'message';
+    msgInput.value = parts.join('\n');
+    form.appendChild(msgInput);
+
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  // Prepare confirm hypothesis: copy textarea values to hidden fields
+  function prepareConfirmHypothesis() {
+    var hypo = (document.getElementById('l4-hypo-hypothesis') || {}).value || '';
+    if (!hypo.trim()) {
+      alert('가설을 먼저 입력해 주세요.');
+      return false;
+    }
+
+    document.getElementById('confirm-hypothesis-field').value =
+      (document.getElementById('l4-hypo-hypothesis') || {}).value || '';
+    document.getElementById('confirm-evidence-field').value =
+      (document.getElementById('l4-hypo-support') || {}).value || '';
+    document.getElementById('confirm-counter-field').value =
+      (document.getElementById('l4-hypo-counter') || {}).value || '';
+    document.getElementById('confirm-conclusion-field').value =
+      (document.getElementById('l4-hypo-conclusion') || {}).value || '';
+
+    return confirm('구조를 확정하시겠습니까? 확정 후에는 수정할 수 없습니다.');
+  }
+
   // Utility: set text in the main question textarea
   function l4SetQuestion(text) {
     var textarea = document.getElementById('question-text-input');

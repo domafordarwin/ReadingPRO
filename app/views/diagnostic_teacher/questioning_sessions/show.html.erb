@@ -389,6 +389,161 @@
   </div>
 <% end %>
 
+<!-- ============================================
+     Discussion History (if any)
+     ============================================ -->
+<% if @discussion_messages.present? && @discussion_messages.any? %>
+  <div class="rp-card" style="margin-top: var(--rp-space-6);">
+    <div class="rp-card__header" style="display: flex; align-items: center; gap: var(--rp-space-3);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--rp-primary)" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <h3 class="rp-card__title" style="margin: 0;">AI 토론 히스토리 (<%= @discussion_messages.size %>개 메시지)</h3>
+    </div>
+    <div class="rp-card__body" style="max-height: 400px; overflow-y: auto;">
+      <% @discussion_messages.each do |msg| %>
+        <div style="display: flex; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3); <%= msg.student? ? 'flex-direction: row-reverse;' : '' %>">
+          <div style="padding: var(--rp-space-3) var(--rp-space-4); border-radius: 12px; max-width: 80%; font-size: var(--rp-font-size-sm); line-height: 1.7;
+                      <%= msg.student? ? 'background: var(--rp-primary-soft); border-bottom-right-radius: 4px;' : 'background: var(--rp-bg-subtle); border-bottom-left-radius: 4px;' %>">
+            <div style="font-size: 11px; font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); margin-bottom: 4px;">
+              <%= msg.student? ? '학생' : 'AI' %> &middot; 턴 <%= msg.turn_number %>
+            </div>
+            <%= simple_format(msg.content, {}, wrapper_tag: 'span') %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @questioning_session.discussion_summary.present? %>
+      <div style="padding: var(--rp-space-4); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md); margin-top: var(--rp-space-3);">
+        <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-bottom: var(--rp-space-2);">토론 요약</div>
+        <div style="font-size: var(--rp-font-size-sm); line-height: 1.7;"><%= @questioning_session.discussion_summary %></div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Argumentative Essay (if any)
+     ============================================ -->
+<% if @essay.present? %>
+  <div class="rp-card" style="margin-top: var(--rp-space-6);">
+    <div class="rp-card__header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: var(--rp-space-3);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <h3 class="rp-card__title" style="margin: 0;">논증적 글쓰기</h3>
+      </div>
+      <% if @essay.feedback_published? %>
+        <span class="rp-badge rp-badge--success">피드백 배포됨</span>
+      <% end %>
+    </div>
+    <div class="rp-card__body">
+      <div style="margin-bottom: var(--rp-space-3);">
+        <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted);">주제</span>
+        <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); margin-top: 4px;"><%= @essay.topic %></div>
+      </div>
+
+      <div style="padding: var(--rp-space-4); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-4); max-height: 300px; overflow-y: auto;">
+        <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; white-space: pre-wrap;"><%= @essay.essay_text %></div>
+      </div>
+
+      <% if @essay.ai_score.present? %>
+        <div style="display: flex; align-items: center; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3);">
+          <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">AI 점수</span>
+          <span style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= @essay.ai_score %></span>
+          <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">/ 100</span>
+        </div>
+      <% end %>
+
+      <!-- Teacher Essay Feedback Form -->
+      <% unless @essay.feedback_published? %>
+        <%= form_with url: update_essay_feedback_diagnostic_teacher_questioning_session_path(@questioning_session),
+                      method: :patch, data: { turbo: false } do %>
+          <div style="margin-bottom: var(--rp-space-3);">
+            <label style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); display: block; margin-bottom: 4px;">교사 점수 (0-100)</label>
+            <input type="number" name="teacher_score" min="0" max="100" value="<%= @essay.teacher_score %>"
+                   style="width: 120px; padding: var(--rp-space-2); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm);">
+          </div>
+          <div style="margin-bottom: var(--rp-space-3);">
+            <label style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); display: block; margin-bottom: 4px;">교사 피드백</label>
+            <textarea name="teacher_feedback" rows="4"
+                      style="width: 100%; padding: var(--rp-space-3); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md); font-size: var(--rp-font-size-sm); box-sizing: border-box; resize: vertical;"
+                      placeholder="학생의 에세이에 대한 피드백을 작성하세요..."><%= @essay.teacher_feedback %></textarea>
+          </div>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">에세이 피드백 배포</button>
+        <% end %>
+      <% else %>
+        <% if @essay.teacher_feedback.present? %>
+          <div style="padding: var(--rp-space-4); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--rp-radius-md);">
+            <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534; margin-bottom: var(--rp-space-2);">교사 피드백</div>
+            <div style="font-size: var(--rp-font-size-sm); line-height: 1.7;"><%= simple_format(@essay.teacher_feedback) %></div>
+            <% if @essay.teacher_score.present? %>
+              <div style="margin-top: var(--rp-space-2); font-weight: var(--rp-font-weight-semibold); color: #166534;">교사 점수: <%= @essay.teacher_score %>점</div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- ============================================
+     Questioning Report
+     ============================================ -->
+<div class="rp-card" style="margin-top: var(--rp-space-6);">
+  <div class="rp-card__header" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: var(--rp-space-3);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <h3 class="rp-card__title" style="margin: 0;">문해력 종합 보고서</h3>
+    </div>
+    <div style="display: flex; gap: var(--rp-space-2);">
+      <% if @report.nil? %>
+        <%= form_with url: generate_report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                      method: :post, data: { turbo: false }, style: "display: inline;" do %>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            AI 보고서 생성
+          </button>
+        <% end %>
+      <% elsif !@report.published? %>
+        <div style="display: flex; gap: var(--rp-space-2);">
+          <%= form_with url: generate_report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                        method: :post, data: { turbo: false }, style: "display: inline;" do %>
+            <button type="submit" class="rp-btn rp-btn--secondary rp-btn--sm">재생성</button>
+          <% end %>
+          <%= form_with url: publish_report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                        method: :patch, data: { turbo: false }, style: "display: inline;" do %>
+            <button type="submit" class="rp-btn rp-btn--primary rp-btn--sm">보고서 배포</button>
+          <% end %>
+        </div>
+      <% else %>
+        <span class="rp-badge rp-badge--success">배포됨</span>
+      <% end %>
+    </div>
+  </div>
+  <div class="rp-card__body">
+    <% if @report.present? %>
+      <%= render "diagnostic_teacher/questioning_sessions/report", report: @report %>
+    <% else %>
+      <p style="text-align: center; color: var(--rp-text-muted); padding: var(--rp-space-6);">
+        아직 보고서가 생성되지 않았습니다. "AI 보고서 생성" 버튼을 눌러 주세요.
+      </p>
+    <% end %>
+  </div>
+</div>
+
 <!-- Accordion Toggle Script -->
 <script>
   function toggleStageAccordion(stageNum) {

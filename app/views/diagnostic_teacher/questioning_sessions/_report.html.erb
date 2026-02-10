@@ -1,0 +1,100 @@
+<%#
+  문해력 종합 보고서 파셜
+  Local variables:
+    - report (QuestioningReport)
+%>
+
+<% sections = report.report_sections || {} %>
+
+<!-- Overall Summary -->
+<div style="padding: var(--rp-space-4); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-5); border: 1px solid #c7d2fe;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-3);">
+    <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 문해력 수준</div>
+    <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
+      <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
+    </div>
+  </div>
+  <% if report.overall_summary.present? %>
+    <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(report.overall_summary) %></div>
+  <% end %>
+</div>
+
+<!-- Section Scores Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--rp-space-4);">
+  <% QuestioningReport::SECTION_LABELS.each do |key, label| %>
+    <%
+      section = sections[key] || {}
+      score = section["score"]
+      feedback = section["feedback"]
+      strengths = section["strengths"] || []
+      improvements = section["improvements"] || []
+
+      # Score color
+      score_color = if score.nil?
+        "var(--rp-text-muted)"
+      elsif score >= 80
+        "#16a34a"
+      elsif score >= 60
+        "#2563eb"
+      elsif score >= 40
+        "#f59e0b"
+      else
+        "#dc2626"
+      end
+    %>
+    <div style="padding: var(--rp-space-4); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-md);">
+      <!-- Section Header -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-3);">
+        <div style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= label %></div>
+        <% if score.present? %>
+          <div style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: <%= score_color %>;"><%= score %></div>
+        <% else %>
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);">N/A</div>
+        <% end %>
+      </div>
+
+      <!-- Score Bar -->
+      <% if score.present? %>
+        <div style="width: 100%; height: 6px; background: var(--rp-bg-subtle); border-radius: 3px; margin-bottom: var(--rp-space-3); overflow: hidden;">
+          <div style="width: <%= score %>%; height: 100%; background: <%= score_color %>; border-radius: 3px; transition: width 0.5s;"></div>
+        </div>
+      <% end %>
+
+      <!-- Feedback -->
+      <% if feedback.present? %>
+        <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= feedback %></div>
+      <% end %>
+
+      <!-- Strengths & Improvements -->
+      <% if strengths.any? %>
+        <div style="margin-top: var(--rp-space-2);">
+          <% strengths.each do |s| %>
+            <div style="font-size: 12px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+              <span style="flex-shrink: 0;">+</span> <%= s %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <% if improvements.any? %>
+        <div style="margin-top: var(--rp-space-1);">
+          <% improvements.each do |imp| %>
+            <div style="font-size: 12px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+              <span style="flex-shrink: 0;">*</span> <%= imp %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Report Metadata -->
+<div style="margin-top: var(--rp-space-4); font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); display: flex; gap: var(--rp-space-4); flex-wrap: wrap;">
+  <% if report.generated_by.present? %>
+    <span>생성: <%= report.generated_by.name %></span>
+  <% end %>
+  <span>상태: <%= report.published? ? '배포됨' : '초안' %></span>
+  <% if report.published_at.present? %>
+    <span>배포일: <%= report.published_at.strftime('%Y-%m-%d %H:%M') %></span>
+  <% end %>
+</div>

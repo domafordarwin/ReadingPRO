@@ -737,6 +737,77 @@
   }
 </script>
 
+<!-- ============================================
+     Questioning Report (if published)
+     ============================================ -->
+<% if @report.present? && @report.published? %>
+  <%
+    sections = @report.report_sections || {}
+    level = @questioning_session.questioning_module.level
+    is_l1 = level == "elementary_low"
+  %>
+  <div class="rp-card" style="margin-top: var(--rp-space-6);">
+    <div class="rp-card__header" style="display: flex; align-items: center; gap: var(--rp-space-3);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      <h3 class="rp-card__title" style="margin: 0;">
+        <% if is_l1 %>
+          나의 읽기 보고서
+        <% else %>
+          문해력 종합 보고서
+        <% end %>
+      </h3>
+    </div>
+    <div class="rp-card__body">
+      <!-- Level Badge -->
+      <div style="text-align: center; padding: var(--rp-space-4); margin-bottom: var(--rp-space-4); background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: var(--rp-radius-lg);">
+        <% if is_l1 %>
+          <div style="font-size: 48px; margin-bottom: var(--rp-space-2);">
+            <% case @report.literacy_level %>
+            <% when "beginning" %>&#127793;
+            <% when "developing" %>&#127775;
+            <% when "proficient" %>&#11088;
+            <% when "advanced" %>&#127941;
+            <% end %>
+          </div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--rp-primary);"><%= @report.literacy_level_label %></div>
+          <% if @report.overall_summary.present? %>
+            <div style="margin-top: var(--rp-space-3); font-size: 16px; line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(@report.overall_summary) %></div>
+          <% end %>
+        <% else %>
+          <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-2);">종합 문해력 수준</div>
+          <div style="font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= @report.literacy_level_label %></div>
+          <% if @report.overall_summary.present? %>
+            <div style="margin-top: var(--rp-space-3); font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body); text-align: left;"><%= simple_format(@report.overall_summary) %></div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Section Scores -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--rp-space-3);">
+        <% QuestioningReport::SECTION_LABELS.each do |key, label| %>
+          <% section = sections[key] || {}; score = section["score"]; next if score.nil? %>
+          <% bar_color = score >= 80 ? '#16a34a' : (score >= 60 ? '#2563eb' : (score >= 40 ? '#f59e0b' : '#dc2626')) %>
+          <div style="padding: var(--rp-space-3); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= label %></span>
+              <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-bold); color: <%= bar_color %>;"><%= score %></span>
+            </div>
+            <div style="width: 100%; height: 6px; background: var(--rp-border); border-radius: 3px; overflow: hidden;">
+              <div style="width: <%= score %>%; height: 100%; background: <%= bar_color %>; border-radius: 3px;"></div>
+            </div>
+            <% if section["feedback"].present? %>
+              <div style="font-size: 12px; color: var(--rp-text-muted); margin-top: 6px; line-height: 1.5;"><%= section["feedback"]&.truncate(100) %></div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <!-- Responsive score cards -->
 <style>
   @media (max-width: 768px) {
