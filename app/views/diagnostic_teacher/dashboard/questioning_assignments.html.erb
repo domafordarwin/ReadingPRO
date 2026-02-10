@@ -27,33 +27,22 @@
 
 <!-- 새 배정 폼 -->
 <div class="rp-card" style="margin-bottom: 24px;">
-  <h2 class="rp-section-title" style="margin-bottom: 16px;">새 배정</h2>
-  <%= form_with url: diagnostic_teacher_create_questioning_assignment_path, method: :post, data: { turbo: false }, style: "display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;" do |f| %>
-    <div style="flex: 1; min-width: 200px;">
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">발문 모듈</label>
-      <select name="questioning_module_id" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
-        <option value="">모듈 선택...</option>
-        <% @active_modules.each do |mod| %>
-          <option value="<%= mod.id %>"><%= mod.title %> (<%= mod.level_label %>)</option>
-        <% end %>
-      </select>
-    </div>
-    <div style="flex: 1; min-width: 200px;">
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">배정 대상 (학교)</label>
-      <select name="school_id" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
-        <option value="">학교 선택...</option>
-        <% @schools.each do |school| %>
-          <option value="<%= school.id %>"><%= school.name %> (<%= school.students.size %>명)</option>
-        <% end %>
-      </select>
-    </div>
-    <div style="min-width: 160px;">
-      <label style="display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">마감일 (선택)</label>
-      <input type="date" name="due_date" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
-    </div>
-    <div>
-      <button type="submit" class="rp-btn rp-btn--primary">배정하기</button>
-    </div>
+  <%= form_with url: diagnostic_teacher_create_questioning_assignment_path, method: :post, data: { turbo: false }, style: "display: flex; gap: 12px; align-items: center;" do |f| %>
+    <h2 class="rp-section-title" style="margin: 0; white-space: nowrap;">새 배정</h2>
+    <select name="questioning_module_id" required style="flex: 2; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; min-width: 0;">
+      <option value="">모듈 선택...</option>
+      <% @active_modules.each do |mod| %>
+        <option value="<%= mod.id %>"><%= mod.title %> (<%= mod.level_label %>)</option>
+      <% end %>
+    </select>
+    <select name="school_id" style="flex: 1.5; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; min-width: 0;">
+      <option value="">학교 선택...</option>
+      <% @schools.each do |school| %>
+        <option value="<%= school.id %>"><%= school.name %> (<%= school.students.size %>명)</option>
+      <% end %>
+    </select>
+    <input type="date" name="due_date" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; width: 150px;">
+    <button type="submit" class="rp-btn rp-btn--primary" style="white-space: nowrap;">배정하기</button>
   <% end %>
 </div>
 
