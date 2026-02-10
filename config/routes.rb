@@ -194,6 +194,7 @@ Rails.application.routes.draw do
     delete "feedback_prompts/:id", to: "dashboard#destroy_prompt", as: "destroy_feedback_prompt"
     post "feedback_prompts/:id/duplicate", to: "dashboard#duplicate_prompt", as: "duplicate_feedback_prompt"
     get "feedbacks", to: "feedback#index", as: "feedbacks"
+    post "feedbacks/batch_publish", to: "feedback#batch_publish", as: "feedback_batch_publish"
     get "feedbacks/:student_id", to: "feedback#show", as: "feedback"
     post "feedbacks/:response_id/generate", to: "feedback#generate_feedback", as: "feedback_generate"
     post "feedbacks/:response_id/generate_constructed", to: "feedback#generate_constructed_feedback", as: "feedback_generate_constructed"
@@ -215,6 +216,8 @@ Rails.application.routes.draw do
 
     # 종합 결과 보고서
     get "comprehensive_reports", to: "comprehensive_reports#index", as: "comprehensive_reports"
+    post "comprehensive_reports/batch_generate", to: "comprehensive_reports#batch_generate", as: "comprehensive_reports_batch_generate"
+    post "comprehensive_reports/batch_publish", to: "comprehensive_reports#batch_publish", as: "comprehensive_reports_batch_publish"
     get "comprehensive_reports/:student_id/:attempt_id", to: "comprehensive_reports#show", as: "comprehensive_report"
     get "comprehensive_reports/:student_id/:attempt_id/generate", to: "comprehensive_reports#generate", as: "comprehensive_report_generate"
     post "comprehensive_reports/:student_id/:attempt_id/create_report", to: "comprehensive_reports#create_report", as: "comprehensive_report_create"

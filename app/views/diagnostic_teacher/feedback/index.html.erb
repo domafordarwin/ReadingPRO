@@ -44,7 +44,10 @@
       <table class="rp-table">
         <thead>
           <tr>
-            <th class="rp-table__th" style="width: 20%;">학생 ID</th>
+            <th class="rp-table__th" style="width: 40px;">
+              <input type="checkbox" id="batch-select-all" onchange="batchToggleAll(this)" title="전체 선택">
+            </th>
+            <th class="rp-table__th" style="width: 18%;">학생 ID</th>
             <th class="rp-table__th" style="width: 12%;">학년/반</th>
             <th class="rp-table__th" style="width: 15%;">학교</th>
             <th class="rp-table__th" style="width: 15%;">피드백 필요 응답</th>
@@ -60,6 +63,12 @@
             <% feedback_count = responses.select { |r| r.response_feedbacks.empty? }.count %>
             <% is_published = latest_attempt.feedback_published_at.present? %>
             <tr class="rp-table__row">
+              <td class="rp-table__td">
+                <input type="checkbox" class="batch-checkbox"
+                       data-student-id="<%= student.id %>"
+                       data-published="<%= is_published %>"
+                       onchange="batchUpdateSelection()">
+              </td>
               <td class="rp-table__td"><strong><%= student.name %></strong></td>
               <td class="rp-table__td"><%= "#{student.grade}학년 #{student.class_name}반" %></td>
               <td class="rp-table__td"><%= student.school.name %></td>
@@ -105,7 +114,146 @@
   <% end %>
 </div>
 
+<!-- 일괄 작업 플로팅 바 -->
+<div id="batch-action-bar" class="batch-action-bar" style="display:none;">
+  <div class="batch-action-bar__left">
+    <span id="batch-count" class="batch-action-bar__count">0명 선택됨</span>
+    <button type="button" class="batch-action-bar__clear" onclick="batchClearAll()">선택 해제</button>
+  </div>
+  <div class="batch-action-bar__right">
+    <button type="button" class="batch-action-bar__btn batch-action-bar__btn--publish" onclick="batchPublishFeedbacks()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      일괄 피드백 배포
+    </button>
+  </div>
+</div>
+
+<script>
+  function batchToggleAll(el) {
+    document.querySelectorAll('.batch-checkbox').forEach(function(cb) { cb.checked = el.checked; });
+    batchUpdateSelection();
+  }
+
+  function batchUpdateSelection() {
+    var checkboxes = document.querySelectorAll('.batch-checkbox');
+    var checked = document.querySelectorAll('.batch-checkbox:checked');
+    var bar = document.getElementById('batch-action-bar');
+    var countEl = document.getElementById('batch-count');
+    var selectAll = document.getElementById('batch-select-all');
+
+    countEl.textContent = checked.length + '명 선택됨';
+    bar.style.display = checked.length > 0 ? 'flex' : 'none';
+
+    if (selectAll) {
+      selectAll.checked = checked.length === checkboxes.length && checkboxes.length > 0;
+      selectAll.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+    }
+  }
+
+  function batchClearAll() {
+    document.querySelectorAll('.batch-checkbox').forEach(function(cb) { cb.checked = false; });
+    var selectAll = document.getElementById('batch-select-all');
+    if (selectAll) { selectAll.checked = false; selectAll.indeterminate = false; }
+    batchUpdateSelection();
+  }
+
+  function batchPublishFeedbacks() {
+    var checked = document.querySelectorAll('.batch-checkbox:checked');
+    var unpublishedIds = [];
+    checked.forEach(function(cb) {
+      if (cb.dataset.published !== 'true') {
+        unpublishedIds.push(cb.dataset.studentId);
+      }
+    });
+
+    if (unpublishedIds.length === 0) {
+      alert('배포할 학생이 없습니다. 이미 모두 배포 완료 상태입니다.');
+      return;
+    }
+
+    if (!confirm(unpublishedIds.length + '명의 학생에게 피드백을 배포하시겠습니까?')) return;
+
+    var btn = document.querySelector('.batch-action-bar__btn--publish');
+    var origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="batch-spinner"></span> 배포 중...';
+
+    fetch('<%= diagnostic_teacher_feedback_batch_publish_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ student_ids: unpublishedIds })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success || data.succeeded > 0) {
+        showBatchToast(data.succeeded + '명 피드백 배포 완료!', 'success');
+        setTimeout(function() { location.reload(); }, 1200);
+      } else {
+        showBatchToast('오류: ' + (data.error || '배포에 실패했습니다'), 'error');
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      }
+    })
+    .catch(function(err) {
+      showBatchToast('네트워크 오류: ' + err.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    });
+  }
+
+  function showBatchToast(message, type) {
+    var existing = document.getElementById('batch-toast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'batch-toast';
+    toast.className = 'batch-toast batch-toast--' + type;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 4000);
+  }
+</script>
+
 <style>
+  /* ── 일괄 작업 플로팅 바 ── */
+  .batch-action-bar {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    min-width: 480px; max-width: 720px; padding: 14px 24px;
+    background: #1e293b; color: white; border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 1000;
+    animation: batchBarSlideUp 0.25s ease-out;
+  }
+  @keyframes batchBarSlideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+  .batch-action-bar__left { display: flex; align-items: center; gap: 12px; }
+  .batch-action-bar__count { font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .batch-action-bar__clear { background: rgba(255,255,255,0.12); color: #94a3b8; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .batch-action-bar__clear:hover { background: rgba(255,255,255,0.2); color: white; }
+  .batch-action-bar__right { display: flex; gap: 8px; }
+  .batch-action-bar__btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap;
+  }
+  .batch-action-bar__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .batch-action-bar__btn--publish { background: #3b82f6; color: white; }
+  .batch-action-bar__btn--publish:hover:not(:disabled) { background: #2563eb; }
+  .batch-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: batchSpin 0.6s linear infinite; }
+  @keyframes batchSpin { to { transform: rotate(360deg); } }
+
+  /* ── 토스트 ── */
+  .batch-toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+    z-index: 2000; animation: batchToastIn 0.3s ease-out;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .batch-toast--success { background: #16a34a; color: white; }
+  .batch-toast--error { background: #dc2626; color: white; }
+  @keyframes batchToastIn { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
   .rp-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

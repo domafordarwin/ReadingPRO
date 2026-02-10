@@ -738,6 +738,33 @@ class DiagnosticTeacher::FeedbackController < ApplicationController
     render json: { success: false, error: e.message }, status: :unprocessable_entity
   end
 
+  def batch_publish
+    student_ids = params[:student_ids]
+    unless student_ids.is_a?(Array) && student_ids.any?
+      return render json: { success: false, error: "학생을 선택해주세요" }, status: :bad_request
+    end
+
+    results = { succeeded: 0, failed: 0, errors: [] }
+    student_ids.each do |sid|
+      attempt = StudentAttempt.joins(:student).where(students: { id: sid }).order(:created_at).last
+      unless attempt
+        results[:failed] += 1
+        next
+      end
+      if attempt.feedback_published_at.present?
+        results[:succeeded] += 1
+        next
+      end
+      attempt.update!(feedback_published_at: Time.current)
+      results[:succeeded] += 1
+    rescue => e
+      results[:failed] += 1
+      results[:errors] << "학생 #{sid}: #{e.message}"
+    end
+
+    render json: { success: results[:failed] == 0, **results, total: student_ids.size }
+  end
+
   def publish_feedback
     student = Student.find_by(id: params[:student_id])
     unless student

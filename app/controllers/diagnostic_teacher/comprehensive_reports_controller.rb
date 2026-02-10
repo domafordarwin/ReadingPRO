@@ -150,6 +150,72 @@ module DiagnosticTeacher
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
 
+    # POST /diagnostic_teacher/comprehensive_reports/batch_generate
+    def batch_generate
+      attempt_ids = params[:attempt_ids]
+      unless attempt_ids.is_a?(Array) && attempt_ids.any?
+        return render json: { success: false, error: "항목을 선택해주세요" }, status: :bad_request
+      end
+
+      if attempt_ids.size > 5
+        return render json: { success: false, error: "한 번에 최대 5명까지 생성 가능합니다" }, status: :bad_request
+      end
+
+      results = { succeeded: 0, failed: 0, skipped: 0, errors: [] }
+      attempt_ids.each do |aid|
+        attempt = StudentAttempt.includes(:attempt_report).find_by(id: aid)
+        unless attempt
+          results[:failed] += 1
+          next
+        end
+
+        if attempt.attempt_report&.comprehensive_report_generated?
+          results[:skipped] += 1
+          next
+        end
+
+        service = ComprehensiveReportService.new(attempt)
+        service.generate_full_report(generated_by: current_user)
+        results[:succeeded] += 1
+      rescue => e
+        results[:failed] += 1
+        results[:errors] << "Attempt #{aid}: #{e.message}"
+      end
+
+      render json: { success: results[:failed] == 0, **results, total: attempt_ids.size }
+    end
+
+    # POST /diagnostic_teacher/comprehensive_reports/batch_publish
+    def batch_publish
+      attempt_ids = params[:attempt_ids]
+      unless attempt_ids.is_a?(Array) && attempt_ids.any?
+        return render json: { success: false, error: "항목을 선택해주세요" }, status: :bad_request
+      end
+
+      results = { succeeded: 0, failed: 0, errors: [] }
+      attempt_ids.each do |aid|
+        attempt = StudentAttempt.includes(:attempt_report).find_by(id: aid)
+        report = attempt&.attempt_report
+        unless report
+          results[:failed] += 1
+          next
+        end
+
+        if report.report_status == "published"
+          results[:succeeded] += 1
+          next
+        end
+
+        report.publish!
+        results[:succeeded] += 1
+      rescue => e
+        results[:failed] += 1
+        results[:errors] << "Attempt #{aid}: #{e.message}"
+      end
+
+      render json: { success: results[:failed] == 0, **results, total: attempt_ids.size }
+    end
+
     private
 
     def set_role
