@@ -148,14 +148,18 @@ class Researcher::ItemsController < ApplicationController
     choice_content_params = params.fetch(:choice_contents, {})
     has_proximity_params = choice_params.present?
 
+    Rails.logger.info "[update_choice_scores!] choice_content_params keys=#{choice_content_params.keys rescue 'N/A'}, class=#{choice_content_params.class}"
+
     @item.item_choices.each do |choice|
       is_correct = (choice.id.to_s == correct_choice_id)
       attrs = { is_correct: is_correct }
 
       # Update choice content if provided (HTML formatting support)
       raw_content = choice_content_params[choice.id.to_s]
+      Rails.logger.info "[update_choice_scores!] choice_id=#{choice.id}, raw_content_present=#{raw_content.present?}, raw_content_preview=#{raw_content.to_s.first(100).inspect}"
       if raw_content.present?
         attrs[:content] = sanitize_choice_content(raw_content)
+        Rails.logger.info "[update_choice_scores!] sanitized_content=#{attrs[:content].to_s.first(100).inspect}"
       end
 
       if has_proximity_params
@@ -176,7 +180,8 @@ class Researcher::ItemsController < ApplicationController
         attrs[:proximity_score] = 100
       end
 
-      choice.update(attrs)
+      result = choice.update(attrs)
+      Rails.logger.info "[update_choice_scores!] choice_id=#{choice.id} update_result=#{result}, errors=#{choice.errors.full_messages}" unless result
     end
   end
 
