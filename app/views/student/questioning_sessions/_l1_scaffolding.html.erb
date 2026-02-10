@@ -1,6 +1,6 @@
 <%#
-  L1 초저(초1-2) 수준 스캐폴딩 UI - V2 전면 개선
-  큰 글자, 큰 버튼, 밝은 파스텔, 단계별 순차 표시
+  L1 초저(초1-2) 수준 스캐폴딩 UI - V3
+  "이야기 속으로" 가이드 리딩 → AI 요약 → 발문 작성
 
   Local variables:
     - current_stage (Integer, 1-3)
@@ -19,6 +19,9 @@
 
   stage_emojis = { 1 => "&#128218;", 2 => "&#128483;", 3 => "&#127793;" }
   stage_names = { 1 => "책문열기", 2 => "이야기나누기", 3 => "삶적용" }
+
+  has_summary = @guided_reading_summary.present?
+  gr_questions = @guided_reading_questions || GuidedReadingService::STAGE_QUESTIONS[current_stage]
 %>
 
 <style>
@@ -58,6 +61,167 @@
     font-size: 16px;
     color: #6b21a8;
     margin-top: 4px;
+  }
+
+  /* --- Guided Reading Form --- */
+  .l1-kid__gr-card {
+    padding: 24px;
+    background: white;
+    border: 3px solid #93c5fd;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .l1-kid__gr-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px dashed #bfdbfe;
+  }
+
+  .l1-kid__gr-title-icon {
+    font-size: 40px;
+    line-height: 1;
+  }
+
+  .l1-kid__gr-title-text {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e40af;
+  }
+
+  .l1-kid__gr-question {
+    margin-bottom: 20px;
+  }
+
+  .l1-kid__gr-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .l1-kid__gr-label-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #3b82f6;
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .l1-kid__gr-label-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e3a5f;
+  }
+
+  .l1-kid__gr-input {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 20px;
+    font-family: inherit;
+    line-height: 1.6;
+    border: 3px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fafbff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+
+  .l1-kid__gr-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    background: white;
+  }
+
+  .l1-kid__gr-input::placeholder {
+    color: #9ca3af;
+    font-size: 17px;
+  }
+
+  .l1-kid__gr-submit {
+    display: block;
+    width: 100%;
+    padding: 18px 32px;
+    font-size: 22px;
+    font-weight: 800;
+    font-family: inherit;
+    color: white;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 8px;
+  }
+
+  .l1-kid__gr-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  }
+
+  .l1-kid__gr-submit:active {
+    transform: translateY(0);
+  }
+
+  /* --- AI Summary Card --- */
+  .l1-kid__summary {
+    padding: 24px;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 3px solid #6ee7b7;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+
+  .l1-kid__summary-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px dashed #a7f3d0;
+  }
+
+  .l1-kid__summary-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .l1-kid__summary-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #065f46;
+  }
+
+  .l1-kid__summary-body {
+    font-size: 20px;
+    line-height: 2.0;
+    color: #064e3b;
+    word-break: keep-all;
+  }
+
+  .l1-kid__summary-body p {
+    margin: 0 0 12px;
+  }
+
+  .l1-kid__summary-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .l1-kid__summary-arrow {
+    text-align: center;
+    margin: 16px 0 8px;
+    font-size: 32px;
+    color: #10b981;
   }
 
   /* --- Step Tabs --- */
@@ -233,196 +397,70 @@
     border: 4px solid;
   }
 
-  .l1-kid__ox-btn:hover {
-    transform: scale(1.08);
-  }
+  .l1-kid__ox-btn:hover { transform: scale(1.08); }
+  .l1-kid__ox-btn--o { background: #f0fdf4; border-color: #86efac; }
+  .l1-kid__ox-btn--o:hover { background: #dcfce7; border-color: #22c55e; }
+  .l1-kid__ox-btn--x { background: #fef2f2; border-color: #fca5a5; }
+  .l1-kid__ox-btn--x:hover { background: #fee2e2; border-color: #ef4444; }
 
-  .l1-kid__ox-btn--o {
-    background: #f0fdf4;
-    border-color: #86efac;
-  }
-
-  .l1-kid__ox-btn--o:hover {
-    background: #dcfce7;
-    border-color: #22c55e;
-  }
-
-  .l1-kid__ox-btn--x {
-    background: #fef2f2;
-    border-color: #fca5a5;
-  }
-
-  .l1-kid__ox-btn--x:hover {
-    background: #fee2e2;
-    border-color: #ef4444;
-  }
-
-  .l1-kid__ox-symbol {
-    font-size: 40px;
-    font-weight: 900;
-    line-height: 1;
-  }
-
+  .l1-kid__ox-symbol { font-size: 40px; font-weight: 900; line-height: 1; }
   .l1-kid__ox-btn--o .l1-kid__ox-symbol { color: #16a34a; }
   .l1-kid__ox-btn--x .l1-kid__ox-symbol { color: #dc2626; }
+  .l1-kid__ox-text { font-size: 14px; font-weight: 700; color: #374151; }
 
-  .l1-kid__ox-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: #374151;
-  }
+  .l1-kid__ox-btn--selected { transform: scale(1.15); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+  .l1-kid__ox-btn--o.l1-kid__ox-btn--selected { background: #dcfce7; border-color: #16a34a; }
+  .l1-kid__ox-btn--x.l1-kid__ox-btn--selected { background: #fee2e2; border-color: #dc2626; }
 
-  .l1-kid__ox-btn--selected {
-    transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  }
-
-  .l1-kid__ox-btn--o.l1-kid__ox-btn--selected {
-    background: #dcfce7;
-    border-color: #16a34a;
-  }
-
-  .l1-kid__ox-btn--x.l1-kid__ox-btn--selected {
-    background: #fee2e2;
-    border-color: #dc2626;
-  }
-
-  /* --- Template Cards (1-column, big) --- */
-  .l1-kid__template-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  /* --- Template Cards --- */
+  .l1-kid__template-list { display: flex; flex-direction: column; gap: 12px; }
 
   .l1-kid__template-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    background: white;
-    border: 3px solid #e5e7eb;
-    border-radius: 16px;
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-    transition: all 0.2s;
-    width: 100%;
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; background: white;
+    border: 3px solid #e5e7eb; border-radius: 16px;
+    cursor: pointer; text-align: left; font-family: inherit;
+    transition: all 0.2s; width: 100%;
   }
 
-  .l1-kid__template-card:hover {
-    border-color: #8b5cf6;
-    background: #faf5ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
-  }
-
-  .l1-kid__template-card--selected {
-    border-color: #8b5cf6;
-    background: #f5f3ff;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
-  }
-
-  .l1-kid__template-icon {
-    font-size: 36px;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .l1-kid__template-text {
-    font-size: 18px;
-    font-weight: 600;
-    color: #374151;
-    line-height: 1.5;
-  }
-
-  .l1-kid__template-text strong {
-    color: #7c3aed;
-  }
+  .l1-kid__template-card:hover { border-color: #8b5cf6; background: #faf5ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1); }
+  .l1-kid__template-card--selected { border-color: #8b5cf6; background: #f5f3ff; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15); }
+  .l1-kid__template-icon { font-size: 36px; flex-shrink: 0; line-height: 1; }
+  .l1-kid__template-text { font-size: 18px; font-weight: 600; color: #374151; line-height: 1.5; }
+  .l1-kid__template-text strong { color: #7c3aed; }
 
   /* --- Section Divider --- */
   .l1-kid__divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    color: #9ca3af;
-    font-size: 15px;
-    font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: #9ca3af; font-size: 15px; font-weight: 600;
   }
-
-  .l1-kid__divider::before,
-  .l1-kid__divider::after {
-    content: "";
-    flex: 1;
-    height: 2px;
-    background: #e5e7eb;
-    border-radius: 1px;
+  .l1-kid__divider::before, .l1-kid__divider::after {
+    content: ""; flex: 1; height: 2px; background: #e5e7eb; border-radius: 1px;
   }
 
   /* --- Scaffolding Badge --- */
   .l1-kid__level-badge {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    background: #eff6ff;
-    border: 2px solid #bfdbfe;
-    border-radius: 14px;
-    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; background: #eff6ff;
+    border: 2px solid #bfdbfe; border-radius: 14px; margin-bottom: 16px;
   }
-
-  .l1-kid__level-badge-icon {
-    font-size: 28px;
-    flex-shrink: 0;
-  }
-
-  .l1-kid__level-badge-text {
-    font-size: 16px;
-    color: #1e40af;
-    font-weight: 600;
-    line-height: 1.4;
-  }
+  .l1-kid__level-badge-icon { font-size: 28px; flex-shrink: 0; }
+  .l1-kid__level-badge-text { font-size: 16px; color: #1e40af; font-weight: 600; line-height: 1.4; }
 
   /* --- Scroll Hint Banner --- */
   .l1-kid__scroll-hint {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 16px 20px;
-    margin-top: 16px;
+    display: none; align-items: center; justify-content: center; gap: 12px;
+    padding: 16px 20px; margin-top: 16px;
     background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-    border: 2px solid #a78bfa;
-    border-radius: 16px;
+    border: 2px solid #a78bfa; border-radius: 16px;
     animation: l1-bounce 0.6s ease;
   }
+  .l1-kid__scroll-hint--visible { display: flex; }
+  .l1-kid__scroll-hint-icon { font-size: 32px; line-height: 1; animation: l1-point 1s ease infinite; }
+  .l1-kid__scroll-hint-text { font-size: 18px; font-weight: 700; color: #5b21b6; }
 
-  .l1-kid__scroll-hint--visible {
-    display: flex;
-  }
-
-  .l1-kid__scroll-hint-icon {
-    font-size: 32px;
-    line-height: 1;
-    animation: l1-point 1s ease infinite;
-  }
-
-  .l1-kid__scroll-hint-text {
-    font-size: 18px;
-    font-weight: 700;
-    color: #5b21b6;
-  }
-
-  @keyframes l1-bounce {
-    0% { transform: scale(0.9); opacity: 0; }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes l1-point {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(6px); }
-  }
+  @keyframes l1-bounce { 0% { transform: scale(0.9); opacity: 0; } 50% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes l1-point { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 
   /* --- Responsive --- */
   @media (max-width: 768px) {
@@ -440,16 +478,84 @@
     .l1-kid__tab-label { font-size: 11px; }
     .l1-kid__guide-text { font-size: 16px; }
     .l1-kid__guide-mascot { font-size: 32px; }
+    .l1-kid__gr-label-text { font-size: 18px; }
+    .l1-kid__gr-input { font-size: 18px; padding: 14px 16px; }
+    .l1-kid__gr-submit { font-size: 20px; padding: 16px 28px; }
+    .l1-kid__summary-body { font-size: 18px; }
   }
 </style>
 
 <div class="l1-kid" id="l1-scaffolding-panel">
+
+<% unless has_summary %>
+  <!-- ============================================
+       STEP 1: 이야기 속으로 (Guided Reading)
+       ============================================ -->
+  <div class="l1-kid__banner">
+    <div class="l1-kid__banner-mascot">&#128218;</div>
+    <h2 class="l1-kid__banner-title">이야기 속으로!</h2>
+    <div class="l1-kid__banner-sub"><%= stage_names[current_stage] %> 단계</div>
+  </div>
+
+  <div class="l1-kid__guide">
+    <span class="l1-kid__guide-mascot">&#129412;</span>
+    <span class="l1-kid__guide-text">
+      먼저 이야기에 대해 이야기해 보자!<br>
+      아래 질문에 답해 주면, 선생님이 정리해 줄게!
+    </span>
+  </div>
+
+  <%= form_with url: submit_guided_reading_student_questioning_session_path(@questioning_session), method: :post, data: { turbo: false }, local: true do |f| %>
+    <div class="l1-kid__gr-card">
+      <div class="l1-kid__gr-title">
+        <span class="l1-kid__gr-title-icon">&#128214;</span>
+        <span class="l1-kid__gr-title-text"><%= gr_questions[:title] %></span>
+      </div>
+
+      <% gr_questions[:questions].each_with_index do |q, idx| %>
+        <div class="l1-kid__gr-question">
+          <div class="l1-kid__gr-label">
+            <span class="l1-kid__gr-label-num"><%= idx + 1 %></span>
+            <label class="l1-kid__gr-label-text" for="gr_<%= q[:key] %>"><%= q[:label] %></label>
+          </div>
+          <input type="text" name="gr_<%= q[:key] %>" id="gr_<%= q[:key] %>"
+                 class="l1-kid__gr-input"
+                 placeholder="<%= q[:placeholder] %>"
+                 autocomplete="off">
+        </div>
+      <% end %>
+
+      <button type="submit" class="l1-kid__gr-submit" id="gr-submit-btn">
+        &#9997;&#65039; 정리해 줘!
+      </button>
+    </div>
+  <% end %>
+
+<% else %>
+  <!-- ============================================
+       STEP 2: AI 요약 + 발문 작성 도구
+       ============================================ -->
 
   <!-- Banner -->
   <div class="l1-kid__banner">
     <div class="l1-kid__banner-mascot">&#127775;</div>
     <h2 class="l1-kid__banner-title">오늘의 질문을 만들어요!</h2>
     <div class="l1-kid__banner-sub"><%= stage_names[current_stage] %> 단계</div>
+  </div>
+
+  <!-- AI Summary Card -->
+  <div class="l1-kid__summary">
+    <div class="l1-kid__summary-header">
+      <span class="l1-kid__summary-icon">&#128218;</span>
+      <span class="l1-kid__summary-title">이야기 정리</span>
+    </div>
+    <div class="l1-kid__summary-body">
+      <%= simple_format(@guided_reading_summary.content) %>
+    </div>
+    <div class="l1-kid__summary-arrow">&#11015;&#65039;</div>
+    <div style="text-align: center; font-size: 18px; font-weight: 700; color: #059669;">
+      위 내용을 보고, 궁금한 것을 질문으로 만들어 봐!
+    </div>
   </div>
 
   <!-- Step Tabs -->
@@ -494,8 +600,6 @@
        Panel 1: 감정 고르기 (Feel)
        ============================================ -->
   <div class="l1-kid__panel l1-kid__panel--active" id="l1-panel-feel" role="tabpanel">
-
-    <!-- Character Guide -->
     <div class="l1-kid__guide">
       <span class="l1-kid__guide-mascot">&#129412;</span>
       <span class="l1-kid__guide-text">
@@ -509,30 +613,24 @@
       </span>
     </div>
 
-    <!-- Emoji Selector -->
     <div class="l1-kid__emoji-grid" role="group" aria-label="감정 선택">
-      <button type="button" class="l1-kid__emoji-btn" aria-label="기쁨"
-              onclick="l1SelectEmotion(this, '기쁨')">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="기쁨" onclick="l1SelectEmotion(this, '기쁨')">
         <span class="l1-kid__emoji-face">&#128522;</span>
         <span class="l1-kid__emoji-label">기쁨</span>
       </button>
-      <button type="button" class="l1-kid__emoji-btn" aria-label="슬픔"
-              onclick="l1SelectEmotion(this, '슬픔')">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="슬픔" onclick="l1SelectEmotion(this, '슬픔')">
         <span class="l1-kid__emoji-face">&#128546;</span>
         <span class="l1-kid__emoji-label">슬픔</span>
       </button>
-      <button type="button" class="l1-kid__emoji-btn" aria-label="놀람"
-              onclick="l1SelectEmotion(this, '놀람')">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="놀람" onclick="l1SelectEmotion(this, '놀람')">
         <span class="l1-kid__emoji-face">&#128558;</span>
         <span class="l1-kid__emoji-label">놀람</span>
       </button>
-      <button type="button" class="l1-kid__emoji-btn" aria-label="화남"
-              onclick="l1SelectEmotion(this, '화남')">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="화남" onclick="l1SelectEmotion(this, '화남')">
         <span class="l1-kid__emoji-face">&#128544;</span>
         <span class="l1-kid__emoji-label">화남</span>
       </button>
-      <button type="button" class="l1-kid__emoji-btn" aria-label="무서움"
-              onclick="l1SelectEmotion(this, '무서움')">
+      <button type="button" class="l1-kid__emoji-btn" aria-label="무서움" onclick="l1SelectEmotion(this, '무서움')">
         <span class="l1-kid__emoji-face">&#128552;</span>
         <span class="l1-kid__emoji-label">무서움</span>
       </button>
@@ -541,7 +639,6 @@
     <% if scaffolding_level >= 3 %>
       <div class="l1-kid__divider">또는</div>
 
-      <!-- O/X Selector -->
       <div class="l1-kid__guide">
         <span class="l1-kid__guide-mascot">&#129302;</span>
         <span class="l1-kid__guide-text">
@@ -549,7 +646,6 @@
         </span>
       </div>
 
-      <!-- 판단 대상 문장 -->
       <div class="l1-kid__ox-statement" id="l1-ox-statement">
         <span class="l1-kid__ox-statement-icon">&#128172;</span>
         <span class="l1-kid__ox-statement-text">
@@ -564,13 +660,11 @@
       </div>
 
       <div class="l1-kid__ox-row" role="group" aria-label="O/X 선택">
-        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--o" aria-label="맞아요 (O)"
-                onclick="l1SelectOX(this, true)">
+        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--o" aria-label="맞아요 (O)" onclick="l1SelectOX(this, true)">
           <span class="l1-kid__ox-symbol">O</span>
           <span class="l1-kid__ox-text">맞아요</span>
         </button>
-        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--x" aria-label="아니에요 (X)"
-                onclick="l1SelectOX(this, false)">
+        <button type="button" class="l1-kid__ox-btn l1-kid__ox-btn--x" aria-label="아니에요 (X)" onclick="l1SelectOX(this, false)">
           <span class="l1-kid__ox-symbol">X</span>
           <span class="l1-kid__ox-text">아니에요</span>
         </button>
@@ -583,60 +677,48 @@
        ============================================ -->
   <% if scaffolding_level >= 2 %>
     <div class="l1-kid__panel" id="l1-panel-template" role="tabpanel">
-
       <div class="l1-kid__guide">
         <span class="l1-kid__guide-mascot">&#128038;</span>
-        <span class="l1-kid__guide-text">
-          마음에 드는 질문을 골라 봐! 자동으로 적혀요!
-        </span>
+        <span class="l1-kid__guide-text">마음에 드는 질문을 골라 봐! 자동으로 적혀요!</span>
       </div>
 
       <div class="l1-kid__template-list">
         <% if current_stage == 1 %>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '이 이야기를 읽으면 어떤 마음이 들까?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '이 이야기를 읽으면 어떤 마음이 들까?')">
             <span class="l1-kid__template-icon">&#128151;</span>
             <span class="l1-kid__template-text">이 이야기를 읽으면 <strong>어떤 마음</strong>이 들까?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '제목을 보니까 어떤 이야기일 것 같아?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '제목을 보니까 어떤 이야기일 것 같아?')">
             <span class="l1-kid__template-icon">&#128270;</span>
             <span class="l1-kid__template-text">제목을 보니까 <strong>어떤 이야기</strong>일 것 같아?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '나는 이런 경험을 한 적이 있어!')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '나는 이런 경험을 한 적이 있어!')">
             <span class="l1-kid__template-icon">&#128588;</span>
             <span class="l1-kid__template-text">나는 <strong>이런 경험</strong>을 한 적이 있어!</span>
           </button>
         <% elsif current_stage == 2 %>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '(인물)은(는) 어떤 마음이었을까?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '(인물)은(는) 어떤 마음이었을까?')">
             <span class="l1-kid__template-icon">&#128151;</span>
             <span class="l1-kid__template-text">(인물)은(는) <strong>어떤 마음</strong>이었을까?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '(인물)이 그렇게 한 이유는 뭐라고 생각해?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '(인물)이 그렇게 한 이유는 뭐라고 생각해?')">
             <span class="l1-kid__template-icon">&#129488;</span>
             <span class="l1-kid__template-text">(인물)이 그렇게 한 <strong>이유</strong>는 뭐라고 생각해?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '이 장면에서 무슨 일이 일어났어?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '이 장면에서 무슨 일이 일어났어?')">
             <span class="l1-kid__template-icon">&#127912;</span>
             <span class="l1-kid__template-text">이 장면에서 <strong>무슨 일</strong>이 일어났어?</span>
           </button>
         <% else %>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '나라면 어떻게 했을까?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '나라면 어떻게 했을까?')">
             <span class="l1-kid__template-icon">&#128588;</span>
             <span class="l1-kid__template-text"><strong>나라면</strong> 어떻게 했을까?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '가장 좋았던 장면은 어디야? 왜 좋았어?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '가장 좋았던 장면은 어디야? 왜 좋았어?')">
             <span class="l1-kid__template-icon">&#127775;</span>
             <span class="l1-kid__template-text"><strong>가장 좋았던 장면</strong>은 어디야? 왜 좋았어?</span>
           </button>
-          <button type="button" class="l1-kid__template-card"
-                  onclick="l1UseTemplate(this, '우리 반에서 지금 할 수 있는 작은 실천은 뭐가 있을까?')">
+          <button type="button" class="l1-kid__template-card" onclick="l1UseTemplate(this, '우리 반에서 지금 할 수 있는 작은 실천은 뭐가 있을까?')">
             <span class="l1-kid__template-icon">&#127793;</span>
             <span class="l1-kid__template-text">우리 반에서 할 수 있는 <strong>작은 실천</strong>은 뭐가 있을까?</span>
           </button>
@@ -649,33 +731,23 @@
        Panel 3: 직접 쓰기 (Free)
        ============================================ -->
   <div class="l1-kid__panel" id="l1-panel-free" role="tabpanel">
-
     <div class="l1-kid__guide">
       <span class="l1-kid__guide-mascot">&#128640;</span>
-      <span class="l1-kid__guide-text">
-        내가 궁금한 것을 자유롭게 써 봐! 아무 질문이나 좋아!
-      </span>
+      <span class="l1-kid__guide-text">내가 궁금한 것을 자유롭게 써 봐! 아무 질문이나 좋아!</span>
     </div>
 
-    <!-- Tips (smaller, for reference) -->
     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
         <span style="font-size: 24px;">&#128161;</span>
-        <span style="font-size: 16px; color: #92400e; font-weight: 600;">
-          한 번에 한 가지만 물어보면 돼!
-        </span>
+        <span style="font-size: 16px; color: #92400e; font-weight: 600;">한 번에 한 가지만 물어보면 돼!</span>
       </div>
       <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fdf2f8; border-radius: 12px; border: 1px solid #fbcfe8;">
         <span style="font-size: 24px;">&#128151;</span>
-        <span style="font-size: 16px; color: #9d174d; font-weight: 600;">
-          "어떤 마음이 들었니?" 같은 느낌을 물어보면 좋아!
-        </span>
+        <span style="font-size: 16px; color: #9d174d; font-weight: 600;">"어떤 마음이 들었니?" 같은 느낌을 물어보면 좋아!</span>
       </div>
     </div>
 
-    <p style="text-align: center; color: #6b7280; font-size: 15px;">
-      아래 입력칸에 나만의 질문을 적어 봐!
-    </p>
+    <p style="text-align: center; color: #6b7280; font-size: 15px;">아래 입력칸에 나만의 질문을 적어 봐!</p>
   </div>
 
   <!-- Scroll Hint (shown after selection) -->
@@ -684,28 +756,40 @@
     <span class="l1-kid__scroll-hint-text">아래에서 제출하기를 눌러요!</span>
   </div>
 
+<% end %>
+
 </div><!-- /.l1-kid -->
 
 <!-- ============================== -->
 <!-- L1 JavaScript                  -->
 <!-- ============================== -->
 <script>
+  // Guided reading form submit loading
+  (function() {
+    var grForm = document.querySelector('form[action*="submit_guided_reading"]');
+    if (grForm) {
+      grForm.addEventListener('submit', function() {
+        var btn = document.getElementById('gr-submit-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'AI 선생님이 정리하고 있어요...';
+          btn.style.opacity = '0.7';
+        }
+      });
+    }
+  })();
+
   // Tab switching
   function l1SwitchTab(btn, panelId) {
-    // Deactivate all tabs
     var tabs = document.querySelectorAll('.l1-kid__tab');
     tabs.forEach(function(t) {
       t.classList.remove('l1-kid__tab--active');
       t.setAttribute('aria-selected', 'false');
     });
 
-    // Hide all panels
     var panels = document.querySelectorAll('.l1-kid__panel');
-    panels.forEach(function(p) {
-      p.classList.remove('l1-kid__panel--active');
-    });
+    panels.forEach(function(p) { p.classList.remove('l1-kid__panel--active'); });
 
-    // Activate selected
     btn.classList.add('l1-kid__tab--active');
     btn.setAttribute('aria-selected', 'true');
     var panel = document.getElementById(panelId);
@@ -735,7 +819,6 @@
     allBtns.forEach(function(b) { b.classList.remove('l1-kid__ox-btn--selected'); });
     btn.classList.add('l1-kid__ox-btn--selected');
 
-    // 판단 문장 가져오기
     var statementEl = document.getElementById('l1-ox-statement');
     var statement = '';
     if (statementEl) {
@@ -746,8 +829,8 @@
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
       textarea.value = isO
-        ? statement + ' → 맞아요! 왜냐하면...'
-        : statement + ' → 아니에요! 왜냐하면...';
+        ? statement + ' \u2192 맞아요! 왜냐하면...'
+        : statement + ' \u2192 아니에요! 왜냐하면...';
       textarea.focus();
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       var counter = document.getElementById('char-count');
@@ -779,33 +862,24 @@
     var scaffField = document.getElementById('scaffolding-used-field');
     if (typeField) typeField.value = 'guided';
     if (scaffField) scaffField.value = 'true';
-    if (typeof updateTypeButtons === 'function') {
-      updateTypeButtons('guided');
-    }
-    // Show scroll hint and auto-scroll to form
+    if (typeof updateTypeButtons === 'function') { updateTypeButtons('guided'); }
     l1ShowScrollHint();
   }
 
-  // Show a visual hint and scroll to the form
   function l1ShowScrollHint() {
-    // Show the scroll hint banner
     var hint = document.getElementById('l1-scroll-hint');
     if (hint) {
       hint.style.display = 'flex';
       hint.classList.add('l1-kid__scroll-hint--visible');
     }
-    // Highlight the textarea
     var textarea = document.getElementById('question-text-input');
     if (textarea) {
       textarea.style.borderColor = '#8b5cf6';
       textarea.style.boxShadow = '0 0 0 4px rgba(139, 92, 246, 0.2)';
     }
-    // Smooth scroll to the form after a short delay
     setTimeout(function() {
       var formArea = document.getElementById('questioning-form-area');
-      if (formArea) {
-        formArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (formArea) { formArea.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     }, 400);
   }
 </script>

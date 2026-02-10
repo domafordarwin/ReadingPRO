@@ -338,7 +338,8 @@
   <!-- ============================== -->
   <!-- 6. Question Submission Form    -->
   <!-- ============================== -->
-  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;<%= ' border-radius: 20px; border-color: #8b5cf6; background: #faf5ff;' if current_level == 'elementary_low' %>" id="questioning-form-area">
+  <% l1_needs_guided_reading = current_level == "elementary_low" && !@guided_reading_summary.present? %>
+  <div class="q-template-card" style="border-color: var(--rp-primary); border-width: 2px;<%= ' border-radius: 20px; border-color: #8b5cf6; background: #faf5ff;' if current_level == 'elementary_low' %><%= ' display: none;' if l1_needs_guided_reading %>" id="questioning-form-area">
     <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-4);<%= ' font-size: 22px; color: #7c3aed; text-align: center;' if current_level == 'elementary_low' %>">
       <% if current_level == "elementary_low" %>
         &#128221; 나의 질문

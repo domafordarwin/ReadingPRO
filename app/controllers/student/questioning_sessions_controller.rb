@@ -27,6 +27,13 @@ class Student::QuestioningSessionsController < ApplicationController
     @discussion_messages = @questioning_session.discussion_messages_for_stage(@questioning_session.current_stage)
     @essay = @questioning_session.argumentative_essay
     @report = @questioning_session.questioning_report
+
+    # L1 가이드 리딩 요약 로드
+    if @module.level == "elementary_low"
+      gr_service = GuidedReadingService.new(@questioning_session)
+      @guided_reading_summary = gr_service.summary_for_stage(@questioning_session.current_stage)
+      @guided_reading_questions = gr_service.questions_for_stage(@questioning_session.current_stage)
+    end
   rescue StandardError => e
     Rails.logger.error("SESSION SHOW ERROR: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
@@ -150,6 +157,34 @@ class Student::QuestioningSessionsController < ApplicationController
     else
       redirect_to student_questioning_session_path(@questioning_session),
                   alert: "에세이 제출에 실패했습니다: #{essay.errors.full_messages.join(', ')}"
+    end
+  end
+
+  # POST /student/questioning_sessions/:id/submit_guided_reading
+  def submit_guided_reading
+    @current_page = "questioning"
+
+    answers = {
+      "character" => params[:gr_character]&.strip,
+      "event" => params[:gr_event]&.strip,
+      "feeling" => params[:gr_feeling]&.strip
+    }
+
+    if answers.values.all?(&:blank?)
+      redirect_to student_questioning_session_path(@questioning_session), alert: "하나 이상의 답을 적어 주세요."
+      return
+    end
+
+    begin
+      service = GuidedReadingService.new(@questioning_session)
+      service.submit_answers!(@questioning_session.current_stage, answers)
+
+      redirect_to student_questioning_session_path(@questioning_session),
+                  notice: "이야기 정리가 완료되었어요! 이제 질문을 만들어 보자!"
+    rescue StandardError => e
+      Rails.logger.error("Guided reading failed: #{e.message}")
+      redirect_to student_questioning_session_path(@questioning_session),
+                  alert: "정리 중 오류가 발생했습니다. 다시 시도해 주세요."
     end
   end
 

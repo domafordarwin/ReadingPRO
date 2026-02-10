@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       member do
         post :submit_question
         post :send_discussion
+        post :submit_guided_reading
         patch :confirm_hypothesis
         post :submit_essay
         patch :complete_session
