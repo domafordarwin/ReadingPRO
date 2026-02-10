@@ -602,6 +602,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_300005) do
     t.index ["student_id"], name: "index_reader_tendencies_on_student_id"
   end
 
+  create_table "reading_proficiency_diagnostics", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.text "description"
+    t.integer "item_count", default: 0, null: false
+    t.string "level", null: false
+    t.string "name", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "updated_at", null: false
+    t.integer "year", null: false
+    t.index ["created_by_id"], name: "index_reading_proficiency_diagnostics_on_created_by_id"
+    t.index ["status"], name: "index_reading_proficiency_diagnostics_on_status"
+    t.index ["year", "level"], name: "index_reading_proficiency_diagnostics_on_year_and_level"
+  end
+
+  create_table "reading_proficiency_items", force: :cascade do |t|
+    t.jsonb "choices", default: []
+    t.datetime "created_at", null: false
+    t.string "item_type", default: "mcq", null: false
+    t.string "measurement_factor", null: false
+    t.integer "position", null: false
+    t.text "prompt", null: false
+    t.bigint "reading_proficiency_diagnostic_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reading_proficiency_diagnostic_id", "position"], name: "idx_rp_items_on_diag_position", unique: true
+    t.index ["reading_proficiency_diagnostic_id"], name: "idx_rp_items_on_diagnostic_id"
+  end
+
   create_table "reading_stimuli", force: :cascade do |t|
     t.text "body", null: false
     t.jsonb "bundle_metadata", default: {}, null: false
@@ -1049,6 +1077,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_300005) do
   add_foreign_key "questioning_templates", "sub_indicators"
   add_foreign_key "reader_tendencies", "student_attempts"
   add_foreign_key "reader_tendencies", "students"
+  add_foreign_key "reading_proficiency_diagnostics", "teachers", column: "created_by_id"
+  add_foreign_key "reading_proficiency_items", "reading_proficiency_diagnostics"
   add_foreign_key "reading_stimuli", "teachers", column: "created_by_id"
   add_foreign_key "response_feedbacks", "responses"
   add_foreign_key "response_rubric_scores", "responses"

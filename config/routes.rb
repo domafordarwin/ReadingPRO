@@ -309,6 +309,17 @@ Rails.application.routes.draw do
     resources :evaluation_indicators, only: [:create], defaults: { format: :json }
     resources :sub_indicators, only: [:create], defaults: { format: :json }
 
+    # 독서력 진단지 관리
+    resources :reading_proficiency_diagnostics do
+      member do
+        get :download_template
+      end
+      collection do
+        get  :blank_template
+        post :import
+      end
+    end
+
     # Passage management with AI analysis
     resources :passages, only: %i[show edit update destroy], controller: "stimuli" do
       member do

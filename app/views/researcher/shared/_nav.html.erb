@@ -12,6 +12,7 @@
 <% end %>
 <%= link_to "지문 관리", researcher_passages_path, class: "portal-nav-link#{' is-active' if current == :passages}" %>
 <%= link_to "문항 관리", researcher_item_list_path, class: "portal-nav-link#{' is-active' if current == :items}" %>
+<%= link_to "독서력 진단지", researcher_reading_proficiency_diagnostics_path, class: "portal-nav-link#{' is-active' if current == :reading_proficiency}" %>
 <%= link_to "프롬프트 관리", researcher_prompts_path, class: "portal-nav-link#{' is-active' if current == :prompts}" %>
 <%= link_to "도서 관리", researcher_books_path, class: "portal-nav-link#{' is-active' if current == :books}" %>
 <%= link_to "내 정보", profile_path, class: "portal-nav-link#{' is-active' if current == :profile}" %>

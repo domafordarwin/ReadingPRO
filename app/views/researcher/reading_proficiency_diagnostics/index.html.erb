@@ -1,0 +1,230 @@
+<% content_for :portal_title do %>
+  독서력 진단지 관리
+<% end %>
+<% content_for :portal_subtitle do %>
+  독서력 진단지를 등록하고 관리할 수 있습니다.
+<% end %>
+<% content_for :portal_nav do %>
+  <%= render "researcher/shared/nav", current: :reading_proficiency %>
+<% end %>
+
+<div class="portal-card">
+  <div class="portal-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <h2 class="portal-card-title" style="margin: 0;">독서력 진단지 관리</h2>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <%= link_to "엑셀 양식 다운로드", blank_template_researcher_reading_proficiency_diagnostics_path,
+                  class: "btn btn-outline-primary", style: "font-size: 13px;" %>
+      <%= link_to "+ 새 진단지 등록", new_researcher_reading_proficiency_diagnostic_path,
+                  class: "btn btn-success", style: "font-size: 13px;" %>
+    </div>
+  </div>
+
+  <div style="padding: 20px 0;">
+    <!-- Page Description -->
+    <div style="margin-bottom: 24px;">
+      <p style="color: #666; font-size: 14px; margin: 0;">수준별, 연도별로 독서력 진단지를 검색하고 관리할 수 있습니다</p>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="rp-tabs" role="tablist" aria-label="진단지 상태 필터">
+      <%= link_to "전체", researcher_reading_proficiency_diagnostics_path,
+                  class: "rp-tab rp-tab--#{params[:status].blank? ? 'active' : ''}" %>
+      <%= link_to "초안", researcher_reading_proficiency_diagnostics_path(status: "draft"),
+                  class: "rp-tab rp-tab--#{params[:status] == 'draft' ? 'active' : ''}" %>
+      <%= link_to "배포됨", researcher_reading_proficiency_diagnostics_path(status: "active"),
+                  class: "rp-tab rp-tab--#{params[:status] == 'active' ? 'active' : ''}" %>
+      <%= link_to "보관됨", researcher_reading_proficiency_diagnostics_path(status: "archived"),
+                  class: "rp-tab rp-tab--#{params[:status] == 'archived' ? 'active' : ''}" %>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="rp-card" style="margin-bottom: 28px;">
+      <div class="rp-card__header">
+        <h3 class="rp-card__title">검색 및 필터</h3>
+      </div>
+      <div class="rp-card__body">
+        <%= form_with url: researcher_reading_proficiency_diagnostics_path, method: :get, local: true, class: "rp-search-form" do %>
+          <div class="rp-search-form__fields">
+            <div class="rp-form-group">
+              <label class="rp-label">키워드</label>
+              <input type="text" name="q" value="<%= params[:q] %>" placeholder="진단지명 또는 설명" class="rp-input">
+            </div>
+
+            <div class="rp-form-group">
+              <label class="rp-label">수준</label>
+              <select name="level" class="rp-select">
+                <option value="">전체</option>
+                <option value="elementary" <%= "selected" if params[:level] == "elementary" %>>초등학교</option>
+                <option value="middle" <%= "selected" if params[:level] == "middle" %>>중등</option>
+              </select>
+            </div>
+
+            <div class="rp-form-group">
+              <label class="rp-label">연도</label>
+              <select name="year" class="rp-select">
+                <option value="">전체</option>
+                <% @available_years.each do |year| %>
+                  <option value="<%= year %>" <%= "selected" if params[:year].to_s == year.to_s %>><%= year %>년</option>
+                <% end %>
+              </select>
+            </div>
+
+            <div class="rp-form-actions">
+              <button type="submit" class="rp-btn rp-btn--primary">검색</button>
+              <%= link_to "초기화", researcher_reading_proficiency_diagnostics_path, class: "rp-btn rp-btn--secondary" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Excel Import Card -->
+    <div class="rp-card" style="margin-bottom: 28px;">
+      <div class="rp-card__header">
+        <h3 class="rp-card__title">엑셀 파일로 등록</h3>
+      </div>
+      <div class="rp-card__body">
+        <%= form_with url: import_researcher_reading_proficiency_diagnostics_path,
+                      method: :post, multipart: true, local: true,
+                      data: { turbo: false }, class: "rp-search-form" do %>
+          <div class="rp-search-form__fields">
+            <div class="rp-form-group" style="flex: 2;">
+              <label class="rp-label">엑셀 파일 선택 (.xlsx)</label>
+              <input type="file" name="file" accept=".xlsx" class="rp-input" required>
+            </div>
+            <div class="rp-form-actions">
+              <button type="submit" class="rp-btn rp-btn--primary">가져오기</button>
+            </div>
+          </div>
+        <% end %>
+        <p style="color: #888; font-size: 12px; margin-top: 8px;">
+          위의 "엑셀 양식 다운로드" 버튼으로 양식을 받은 후 작성하여 업로드해주세요.
+        </p>
+      </div>
+    </div>
+
+    <!-- Diagnostics Table -->
+    <div class="rp-card">
+      <div class="rp-card__header">
+        <h3 class="rp-card__title">진단지 목록</h3>
+        <span class="rp-text-muted">총 <%= @total_count %>건</span>
+      </div>
+      <div class="rp-card__body">
+        <% if @diagnostics.any? %>
+          <div class="rp-table-wrapper">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th class="rp-table__header">진단지명</th>
+                  <th class="rp-table__header">연도</th>
+                  <th class="rp-table__header">수준</th>
+                  <th class="rp-table__header">문항 수</th>
+                  <th class="rp-table__header">상태</th>
+                  <th class="rp-table__header">생성일</th>
+                  <th class="rp-table__header">작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @diagnostics.each do |diag| %>
+                  <% status_class = case diag.status
+                                    when "draft" then "rp-badge--warning"
+                                    when "active" then "rp-badge--success"
+                                    when "archived" then "rp-badge--danger"
+                                    else "rp-badge--warning"
+                                    end %>
+                  <% status_label = case diag.status
+                                    when "draft" then "초안"
+                                    when "active" then "배포됨"
+                                    when "archived" then "보관됨"
+                                    else "초안"
+                                    end %>
+                  <% level_class = diag.level == "elementary" ? "rp-badge--info" : "rp-badge--purple" %>
+                  <tr class="rp-table__row" onclick="window.location='<%= researcher_reading_proficiency_diagnostic_path(diag) %>';" style="cursor: pointer;">
+                    <td class="rp-table__cell">
+                      <div class="rp-item-title">
+                        <strong><%= diag.name %></strong>
+                        <% if diag.description.present? %>
+                          <p class="rp-item-description"><%= truncate(diag.description, length: 80) %></p>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="rp-table__cell"><%= diag.year %>년</td>
+                    <td class="rp-table__cell">
+                      <span class="rp-badge rp-badge--pill <%= level_class %>"><%= diag.level_label %></span>
+                    </td>
+                    <td class="rp-table__cell"><%= diag.item_count %>개</td>
+                    <td class="rp-table__cell">
+                      <span class="rp-badge rp-badge--pill <%= status_class %>"><%= status_label %></span>
+                    </td>
+                    <td class="rp-table__cell">
+                      <span class="rp-text-muted"><%= diag.created_at.strftime("%Y. %m. %d.") %></span>
+                    </td>
+                    <td class="rp-table__cell" onclick="event.stopPropagation();">
+                      <div class="rp-table__actions">
+                        <%= link_to "", edit_researcher_reading_proficiency_diagnostic_path(diag),
+                                    class: "rp-icon-link rp-icon-link--edit",
+                                    title: "편집", aria_label: "편집" %>
+                        <%= link_to "", download_template_researcher_reading_proficiency_diagnostic_path(diag),
+                                    class: "rp-icon-link rp-icon-link--view",
+                                    title: "엑셀 다운로드", aria_label: "엑셀 다운로드" %>
+                        <%= link_to "", researcher_reading_proficiency_diagnostic_path(diag),
+                                    data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까? 포함된 모든 문항이 함께 삭제됩니다." },
+                                    class: "rp-icon-link rp-icon-link--delete",
+                                    title: "삭제", aria_label: "삭제" %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <% if @total_pages > 1 %>
+            <div class="rp-pagination" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--rp-border);">
+              <% if @page > 1 %>
+                <%= link_to "이전", researcher_reading_proficiency_diagnostics_path(
+                    params.permit(:q, :level, :year, :status).merge(page: @page - 1)),
+                    class: "rp-pagination-btn" %>
+              <% end %>
+
+              <% (1..@total_pages).each do |page| %>
+                <% if page == @page %>
+                  <span class="rp-pagination-number rp-pagination-number--active"><%= page %></span>
+                <% else %>
+                  <%= link_to page, researcher_reading_proficiency_diagnostics_path(
+                      params.permit(:q, :level, :year, :status).merge(page: page)),
+                      class: "rp-pagination-number" %>
+                <% end %>
+              <% end %>
+
+              <% if @page < @total_pages %>
+                <%= link_to "다음", researcher_reading_proficiency_diagnostics_path(
+                    params.permit(:q, :level, :year, :status).merge(page: @page + 1)),
+                    class: "rp-pagination-btn" %>
+              <% end %>
+            </div>
+          <% end %>
+
+        <% else %>
+          <div class="rp-empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="9" x2="15" y2="9"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <p>등록된 독서력 진단지가 없습니다.</p>
+            <p style="font-size: 13px; color: #888;">새 진단지를 등록하거나, 엑셀 양식을 다운로드하여 데이터를 입력한 후 업로드해주세요.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .rp-badge--purple {
+    background-color: #f3e8ff;
+    color: #7c3aed;
+  }
+</style>

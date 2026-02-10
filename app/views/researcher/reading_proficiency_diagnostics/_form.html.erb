@@ -1,0 +1,63 @@
+<%= form_with model: diagnostic,
+              url: diagnostic.persisted? ? researcher_reading_proficiency_diagnostic_path(diagnostic) : researcher_reading_proficiency_diagnostics_path,
+              method: diagnostic.persisted? ? :patch : :post,
+              local: true,
+              data: { turbo: false } do |f| %>
+
+  <% if diagnostic.errors.any? %>
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+      <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: 14px;"><%= diagnostic.errors.count %>개의 오류가 있습니다:</h4>
+      <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: 13px;">
+        <% diagnostic.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="rp-card" style="margin-bottom: 24px;">
+    <div class="rp-card__header">
+      <h3 class="rp-card__title">기본 정보</h3>
+    </div>
+    <div class="rp-card__body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="rp-form-group" style="grid-column: 1 / -1;">
+          <%= f.label :name, "진단지명", class: "rp-label" %>
+          <%= f.text_field :name, class: "rp-input", placeholder: "예: 2025 초등학교 독서력 진단지", required: true %>
+        </div>
+
+        <div class="rp-form-group">
+          <%= f.label :year, "연도", class: "rp-label" %>
+          <%= f.number_field :year, class: "rp-input", min: 2021, max: 2030, required: true %>
+        </div>
+
+        <div class="rp-form-group">
+          <%= f.label :level, "수준", class: "rp-label" %>
+          <%= f.select :level,
+              options_for_select([["초등학교", "elementary"], ["중등", "middle"]], diagnostic.level),
+              {}, class: "rp-select", required: true %>
+        </div>
+
+        <% if diagnostic.persisted? %>
+          <div class="rp-form-group">
+            <%= f.label :status, "상태", class: "rp-label" %>
+            <%= f.select :status,
+                options_for_select([["초안", "draft"], ["배포됨", "active"], ["보관됨", "archived"]], diagnostic.status),
+                {}, class: "rp-select" %>
+          </div>
+        <% end %>
+
+        <div class="rp-form-group" style="grid-column: 1 / -1;">
+          <%= f.label :description, "설명", class: "rp-label" %>
+          <%= f.text_area :description, class: "rp-input", rows: 3, placeholder: "진단지에 대한 설명 (선택사항)",
+              style: "resize: vertical;" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px; justify-content: flex-end;">
+    <%= link_to "취소", researcher_reading_proficiency_diagnostics_path, class: "rp-btn rp-btn--secondary" %>
+    <%= f.submit diagnostic.persisted? ? "수정하기" : "등록하기", class: "rp-btn rp-btn--primary" %>
+  </div>
+<% end %>
