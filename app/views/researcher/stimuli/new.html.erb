@@ -11,7 +11,7 @@
 <section class="portal-card">
   <h2 class="portal-card-title">지문 정보</h2>
 
-  <%= form_with model: @stimulus, url: researcher_stimuli_path, method: :post, local: true do |f| %>
+  <%= form_with model: @stimulus, url: researcher_stimuli_path, method: :post, local: true, multipart: true do |f| %>
     <% if @stimulus.errors.any? %>
       <div class="alert alert-danger">
         <h4><%= pluralize(@stimulus.errors.count, "error") %> prohibited this stimulus from being saved:</h4>
@@ -31,8 +31,33 @@
 
     <div class="form-group">
       <label for="stimulus_body">지문 본문 <span class="text-danger">*</span></label>
-      <%= f.text_area :body, id: "stimulus_body", placeholder: "지문의 전체 내용을 입력하세요...", class: "form-control", rows: 15, required: true %>
-      <small class="form-text">학생들이 읽게 될 전체 지문을 입력하세요.</small>
+      <small class="form-text" style="margin-bottom: 6px;">
+        <strong>굵게</strong>, <em>기울임</em>, <u>밑줄</u> 서식을 적용할 수 있습니다. (Ctrl+B / Ctrl+I / Ctrl+U)
+      </small>
+      <div class="rp-editor-toolbar" style="display: flex; gap: 4px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e0e0e0; border-bottom: none; border-radius: 6px 6px 0 0;">
+        <button type="button" class="rp-fmt-btn" onclick="fmtCmd('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+        <button type="button" class="rp-fmt-btn" onclick="fmtCmd('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+        <button type="button" class="rp-fmt-btn" onclick="fmtCmd('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+        <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
+        <button type="button" class="rp-fmt-btn" onclick="fmtCmd('strikeThrough')" title="취소선"><s>S</s></button>
+        <button type="button" class="rp-fmt-btn" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+      </div>
+      <div contenteditable="true"
+           id="body-editor"
+           class="form-control"
+           style="min-height: 300px; line-height: 1.8; font-size: 14px; border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
+           oninput="syncBody()"
+           onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"
+           data-placeholder="지문의 전체 내용을 입력하세요..."></div>
+      <%= f.hidden_field :body, id: "stimulus_body_hidden" %>
+    </div>
+
+    <!-- 이미지 첨부 -->
+    <div class="form-group">
+      <label>지문 이미지</label>
+      <small class="form-text" style="margin-bottom: 8px;">지문에 포함될 이미지를 첨부하세요 (여러 장 가능).</small>
+      <input type="file" name="reading_stimulus[images][]" accept="image/*" multiple class="form-control" style="padding: 8px;">
     </div>
 
     <div class="form-row">
@@ -180,9 +205,61 @@
     margin-bottom: 4px;
   }
 
+  .rp-fmt-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #334155;
+    min-width: 28px;
+    text-align: center;
+  }
+  .rp-fmt-btn:hover { background: #e2e8f0; }
+
+  #body-editor u { text-decoration: underline; }
+  #body-editor b, #body-editor strong { font-weight: 700; }
+  #body-editor i, #body-editor em { font-style: italic; }
+  #body-editor s { text-decoration: line-through; }
+
   @media (max-width: 768px) {
     .form-row {
       grid-template-columns: 1fr;
     }
   }
 </style>
+
+<script>
+  function syncBody() {
+    const editor = document.getElementById('body-editor');
+    const hidden = document.getElementById('stimulus_body_hidden');
+    if (editor && hidden) hidden.value = editor.innerHTML;
+  }
+
+  function fmtCmd(cmd) {
+    const editor = document.getElementById('body-editor');
+    if (editor) {
+      editor.focus();
+      document.execCommand(cmd, false, null);
+      syncBody();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function() { syncBody(); });
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.id !== 'body-editor') return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); syncBody(); }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); syncBody(); }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); syncBody(); }
+    }
+  });
+</script>

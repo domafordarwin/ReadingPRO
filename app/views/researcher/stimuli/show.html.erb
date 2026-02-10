@@ -156,10 +156,19 @@
   <div class="passage-body-card">
     <h3>지문 본문</h3>
     <div class="passage-content">
-      <%= simple_format(@stimulus.body) %>
+      <%= sanitize @stimulus.body, tags: %w[b strong i em u s br span p div], attributes: %w[style class] %>
     </div>
+    <% if @stimulus.images.attached? %>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+        <% @stimulus.images.each do |img| %>
+          <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+            <%= image_tag img, style: "max-width: 400px; max-height: 300px; display: block;" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
     <div class="passage-meta">
-      <span>단어 수: <%= @stimulus.body.to_s.split.size %>개</span>
+      <span>단어 수: <%= @stimulus.body.to_s.gsub(/<[^>]*>/, '').split.size %>개</span>
       <span>예상 소요 시간: <%= @stimulus.estimated_time_minutes %>분</span>
     </div>
   </div>

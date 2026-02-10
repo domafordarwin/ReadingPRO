@@ -15,10 +15,19 @@ class Researcher::StimuliController < ApplicationController
   end
 
   def create
-    @stimulus = ReadingStimulus.new(stimulus_params)
+    sanitized = stimulus_params.dup
+    sanitized[:body] = sanitize_body(sanitized[:body]) if sanitized[:body].present?
+
+    @stimulus = ReadingStimulus.new(sanitized.except(:images))
     @stimulus.created_by_id = current_user.id if current_user
 
     if @stimulus.save
+      # Attach images
+      if params[:reading_stimulus][:images].present?
+        params[:reading_stimulus][:images].reject(&:blank?).each do |img|
+          @stimulus.images.attach(img)
+        end
+      end
       redirect_to researcher_passages_path, notice: "지문이 성공적으로 생성되었습니다."
     else
       render :new, status: :unprocessable_entity
@@ -29,7 +38,25 @@ class Researcher::StimuliController < ApplicationController
   end
 
   def update
-    if @stimulus.update(stimulus_params)
+    sanitized = stimulus_params.dup
+    sanitized[:body] = sanitize_body(sanitized[:body]) if sanitized[:body].present?
+
+    # Attach new images
+    if params[:reading_stimulus][:images].present?
+      params[:reading_stimulus][:images].reject(&:blank?).each do |img|
+        @stimulus.images.attach(img)
+      end
+    end
+
+    # Remove selected images
+    if params[:remove_image_ids].present?
+      params[:remove_image_ids].each do |img_id|
+        blob = @stimulus.images.find { |i| i.id.to_s == img_id.to_s }
+        blob&.purge
+      end
+    end
+
+    if @stimulus.update(sanitized.except(:images))
       redirect_to researcher_passages_path, notice: "지문이 성공적으로 수정되었습니다."
     else
       render :edit, status: :unprocessable_entity
@@ -269,6 +296,14 @@ class Researcher::StimuliController < ApplicationController
   end
 
   def stimulus_params
-    params.require(:reading_stimulus).permit(:title, :body, :source, :word_count, :reading_level)
+    params.require(:reading_stimulus).permit(:title, :body, :source, :word_count, :reading_level, images: [])
+  end
+
+  def sanitize_body(text)
+    ActionController::Base.helpers.sanitize(
+      text.to_s.strip,
+      tags: %w[b strong i em u s br span p div],
+      attributes: %w[style class]
+    )
   end
 end

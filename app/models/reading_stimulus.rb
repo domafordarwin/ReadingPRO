@@ -9,6 +9,9 @@ class ReadingStimulus < ApplicationRecord
   # Questioning module
   has_many :questioning_modules, dependent: :destroy
 
+  # Image attachments for passage
+  has_many_attached :images
+
   # Validations
   validates :body, presence: true
   validates :code, presence: true, uniqueness: true
