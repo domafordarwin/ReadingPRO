@@ -5,8 +5,8 @@
     { email: "researcher@ReadingPro.com", role: "researcher", label: "연구자", color: "#7c3aed" },
     { email: "teacher_diagnostic@ReadingPro.com", role: "diagnostic_teacher", label: "진단교사", color: "#2563eb" },
     { email: "school_admin@shinmyung.edu", role: "school_admin", label: "학교관리자", color: "#0891b2" },
-    { email: "rps_0001@shinmyung.edu", role: "student", label: "학생", color: "#16a34a" },
-    { email: "rpp_0001@shinmyung.edu", role: "parent", label: "학부모", color: "#ca8a04" }
+    { email: "shinmyung_s-0001@shinmyung.edu", role: "student", label: "학생", color: "#16a34a" },
+    { email: "shinmyung_p-0001@shinmyung.edu", role: "parent", label: "학부모", color: "#ca8a04" }
   ]
   dev_users = User.where(email: dev_accounts.map { |a| a[:email] }).index_by(&:email)
 %>

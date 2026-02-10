@@ -20,7 +20,8 @@ class StudentBatchCreationService
     return add_error("최대 300명까지 생성 가능합니다.") if @count > 300
 
     domain = @school.email_domain
-    seq = next_available_sequence(domain)
+    prefix = domain.split(".").first # shinmyung.edu → shinmyung
+    seq = next_available_sequence(domain, prefix)
 
     ActiveRecord::Base.transaction do
       created = 0
@@ -29,7 +30,7 @@ class StudentBatchCreationService
       while created < @count && max_attempts > 0
         max_attempts -= 1
         seq_str = format("%04d", seq)
-        student_email = "rps_#{seq_str}@#{domain}"
+        student_email = "#{prefix}_s-#{seq_str}@#{domain}"
 
         # 이미 존재하는 이메일이면 건너뛰기
         if User.exists?(email: student_email)
@@ -37,7 +38,7 @@ class StudentBatchCreationService
           next
         end
 
-        student_id = "RPS_#{seq_str}"
+        student_id = "#{prefix}_S-#{seq_str}"
         student_password = generate_password
 
         student_user = User.create!(
@@ -66,8 +67,8 @@ class StudentBatchCreationService
         }
 
         if @include_parents
-          parent_id = "RPP_#{seq_str}"
-          parent_email = "rpp_#{seq_str}@#{domain}"
+          parent_id = "#{prefix}_P-#{seq_str}"
+          parent_email = "#{prefix}_p-#{seq_str}@#{domain}"
           parent_password = generate_password
 
           # 학부모 이메일도 중복 체크
@@ -113,17 +114,22 @@ class StudentBatchCreationService
 
   private
 
-  def next_available_sequence(domain)
+  def next_available_sequence(domain, prefix)
     # Student 테이블 기준 최대 시퀀스
     student_max = @school.next_student_sequence
 
-    # User 테이블에서 고아 레코드 포함한 최대 시퀀스
-    user_max = User.where("email LIKE ?", "rps_%@#{domain}")
-                   .pluck(:email)
-                   .filter_map { |e| e.match(/rps_(\d+)@/)&.captures&.first&.to_i }
-                   .max || 0
+    # User 테이블에서 고아 레코드 포함한 최대 시퀀스 (새 형식 + 구 형식 모두 검색)
+    new_max = User.where("email LIKE ?", "#{prefix}_s-%@#{domain}")
+                  .pluck(:email)
+                  .filter_map { |e| e.match(/_s-(\d+)@/)&.captures&.first&.to_i }
+                  .max || 0
 
-    [student_max, user_max + 1].max
+    old_max = User.where("email LIKE ?", "rps_%@#{domain}")
+                  .pluck(:email)
+                  .filter_map { |e| e.match(/rps_(\d+)@/)&.captures&.first&.to_i }
+                  .max || 0
+
+    [student_max, new_max + 1, old_max + 1].max
   end
 
   def generate_password

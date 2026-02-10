@@ -24,13 +24,16 @@ DOMAIN_MIGRATIONS.each do |old_email, new_email|
   end
 end
 
-# Migrate old personal-info accounts to anonymous IDs
+# Migrate old personal-info accounts → old anonymous IDs → new anonymous IDs
 OLD_TO_NEW_EMAILS = {
-  "student_54@shinmyung.edu" => "rps_0001@shinmyung.edu",
-  "parent_54@shinmyung.edu" => "rpp_0001@shinmyung.edu"
+  "student_54@shinmyung.edu" => "shinmyung_s-0001@shinmyung.edu",
+  "rps_0001@shinmyung.edu" => "shinmyung_s-0001@shinmyung.edu",
+  "parent_54@shinmyung.edu" => "shinmyung_p-0001@shinmyung.edu",
+  "rpp_0001@shinmyung.edu" => "shinmyung_p-0001@shinmyung.edu"
 }.freeze
 
 OLD_TO_NEW_EMAILS.each do |old_email, new_email|
+  next if old_email.downcase == new_email.downcase
   user = User.find_by(email: old_email)
   if user && !User.exists?(email: new_email)
     user.update!(email: new_email)
@@ -38,15 +41,25 @@ OLD_TO_NEW_EMAILS.each do |old_email, new_email|
   end
 end
 
-# Migrate old student names/numbers to anonymous IDs
-Student.where(name: "소수환").update_all(name: "RPS_0001", student_number: "RPS_0001")
-# Update any parent with non-anonymous name
-Parent.where.not("name LIKE 'RPP_%'").update_all(name: "RPP_0001")
-5.times do |i|
-  Student.where(name: "학생_#{i + 1}").update_all(
-    name: "RPS_#{format('%04d', i + 2)}",
-    student_number: "RPS_#{format('%04d', i + 2)}"
-  )
+# Migrate old student names/numbers to new anonymous IDs
+Student.where(name: "소수환").update_all(name: "shinmyung_S-0001", student_number: "shinmyung_S-0001")
+# Update old-format RPS_ names to new format (only for shinmyung school)
+shinmyung_school = School.find_by(email_domain: "shinmyung.edu")
+if shinmyung_school
+  shinmyung_school.students.where("name LIKE 'RPS_%'").find_each do |s|
+    seq = s.name.match(/RPS_(\d+)/)&.captures&.first
+    if seq
+      new_name = "shinmyung_S-#{seq}"
+      s.update_columns(name: new_name, student_number: new_name)
+    end
+  end
+end
+# Update any parent with old-format name
+Parent.where("name LIKE 'RPP_%'").find_each do |p|
+  seq = p.name.match(/RPP_(\d+)/)&.captures&.first
+  if seq
+    p.update_columns(name: "shinmyung_P-#{seq}")
+  end
 end
 
 # =============================================================================
@@ -140,18 +153,18 @@ SchoolAdminProfile.find_or_create_by!(user_id: shinlim_admin_user.id) do |sa|
 end
 puts "  + SchoolAdminProfile: Shinlim_admin@shinlim.ms.kr → #{school2.name}"
 
-# Student (RPS_0001 - anonymous ID)
-student_user = User.find_or_initialize_by(email: "rps_0001@shinmyung.edu")
+# Student (shinmyung_S-0001)
+student_user = User.find_or_initialize_by(email: "shinmyung_s-0001@shinmyung.edu")
 if student_user.new_record?
   student_user.assign_attributes(role: "student", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
   student_user.save!
-  puts "  + Created student: rps_0001@shinmyung.edu"
+  puts "  + Created student: shinmyung_s-0001@shinmyung.edu"
 end
 
 student = Student.find_or_create_by!(user_id: student_user.id) do |s|
   s.school_id = school.id
-  s.student_number = "RPS_0001"
-  s.name = "RPS_0001"
+  s.student_number = "shinmyung_S-0001"
+  s.name = "shinmyung_S-0001"
   s.grade = 2
   s.class_name = "A"
 end
@@ -162,18 +175,18 @@ StudentPortfolio.find_or_create_by!(student_id: student.id) do |sp|
   sp.average_score = 0
 end
 
-# Parent (RPP_0001 - anonymous ID, matched to RPS_0001)
-parent_user = User.find_or_initialize_by(email: "rpp_0001@shinmyung.edu")
+# Parent (shinmyung_P-0001, matched to shinmyung_S-0001)
+parent_user = User.find_or_initialize_by(email: "shinmyung_p-0001@shinmyung.edu")
 if parent_user.new_record?
   parent_user.assign_attributes(role: "parent", password: DEFAULT_PASSWORD, password_confirmation: DEFAULT_PASSWORD)
   parent_user.save!
-  puts "  + Created parent: rpp_0001@shinmyung.edu"
+  puts "  + Created parent: shinmyung_p-0001@shinmyung.edu"
 end
 
 parent_record = Parent.find_or_create_by!(user_id: parent_user.id) do |p|
-  p.name = "RPP_0001"
+  p.name = "shinmyung_P-0001"
 end
-parent_record.update!(name: "RPP_0001") unless parent_record.name == "RPP_0001"
+parent_record.update!(name: "shinmyung_P-0001") unless parent_record.name == "shinmyung_P-0001"
 
 # GuardianStudent relationship
 GuardianStudent.find_or_create_by!(parent_id: parent_record.id, student_id: student.id) do |gs|
@@ -184,24 +197,26 @@ GuardianStudent.find_or_create_by!(parent_id: parent_record.id, student_id: stud
 end
 
 # =============================================================================
-# Sample Students (RPS_0002 ~ RPS_0006)
+# Sample Students (shinmyung_S-0002 ~ shinmyung_S-0006)
 # =============================================================================
 5.times do |i|
   seq = i + 2
   seq_str = format("%04d", seq)
-  student_id = "RPS_#{seq_str}"
-  student_email = "rps_#{seq_str}@shinmyung.edu"
-  old_email = "student_#{i + 1}@shinmyung.edu"
+  student_id = "shinmyung_S-#{seq_str}"
+  student_email = "shinmyung_s-#{seq_str}@shinmyung.edu"
+  old_email = "rps_#{seq_str}@shinmyung.edu"
 
   # Find existing student by student_number first (most reliable)
   existing_student = Student.find_by(school_id: school.id, student_number: student_id)
+  # Also check old-format student_number
+  existing_student ||= Student.find_by(school_id: school.id, student_number: "RPS_#{seq_str}")
 
   if existing_student
-    # Student already exists - clean up orphaned duplicate users first
+    # Student already exists - update to new format
     s_user = existing_student.user
     User.where(email: student_email).where.not(id: s_user.id).destroy_all
-    # Now safe to update email
     s_user.update!(email: student_email) if s_user.email != student_email
+    existing_student.update_columns(name: student_id, student_number: student_id) if existing_student.name != student_id
     s = existing_student
   else
     # No student with this ID exists yet
@@ -299,16 +314,16 @@ puts "  Diagnostic Teacher: teacher_diagnostic@ReadingPro.com"
 puts "  Teacher:            teacher@shinmyung.edu"
 puts "  School Admin 1:     school_admin@shinmyung.edu → 신명중학교"
 puts "  School Admin 2:     Shinlim_admin@shinlim.ms.kr → 신림중학교"
-puts "  Student (RPS_0001): rps_0001@shinmyung.edu"
-puts "  Parent (RPP_0001):  rpp_0001@shinmyung.edu"
+puts "  Student:            shinmyung_s-0001@shinmyung.edu"
+puts "  Parent:             shinmyung_p-0001@shinmyung.edu"
 puts "  Password:           #{DEFAULT_PASSWORD}"
 puts ""
 puts "  Schools: #{School.count}"
 puts "  Users: #{User.count}"
-puts "  Students: #{Student.count} (RPS_0001 ~ RPS_0006)"
+puts "  Students: #{Student.count}"
 puts "  SchoolAdminProfiles: #{SchoolAdminProfile.count}"
 puts ""
-puts "  Note: Sample data (items, forms, announcements) removed as of 2026-02-05"
+puts "  Note: Student ID format: {school_prefix}_S-{seq} (e.g., shinmyung_S-0001)"
 puts "======================================="
 
 # =============================================================================

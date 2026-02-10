@@ -155,30 +155,34 @@ class StudentResponseImportService
   end
 
   def find_student(student_id_str)
-    # 대소문자 통일 (Excel에서 RPS_0001로 올 수 있음, DB는 rps_0001)
-    normalized = student_id_str.downcase
+    # 대소문자 통일
+    normalized = student_id_str.strip.downcase
 
-    # 진단지에 배정된 학교 ID들 (동일 RPS번호가 여러 학교에 존재할 때 우선순위 결정)
-    assigned_school_ids = DiagnosticAssignment.where(diagnostic_form_id: @form.id)
-      .where.not(school_id: nil)
-      .pluck(:school_id).uniq
+    # 1) 새 형식 (shinmyung_S-0001 → shinmyung_s-0001@shinmyung.edu) - 정확한 email prefix 매칭
+    user = User.where("LOWER(email) LIKE ?", "#{normalized}@%").where(role: "student").first
 
-    # 1) email prefix + 배정된 학교 학생 우선 검색
-    if assigned_school_ids.any?
-      user = User.joins(:student)
-        .where("LOWER(users.email) LIKE ?", "#{normalized}@%")
-        .where(role: "student")
-        .where(students: { school_id: assigned_school_ids })
-        .first
+    # 2) 구 형식 호환 (RPS_0001 → rps_0001): 배정된 학교 학생 우선 검색
+    unless user
+      assigned_school_ids = DiagnosticAssignment.where(diagnostic_form_id: @form.id)
+        .where.not(school_id: nil)
+        .pluck(:school_id).uniq
+
+      if assigned_school_ids.any?
+        user = User.joins(:student)
+          .where("LOWER(users.email) LIKE ?", "#{normalized}@%")
+          .where(role: "student")
+          .where(students: { school_id: assigned_school_ids })
+          .first
+      end
     end
 
-    # 2) email prefix로 전체 검색 (배정 학교에 없는 경우)
+    # 3) email prefix 전체 검색
     user ||= User.where("LOWER(email) LIKE ?", "#{normalized}@%").where(role: "student").first
 
-    # 3) 정확한 email로 검색 (case-insensitive)
+    # 4) 정확한 email로 검색 (case-insensitive)
     user ||= User.where("LOWER(email) = ?", normalized).where(role: "student").first
 
-    # 4) student id(숫자)로 검색
+    # 5) student id(숫자)로 검색
     if user.nil? && student_id_str.match?(/\A\d+\z/)
       return Student.find_by(id: student_id_str.to_i)
     end

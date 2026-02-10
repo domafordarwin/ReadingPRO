@@ -24,8 +24,8 @@
 
   <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <p style="margin: 0; font-size: 13px; color: #1e40af;">
-      학생에게는 <strong>RPS_0001</strong> 형식의 익명 ID가 자동 부여됩니다.
-      학부모 계정은 <strong>RPP_0001</strong> 형식으로 학생과 매칭됩니다.
+      학생에게는 <strong>학교명_S-0001</strong> 형식의 익명 ID가 자동 부여됩니다.
+      학부모 계정은 <strong>학교명_P-0001</strong> 형식으로 학생과 매칭됩니다.
       생성 후 표시되는 ID와 비밀번호를 반드시 저장해주세요.
     </p>
   </div>
@@ -63,7 +63,7 @@
     <div style="margin-bottom: 20px;">
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
         <input type="checkbox" name="include_parents" value="1">
-        <span>학부모 계정도 함께 생성 (RPP_ ID)</span>
+        <span>학부모 계정도 함께 생성 (학교명_P- ID)</span>
       </label>
     </div>
 
@@ -78,10 +78,11 @@
   <h2 class="portal-card-title">생성 안내</h2>
   <div style="font-size: 14px; color: #475569; line-height: 1.8;">
     <ul style="margin: 0; padding-left: 20px;">
-      <li>학생 ID: <strong>RPS_0001</strong>, <strong>RPS_0002</strong> ... (자동 순번)</li>
-      <li>학생 이메일: <strong>rps_0001@<%= @school&.email_domain || "school.edu" %></strong></li>
-      <li>학부모 ID: <strong>RPP_0001</strong> (학생과 동일 번호로 매칭)</li>
-      <li>학부모 이메일: <strong>rpp_0001@<%= @school&.email_domain || "school.edu" %></strong></li>
+      <% prefix = @school&.email_domain&.split(".")&.first || "school" %>
+      <li>학생 ID: <strong><%= prefix %>_S-0001</strong>, <strong><%= prefix %>_S-0002</strong> ... (자동 순번)</li>
+      <li>학생 이메일: <strong><%= prefix %>_s-0001@<%= @school&.email_domain || "school.edu" %></strong></li>
+      <li>학부모 ID: <strong><%= prefix %>_P-0001</strong> (학생과 동일 번호로 매칭)</li>
+      <li>학부모 이메일: <strong><%= prefix %>_p-0001@<%= @school&.email_domain || "school.edu" %></strong></li>
       <li>모든 계정은 임시 비밀번호로 생성되며, 첫 로그인 시 변경이 필요합니다.</li>
       <li>실명 등 개인정보는 서버에 저장되지 않으며, ID-실명 매칭은 학교에서 별도 관리합니다.</li>
     </ul>
