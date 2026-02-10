@@ -1312,6 +1312,7 @@
     var editor = document.querySelector('.rp-choice-editor[data-choice-id="' + choiceId + '"]');
     var hidden = document.getElementById('choice-hidden-' + choiceId);
     var display = document.getElementById('choice-display-' + choiceId);
+    console.log('[syncChoice] id=' + choiceId, 'editor=' + !!editor, 'hidden=' + !!hidden, 'html=' + (editor ? editor.innerHTML.substring(0, 80) : 'N/A'));
     if (editor && hidden) hidden.value = editor.innerHTML;
     if (editor && display) display.innerHTML = editor.innerHTML;
   }
@@ -1342,6 +1343,13 @@
     var form = btn.closest('form.rp-form');
     if (!form) return;
     syncAllEditors();
+    // Debug: log form data before submission
+    var fd = new FormData(form);
+    fd.forEach(function(v, k) {
+      if (k.indexOf('choice_contents') >= 0 || k === 'item[prompt]') {
+        console.log('[FormData]', k, '=', v.substring(0, 120));
+      }
+    });
   }, true); // capture phase — runs before any other handler
 
   // Also sync on form submit event (safety net)
