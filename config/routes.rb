@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "system#show"
     get "system", to: "system#show"
+    get "student_diagnostics", to: "system#student_diagnostics"
     resources :users, only: %i[index create] do
       patch :update_role, on: :member
       patch :reset_password, on: :member

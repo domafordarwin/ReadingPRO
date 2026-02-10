@@ -15,6 +15,54 @@
 
 module Admin
   class SystemController < BaseController
+    def student_diagnostics
+      @students_data = Student.joins(:user)
+        .where(users: { role: "student" })
+        .includes(:user, :student_attempts)
+        .order(:id)
+        .map do |student|
+          attempts = student.student_attempts
+          completed_attempts = attempts.select { |a| %w[completed submitted].include?(a.status) }
+          {
+            id: student.id,
+            email: student.user.email,
+            name: student.name,
+            school_id: student.school_id,
+            attempts_count: attempts.size,
+            completed_count: completed_attempts.size,
+            attempt_details: completed_attempts.map { |a|
+              report = AttemptReport.find_by(student_attempt_id: a.id)
+              assignment = DiagnosticAssignment.find_by(
+                diagnostic_form_id: a.diagnostic_form_id,
+                student_id: student.id
+              )
+              school_assignment = DiagnosticAssignment.where(
+                diagnostic_form_id: a.diagnostic_form_id,
+                school_id: student.school_id
+              ).first if student.school_id
+              {
+                attempt_id: a.id,
+                form_id: a.diagnostic_form_id,
+                form_name: a.diagnostic_form&.name,
+                status: a.status,
+                started_at: a.started_at,
+                submitted_at: a.submitted_at,
+                feedback_published: a.feedback_published_at.present?,
+                has_report: report.present?,
+                report_status: report&.report_status,
+                report_published: report&.published_at.present?,
+                has_student_assignment: assignment.present?,
+                student_assignment_status: assignment&.status,
+                has_school_assignment: school_assignment.present?,
+                school_assignment_status: school_assignment&.status
+              }
+            }
+          }
+        end
+
+      render json: @students_data, status: :ok
+    end
+
     def show
       # Current metrics (last 5 minutes)
       @current_metrics = {
