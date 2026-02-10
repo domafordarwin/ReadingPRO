@@ -2,10 +2,33 @@
   발문 역량 종합 보고서 파셜
   Local variables:
     - report (QuestioningReport)
+    - level (String: "elementary_low", "elementary_high", "middle", "high")
   데이터 소스: QuestioningReport.report_sections (발문 학습 데이터 기반 GPT-4o-mini 평가)
 %>
 
 <%
+  level ||= "elementary_low"
+  level_label = QuestioningLevelConfig::LEVEL_LABELS[level] || level
+
+  # 수준별 UI 설정
+  level_config = case level
+    when "elementary_low"
+      { feedback_length: 300, summary_title: "선생님의 이야기", badge_style: "background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;",
+        section_title: "어떤 점이 좋았을까?", recommendation_title: "이런 것도 해보자!" }
+    when "elementary_high"
+      { feedback_length: 400, summary_title: "성장 분석", badge_style: "background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd;",
+        section_title: "역량별 상세 분석", recommendation_title: "성장을 위한 제안" }
+    when "middle"
+      { feedback_length: 500, summary_title: "종합 평가", badge_style: "background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd;",
+        section_title: "역량별 분석", recommendation_title: "학습 권고사항" }
+    when "high"
+      { feedback_length: 600, summary_title: "종합 분석", badge_style: "background: #fce7f3; color: #9d174d; border: 1px solid #f9a8d4;",
+        section_title: "역량별 심층 분석", recommendation_title: "심화 학습 방향" }
+    else
+      { feedback_length: 400, summary_title: "종합 평가", badge_style: "background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd;",
+        section_title: "역량별 상세 분석", recommendation_title: "학습 권고사항" }
+    end
+
   sections = report.report_sections || {}
 
   # 9개 필수 역량 (발문 학습에서 항상 평가되는 영역)
@@ -41,8 +64,17 @@
   <!-- Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-4);">
     <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 발문 역량 수준</div>
-    <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
-      <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
+    <div style="display: flex; align-items: center; gap: var(--rp-space-3);">
+      <div style="text-align: center;">
+        <div style="font-size: 9px; color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">학년</div>
+        <div style="display: inline-flex; align-items: center; padding: var(--rp-space-1) var(--rp-space-3); border-radius: 999px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); <%= level_config[:badge_style] %>"><%= level_label %></div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 9px; color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">성취 수준</div>
+        <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
+          <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -59,7 +91,7 @@
 
     <!-- Right: Overall Summary -->
     <div>
-      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;">종합 평가</h4>
+      <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title); margin: 0 0 var(--rp-space-3) 0;"><%= level_config[:summary_title] %></h4>
       <% if report.overall_summary.present? %>
         <div style="font-size: var(--rp-font-size-sm); line-height: 1.8; color: var(--rp-text-body);"><%= simple_format(report.overall_summary) %></div>
       <% end %>
@@ -144,7 +176,7 @@
 
           <!-- Feedback -->
           <% if feedback.present? %>
-            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(level_config[:feedback_length])) %></div>
           <% end %>
 
           <!-- Strengths -->
@@ -216,7 +248,7 @@
           <% end %>
 
           <% if feedback.present? %>
-            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(200)) %></div>
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6; margin-bottom: var(--rp-space-2);"><%= simple_format(feedback.truncate(level_config[:feedback_length])) %></div>
           <% end %>
 
           <% if strengths.any? %>
@@ -326,7 +358,7 @@
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
     </svg>
-    <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);">학습 권고사항</h3>
+    <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= level_config[:recommendation_title] %></h3>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: var(--rp-space-3);">

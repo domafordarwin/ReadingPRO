@@ -537,7 +537,7 @@
   </div>
   <div class="rp-card__body">
     <% if @report.present? %>
-      <%= render "diagnostic_teacher/questioning_sessions/report", report: @report %>
+      <%= render "diagnostic_teacher/questioning_sessions/report", report: @report, level: @module.level %>
     <% else %>
       <p style="text-align: center; color: var(--rp-text-muted); padding: var(--rp-space-6);">
         아직 보고서가 생성되지 않았습니다. "AI 보고서 생성" 버튼을 눌러 주세요.

@@ -93,7 +93,7 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
       report = service.generate!
 
       redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
-                  notice: "문해력 종합 보고서가 생성되었습니다. (#{report.literacy_level_label})"
+                  notice: "발문 역량 종합 보고서가 생성되었습니다. (#{report.literacy_level_label})"
     rescue StandardError => e
       Rails.logger.error("Report generation failed: #{e.message}")
       redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
@@ -114,7 +114,7 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
     report.update!(report_status: "published", published_at: Time.current)
 
     redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
-                notice: "문해력 종합 보고서가 배포되었습니다."
+                notice: "발문 역량 종합 보고서가 배포되었습니다."
   end
 
   # PATCH /diagnostic_teacher/questioning_sessions/:id/update_essay_feedback
