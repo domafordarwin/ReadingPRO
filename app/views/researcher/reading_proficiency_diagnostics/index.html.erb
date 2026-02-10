@@ -11,12 +11,8 @@
 <div class="portal-card">
   <div class="portal-card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <h2 class="portal-card-title" style="margin: 0;">독서력 진단지 관리</h2>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <%= link_to "엑셀 양식 다운로드", blank_template_researcher_reading_proficiency_diagnostics_path,
-                  class: "btn btn-outline-primary", style: "font-size: 13px;" %>
-      <%= link_to "+ 새 진단지 등록", new_researcher_reading_proficiency_diagnostic_path,
-                  class: "btn btn-success", style: "font-size: 13px;" %>
-    </div>
+    <%= link_to "+ 새 진단지 등록", new_researcher_reading_proficiency_diagnostic_path,
+                class: "btn btn-success", style: "font-size: 13px;" %>
   </div>
 
   <div style="padding: 20px 0;">
@@ -37,69 +33,59 @@
                   class: "rp-tab rp-tab--#{params[:status] == 'archived' ? 'active' : ''}" %>
     </div>
 
-    <!-- Search & Filter Card -->
+    <!-- Search & Filter -->
     <div class="rp-card" style="margin-bottom: 28px;">
-      <div class="rp-card__header">
-        <h3 class="rp-card__title">검색 및 필터</h3>
-      </div>
-      <div class="rp-card__body">
-        <%= form_with url: researcher_reading_proficiency_diagnostics_path, method: :get, local: true, class: "rp-search-form" do %>
-          <div class="rp-search-form__fields">
-            <div class="rp-form-group">
-              <label class="rp-label">키워드</label>
-              <input type="text" name="q" value="<%= params[:q] %>" placeholder="진단지명 또는 설명" class="rp-input">
+      <div class="rp-card__body" style="padding: 16px 20px;">
+        <%= form_with url: researcher_reading_proficiency_diagnostics_path, method: :get, local: true do %>
+          <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <label class="rp-label" style="margin-bottom: 4px; font-size: 12px;">키워드</label>
+              <input type="text" name="q" value="<%= params[:q] %>" placeholder="진단지명 또는 설명" class="rp-input" style="height: 38px;">
             </div>
-
-            <div class="rp-form-group">
-              <label class="rp-label">수준</label>
-              <select name="level" class="rp-select">
+            <div style="width: 140px;">
+              <label class="rp-label" style="margin-bottom: 4px; font-size: 12px;">수준</label>
+              <select name="level" class="rp-select" style="height: 38px;">
                 <option value="">전체</option>
                 <option value="elementary" <%= "selected" if params[:level] == "elementary" %>>초등학교</option>
                 <option value="middle" <%= "selected" if params[:level] == "middle" %>>중등</option>
               </select>
             </div>
-
-            <div class="rp-form-group">
-              <label class="rp-label">연도</label>
-              <select name="year" class="rp-select">
+            <div style="width: 130px;">
+              <label class="rp-label" style="margin-bottom: 4px; font-size: 12px;">연도</label>
+              <select name="year" class="rp-select" style="height: 38px;">
                 <option value="">전체</option>
                 <% @available_years.each do |year| %>
                   <option value="<%= year %>" <%= "selected" if params[:year].to_s == year.to_s %>><%= year %>년</option>
                 <% end %>
               </select>
             </div>
-
-            <div class="rp-form-actions">
-              <button type="submit" class="rp-btn rp-btn--primary">검색</button>
-              <%= link_to "초기화", researcher_reading_proficiency_diagnostics_path, class: "rp-btn rp-btn--secondary" %>
+            <div style="display: flex; gap: 8px;">
+              <button type="submit" class="rp-btn rp-btn--primary" style="height: 38px; padding: 0 20px;">검색</button>
+              <%= link_to "초기화", researcher_reading_proficiency_diagnostics_path, class: "rp-btn rp-btn--secondary", style: "height: 38px; padding: 0 16px; line-height: 38px;" %>
             </div>
           </div>
         <% end %>
       </div>
     </div>
 
-    <!-- Excel Import Card -->
+    <!-- Excel Import -->
     <div class="rp-card" style="margin-bottom: 28px;">
-      <div class="rp-card__header">
-        <h3 class="rp-card__title">엑셀 파일로 등록</h3>
-      </div>
-      <div class="rp-card__body">
+      <div class="rp-card__body" style="padding: 16px 20px;">
         <%= form_with url: import_researcher_reading_proficiency_diagnostics_path,
                       method: :post, multipart: true, local: true,
-                      data: { turbo: false }, class: "rp-search-form" do %>
-          <div class="rp-search-form__fields">
-            <div class="rp-form-group" style="flex: 2;">
-              <label class="rp-label">엑셀 파일 선택 (.xlsx)</label>
-              <input type="file" name="file" accept=".xlsx" class="rp-input" required>
+                      data: { turbo: false } do %>
+          <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <label class="rp-label" style="margin-bottom: 4px; font-size: 12px;">엑셀 파일 선택 (.xlsx)</label>
+              <input type="file" name="file" accept=".xlsx" class="rp-input" style="height: 38px;" required>
             </div>
-            <div class="rp-form-actions">
-              <button type="submit" class="rp-btn rp-btn--primary">가져오기</button>
+            <div style="display: flex; gap: 8px;">
+              <%= link_to "양식 다운로드", blank_template_researcher_reading_proficiency_diagnostics_path,
+                          class: "rp-btn rp-btn--secondary", style: "height: 38px; padding: 0 16px; line-height: 38px;" %>
+              <button type="submit" class="rp-btn rp-btn--primary" style="height: 38px; padding: 0 20px;">가져오기</button>
             </div>
           </div>
         <% end %>
-        <p style="color: #888; font-size: 12px; margin-top: 8px;">
-          위의 "엑셀 양식 다운로드" 버튼으로 양식을 받은 후 작성하여 업로드해주세요.
-        </p>
       </div>
     </div>
 
