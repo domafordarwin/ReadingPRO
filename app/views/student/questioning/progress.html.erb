@@ -280,7 +280,7 @@
               arrow_color = "var(--rp-text-title)"
             end
 
-            at_time = at_val.is_a?(String) ? Time.zone.parse(at_val) rescue nil : at_val
+            at_time = at_val.is_a?(String) ? (Time.zone.parse(at_val) rescue nil) : at_val
           %>
           <div class="q-timeline__item">
             <div class="q-timeline__title">
