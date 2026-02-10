@@ -251,6 +251,59 @@
       justify-content: center;
     }
   }
+
+  /* Rich text editor */
+  .rp-editor-toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    background: #f8fafc;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .rp-fmt-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #334155;
+    min-width: 28px;
+    text-align: center;
+  }
+  .rp-fmt-btn:hover { background: #e2e8f0; }
+
+  .rp-contenteditable {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 0 0 6px 6px;
+    font-size: 14px;
+    line-height: 1.8;
+    outline: none;
+    overflow-y: auto;
+  }
+
+  .rp-contenteditable:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .rp-contenteditable:empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+  }
+
+  .rp-contenteditable u { text-decoration: underline; }
+  .rp-contenteditable b, .rp-contenteditable strong { font-weight: 700; }
+  .rp-contenteditable i, .rp-contenteditable em { font-style: italic; }
+  .rp-contenteditable s { text-decoration: line-through; }
 </style>
 
 <div class="item-create-container">
@@ -404,7 +457,23 @@
             문항 내용 (Prompt)
             <span class="required-badge">필수</span>
           </label>
-          <textarea name="item[prompt]" placeholder="학생에게 제시될 문항 내용을 입력하세요" required></textarea>
+          <small class="help-text" style="margin-bottom: 6px;">
+            <strong>굵게</strong>, <em>기울임</em>, <u>밑줄</u> 서식을 적용할 수 있습니다. (Ctrl+B / Ctrl+I / Ctrl+U)
+          </small>
+          <div class="rp-editor-toolbar">
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+            <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+          </div>
+          <div contenteditable="true"
+               id="prompt-editor"
+               class="rp-contenteditable"
+               oninput="syncPrompt()"
+               data-placeholder="학생에게 제시될 문항 내용을 입력하세요"></div>
+          <input type="hidden" name="item[prompt]" id="prompt-hidden" value="">
           <span class="help-text">
             <svg class="help-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
@@ -504,3 +573,39 @@
     </div>
   </form>
 </div>
+
+<script>
+  // Sync contenteditable → hidden field
+  function syncPrompt() {
+    var editor = document.getElementById('prompt-editor');
+    var hidden = document.getElementById('prompt-hidden');
+    if (editor && hidden) hidden.value = editor.innerHTML;
+  }
+
+  // Format command for prompt editor
+  function promptFmt(cmd) {
+    var editor = document.getElementById('prompt-editor');
+    if (editor) {
+      editor.focus();
+      document.execCommand(cmd, false, null);
+      syncPrompt();
+    }
+  }
+
+  // Keyboard shortcuts + form sync
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function() { syncPrompt(); });
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.id !== 'prompt-editor') return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); syncPrompt(); }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); syncPrompt(); }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); syncPrompt(); }
+    }
+  });
+</script>

@@ -130,7 +130,7 @@
         </div>
       <% end %>
 
-      <!-- Item Prompt (Question) - 지문 다음에 표시 -->
+      <!-- Item Prompt (Question) - 지문 다음에 표시 (편집 가능) -->
       <div class="item-prompt-card">
         <div class="item-prompt-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,10 +138,18 @@
             <path d="M12 16v-4M12 8h.01"></path>
           </svg>
           <h3>문항 발문</h3>
+          <div class="prompt-format-toolbar">
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
+            <button type="button" class="rp-fmt-btn" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+          </div>
         </div>
-        <div class="item-prompt-body">
-          <%= simple_format(@item.prompt) %>
-        </div>
+        <div contenteditable="true"
+             id="prompt-editor"
+             class="item-prompt-body item-prompt-editor"
+             oninput="syncPromptToForms()"><%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
       </div>
 
       <!-- MCQ Choices Preview (only for MCQ items) - 마지막에 표시 -->
@@ -182,6 +190,7 @@
     <!-- MCQ Default Mode -->
     <section class="rp-frame" data-state="mcq-default" style="<%= 'display: none;' unless @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Choices Selection -->
@@ -409,6 +418,7 @@
     <!-- MCQ Proximity Mode -->
     <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Proximity Score Setting -->
@@ -655,6 +665,7 @@
     <!-- Essay Rubric Mode -->
     <section class="rp-frame" data-state="essay-rubric" style="<%= 'display: none;' if @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Model Answer + Rubric Builder -->
@@ -1245,6 +1256,35 @@
     });
   })();
 
+  // === Prompt content formatting ===
+  function promptFmt(cmd) {
+    var editor = document.getElementById('prompt-editor');
+    if (editor) {
+      editor.focus();
+      document.execCommand(cmd, false, null);
+      syncPromptToForms();
+    }
+  }
+
+  function syncPromptToForms() {
+    var editor = document.getElementById('prompt-editor');
+    if (!editor) return;
+    var html = editor.innerHTML;
+    document.querySelectorAll('.prompt-hidden-field').forEach(function(field) {
+      field.value = html;
+    });
+  }
+
+  // Keyboard shortcuts for prompt editor
+  document.addEventListener('keydown', function(e) {
+    if (e.target.id !== 'prompt-editor') return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); syncPromptToForms(); }
+      if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); syncPromptToForms(); }
+      if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); syncPromptToForms(); }
+    }
+  });
+
   // === Choice content formatting ===
   var lastFocusedChoiceEditor = null;
 
@@ -1286,17 +1326,21 @@
     }
   });
 
-  // Initialize: sync all choice editors to hidden fields + sync before form submit
+  // Initialize: sync all editors to hidden fields + sync before form submit
   document.addEventListener('DOMContentLoaded', function() {
-    // Initial sync
+    // Initial sync for prompt
+    syncPromptToForms();
+
+    // Initial sync for choice editors
     document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
       var choiceId = editor.dataset.choiceId;
       if (choiceId) syncChoiceContent(choiceId);
     });
 
-    // Sync before form submit
+    // Sync all editors before form submit
     document.querySelectorAll('form.rp-form').forEach(function(form) {
       form.addEventListener('submit', function() {
+        syncPromptToForms();
         document.querySelectorAll('.rp-choice-editor').forEach(function(editor) {
           var choiceId = editor.dataset.choiceId;
           if (choiceId) syncChoiceContent(choiceId);
@@ -2295,6 +2339,50 @@
     flex-direction: column;
     gap: 12px;
   }
+
+  /* Prompt editor */
+  .prompt-format-toolbar {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .prompt-format-toolbar .rp-fmt-btn {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #334155;
+    min-width: 28px;
+    text-align: center;
+  }
+  .prompt-format-toolbar .rp-fmt-btn:hover { background: #e2e8f0; }
+
+  .item-prompt-editor {
+    outline: none;
+    border: 1px solid transparent;
+    border-radius: 0 0 8px 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: text;
+  }
+
+  .item-prompt-editor:hover {
+    border-color: #d1d5db;
+  }
+
+  .item-prompt-editor:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+    background: #fff;
+  }
+
+  .item-prompt-editor u { text-decoration: underline; }
+  .item-prompt-editor b, .item-prompt-editor strong { font-weight: 700; }
+  .item-prompt-editor i, .item-prompt-editor em { font-style: italic; }
+  .item-prompt-editor s { text-decoration: line-through; }
 
   .rp-choice-format-toolbar {
     display: flex;

@@ -41,7 +41,10 @@ class Researcher::ItemsController < ApplicationController
   end
 
   def create
-    @item = Item.new(item_params)
+    sanitized = item_params.dup
+    sanitized[:prompt] = sanitize_prompt_content(sanitized[:prompt]) if sanitized[:prompt].present?
+
+    @item = Item.new(sanitized)
 
     if @item.save
       redirect_to edit_researcher_item_path(@item), notice: "문항이 성공적으로 생성되었습니다."
@@ -63,6 +66,11 @@ class Researcher::ItemsController < ApplicationController
 
     # Always update metadata if present
     update_metadata!
+
+    # Update prompt if provided (HTML formatting support)
+    if params[:item] && params[:item][:prompt].present?
+      @item.update(prompt: sanitize_prompt_content(params[:item][:prompt]))
+    end
 
     update_item_status!
 
@@ -213,6 +221,14 @@ class Researcher::ItemsController < ApplicationController
     ActionController::Base.helpers.sanitize(
       text.to_s.strip,
       tags: %w[b strong i em u s br span],
+      attributes: %w[style class]
+    )
+  end
+
+  def sanitize_prompt_content(text)
+    ActionController::Base.helpers.sanitize(
+      text.to_s.strip,
+      tags: %w[b strong i em u s br span p div],
       attributes: %w[style class]
     )
   end

@@ -59,7 +59,7 @@
           <div class="cr-card__header">
             <span class="cr-card__number">서술형 <%= index + 1 %></span>
             <% if item.prompt.present? %>
-              <span class="cr-card__prompt"><%= truncate(item.prompt, length: 80) %></span>
+              <span class="cr-card__prompt"><%= truncate(strip_tags(item.prompt), length: 80) %></span>
             <% end %>
             <% if scores.any? %>
               <span class="cr-badge cr-badge--score"><%= total_score %> / <%= max_possible %>점</span>
@@ -125,7 +125,7 @@
 
               <div class="cr-question">
                 <span class="cr-meta-label">문항</span>
-                <div class="cr-question__text"><%= item.prompt %></div>
+                <div class="cr-question__text"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
               </div>
 
               <div class="cr-student-answer">

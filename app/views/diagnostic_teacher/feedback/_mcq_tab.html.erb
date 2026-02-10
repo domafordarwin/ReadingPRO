@@ -59,7 +59,7 @@
           <div class="mcq-card__header">
             <span class="mcq-card__number">문항 <%= index + 1 %></span>
             <% if item.prompt.present? %>
-              <span class="mcq-card__prompt"><%= truncate(item.prompt, length: 80) %></span>
+              <span class="mcq-card__prompt"><%= truncate(strip_tags(item.prompt), length: 80) %></span>
             <% end %>
             <% if is_correct %>
               <span class="mcq-badge mcq-badge--correct">정답</span>

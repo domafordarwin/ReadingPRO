@@ -585,7 +585,7 @@
               <td>
                 <div class="item-title">
                   <strong class="item-code"><%= item.code || "ITEM_#{item.id.to_s.rjust(3, '0')}" %></strong>
-                  <p class="item-description"><%= truncate(item.prompt, length: 60) %></p>
+                  <p class="item-description"><%= truncate(strip_tags(item.prompt), length: 60) %></p>
                 </div>
               </td>
               <td><%= difficulty_label %></td>

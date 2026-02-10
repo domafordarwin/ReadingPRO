@@ -595,7 +595,7 @@
       <div class="sa-card">
         <div class="sa-card-header">
           <span class="sa-card-number">문항 <%= idx + 1 %></span>
-          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <span class="sa-card-prompt"><%= strip_tags(item.prompt)&.truncate(80) %></span>
           <% if is_correct %>
             <span class="sa-badge-correct">&#10003; 정답</span>
           <% else %>
@@ -731,7 +731,7 @@
       <div class="sa-card">
         <div class="sa-card-header">
           <span class="sa-card-number">문항 <%= @mcq_responses.count + idx + 1 %></span>
-          <span class="sa-card-prompt"><%= item.prompt&.truncate(80) %></span>
+          <span class="sa-card-prompt"><%= strip_tags(item.prompt)&.truncate(80) %></span>
           <% if response.response_rubric_scores.any? %>
             <span class="sa-badge-scored">채점 완료</span>
           <% else %>
@@ -779,7 +779,7 @@
           <div class="sa-col-middle">
             <div class="sa-question-section">
               <span class="sa-meta-label">질문</span>
-              <div class="sa-question-text"><%= item.prompt %></div>
+              <div class="sa-question-text"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
             </div>
 
             <div class="sa-answer-section">

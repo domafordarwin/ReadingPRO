@@ -334,7 +334,7 @@
               <div class="recent-item__content">
                 <div class="recent-item__title"><%= item.code || "##{item.id}" %></div>
                 <div class="recent-item__meta">
-                  <%= truncate(item.prompt, length: 50) %> • <%= item.created_at.strftime("%m/%d") %>
+                  <%= truncate(strip_tags(item.prompt), length: 50) %> • <%= item.created_at.strftime("%m/%d") %>
                 </div>
               </div>
               <%= link_to "편집", edit_researcher_item_path(item), class: "recent-item__action" %>

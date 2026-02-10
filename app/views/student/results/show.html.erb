@@ -153,7 +153,7 @@
 
                   <td>
                     <div class="question-content">
-                      <%= truncate(response.item.prompt, length: 100) %>
+                      <%= truncate(strip_tags(response.item.prompt), length: 100) %>
                     </div>
                   </td>
 

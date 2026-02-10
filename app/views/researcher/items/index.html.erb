@@ -113,7 +113,7 @@
                     <td class="rp-table__cell">
                       <div class="rp-item-title">
                         <strong class="rp-item-code"><%= item.code || "##{item.id}" %></strong>
-                        <p class="rp-item-description"><%= truncate(item.prompt, length: 100) %></p>
+                        <p class="rp-item-description"><%= truncate(strip_tags(item.prompt), length: 100) %></p>
                       </div>
                     </td>
                     <td class="rp-table__cell"><%= difficulty_label %></td>

@@ -110,7 +110,7 @@
 
               <!-- Question Prompt -->
               <div class="question-prompt">
-                <%= simple_format(item.prompt) %>
+                <%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>
               </div>
 
               <!-- MCQ Choices -->

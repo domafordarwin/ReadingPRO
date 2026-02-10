@@ -219,7 +219,7 @@
                 <% end %>
               <% end %>
             </div>
-            <p class="item-prompt"><%= truncate(item.prompt, length: 200) %></p>
+            <p class="item-prompt"><%= truncate(strip_tags(item.prompt), length: 200) %></p>
 
             <% if item.item_type == 'mcq' && item.item_choices.any? %>
               <div class="item-choices">
