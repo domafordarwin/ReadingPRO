@@ -79,9 +79,9 @@ class StudentResponseImportService
         )
         results[:attempts_created] += 1
 
-        # 각 문항 열 순회 (Column D부터 = column index 4)
+        # 각 문항 열 순회 (Column C부터 = column index 3)
         @items.each_with_index do |item, idx|
-          col_num = idx + 4 # D=4, E=5, F=6, ...
+          col_num = idx + 3 # C=3, D=4, E=5, ...
           answer_raw = sheet.cell(row_num, col_num)
 
           next if answer_raw.blank?
@@ -123,10 +123,10 @@ class StudentResponseImportService
     # 1) email prefix로 검색 (rps_0001 → rps_0001@...)
     user = User.where("email LIKE ?", "#{student_id_str}@%").where(role: "student").first
 
-    # 2) 직접 이름으로 검색
-    user ||= User.where(name: student_id_str, role: "student").first
+    # 2) 정확한 email로 검색
+    user ||= User.find_by(email: student_id_str, role: "student")
 
-    # 3) student id로 검색
+    # 3) student id(숫자)로 검색
     if user.nil? && student_id_str.match?(/\A\d+\z/)
       return Student.find_by(id: student_id_str.to_i)
     end

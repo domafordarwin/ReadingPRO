@@ -117,8 +117,8 @@ class StudentResponseTemplateService
   def build_response_sheet(workbook)
     workbook.add_worksheet(name: "학생 응답 입력") do |sheet|
       # Row 1: 헤더 (학생정보 + 문항번호)
-      header_row = ["학생ID", "학생이름(참고)", "학년반(참고)"]
-      header_styles = [@header_style, @header_style, @header_style]
+      header_row = ["학생ID", "학년반(참고)"]
+      header_styles = [@header_style, @header_style]
 
       @items.each_with_index do |item, idx|
         type_label = item.mcq? ? "객관식" : "서술형"
@@ -129,8 +129,8 @@ class StudentResponseTemplateService
       sheet.add_row(header_row, style: header_styles, height: 30)
 
       # Row 2: 서브헤더 (문항 prompt 요약)
-      subheader_row = ["", "", ""]
-      subheader_styles = [@subheader_style, @subheader_style, @subheader_style]
+      subheader_row = ["", ""]
+      subheader_styles = [@subheader_style, @subheader_style]
 
       @items.each do |item|
         prompt_summary = item.prompt.to_s.truncate(30)
@@ -151,10 +151,9 @@ class StudentResponseTemplateService
         assigned_students.each do |student|
           row_data = [
             student.user&.email&.split("@")&.first || student.id.to_s,
-            student.user&.name || "이름없음",
             student.class_name || ""
           ]
-          row_styles = [@student_id_style, @student_info_style, @student_info_style]
+          row_styles = [@student_id_style, @student_info_style]
 
           @items.each do |item|
             row_data << ""
@@ -166,8 +165,8 @@ class StudentResponseTemplateService
       else
         # 빈 행 10개 (학생 수동 입력용)
         10.times do
-          row_data = ["", "", ""]
-          row_styles = [@student_id_style, @student_info_style, @student_info_style]
+          row_data = ["", ""]
+          row_styles = [@student_id_style, @student_info_style]
 
           @items.each do |item|
             row_data << ""
@@ -179,7 +178,7 @@ class StudentResponseTemplateService
       end
 
       # 컬럼 너비 설정
-      widths = [15, 12, 10]
+      widths = [15, 10]
       @items.each do |item|
         widths << (item.mcq? ? 12 : 30)
       end
@@ -246,7 +245,7 @@ class StudentResponseTemplateService
       guide_items = [
         ["1. 학생 정보", ""],
         ["", "- 학생ID: 학생 계정 ID (예: rps_0001). 시스템에 등록된 학생만 인식됩니다."],
-        ["", "- 학생이름, 학년반: 참고용이며 매칭에는 학생ID를 사용합니다."],
+        ["", "- 학년반: 참고용이며 매칭에는 학생ID를 사용합니다."],
         ["", "- 배정된 학생이 미리 입력되어 있습니다. 추가 학생은 행을 추가하세요."],
         [""],
         ["2. 객관식 문항 (초록색 셀)", ""],
