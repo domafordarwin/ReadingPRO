@@ -26,7 +26,11 @@ class Researcher::StimuliController < ApplicationController
       uploaded_images = params.dig(:reading_stimulus, :images)
       if uploaded_images.present?
         uploaded_images.reject(&:blank?).each do |img|
-          @stimulus.images.attach(img)
+          begin
+            @stimulus.images.attach(img)
+          rescue => e
+            Rails.logger.error "[Stimuli#create] Image attach error: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+          end
         end
       end
       redirect_to researcher_passages_path, notice: "지문이 성공적으로 생성되었습니다."
@@ -43,23 +47,37 @@ class Researcher::StimuliController < ApplicationController
     sanitized[:body] = sanitize_body(sanitized[:body]) if sanitized[:body].present?
 
     # Attach new images
+    image_errors = []
     uploaded_images = params.dig(:reading_stimulus, :images)
     if uploaded_images.present?
       uploaded_images.reject(&:blank?).each do |img|
-        @stimulus.images.attach(img)
+        begin
+          Rails.logger.info "[Stimuli#update] Attaching image: #{img.original_filename}, size=#{img.size}, content_type=#{img.content_type}"
+          @stimulus.images.attach(img)
+          Rails.logger.info "[Stimuli#update] Image attached successfully"
+        rescue => e
+          Rails.logger.error "[Stimuli#update] Image attach error: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+          image_errors << "이미지 '#{img.original_filename}' 업로드 실패: #{e.message}"
+        end
       end
     end
 
     # Remove selected images
     if params[:remove_image_ids].present?
       params[:remove_image_ids].each do |img_id|
-        blob = @stimulus.images.find { |i| i.id.to_s == img_id.to_s }
-        blob&.purge
+        begin
+          blob = @stimulus.images.find { |i| i.id.to_s == img_id.to_s }
+          blob&.purge
+        rescue => e
+          Rails.logger.error "[Stimuli#update] Image purge error: #{e.class}: #{e.message}"
+        end
       end
     end
 
     if @stimulus.update(sanitized.except(:images))
-      redirect_to researcher_passages_path, notice: "지문이 성공적으로 수정되었습니다."
+      notice_msg = "지문이 성공적으로 수정되었습니다."
+      notice_msg += " (주의: #{image_errors.join(', ')})" if image_errors.any?
+      redirect_to researcher_passages_path, notice: notice_msg
     else
       render :edit, status: :unprocessable_entity
     end
