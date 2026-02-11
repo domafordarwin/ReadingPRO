@@ -144,7 +144,11 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
-            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px;"></span>
+            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyLeft')" title="왼쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h10M0 8h14M0 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyCenter')" title="가운데 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M3 4.5h10M1 8h14M4 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyRight')" title="오른쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 4.5h10M2 8h14M8 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
+            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스 삽입">보기</button>
           </div>
         </div>
@@ -2475,6 +2479,8 @@
   /* Prompt editor */
   .prompt-format-toolbar {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 4px;
     margin-left: auto;
   }
