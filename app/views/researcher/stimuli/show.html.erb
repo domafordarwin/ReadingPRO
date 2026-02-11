@@ -159,10 +159,10 @@
       <%= sanitize @stimulus.body, tags: %w[b strong i em u s br span p div], attributes: %w[style class] %>
     </div>
     <% if @stimulus.images.attached? %>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
         <% @stimulus.images.each do |img| %>
           <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-            <%= image_tag img, style: "max-width: 400px; max-height: 300px; display: block;" %>
+            <%= image_tag img, style: "max-width: 600px; max-height: 450px; display: block;" %>
           </div>
         <% end %>
       </div>
