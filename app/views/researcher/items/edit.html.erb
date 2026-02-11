@@ -150,6 +150,8 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyRight')" title="오른쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 4.5h10M2 8h14M8 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
             <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스 삽입">보기</button>
+            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+            <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
           </div>
         </div>
         <div contenteditable="true"
@@ -172,6 +174,8 @@
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+              <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+              <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
             </div>
           </div>
           <div class="choices-grid">
@@ -1446,6 +1450,49 @@
     }
   }, true); // capture phase
 
+  // === Quick Save: 현재 활성 탭의 폼을 찾아 임시저장 ===
+  function quickSave() {
+    syncAllEditors();
+
+    // 현재 보이는(활성) rp-frame 찾기
+    var activeFrame = document.querySelector('.rp-frame[style*="display: none"]') ? null : document.querySelector('.rp-frame');
+    document.querySelectorAll('.rp-frame').forEach(function(frame) {
+      if (frame.offsetParent !== null && frame.style.display !== 'none') {
+        activeFrame = frame;
+      }
+    });
+
+    if (!activeFrame) {
+      // fallback: 첫 번째 폼 사용
+      activeFrame = document.querySelector('.rp-frame');
+    }
+
+    var form = activeFrame ? activeFrame.querySelector('form.rp-form') : document.querySelector('form.rp-form');
+    if (!form) return;
+
+    injectChoiceContentsIntoForm(form);
+
+    // commit_action=save hidden field 추가 (임시저장)
+    var actionField = form.querySelector('input[name="commit_action"]');
+    if (!actionField) {
+      actionField = document.createElement('input');
+      actionField.type = 'hidden';
+      actionField.name = 'commit_action';
+      form.appendChild(actionField);
+    }
+    actionField.value = 'save';
+
+    form.submit();
+  }
+
+  // Ctrl+S 단축키로 빠른 저장
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      quickSave();
+    }
+  });
+
   // Initial sync on page load
   function initEditorSync() {
     syncAllEditors();
@@ -1878,6 +1925,7 @@
 
   .choice-format-toolbar-top {
     display: flex;
+    align-items: center;
     gap: 3px;
     margin-left: auto;
   }
@@ -2498,6 +2546,20 @@
     text-align: center;
   }
   .prompt-format-toolbar .rp-fmt-btn:hover { background: #e2e8f0; }
+
+  .rp-fmt-btn--save {
+    font-size: 11px !important;
+    font-weight: 600;
+    color: #fff !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    padding: 2px 12px !important;
+    border-radius: 4px;
+  }
+  .rp-fmt-btn--save:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+  }
 
   .rp-fmt-btn--bogi {
     font-size: 11px !important;
