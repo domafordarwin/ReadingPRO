@@ -5,9 +5,8 @@
   # @stimulus - associated ReadingStimulus
   # @sessions - student's previous sessions for this module
   stimulus = @stimulus || @questioning_module&.reading_stimulus
-  level = @questioning_module&.level || "L1"
-  level_labels = { "L1" => "초저", "L2" => "초고", "L3" => "중등", "L4" => "고등" }
-  level_label = level_labels[level] || level
+  level = @questioning_module&.level || "elementary_low"
+  level_label = @questioning_module&.respond_to?(:level_label) ? @questioning_module.level_label : level
 %>
 
 <!-- Page Header with Back Link -->

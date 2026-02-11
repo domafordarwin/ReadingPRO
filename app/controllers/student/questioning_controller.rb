@@ -18,6 +18,12 @@ class Student::QuestioningController < ApplicationController
       .includes(:reading_stimulus, :creator)
       .order(created_at: :desc)
 
+    # Preload student's sessions grouped by module (N+1 방지)
+    all_sessions = @student&.questioning_sessions
+      &.where(questioning_module_id: assigned_ids)
+      &.order(created_at: :desc) || []
+    @sessions_by_module = all_sessions.group_by(&:questioning_module_id)
+
     # Stats for the header
     @total_modules = @questioning_modules.count
     student_sessions = @student&.questioning_sessions || QuestioningSession.none
