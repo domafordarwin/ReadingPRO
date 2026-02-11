@@ -82,10 +82,17 @@ class Researcher::ItemsController < ApplicationController
         @item.update(model_answer: params[:item][:model_answer].to_s.strip.presence)
       end
 
-      @rubric = @item.rubric || @item.build_rubric
-      @rubric.name = params[:rubric][:name] if params[:rubric] && params[:rubric][:name].present?
-      @rubric.save! if @rubric.new_record? || @rubric.changed?
-      update_rubric_criteria!
+      @rubric = @item.rubric
+      if @rubric.nil? && params[:rubric] && params[:rubric][:name].present?
+        # Only create new rubric if name is provided (name is required)
+        @rubric = @item.build_rubric(name: params[:rubric][:name])
+        @rubric.save!
+      elsif @rubric
+        # Update existing rubric name if provided
+        @rubric.name = params[:rubric][:name] if params[:rubric] && params[:rubric][:name].present?
+        @rubric.save! if @rubric.changed?
+      end
+      update_rubric_criteria! if @rubric&.persisted?
     end
 
     # Preserve the active tab after save
