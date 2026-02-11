@@ -219,7 +219,7 @@
                 <% end %>
               <% end %>
             </div>
-            <p class="item-prompt"><%= truncate(strip_tags(item.prompt), length: 200) %></p>
+            <div class="item-prompt"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
 
             <% if item.item_type == 'mcq' && item.item_choices.any? %>
               <div class="item-choices">
