@@ -664,7 +664,7 @@
                 %>
                 <li class="sa-choice-item <%= css_class.join(' ') %>">
                   <span class="sa-choice-no"><%= choice.choice_no %></span>
-                  <span><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
+                  <span><%= sanitize_choice_text(choice.content) %></span>
                   <span class="sa-choice-marker">
                     <% if is_this_correct && is_student_pick %>
                       &#10003; 정답
@@ -779,7 +779,7 @@
           <div class="sa-col-middle">
             <div class="sa-question-section">
               <span class="sa-meta-label">질문</span>
-              <div class="sa-question-text"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
+              <div class="sa-question-text"><%= sanitize_rich_text(item.prompt) %></div>
             </div>
 
             <div class="sa-answer-section">

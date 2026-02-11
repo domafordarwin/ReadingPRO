@@ -29,23 +29,33 @@
       <small class="form-text">지문을 식별할 수 있는 명확한 제목을 입력하세요.</small>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" style="position:relative;">
       <label for="stimulus_body">지문 본문 <span class="text-danger">*</span></label>
-      <small class="form-text" style="margin-bottom: 6px;">
-        서식(<strong>굵게</strong>, <em>기울임</em>, <u>밑줄</u>)과 문단 정렬을 적용할 수 있습니다.
-      </small>
-      <div class="rp-editor-toolbar" style="display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e0e0e0; border-bottom: none; border-radius: 6px 6px 0 0;">
+      <div class="rp-editor-toolbar" style="display:flex; flex-wrap:wrap; align-items:center; gap:3px; padding:6px 8px; background:#f8fafc; border:1px solid #e0e0e0; border-bottom:none; border-radius:6px 6px 0 0;">
+        <!-- 서식 -->
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('strikeThrough')" title="취소선"><s>S</s></button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
-        <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('subscript')" title="아래첨자" style="font-size:11px;">X<sub>2</sub></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('superscript')" title="위첨자" style="font-size:11px;">X<sup>2</sup></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size:11px;">✕</button>
+        <span class="rp-toolbar-sep"></span>
+        <!-- 정렬 -->
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('justifyLeft')" title="왼쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h10M0 8h14M0 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('justifyCenter')" title="가운데 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M3 4.5h10M1 8h14M4 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('justifyRight')" title="오른쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 4.5h10M2 8h14M8 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('justifyFull')" title="양쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h16M0 8h16M0 11.5h10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
-        <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+        <span class="rp-toolbar-sep"></span>
+        <!-- 목록/들여쓰기 -->
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('insertUnorderedList')" title="글머리 기호 목록"><svg width="16" height="14" viewBox="0 0 16 14"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><path d="M6 2h10" stroke="currentColor" stroke-width="1.5"/><circle cx="2" cy="7" r="1.5" fill="currentColor"/><path d="M6 7h10" stroke="currentColor" stroke-width="1.5"/><circle cx="2" cy="12" r="1.5" fill="currentColor"/><path d="M6 12h10" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('insertOrderedList')" title="번호 목록"><svg width="16" height="14" viewBox="0 0 16 14"><text x="0" y="4" font-size="5" fill="currentColor" font-weight="700">1.</text><path d="M6 2h10" stroke="currentColor" stroke-width="1.5"/><text x="0" y="9" font-size="5" fill="currentColor" font-weight="700">2.</text><path d="M6 7h10" stroke="currentColor" stroke-width="1.5"/><text x="0" y="14" font-size="5" fill="currentColor" font-weight="700">3.</text><path d="M6 12h10" stroke="currentColor" stroke-width="1.5"/></svg></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('outdent')" title="내어쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M4 7L0 5v4z" fill="currentColor"/></svg></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('indent')" title="들여쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M0 5l4 2-4 2z" fill="currentColor"/></svg></button>
+        <span class="rp-toolbar-sep"></span>
+        <!-- 삽입 -->
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('insertHorizontalRule')" title="수평선 삽입" style="font-size:11px;">──</button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showTableDialog('body-editor')" title="표 삽입" style="font-size:11px; font-weight:600;">표</button>
         <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertStimulusBogiBox()" title="보기 박스 삽입" style="font-size:11px; font-weight:600; color:#4f46e5; border-color:#a5b4fc; padding:2px 10px;">보기</button>
       </div>
       <div contenteditable="true"
@@ -54,8 +64,21 @@
            style="min-height: 300px; line-height: 1.8; font-size: 14px; border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
            oninput="syncBody()"
            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"><%= raw @stimulus.body %></div>
+           onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"><%= sanitize_rich_text(@stimulus.body) %></div>
       <%= f.hidden_field :body, id: "stimulus_body_hidden" %>
+      <!-- 표 삽입 다이얼로그 -->
+      <div id="table-dialog" class="rp-table-dialog">
+        <div class="rp-table-dialog-row">
+          <label>행<input type="number" id="table-rows" value="3" min="1" max="20"></label>
+          <span style="color:#94a3b8;">×</span>
+          <label>열<input type="number" id="table-cols" value="3" min="1" max="10"></label>
+        </div>
+        <label style="margin-bottom:8px;"><input type="checkbox" id="table-header" checked> 첫 행을 헤더로</label>
+        <div class="rp-table-dialog-actions">
+          <button type="button" class="rp-table-dialog-btn" onclick="closeTableDialog()">취소</button>
+          <button type="button" class="rp-table-dialog-btn rp-table-dialog-btn--primary" onclick="insertTable()">삽입</button>
+        </div>
+      </div>
     </div>
 
     <!-- 이미지 관리 -->
@@ -375,6 +398,32 @@
   }
 
   .rp-fmt-btn--bogi:hover { background: #eef2ff !important; border-color: #818cf8 !important; }
+  .rp-toolbar-sep { width:1px; height:18px; background:#d1d5db; margin:0 3px; align-self:center; }
+
+  /* 표 삽입 다이얼로그 */
+  .rp-table-dialog {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    min-width: 200px;
+  }
+  .rp-table-dialog.open { display: block; }
+  .rp-table-dialog label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; display: block; }
+  .rp-table-dialog input[type="number"] {
+    width: 60px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; text-align: center;
+  }
+  .rp-table-dialog .rp-table-dialog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .rp-table-dialog .rp-table-dialog-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .rp-table-dialog-btn {
+    padding: 4px 14px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; cursor: pointer; background: #fff;
+  }
+  .rp-table-dialog-btn--primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .rp-table-dialog-btn--primary:hover { background: #1d4ed8; }
 
   @media (max-width: 768px) {
     .form-row {
@@ -417,6 +466,82 @@
       if (e.key === 'b') { e.preventDefault(); document.execCommand('bold'); syncBody(); }
       if (e.key === 'i') { e.preventDefault(); document.execCommand('italic'); syncBody(); }
       if (e.key === 'u') { e.preventDefault(); document.execCommand('underline'); syncBody(); }
+    }
+  });
+
+  // === 표 삽입 ===
+  var _tableTargetEditor = null;
+
+  function showTableDialog(editorId) {
+    _tableTargetEditor = editorId;
+    var dialog = document.getElementById('table-dialog');
+    var btn = event.target.closest('.rp-fmt-btn');
+    if (btn) {
+      var rect = btn.getBoundingClientRect();
+      var container = dialog.parentElement.getBoundingClientRect();
+      dialog.style.top = (rect.bottom - container.top + 4) + 'px';
+      dialog.style.right = '0';
+    }
+    dialog.classList.add('open');
+  }
+
+  function closeTableDialog() {
+    document.getElementById('table-dialog').classList.remove('open');
+  }
+
+  function insertTable() {
+    var rows = parseInt(document.getElementById('table-rows').value) || 3;
+    var cols = parseInt(document.getElementById('table-cols').value) || 3;
+    var hasHeader = document.getElementById('table-header').checked;
+    rows = Math.max(1, Math.min(rows, 20));
+    cols = Math.max(1, Math.min(cols, 10));
+
+    var html = '<table>';
+    for (var r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (var c = 0; c < cols; c++) {
+        if (r === 0 && hasHeader) {
+          html += '<th>&nbsp;</th>';
+        } else {
+          html += '<td>&nbsp;</td>';
+        }
+      }
+      html += '</tr>';
+    }
+    html += '</table><p><br></p>';
+
+    var editor = document.getElementById(_tableTargetEditor || 'body-editor');
+    editor.focus();
+    document.execCommand('insertHTML', false, html);
+    syncBody();
+    closeTableDialog();
+  }
+
+  // 표 안에서 Tab 키로 셀 이동
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    var cell = e.target.closest ? e.target.closest('td, th') : null;
+    if (!cell) {
+      var sel = window.getSelection();
+      if (sel.anchorNode) {
+        var n = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+        cell = n.closest ? n.closest('td, th') : null;
+      }
+    }
+    if (!cell) return;
+    var editor = cell.closest('#body-editor, #prompt-editor');
+    if (!editor) return;
+
+    e.preventDefault();
+    var cells = Array.from(editor.querySelectorAll('td, th'));
+    var idx = cells.indexOf(cell);
+    var next = e.shiftKey ? cells[idx - 1] : cells[idx + 1];
+    if (next) {
+      var range = document.createRange();
+      range.selectNodeContents(next);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
   });
 

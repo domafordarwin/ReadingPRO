@@ -1,4 +1,27 @@
 module ApplicationHelper
+  # ── 리치 텍스트 (발문/지문) 허용 태그/속성 ──
+  RICH_TEXT_TAGS = %w[
+    b strong i em u s br span p div
+    table thead tbody tfoot tr th td caption
+    ol ul li
+    hr sub sup
+  ].freeze
+
+  RICH_TEXT_ATTRIBUTES = %w[style class colspan rowspan].freeze
+
+  # 발문/지문 등 리치 텍스트 HTML을 안전하게 sanitize
+  def sanitize_rich_text(html)
+    sanitize(html, tags: RICH_TEXT_TAGS, attributes: RICH_TEXT_ATTRIBUTES)
+  end
+
+  # 선택지용 (인라인만, 블록 태그 제외)
+  CHOICE_TEXT_TAGS = %w[b strong i em u s br span sub sup].freeze
+  CHOICE_TEXT_ATTRIBUTES = %w[style class].freeze
+
+  def sanitize_choice_text(html)
+    sanitize(html, tags: CHOICE_TEXT_TAGS, attributes: CHOICE_TEXT_ATTRIBUTES)
+  end
+
   # AI 생성 텍스트의 기본 마크다운을 HTML로 변환
   def render_markdown(text)
     return "" if text.blank?

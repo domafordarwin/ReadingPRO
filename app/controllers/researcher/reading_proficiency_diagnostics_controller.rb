@@ -193,8 +193,8 @@ class Researcher::ReadingProficiencyDiagnosticsController < ApplicationControlle
   def sanitize_prompt(text)
     ActionController::Base.helpers.sanitize(
       text.to_s.strip,
-      tags: %w[b strong i em u s br span],
-      attributes: %w[style class]
+      tags: ApplicationHelper::CHOICE_TEXT_TAGS,
+      attributes: ApplicationHelper::CHOICE_TEXT_ATTRIBUTES
     )
   end
 end

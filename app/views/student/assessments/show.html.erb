@@ -110,7 +110,7 @@
 
               <!-- Question Prompt -->
               <div class="question-prompt">
-                <%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>
+                <%= sanitize_rich_text(item.prompt) %>
               </div>
 
               <!-- MCQ Choices -->
@@ -126,7 +126,7 @@
                              data-item-id="<%= item.id %>"
                              <%= 'checked' if response.selected_choice_id == choice.id %>>
                       <span class="choice-number"><%= choice.choice_no %></span>
-                      <span class="choice-content"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
+                      <span class="choice-content"><%= sanitize_choice_text(choice.content) %></span>
                     </label>
                   <% end %>
                 </div>

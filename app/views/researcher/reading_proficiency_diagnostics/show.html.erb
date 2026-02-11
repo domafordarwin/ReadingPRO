@@ -97,7 +97,7 @@
                   <tr class="rp-table__row">
                     <td class="rp-table__cell" style="text-align: center; font-weight: 600;"><%= item.position %></td>
                     <td class="rp-table__cell">
-                      <div><%= sanitize item.prompt, tags: %w[b strong i em u s br span], attributes: %w[style class] %></div>
+                      <div><%= sanitize_choice_text(item.prompt) %></div>
                       <% if item.image.attached? %>
                         <div style="margin-top: 8px;">
                           <%= image_tag item.image, style: "max-width: 300px; max-height: 200px; border-radius: 6px; border: 1px solid #e2e8f0;", onerror: "this.parentElement.style.display='none'" %>

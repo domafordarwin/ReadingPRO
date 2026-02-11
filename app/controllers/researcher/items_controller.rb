@@ -232,16 +232,16 @@ class Researcher::ItemsController < ApplicationController
   def sanitize_choice_content(text)
     ActionController::Base.helpers.sanitize(
       text.to_s.strip,
-      tags: %w[b strong i em u s br span],
-      attributes: %w[style class]
+      tags: ApplicationHelper::CHOICE_TEXT_TAGS,
+      attributes: ApplicationHelper::CHOICE_TEXT_ATTRIBUTES
     )
   end
 
   def sanitize_prompt_content(text)
     ActionController::Base.helpers.sanitize(
       text.to_s.strip,
-      tags: %w[b strong i em u s br span p div],
-      attributes: %w[style class]
+      tags: ApplicationHelper::RICH_TEXT_TAGS,
+      attributes: ApplicationHelper::RICH_TEXT_ATTRIBUTES
     )
   end
 

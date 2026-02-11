@@ -156,7 +156,7 @@
   <div class="passage-body-card">
     <h3>지문 본문</h3>
     <div class="passage-content">
-      <%= sanitize @stimulus.body, tags: %w[b strong i em u s br span p div], attributes: %w[style class] %>
+      <%= sanitize_rich_text(@stimulus.body) %>
     </div>
     <% if @stimulus.images.attached? %>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
@@ -219,14 +219,14 @@
                 <% end %>
               <% end %>
             </div>
-            <div class="item-prompt"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
+            <div class="item-prompt"><%= sanitize_rich_text(item.prompt) %></div>
 
             <% if item.item_type == 'mcq' && item.item_choices.any? %>
               <div class="item-choices">
                 <% item.item_choices.order(:choice_no).each do |choice| %>
                   <div class="choice <%= 'correct' if choice.is_correct %>">
                     <span class="choice-num"><%= choice.choice_no.to_s.gsub(/[0-9]/) { |d| ['①','②','③','④','⑤'][d.to_i - 1] || d } %></span>
-                    <%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>
+                    <%= sanitize_choice_text(choice.content) %>
                     <% if choice.is_correct %>
                       <span class="correct-marker">정답</span>
                     <% end %>

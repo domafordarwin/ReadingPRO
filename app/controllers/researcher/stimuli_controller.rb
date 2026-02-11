@@ -322,8 +322,8 @@ class Researcher::StimuliController < ApplicationController
   def sanitize_body(text)
     ActionController::Base.helpers.sanitize(
       text.to_s.strip,
-      tags: %w[b strong i em u s br span p div],
-      attributes: %w[style class]
+      tags: ApplicationHelper::RICH_TEXT_TAGS,
+      attributes: ApplicationHelper::RICH_TEXT_ATTRIBUTES
     )
   end
 end

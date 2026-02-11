@@ -139,25 +139,52 @@
           </svg>
           <h3>문항 발문</h3>
           <div class="prompt-format-toolbar">
+            <!-- 서식 -->
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('bold')" title="굵게 (Ctrl+B)"><strong>B</strong></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
-            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('subscript')" title="아래첨자" style="font-size:11px;">X<sub>2</sub></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('superscript')" title="위첨자" style="font-size:11px;">X<sup>2</sup></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size:11px;">✕</button>
+            <span class="rp-toolbar-sep"></span>
+            <!-- 정렬 -->
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyLeft')" title="왼쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h10M0 8h14M0 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyCenter')" title="가운데 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M3 4.5h10M1 8h14M4 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyRight')" title="오른쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 4.5h10M2 8h14M8 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
-            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
-            <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스 삽입">보기</button>
-            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
+            <span class="rp-toolbar-sep"></span>
+            <!-- 목록/들여쓰기 -->
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertUnorderedList')" title="글머리 기호"><svg width="16" height="14" viewBox="0 0 16 14"><circle cx="2" cy="2" r="1.5" fill="currentColor"/><path d="M6 2h10" stroke="currentColor" stroke-width="1.5"/><circle cx="2" cy="7" r="1.5" fill="currentColor"/><path d="M6 7h10" stroke="currentColor" stroke-width="1.5"/><circle cx="2" cy="12" r="1.5" fill="currentColor"/><path d="M6 12h10" stroke="currentColor" stroke-width="1.5"/></svg></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertOrderedList')" title="번호 목록"><svg width="16" height="14" viewBox="0 0 16 14"><text x="0" y="4" font-size="5" fill="currentColor" font-weight="700">1.</text><path d="M6 2h10" stroke="currentColor" stroke-width="1.5"/><text x="0" y="9" font-size="5" fill="currentColor" font-weight="700">2.</text><path d="M6 7h10" stroke="currentColor" stroke-width="1.5"/><text x="0" y="14" font-size="5" fill="currentColor" font-weight="700">3.</text><path d="M6 12h10" stroke="currentColor" stroke-width="1.5"/></svg></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('outdent')" title="내어쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M4 7L0 5v4z" fill="currentColor"/></svg></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('indent')" title="들여쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M0 5l4 2-4 2z" fill="currentColor"/></svg></button>
+            <span class="rp-toolbar-sep"></span>
+            <!-- 삽입 -->
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertHorizontalRule')" title="수평선" style="font-size:11px;">──</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showPromptTableDialog()" title="표 삽입" style="font-size:11px; font-weight:600;">표</button>
+            <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스">보기</button>
+            <span class="rp-toolbar-sep"></span>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
           </div>
         </div>
         <div contenteditable="true"
              id="prompt-editor"
              class="item-prompt-body item-prompt-editor"
-             oninput="syncPromptToForms()"><%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
+             style="position:relative;"
+             oninput="syncPromptToForms()"><%= sanitize_rich_text(@item.prompt) %></div>
+        <!-- 표 삽입 다이얼로그 (발문용) -->
+        <div id="prompt-table-dialog" class="rp-table-dialog">
+          <div class="rp-table-dialog-row">
+            <label>행<input type="number" id="prompt-table-rows" value="3" min="1" max="20"></label>
+            <span style="color:#94a3b8;">×</span>
+            <label>열<input type="number" id="prompt-table-cols" value="3" min="1" max="10"></label>
+          </div>
+          <label style="margin-bottom:8px;"><input type="checkbox" id="prompt-table-header" checked> 첫 행을 헤더로</label>
+          <div class="rp-table-dialog-actions">
+            <button type="button" class="rp-table-dialog-btn" onclick="closePromptTableDialog()">취소</button>
+            <button type="button" class="rp-table-dialog-btn rp-table-dialog-btn--primary" onclick="insertPromptTable()">삽입</button>
+          </div>
+        </div>
       </div>
 
       <!-- MCQ Choices Editor (only for MCQ items) - 발문 아래 편집 가능 -->
@@ -186,7 +213,7 @@
                 <div contenteditable="true"
                      class="choice-preview-text rp-choice-editor"
                      data-choice-id="<%= choice.id %>"
-                     oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
+                     oninput="syncChoiceContent(<%= choice.id %>)"><%= sanitize_choice_text(choice.content) %></div>
                 <% if choice.is_correct %>
                   <span class="correct-indicator">✓ 정답</span>
                 <% end %>
@@ -210,7 +237,7 @@
     <!-- MCQ Default Mode -->
     <section class="rp-frame" data-state="mcq-default" style="<%= 'display: none;' unless @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize_rich_text(@item.prompt) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Choices Selection -->
@@ -234,9 +261,9 @@
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
                       </label>
-                      <span class="rp-choice-text" id="choice-display-<%= choice.id %>"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></span>
+                      <span class="rp-choice-text" id="choice-display-<%= choice.id %>"><%= sanitize_choice_text(choice.content) %></span>
                       <input type="hidden" name="choice_contents[<%= choice.id %>]" id="choice-hidden-<%= choice.id %>"
-                             value="<%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %>">
+                             value="<%= sanitize_choice_text(choice.content) %>">
                     </div>
                   <% end %>
                 </div>
@@ -426,7 +453,7 @@
     <!-- MCQ Proximity Mode -->
     <section class="rp-frame" data-state="mcq-proximity" style="display: none;">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize_rich_text(@item.prompt) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Proximity Score Setting -->
@@ -460,7 +487,7 @@
                           <span class="rp-badge rp-badge--success">정답</span>
                         <% end %>
                       </div>
-                      <div class="rp-choice-text-display"><%= sanitize(choice.content, tags: %w[b strong i em u s br span], attributes: %w[style class]) %></div>
+                      <div class="rp-choice-text-display"><%= sanitize_choice_text(choice.content) %></div>
                       <div class="rp-proximity-score-bottom">
                         <div class="rp-proximity-score-input-group">
                           <label class="rp-score-input-label">점수 비율</label>
@@ -673,7 +700,7 @@
     <!-- Essay Rubric Mode -->
     <section class="rp-frame" data-state="essay-rubric" style="<%= 'display: none;' if @item.mcq? %>">
       <%= form_with url: researcher_item_path(@item), method: :patch, class: "rp-form", data: { turbo: false } do %>
-        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize(@item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %>">
+        <input type="hidden" name="item[prompt]" class="prompt-hidden-field" value="<%= sanitize_rich_text(@item.prompt) %>">
         <div class="rp-grid rp-grid--2" style="grid-template-columns: 65fr 35fr; gap: 24px;">
 
           <!-- LEFT COLUMN: Model Answer + Rubric Builder -->
@@ -1337,6 +1364,60 @@
         break;
       }
       node = node.parentNode;
+    }
+  });
+
+  // === 표 삽입 (발문용) ===
+  function showPromptTableDialog() {
+    var dialog = document.getElementById('prompt-table-dialog');
+    dialog.classList.add('open');
+  }
+  function closePromptTableDialog() {
+    document.getElementById('prompt-table-dialog').classList.remove('open');
+  }
+  function insertPromptTable() {
+    var rows = parseInt(document.getElementById('prompt-table-rows').value) || 3;
+    var cols = parseInt(document.getElementById('prompt-table-cols').value) || 3;
+    var hasHeader = document.getElementById('prompt-table-header').checked;
+    rows = Math.max(1, Math.min(rows, 20));
+    cols = Math.max(1, Math.min(cols, 10));
+
+    var html = '<table>';
+    for (var r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (var c = 0; c < cols; c++) {
+        html += (r === 0 && hasHeader) ? '<th>&nbsp;</th>' : '<td>&nbsp;</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</table><p><br></p>';
+
+    var editor = document.getElementById('prompt-editor');
+    editor.focus();
+    document.execCommand('insertHTML', false, html);
+    syncPromptToForms();
+    closePromptTableDialog();
+  }
+
+  // 표 안에서 Tab 키로 셀 이동
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Tab') return;
+    var sel = window.getSelection();
+    if (!sel.anchorNode) return;
+    var n = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+    var cell = n.closest ? n.closest('td, th') : null;
+    if (!cell) return;
+    var editor = cell.closest('#prompt-editor, #body-editor');
+    if (!editor) return;
+    e.preventDefault();
+    var cells = Array.from(editor.querySelectorAll('td, th'));
+    var idx = cells.indexOf(cell);
+    var next = e.shiftKey ? cells[idx - 1] : cells[idx + 1];
+    if (next) {
+      var range = document.createRange();
+      range.selectNodeContents(next);
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
   });
 
@@ -2524,12 +2605,29 @@
     gap: 12px;
   }
 
+  .rp-toolbar-sep { width:1px; height:18px; background:#d1d5db; margin:0 3px; align-self:center; }
+
+  /* 표 삽입 다이얼로그 */
+  .rp-table-dialog {
+    display: none; position: absolute; z-index: 1000; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px; padding: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12); min-width: 200px;
+  }
+  .rp-table-dialog.open { display: block; }
+  .rp-table-dialog label { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; display: block; }
+  .rp-table-dialog input[type="number"] { width: 60px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; text-align: center; }
+  .rp-table-dialog .rp-table-dialog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .rp-table-dialog .rp-table-dialog-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .rp-table-dialog-btn { padding: 4px 14px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; cursor: pointer; background: #fff; }
+  .rp-table-dialog-btn--primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .rp-table-dialog-btn--primary:hover { background: #1d4ed8; }
+
   /* Prompt editor */
   .prompt-format-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     margin-left: auto;
   }
 

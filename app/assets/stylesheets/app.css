@@ -2161,3 +2161,65 @@ body.admin-body {
 .bogi-box-content p {
   margin: 6px 0;
 }
+
+/* ── 리치 텍스트 표 (발문/지문 내 표) ── */
+.item-prompt-body table,
+.item-prompt table,
+#body-editor table,
+.cr-question__text table,
+.sa-question-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 14px;
+}
+.item-prompt-body th, .item-prompt-body td,
+.item-prompt th, .item-prompt td,
+#body-editor th, #body-editor td,
+.cr-question__text th, .cr-question__text td,
+.sa-question-text th, .sa-question-text td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+.item-prompt-body th,
+.item-prompt th,
+#body-editor th,
+.cr-question__text th,
+.sa-question-text th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #334155;
+}
+.item-prompt-body tr:nth-child(even) td,
+.item-prompt tr:nth-child(even) td,
+.cr-question__text tr:nth-child(even) td,
+.sa-question-text tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+/* ── 리치 텍스트 목록 ── */
+.item-prompt-body ol, .item-prompt-body ul,
+.item-prompt ol, .item-prompt ul,
+#body-editor ol, #body-editor ul,
+.cr-question__text ol, .cr-question__text ul,
+.sa-question-text ol, .sa-question-text ul {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+.item-prompt-body li, .item-prompt li,
+#body-editor li,
+.cr-question__text li, .sa-question-text li {
+  margin: 4px 0;
+  line-height: 1.7;
+}
+
+/* ── 리치 텍스트 수평선 ── */
+.item-prompt-body hr, .item-prompt hr,
+#body-editor hr,
+.cr-question__text hr, .sa-question-text hr {
+  border: none;
+  border-top: 1px solid #cbd5e1;
+  margin: 12px 0;
+}

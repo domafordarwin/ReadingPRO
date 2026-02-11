@@ -125,7 +125,7 @@
 
               <div class="cr-question">
                 <span class="cr-meta-label">문항</span>
-                <div class="cr-question__text"><%= sanitize(item.prompt, tags: %w[b strong i em u s br span p div], attributes: %w[style class]) %></div>
+                <div class="cr-question__text"><%= sanitize_rich_text(item.prompt) %></div>
               </div>
 
               <div class="cr-student-answer">
