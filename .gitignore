@@ -37,6 +37,8 @@ extracted_*.json
 # Claude Code & bkit (로컬 설정, 생성된 문서)
 .claude/
 .claude-code/
+*railway_logs*.txt
+*railway_big*.txt
 .bkit/
 .bkit-temp/
 docs/.bkit-memory.json
