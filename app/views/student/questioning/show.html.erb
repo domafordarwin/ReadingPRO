@@ -117,16 +117,50 @@
       </div>
     </div>
 
-    <!-- Start Button -->
+    <!-- Start / Result Buttons -->
     <div style="padding-top: var(--rp-space-2);">
-      <%= form_tag("/student/questioning/#{@questioning_module&.id}/start_session", method: :post, data: { turbo: false }) do %>
-        <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg rp-btn--full">
+      <% completed_session = @sessions&.first %>
+      <% if @active_session.present? %>
+        <!-- 진행 중인 세션이 있으면 이어하기 -->
+        <%= link_to student_questioning_session_path(@active_session),
+            class: "rp-btn rp-btn--primary rp-btn--lg rp-btn--full", style: "display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;" do %>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+          </svg>
+          학습 이어하기
+        <% end %>
+      <% elsif completed_session.present? %>
+        <!-- 완료된 세션이 있으면: 시작하기 비활성화 + 학습 결과 보기 -->
+        <button type="button" class="rp-btn rp-btn--secondary rp-btn--lg rp-btn--full" disabled
+                style="opacity: 0.5; cursor: not-allowed; margin-bottom: var(--rp-space-3);">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
             <polygon points="10 8 16 12 10 16 10 8"></polygon>
           </svg>
           학습 시작하기
         </button>
+        <%= link_to student_questioning_session_path(completed_session),
+            class: "rp-btn rp-btn--primary rp-btn--lg rp-btn--full", style: "display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;" do %>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          학습 결과 보기
+        <% end %>
+      <% else %>
+        <!-- 처음 시작 -->
+        <%= form_tag("/student/questioning/#{@questioning_module&.id}/start_session", method: :post, data: { turbo: false }) do %>
+          <button type="submit" class="rp-btn rp-btn--primary rp-btn--lg rp-btn--full">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+            학습 시작하기
+          </button>
+        <% end %>
       <% end %>
     </div>
 

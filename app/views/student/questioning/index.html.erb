@@ -115,8 +115,19 @@
             <%= link_to "이어하기", "/student/questioning_sessions/#{latest_session&.id}",
                 class: "rp-btn rp-btn--primary rp-btn--sm" %>
           <% else %>
-            <%= link_to "다시보기", "/student/questioning/#{qm.id}",
-                class: "rp-btn rp-btn--secondary rp-btn--sm" %>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span class="rp-btn rp-btn--secondary rp-btn--sm" style="opacity: 0.5; pointer-events: none; cursor: not-allowed;">시작하기</span>
+              <%= link_to "/student/questioning_sessions/#{latest_session&.id}",
+                  class: "rp-btn rp-btn--primary rp-btn--sm", style: "display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                학습 결과 보기
+              <% end %>
+            </div>
           <% end %>
         </div>
       </div>
