@@ -254,16 +254,16 @@ class Student::QuestioningSessionsController < ApplicationController
       end
     end
 
-    # Calculate stage scores
+    # Calculate stage scores (final_score 우선, 없으면 ai_score 사용)
     stage_scores = {}
     (1..3).each do |stage|
       questions = @questioning_session.questions_for_stage(stage)
-      scores = questions.where.not(final_score: nil).pluck(:final_score)
+      scores = questions.pluck(:final_score, :ai_score).map { |fs, as| fs || as }.compact
       stage_scores[stage.to_s] = scores.any? ? (scores.sum / scores.size).round(2) : nil
     end
 
     # Calculate total score
-    all_scores = @questioning_session.student_questions.where.not(final_score: nil).pluck(:final_score)
+    all_scores = @questioning_session.student_questions.pluck(:final_score, :ai_score).map { |fs, as| fs || as }.compact
     total = all_scores.any? ? (all_scores.sum / all_scores.size).round(2) : nil
 
     @questioning_session.update!(

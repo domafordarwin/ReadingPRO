@@ -1173,6 +1173,31 @@
   background: var(--rp-text-muted);
 }
 
+/* Completed session: single-column, normal page scroll */
+.q-session-page--finished {
+  height: auto;
+  overflow: visible;
+}
+.q-session-page--finished .q-session-page__body {
+  grid-template-columns: 1fr;
+  overflow: visible;
+}
+.q-session-page--finished .q-session-page__passage {
+  overflow-y: visible;
+}
+.q-session-page--finished .q-session-page__activity {
+  overflow-y: visible;
+}
+
+/* Collapsible passage toggle for finished state */
+.q-session-page--finished .q-passage-panel__toggle {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.q-session-page--finished .q-passage-panel__body.collapsed {
+  display: none;
+}
+
 /* Tablet/Mobile: stack vertically, normal scroll */
 @media (max-width: 1024px) {
   .q-session-page {
