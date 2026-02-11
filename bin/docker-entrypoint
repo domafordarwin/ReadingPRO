@@ -1,26 +1,10 @@
 #!/bin/bash -e
 
-# Fix storage volume permissions (runs as root before user switch)
-# Railway volumes may be mounted with root ownership, so we chown to rails user
-if [ -d /rails/storage ]; then
-  chown -R rails:rails /rails/storage 2>/dev/null || true
-  echo "Storage directory permissions fixed: /rails/storage"
-fi
-
 # If running the rails server then migrate the database
 if [[ "$*" == *"rails server"* ]] || [[ "$*" == *"rails s"* ]]; then
   echo "Running database migrations..."
-  RAILS_LOG_LEVEL=warn gosu rails ./bin/rails db:migrate 2>&1 | grep -v "^D," || true
+  RAILS_LOG_LEVEL=warn ./bin/rails db:migrate 2>&1 | grep -v "^D," || true
   echo "Migrations complete."
-
-  # Verify storage is writable by rails user
-  if gosu rails test -w /rails/storage; then
-    echo "Storage directory is writable by rails user: /rails/storage"
-  else
-    echo "WARNING: Storage directory /rails/storage is NOT writable by rails user!"
-    echo "  Owner: $(ls -ld /rails/storage)"
-  fi
 fi
 
-# Switch to rails user and execute the command
-exec gosu rails "${@}"
+exec "${@}"
