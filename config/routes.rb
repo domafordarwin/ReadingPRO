@@ -273,6 +273,8 @@ Rails.application.routes.draw do
         post :generate_report
         patch :publish_report
         patch :update_essay_feedback
+        get :report
+        get :download_report_md
       end
     end
 
@@ -395,5 +397,6 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "welcome#index"
 
-  match "*path", to: "errors#not_found", via: :all
+  match "*path", to: "errors#not_found", via: :all,
+        constraints: ->(req) { !req.path.start_with?("/rails/active_storage") }
 end
