@@ -43,7 +43,7 @@
         <h1 class="qr-dl-profile__name"><%= @student.name %>의 발문 역량 종합 보고서</h1>
         <p class="qr-dl-profile__meta">
           <%= @module.title %> · <%= level_label %>
-          · <%= @session.completed_at&.strftime("%Y-%m-%d") || Date.current.strftime("%Y-%m-%d") %>
+          · <%= @questioning_session.completed_at&.strftime("%Y-%m-%d") || Date.current.strftime("%Y-%m-%d") %>
           <% if @report.published? %>
             · <span class="qr-dl-badge qr-dl-badge--green">배포됨</span>
           <% else %>
@@ -56,8 +56,8 @@
 
   <!-- ── 세션 요약 통계 ── -->
   <%
-    total_questions = @session.student_questions.size
-    duration_min = @session.time_spent_seconds.to_i > 0 ? (@session.time_spent_seconds / 60.0).round : nil
+    total_questions = @questioning_session.student_questions.size
+    duration_min = @questioning_session.time_spent_seconds.to_i > 0 ? (@questioning_session.time_spent_seconds / 60.0).round : nil
   %>
   <div class="qr-dl-stats">
     <div class="qr-dl-stat">
@@ -80,7 +80,7 @@
 
   <!-- ── 단계별 점수 ── -->
   <%
-    stage_scores = @session.stage_scores || {}
+    stage_scores = @questioning_session.stage_scores || {}
     stage_names = { 1 => "책문열기", 2 => "이야기 나누기", 3 => "삶 적용" }
   %>
   <div class="qr-dl-stage-scores">
@@ -147,7 +147,7 @@ function downloadQuestioningPdf() {
 
   var opt = {
     margin: [12, 10, 12, 10],
-    filename: '<%= j @student.name %>_발문역량보고서_<%= Date.current.strftime("%Y%m%d") %>.pdf',
+    filename: '<%= j(@student.name) %>_발문역량보고서_<%= Date.current.strftime("%Y%m%d") %>.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, logging: false },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
