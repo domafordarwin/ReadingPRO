@@ -144,6 +144,8 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+            <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px;"></span>
+            <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스 삽입">보기</button>
           </div>
         </div>
         <div contenteditable="true"
@@ -1263,6 +1265,72 @@
       syncPromptToForms();
     }
   }
+
+  // === 보기 박스 삽입 ===
+  function insertBogiBox() {
+    var editor = document.getElementById('prompt-editor');
+    if (!editor) return;
+    editor.focus();
+
+    // Check if cursor is already inside a bogi-box (prevent nesting)
+    var sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+      var node = sel.anchorNode;
+      while (node && node !== editor) {
+        if (node.nodeType === 1 && node.classList && node.classList.contains('bogi-box')) {
+          alert('보기 박스 안에 다시 보기 박스를 넣을 수 없습니다.');
+          return;
+        }
+        node = node.parentNode;
+      }
+    }
+
+    var boxHtml =
+      '<div class="bogi-box">' +
+        '<div class="bogi-box-title">\u3008\ubcf4\uae30\u3009</div>' +
+        '<div class="bogi-box-content"><br></div>' +
+      '</div><p><br></p>';
+
+    document.execCommand('insertHTML', false, boxHtml);
+    syncPromptToForms();
+
+    // Place cursor inside the bogi-box-content
+    setTimeout(function() {
+      var content = editor.querySelector('.bogi-box-content');
+      if (content) {
+        var range = document.createRange();
+        range.selectNodeContents(content);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, 10);
+  }
+
+  // Handle Backspace at the start of bogi-box to delete the whole box
+  document.addEventListener('keydown', function(e) {
+    if (e.target.id !== 'prompt-editor') return;
+    if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+
+    var sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    var node = sel.anchorNode;
+    // Check if we're at the start of bogi-box-title with empty content
+    while (node && node.id !== 'prompt-editor') {
+      if (node.nodeType === 1 && node.classList && node.classList.contains('bogi-box')) {
+        var content = node.querySelector('.bogi-box-content');
+        if (content && content.textContent.trim() === '') {
+          e.preventDefault();
+          node.parentNode.removeChild(node);
+          syncPromptToForms();
+          return;
+        }
+        break;
+      }
+      node = node.parentNode;
+    }
+  });
 
   function syncPromptToForms() {
     var editor = document.getElementById('prompt-editor');
@@ -2424,6 +2492,40 @@
     text-align: center;
   }
   .prompt-format-toolbar .rp-fmt-btn:hover { background: #e2e8f0; }
+
+  .rp-fmt-btn--bogi {
+    font-size: 11px !important;
+    font-weight: 600;
+    color: #4f46e5 !important;
+    border-color: #a5b4fc !important;
+    padding: 2px 10px !important;
+  }
+  .rp-fmt-btn--bogi:hover {
+    background: #eef2ff !important;
+    border-color: #818cf8 !important;
+  }
+
+  /* 보기 박스 에디터 내부 스타일 */
+  .item-prompt-editor .bogi-box {
+    cursor: text;
+    outline: none;
+  }
+  .item-prompt-editor .bogi-box:hover {
+    border-color: #667eea;
+  }
+  .item-prompt-editor .bogi-box-title {
+    pointer-events: none;
+    user-select: none;
+  }
+  .item-prompt-editor .bogi-box-content {
+    min-height: 24px;
+    outline: none;
+  }
+  .item-prompt-editor .bogi-box-content:empty::before {
+    content: '보기 내용을 입력하세요...';
+    color: #94a3b8;
+    font-style: italic;
+  }
 
   .item-prompt-editor {
     outline: none;
