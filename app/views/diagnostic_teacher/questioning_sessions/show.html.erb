@@ -521,6 +521,11 @@
         <% end %>
       <% elsif !@report.published? %>
         <div style="display: flex; gap: var(--rp-space-2);">
+          <%= link_to report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                      class: "rp-btn rp-btn--secondary rp-btn--sm", style: "display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" do %>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            다운로드
+          <% end %>
           <%= form_with url: generate_report_diagnostic_teacher_questioning_session_path(@questioning_session),
                         method: :post, data: { turbo: false }, style: "display: inline;" do %>
             <button type="submit" class="rp-btn rp-btn--secondary rp-btn--sm">재생성</button>
@@ -531,7 +536,14 @@
           <% end %>
         </div>
       <% else %>
-        <span class="rp-badge rp-badge--success">배포됨</span>
+        <div style="display: flex; align-items: center; gap: var(--rp-space-2);">
+          <span class="rp-badge rp-badge--success">배포됨</span>
+          <%= link_to report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                      class: "rp-btn rp-btn--secondary rp-btn--sm", style: "display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" do %>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            다운로드
+          <% end %>
+        </div>
       <% end %>
     </div>
   </div>

@@ -1,0 +1,571 @@
+<%#
+  발문 역량 보고서 - 인쇄/PDF용 본문 파셜
+  Local variables:
+    - report (QuestioningReport)
+    - level (String)
+    - session (QuestioningSession)
+    - questions_by_stage (Hash)
+%>
+
+<%
+  level ||= "elementary_low"
+  level_label = QuestioningLevelConfig::LEVEL_LABELS[level] rescue level
+
+  level_config = case level
+    when "elementary_low"
+      { summary_title: "선생님의 이야기", section_title: "어떤 점이 좋았을까?", recommendation_title: "이런 것도 해보자!" }
+    when "elementary_high"
+      { summary_title: "성장 분석", section_title: "역량별 상세 분석", recommendation_title: "성장을 위한 제안" }
+    when "middle"
+      { summary_title: "종합 평가", section_title: "역량별 분석", recommendation_title: "학습 권고사항" }
+    when "high"
+      { summary_title: "종합 분석", section_title: "역량별 심층 분석", recommendation_title: "심화 학습 방향" }
+    else
+      { summary_title: "종합 평가", section_title: "역량별 상세 분석", recommendation_title: "학습 권고사항" }
+    end
+
+  sections = report.report_sections || {}
+
+  radar_mapping = [
+    { key: "reading_comprehension", label: "읽기 이해력", group: "이해 역량" },
+    { key: "inferential_reasoning", label: "추론 능력", group: "이해 역량" },
+    { key: "critical_thinking", label: "비판적 사고력", group: "이해 역량" },
+    { key: "creative_thinking", label: "창의적 사고력", group: "사고 역량" },
+    { key: "metacognition", label: "메타인지", group: "사고 역량" },
+    { key: "vocabulary_usage", label: "어휘 활용", group: "사고 역량" },
+    { key: "text_connection", label: "텍스트 연결", group: "소통·적용 역량" },
+    { key: "communication", label: "의사소통", group: "소통·적용 역량" },
+    { key: "personal_application", label: "삶 적용", group: "소통·적용 역량" }
+  ]
+
+  radar_data = radar_mapping.map do |item|
+    score = sections.dig(item[:key], "score") || 0
+    { name: item[:label], group: item[:group], score: score }
+  end
+
+  conditional_sections = [
+    { key: "discussion_competency", label: "토론 역량" },
+    { key: "argumentative_writing", label: "논증적 글쓰기" }
+  ].select { |cs| sections.dig(cs[:key], "score").present? }
+
+  avg_score = radar_data.any? ? (radar_data.sum { |d| d[:score] } / radar_data.size.to_f).round(1) : 0
+  top_areas = radar_data.sort_by { |d| -d[:score] }.first(3)
+  weak_areas = radar_data.sort_by { |d| d[:score] }.first(3)
+%>
+
+<!-- ════════════════════════════════
+     1. 종합 발문 역량 수준 + 레이더 차트
+     ════════════════════════════════ -->
+<div class="qrc-section qrc-hero">
+  <div class="qrc-hero__header">
+    <span class="qrc-hero__label">종합 발문 역량 수준</span>
+    <div class="qrc-hero__badges">
+      <span class="qrc-hero__avg"><%= avg_score %>점</span>
+      <span class="qrc-hero__level"><%= report.literacy_level_label %></span>
+    </div>
+  </div>
+
+  <div class="qrc-hero__split">
+    <!-- Left: Radar Chart -->
+    <div class="qrc-hero__chart">
+      <h4 class="qrc-hero__chart-title">9개 역량 프로필</h4>
+      <svg id="qrc-radar-svg" viewBox="0 0 460 420" style="max-width: 380px; width: 100%; height: auto;"></svg>
+      <div id="qrc-radar-legend" class="qrc-hero__legend"></div>
+    </div>
+
+    <!-- Right: Score Bars + Summary -->
+    <div class="qrc-hero__summary">
+      <h4 class="qrc-hero__summary-title"><%= level_config[:summary_title] %></h4>
+      <% if report.overall_summary.present? %>
+        <div class="qrc-hero__summary-text"><%= simple_format(report.overall_summary.truncate(600)) %></div>
+      <% end %>
+
+      <div class="qrc-hero__bars">
+        <% radar_data.each do |rd| %>
+          <%
+            sc = rd[:score]
+            bar_color = sc >= 80 ? "#16a34a" : sc >= 60 ? "#2563eb" : sc >= 40 ? "#f59e0b" : "#dc2626"
+          %>
+          <div class="qrc-hero__bar-row">
+            <span class="qrc-hero__bar-label"><%= rd[:name] %></span>
+            <div class="qrc-hero__bar-track">
+              <div class="qrc-hero__bar-fill" style="width: <%= sc %>%; background: <%= bar_color %>;"></div>
+            </div>
+            <span class="qrc-hero__bar-score" style="color: <%= bar_color %>;"><%= sc.to_i %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="qrc-hero__highlights">
+        <div class="qrc-hero__highlight qrc-hero__highlight--top">
+          <strong>우수:</strong> <%= top_areas.map { |a| "#{a[:name]}(#{a[:score].to_i})" }.join(", ") %>
+        </div>
+        <div class="qrc-hero__highlight qrc-hero__highlight--weak">
+          <strong>보완:</strong> <%= weak_areas.map { |a| "#{a[:name]}(#{a[:score].to_i})" }.join(", ") %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     2. 역량별 상세 분석 카드
+     ════════════════════════════════ -->
+<%
+  group_colors = {
+    "이해 역량" => { bg: "#eff6ff", border: "#bfdbfe", title: "#1e40af", bar: "#3b82f6" },
+    "사고 역량" => { bg: "#faf5ff", border: "#e9d5ff", title: "#6b21a8", bar: "#8b5cf6" },
+    "소통·적용 역량" => { bg: "#f0fdf4", border: "#bbf7d0", title: "#166534", bar: "#16a34a" }
+  }
+%>
+
+<% ["이해 역량", "사고 역량", "소통·적용 역량"].each do |group_name| %>
+  <% group_items = radar_mapping.select { |r| r[:group] == group_name } %>
+  <% gc = group_colors[group_name] %>
+
+  <div class="qrc-section" style="page-break-inside: avoid;">
+    <h3 class="qrc-group-title" style="color: <%= gc[:title] %>; border-bottom-color: <%= gc[:border] %>;"><%= group_name %></h3>
+    <div class="qrc-cards-grid">
+      <% group_items.each do |item| %>
+        <%
+          section = sections[item[:key]] || {}
+          score = section["score"]
+          feedback = section["feedback"]
+          strengths = section["strengths"] || []
+          improvements = section["improvements"] || []
+          score_color = score.nil? ? "#94a3b8" : score >= 80 ? "#16a34a" : score >= 60 ? "#2563eb" : score >= 40 ? "#f59e0b" : "#dc2626"
+        %>
+        <div class="qrc-card" style="background: <%= gc[:bg] %>; border-color: <%= gc[:border] %>;">
+          <div class="qrc-card__header">
+            <span class="qrc-card__name" style="color: <%= gc[:title] %>;"><%= item[:label] %></span>
+            <span class="qrc-card__score" style="color: <%= score_color %>;"><%= score.present? ? (score.is_a?(Float) ? score.round(1) : score) : "N/A" %></span>
+          </div>
+          <% if score.present? %>
+            <div class="qrc-card__bar"><div class="qrc-card__bar-fill" style="width: <%= score %>%; background: <%= gc[:bar] %>;"></div></div>
+          <% end %>
+          <% if feedback.present? %>
+            <div class="qrc-card__feedback"><%= simple_format(feedback) %></div>
+          <% end %>
+          <% if strengths.any? %>
+            <div class="qrc-card__list">
+              <% strengths.first(3).each do |s| %>
+                <div class="qrc-card__item qrc-card__item--good"><span>✓</span> <%= s %></div>
+              <% end %>
+            </div>
+          <% end %>
+          <% if improvements.any? %>
+            <div class="qrc-card__list">
+              <% improvements.first(3).each do |imp| %>
+                <div class="qrc-card__item qrc-card__item--improve"><span>△</span> <%= imp %></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- ── 조건부 역량 ── -->
+<% if conditional_sections.any? %>
+  <div class="qrc-section" style="page-break-inside: avoid;">
+    <h3 class="qrc-group-title" style="color: #475569; border-bottom-color: #e2e8f0;">추가 역량 평가</h3>
+    <div class="qrc-cards-grid qrc-cards-grid--<%= conditional_sections.size %>">
+      <% conditional_sections.each do |cs| %>
+        <%
+          section = sections[cs[:key]] || {}
+          score = section["score"]
+          feedback = section["feedback"]
+          strengths = section["strengths"] || []
+          improvements = section["improvements"] || []
+          score_color = score.nil? ? "#94a3b8" : score >= 80 ? "#16a34a" : score >= 60 ? "#2563eb" : score >= 40 ? "#f59e0b" : "#dc2626"
+        %>
+        <div class="qrc-card" style="background: #f8fafc; border-color: #e2e8f0;">
+          <div class="qrc-card__header">
+            <span class="qrc-card__name" style="color: #334155;"><%= cs[:label] %></span>
+            <span class="qrc-card__score" style="color: <%= score_color %>;"><%= score %></span>
+          </div>
+          <% if score.present? %>
+            <div class="qrc-card__bar"><div class="qrc-card__bar-fill" style="width: <%= score %>%; background: #6366f1;"></div></div>
+          <% end %>
+          <% if feedback.present? %>
+            <div class="qrc-card__feedback"><%= simple_format(feedback) %></div>
+          <% end %>
+          <% if strengths.any? %>
+            <div class="qrc-card__list">
+              <% strengths.first(3).each do |s| %>
+                <div class="qrc-card__item qrc-card__item--good"><span>✓</span> <%= s %></div>
+              <% end %>
+            </div>
+          <% end %>
+          <% if improvements.any? %>
+            <div class="qrc-card__list">
+              <% improvements.first(3).each do |imp| %>
+                <div class="qrc-card__item qrc-card__item--improve"><span>△</span> <%= imp %></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<!-- ════════════════════════════════
+     3. 종합 의견
+     ════════════════════════════════ -->
+<% if report.overall_summary.present? %>
+  <div class="qrc-section qrc-opinion" style="page-break-inside: avoid;">
+    <h3 class="qrc-opinion__title">종합 의견</h3>
+    <div class="qrc-opinion__body"><%= simple_format(report.overall_summary) %></div>
+  </div>
+<% end %>
+
+<!-- ════════════════════════════════
+     4. 심화 학습 방향
+     ════════════════════════════════ -->
+<%
+  reco = report.respond_to?(:learning_recommendations) ? (report.learning_recommendations || {}) : {}
+  has_reco = reco.is_a?(Hash) && (reco["priority_areas"].present? || reco["short_term"].present?)
+%>
+
+<% if has_reco %>
+  <div class="qrc-section" style="page-break-inside: avoid;">
+    <h3 class="qrc-group-title" style="color: #0f172a; border-bottom-color: #e2e8f0;"><%= level_config[:recommendation_title] %></h3>
+
+    <% priority_areas = reco["priority_areas"] || [] %>
+    <% if priority_areas.any? %>
+      <% area_colors = ["#3b82f6", "#8b5cf6", "#16a34a"] %>
+      <% priority_areas.each_with_index do |pa, idx| %>
+        <% ac = area_colors[idx % 3] %>
+        <div class="qrc-priority" style="border-left-color: <%= ac %>;">
+          <div class="qrc-priority__header">
+            <span class="qrc-priority__num" style="background: <%= ac %>;"><%= idx + 1 %></span>
+            <span class="qrc-priority__area"><%= pa["area"] %></span>
+          </div>
+
+          <% if pa["current_level"].present? || pa["target"].present? %>
+            <div class="qrc-priority__levels">
+              <% if pa["current_level"].present? %>
+                <div class="qrc-priority__level qrc-priority__level--current">
+                  <div class="qrc-priority__level-label">현재 수준</div>
+                  <div><%= pa["current_level"] %></div>
+                </div>
+              <% end %>
+              <% if pa["target"].present? %>
+                <div class="qrc-priority__level qrc-priority__level--target">
+                  <div class="qrc-priority__level-label">목표 수준</div>
+                  <div><%= pa["target"] %></div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if (acts = pa["activities"] || []).any? %>
+            <div class="qrc-priority__block">
+              <div class="qrc-priority__block-title" style="color: #1e40af;">학교 활동</div>
+              <ul class="qrc-priority__list"><% acts.each do |a| %><li><%= a %></li><% end %></ul>
+            </div>
+          <% end %>
+          <% if (home = pa["home_activities"] || []).any? %>
+            <div class="qrc-priority__block">
+              <div class="qrc-priority__block-title" style="color: #7c3aed;">가정 활동</div>
+              <ul class="qrc-priority__list"><% home.each do |a| %><li><%= a %></li><% end %></ul>
+            </div>
+          <% end %>
+          <% if (books = pa["recommended_books"] || []).any? %>
+            <div class="qrc-priority__block">
+              <div class="qrc-priority__block-title" style="color: #92400e;">추천 도서</div>
+              <div class="qrc-priority__books"><% books.each do |b| %><span class="qrc-priority__book"><%= b %></span><% end %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <% if reco["short_term"].present? || reco["mid_term"].present? || reco["long_term"].present? %>
+      <h4 class="qrc-roadmap-title">학습 목표 로드맵</h4>
+      <div class="qrc-roadmap">
+        <% [
+          { key: "short_term", label: "단기 (1-2주)", color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe" },
+          { key: "mid_term", label: "중기 (1-2개월)", color: "#8b5cf6", bg: "#faf5ff", border: "#e9d5ff" },
+          { key: "long_term", label: "장기 (한 학기)", color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" }
+        ].each do |goal| %>
+          <% if reco[goal[:key]].present? %>
+            <div class="qrc-roadmap__card" style="background: <%= goal[:bg] %>; border-color: <%= goal[:border] %>;">
+              <div class="qrc-roadmap__label" style="color: <%= goal[:color] %>;"><%= goal[:label] %></div>
+              <div class="qrc-roadmap__text"><%= simple_format(reco[goal[:key]]) %></div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if reco["strength_leverage"].present? %>
+      <div class="qrc-strength">
+        <div class="qrc-strength__title">강점 활용 전략</div>
+        <div class="qrc-strength__text"><%= simple_format(reco["strength_leverage"]) %></div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- ════════════════════════════════
+     5. 학생 발문 활동 기록
+     ════════════════════════════════ -->
+<%
+  stage_names = { 1 => "책문열기", 2 => "이야기 나누기", 3 => "삶 적용" }
+%>
+<div class="qrc-section" style="page-break-before: always;">
+  <h3 class="qrc-group-title" style="color: #0f172a; border-bottom-color: #e2e8f0;">학생 발문 활동 기록</h3>
+
+  <% (1..3).each do |stage| %>
+    <% stage_qs = questions_by_stage[stage] || [] %>
+    <% next if stage_qs.empty? %>
+
+    <div class="qrc-stage-block" style="page-break-inside: avoid;">
+      <h4 class="qrc-stage-block__title"><%= stage %>단계: <%= stage_names[stage] %> (<%= stage_qs.size %>개 발문)</h4>
+      <% stage_qs.each_with_index do |q, idx| %>
+        <%
+          score = q.final_score || q.ai_score
+          type_label = q.question_type == "guided" ? "안내형" : "자유형"
+          score_color = score.nil? ? "#94a3b8" : score >= 80 ? "#16a34a" : score >= 60 ? "#2563eb" : score >= 40 ? "#f59e0b" : "#dc2626"
+        %>
+        <div class="qrc-question">
+          <div class="qrc-question__header">
+            <span class="qrc-question__num"><%= idx + 1 %></span>
+            <span class="qrc-question__text"><%= q.question_text %></span>
+            <span class="qrc-question__score" style="color: <%= score_color %>;"><%= score ? "#{score.round(1)}점" : "-" %></span>
+          </div>
+          <div class="qrc-question__meta">
+            <span class="qrc-question__tag"><%= type_label %></span>
+            <span class="qrc-question__tag">스캐폴딩 <%= q.scaffolding_used %></span>
+            <% if q.evaluation_indicator.present? %>
+              <span class="qrc-question__tag"><%= q.evaluation_indicator.name %></span>
+            <% end %>
+          </div>
+          <% if q.ai_evaluation.is_a?(Hash) && q.ai_evaluation["feedback"].present? %>
+            <div class="qrc-question__feedback"><%= q.ai_evaluation["feedback"] %></div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<!-- ── Report Metadata ── -->
+<div class="qrc-meta">
+  <% if report.generated_by.present? %><span>생성: <%= report.generated_by.name %></span><% end %>
+  <span>상태: <%= report.published? ? '배포됨' : '초안' %></span>
+  <% if report.published_at.present? %><span>배포일: <%= report.published_at.strftime('%Y-%m-%d %H:%M') %></span><% end %>
+  <span>ReadingPRO 발문 역량 평가 시스템</span>
+</div>
+
+<!-- ══ Radar Chart Script ══ -->
+<script>
+(function() {
+  var radarData = <%= raw radar_data.to_json %>;
+  function draw() {
+    var svg = document.getElementById('qrc-radar-svg');
+    var legend = document.getElementById('qrc-radar-legend');
+    if (!svg || !radarData || radarData.length === 0) return;
+    svg.innerHTML = '';
+    var ns = 'http://www.w3.org/2000/svg';
+    var cx = 230, cy = 195, radius = 150;
+    var n = radarData.length, levels = 5;
+    var groupColors = {
+      '이해 역량': { fill: 'rgba(59,130,246,0.12)', stroke: '#3b82f6', dot: '#2563eb' },
+      '사고 역량': { fill: 'rgba(139,92,246,0.12)', stroke: '#8b5cf6', dot: '#7c3aed' },
+      '소통·적용 역량': { fill: 'rgba(22,163,74,0.12)', stroke: '#16a34a', dot: '#15803d' }
+    };
+    function getPoint(i, v) {
+      var a = (Math.PI * 2 * i / n) - Math.PI / 2;
+      var r = radius * (v / 100);
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    }
+    for (var l = 1; l <= levels; l++) {
+      var r = radius * l / levels, pts = [];
+      for (var i = 0; i < n; i++) {
+        var a = (Math.PI * 2 * i / n) - Math.PI / 2;
+        pts.push((cx + r * Math.cos(a)) + ',' + (cy + r * Math.sin(a)));
+      }
+      var p = document.createElementNS(ns, 'polygon');
+      p.setAttribute('points', pts.join(' '));
+      p.setAttribute('fill', l % 2 === 0 ? 'rgba(241,245,249,0.5)' : 'none');
+      p.setAttribute('stroke', l === levels ? '#cbd5e1' : '#e2e8f0');
+      p.setAttribute('stroke-width', l === levels ? '1.5' : '0.8');
+      svg.appendChild(p);
+      if (l % 2 === 0 || l === levels) {
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', cx + 4); t.setAttribute('y', cy - r + 12);
+        t.setAttribute('fill', '#94a3b8'); t.setAttribute('font-size', '10');
+        t.textContent = (l * 20) + '';
+        svg.appendChild(t);
+      }
+    }
+    radarData.forEach(function(d, i) {
+      var a = (Math.PI * 2 * i / n) - Math.PI / 2;
+      var ex = cx + radius * Math.cos(a), ey = cy + radius * Math.sin(a);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+      line.setAttribute('x2', ex); line.setAttribute('y2', ey);
+      line.setAttribute('stroke', '#e2e8f0'); line.setAttribute('stroke-width', '0.8');
+      svg.appendChild(line);
+      var lr = radius + 28;
+      var lx = cx + lr * Math.cos(a), ly = cy + lr * Math.sin(a);
+      var c = groupColors[d.group] || { stroke: '#64748b' };
+      var lb = document.createElementNS(ns, 'text');
+      lb.setAttribute('x', lx); lb.setAttribute('y', ly);
+      lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('dominant-baseline', 'middle');
+      lb.setAttribute('fill', c.stroke); lb.setAttribute('font-size', '11'); lb.setAttribute('font-weight', '600');
+      lb.textContent = d.name;
+      svg.appendChild(lb);
+      var sl = document.createElementNS(ns, 'text');
+      sl.setAttribute('x', lx); sl.setAttribute('y', ly + 14);
+      sl.setAttribute('text-anchor', 'middle'); sl.setAttribute('fill', '#94a3b8'); sl.setAttribute('font-size', '10');
+      sl.textContent = d.score + '점';
+      svg.appendChild(sl);
+    });
+    var dp = radarData.map(function(d, i) { var pt = getPoint(i, d.score); return pt.x + ',' + pt.y; });
+    var poly = document.createElementNS(ns, 'polygon');
+    poly.setAttribute('points', dp.join(' '));
+    poly.setAttribute('fill', 'rgba(99,102,241,0.12)');
+    poly.setAttribute('stroke', '#6366f1'); poly.setAttribute('stroke-width', '2.5');
+    svg.appendChild(poly);
+    radarData.forEach(function(d, i) {
+      var pt = getPoint(i, d.score);
+      var c = groupColors[d.group] || { dot: '#475569' };
+      var dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y); dot.setAttribute('r', '5');
+      dot.setAttribute('fill', c.dot); dot.setAttribute('stroke', 'white'); dot.setAttribute('stroke-width', '2');
+      svg.appendChild(dot);
+    });
+    if (legend) {
+      legend.innerHTML = '';
+      ['이해 역량', '사고 역량', '소통·적용 역량'].forEach(function(g) {
+        var c = groupColors[g];
+        var item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;font-weight:500;';
+        item.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:' + c.stroke + ';flex-shrink:0;"></span><span>' + g + '</span>';
+        legend.appendChild(item);
+      });
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', draw);
+  else draw();
+  document.addEventListener('turbo:load', draw);
+})();
+</script>
+
+<!-- ══ Styles ══ -->
+<style>
+  .qrc-section { margin-bottom: 24px; }
+
+  /* Hero */
+  .qrc-hero { padding: 24px; background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: 12px; border: 1px solid #c7d2fe; }
+  .qrc-hero__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .qrc-hero__label { font-size: 12px; font-weight: 600; color: var(--rp-primary, #667eea); text-transform: uppercase; letter-spacing: 0.05em; }
+  .qrc-hero__badges { display: flex; align-items: center; gap: 12px; }
+  .qrc-hero__avg { font-size: 20px; font-weight: 700; color: var(--rp-primary, #667eea); }
+  .qrc-hero__level { padding: 4px 14px; background: white; border: 2px solid var(--rp-primary, #667eea); border-radius: 999px; font-size: 14px; font-weight: 700; color: var(--rp-primary, #667eea); }
+  .qrc-hero__split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .qrc-hero__chart { text-align: center; }
+  .qrc-hero__chart-title { font-size: 13px; font-weight: 600; color: #334155; margin: 0 0 12px; }
+  .qrc-hero__legend { display: flex; justify-content: center; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .qrc-hero__summary-title { font-size: 14px; font-weight: 600; color: #334155; margin: 0 0 10px; }
+  .qrc-hero__summary-text { font-size: 13px; line-height: 1.8; color: #475569; margin-bottom: 12px; }
+  .qrc-hero__bars { margin-bottom: 12px; }
+  .qrc-hero__bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .qrc-hero__bar-label { font-size: 11px; color: #64748b; width: 68px; flex-shrink: 0; text-align: right; }
+  .qrc-hero__bar-track { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+  .qrc-hero__bar-fill { height: 100%; border-radius: 4px; }
+  .qrc-hero__bar-score { font-size: 11px; font-weight: 600; width: 28px; text-align: right; }
+  .qrc-hero__highlights { display: flex; flex-direction: column; gap: 4px; }
+  .qrc-hero__highlight { font-size: 12px; padding: 6px 10px; border-radius: 6px; }
+  .qrc-hero__highlight--top { background: #f0fdf4; color: #166534; }
+  .qrc-hero__highlight--weak { background: #fffbeb; color: #92400e; }
+
+  /* Group titles */
+  .qrc-group-title { font-size: 16px; font-weight: 700; margin: 0 0 14px; padding-bottom: 8px; border-bottom: 2px solid; }
+
+  /* Cards grid */
+  .qrc-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .qrc-cards-grid--1 { grid-template-columns: 1fr; }
+  .qrc-cards-grid--2 { grid-template-columns: repeat(2, 1fr); }
+
+  .qrc-card { padding: 16px; border: 1px solid; border-radius: 10px; }
+  .qrc-card__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .qrc-card__name { font-size: 13px; font-weight: 600; }
+  .qrc-card__score { font-size: 20px; font-weight: 700; }
+  .qrc-card__bar { width: 100%; height: 6px; background: rgba(255,255,255,0.6); border-radius: 3px; margin-bottom: 10px; overflow: hidden; }
+  .qrc-card__bar-fill { height: 100%; border-radius: 3px; }
+  .qrc-card__feedback { font-size: 12px; color: #475569; line-height: 1.7; margin-bottom: 8px; }
+  .qrc-card__list { margin-top: 6px; }
+  .qrc-card__item { font-size: 11px; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 3px; }
+  .qrc-card__item--good { color: #16a34a; }
+  .qrc-card__item--improve { color: #f59e0b; }
+
+  /* Opinion */
+  .qrc-opinion { padding: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; }
+  .qrc-opinion__title { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .qrc-opinion__body { font-size: 14px; line-height: 1.9; color: #334155; padding: 16px; background: #fafbff; border: 1px solid #e0e7ff; border-radius: 10px; border-left: 4px solid #6366f1; }
+
+  /* Priority areas */
+  .qrc-priority { padding: 16px; background: #fafbff; border: 1px solid #e2e8f0; border-radius: 10px; border-left: 4px solid; margin-bottom: 14px; }
+  .qrc-priority__header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .qrc-priority__num { width: 28px; height: 28px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .qrc-priority__area { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .qrc-priority__levels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .qrc-priority__level { padding: 10px; border-radius: 8px; font-size: 12px; line-height: 1.6; color: #475569; }
+  .qrc-priority__level--current { background: #fef2f2; }
+  .qrc-priority__level--target { background: #f0fdf4; }
+  .qrc-priority__level-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .qrc-priority__level--current .qrc-priority__level-label { color: #dc2626; }
+  .qrc-priority__level--target .qrc-priority__level-label { color: #16a34a; }
+  .qrc-priority__block { margin-bottom: 10px; }
+  .qrc-priority__block-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .qrc-priority__list { margin: 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.7; }
+  .qrc-priority__books { display: flex; flex-wrap: wrap; gap: 6px; }
+  .qrc-priority__book { padding: 4px 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; font-size: 12px; color: #92400e; }
+
+  /* Roadmap */
+  .qrc-roadmap-title { font-size: 14px; font-weight: 600; color: #1e40af; margin: 20px 0 10px; }
+  .qrc-roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .qrc-roadmap__card { padding: 14px; border: 1px solid; border-radius: 10px; }
+  .qrc-roadmap__label { font-size: 12px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .qrc-roadmap__text { font-size: 12px; color: #475569; line-height: 1.7; }
+
+  /* Strength */
+  .qrc-strength { padding: 14px; background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border: 1px solid #a7f3d0; border-radius: 10px; }
+  .qrc-strength__title { font-size: 14px; font-weight: 600; color: #166534; margin-bottom: 8px; }
+  .qrc-strength__text { font-size: 12px; color: #064e3b; line-height: 1.8; }
+
+  /* Question activity */
+  .qrc-stage-block { margin-bottom: 20px; }
+  .qrc-stage-block__title { font-size: 14px; font-weight: 600; color: #334155; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
+  .qrc-question { padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; }
+  .qrc-question__header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .qrc-question__num { width: 22px; height: 22px; border-radius: 6px; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .qrc-question__text { flex: 1; font-size: 13px; font-weight: 500; color: #1e293b; line-height: 1.5; }
+  .qrc-question__score { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  .qrc-question__meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .qrc-question__tag { font-size: 11px; padding: 2px 8px; background: #f1f5f9; border-radius: 4px; color: #64748b; }
+  .qrc-question__feedback { font-size: 12px; color: #64748b; line-height: 1.6; padding: 8px; background: #f8fafc; border-radius: 6px; }
+
+  /* Meta */
+  .qrc-meta { font-size: 12px; color: #94a3b8; display: flex; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .qrc-hero__split { grid-template-columns: 1fr; }
+    .qrc-cards-grid { grid-template-columns: 1fr; }
+    .qrc-roadmap { grid-template-columns: 1fr; }
+    .qrc-priority__levels { grid-template-columns: 1fr; }
+  }
+
+  /* Print */
+  @media print {
+    .qrc-hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .qrc-card, .qrc-question, .qrc-priority, .qrc-roadmap__card { break-inside: avoid; }
+  }
+</style>

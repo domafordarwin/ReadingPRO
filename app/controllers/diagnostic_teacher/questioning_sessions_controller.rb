@@ -138,6 +138,48 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
                 notice: "에세이 피드백이 배포되었습니다."
   end
 
+  # GET /diagnostic_teacher/questioning_sessions/:id/report
+  def report
+    @current_page = "questioning_modules"
+    @module = @questioning_session.questioning_module
+    @stimulus = @module.reading_stimulus
+    @student = @questioning_session.student
+    @report = @questioning_session.questioning_report
+
+    unless @report
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  alert: "보고서가 없습니다. 먼저 보고서를 생성해 주세요."
+      return
+    end
+
+    @questions_by_stage = {
+      1 => @questioning_session.questions_for_stage(1),
+      2 => @questioning_session.questions_for_stage(2),
+      3 => @questioning_session.questions_for_stage(3)
+    }
+    @discussion_messages = @questioning_session.discussion_messages.ordered
+    @essay = @questioning_session.argumentative_essay
+  end
+
+  # GET /diagnostic_teacher/questioning_sessions/:id/download_report_md
+  def download_report_md
+    @current_page = "questioning_modules"
+    @module = @questioning_session.questioning_module
+    @student = @questioning_session.student
+    report = @questioning_session.questioning_report
+
+    unless report
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  alert: "보고서가 없습니다."
+      return
+    end
+
+    md = QuestioningReportMarkdownService.new(@questioning_session, report).generate
+    filename = "#{@student.name}_발문역량보고서_#{Date.current.strftime('%Y%m%d')}.md"
+
+    send_data md, filename: filename, type: "text/markdown; charset=utf-8", disposition: "attachment"
+  end
+
   def publish_stage_feedback
     @current_page = "questioning_modules"
     stage = params[:stage].to_i

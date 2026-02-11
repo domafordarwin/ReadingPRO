@@ -1,0 +1,279 @@
+<% content_for :page_title do %>발문 역량 보고서 - <%= @student.name %><% end %>
+<% content_for :head do %>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<% end %>
+
+<%
+  level = @module.level
+  level_label = QuestioningLevelConfig::LEVEL_LABELS[level] rescue level
+%>
+
+<!-- ── 상단 네비게이션 & 다운로드 액션 (인쇄 시 숨김) ── -->
+<div class="qr-dl-top-bar no-print">
+  <%= link_to diagnostic_teacher_questioning_session_path(@questioning_session), class: "qr-dl-nav-btn" do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    세션으로 돌아가기
+  <% end %>
+  <div class="qr-dl-top-actions">
+    <%= link_to download_report_md_diagnostic_teacher_questioning_session_path(@questioning_session), class: "qr-dl-action-btn qr-dl-action-btn--md", data: { turbo: false } do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      MD 다운로드
+    <% end %>
+    <button onclick="downloadQuestioningPdf()" class="qr-dl-action-btn qr-dl-action-btn--pdf" id="pdf-download-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      PDF 다운로드
+    </button>
+    <button onclick="window.print()" class="qr-dl-action-btn qr-dl-action-btn--print">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      인쇄
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     인쇄/PDF 대상 영역
+     ════════════════════════════════════════ -->
+<div id="qr-report-printable">
+
+  <!-- ── 프로필 헤더 ── -->
+  <div class="qr-dl-profile">
+    <div class="qr-dl-profile__left">
+      <div class="qr-dl-profile__avatar"><%= @student.name&.first || "?" %></div>
+      <div>
+        <h1 class="qr-dl-profile__name"><%= @student.name %>의 발문 역량 종합 보고서</h1>
+        <p class="qr-dl-profile__meta">
+          <%= @module.title %> · <%= level_label %>
+          · <%= @session.completed_at&.strftime("%Y-%m-%d") || Date.current.strftime("%Y-%m-%d") %>
+          <% if @report.published? %>
+            · <span class="qr-dl-badge qr-dl-badge--green">배포됨</span>
+          <% else %>
+            · <span class="qr-dl-badge qr-dl-badge--blue">초안</span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 세션 요약 통계 ── -->
+  <%
+    total_questions = @session.student_questions.size
+    duration_min = @session.time_spent_seconds.to_i > 0 ? (@session.time_spent_seconds / 60.0).round : nil
+  %>
+  <div class="qr-dl-stats">
+    <div class="qr-dl-stat">
+      <div class="qr-dl-stat__label">총점</div>
+      <div class="qr-dl-stat__value"><%= @session.total_score ? @session.total_score.round(1) : "-" %></div>
+    </div>
+    <div class="qr-dl-stat">
+      <div class="qr-dl-stat__label">발문 수</div>
+      <div class="qr-dl-stat__value qr-dl-stat__value--blue"><%= total_questions %>개</div>
+    </div>
+    <div class="qr-dl-stat">
+      <div class="qr-dl-stat__label">소요 시간</div>
+      <div class="qr-dl-stat__value qr-dl-stat__value--green"><%= duration_min ? "#{duration_min}분" : "-" %></div>
+    </div>
+    <div class="qr-dl-stat">
+      <div class="qr-dl-stat__label">성취 수준</div>
+      <div class="qr-dl-stat__value qr-dl-stat__value--purple"><%= @report.literacy_level_label %></div>
+    </div>
+  </div>
+
+  <!-- ── 단계별 점수 ── -->
+  <%
+    stage_scores = @session.stage_scores || {}
+    stage_names = { 1 => "책문열기", 2 => "이야기 나누기", 3 => "삶 적용" }
+  %>
+  <div class="qr-dl-stage-scores">
+    <% (1..3).each do |s| %>
+      <%
+        score = stage_scores[s.to_s]
+        score_color = if score.nil? then "#94a3b8"
+                      elsif score >= 80 then "#16a34a"
+                      elsif score >= 60 then "#2563eb"
+                      elsif score >= 40 then "#f59e0b"
+                      else "#dc2626"
+                      end
+      %>
+      <div class="qr-dl-stage-card">
+        <div class="qr-dl-stage-card__num" style="background: <%= score_color %>;">
+          <%= s %>
+        </div>
+        <div class="qr-dl-stage-card__info">
+          <div class="qr-dl-stage-card__name"><%= s %>단계: <%= stage_names[s] %></div>
+          <div class="qr-dl-stage-card__score" style="color: <%= score_color %>;"><%= score ? "#{score.round(1)}점" : "-" %></div>
+        </div>
+        <% if score %>
+          <div class="qr-dl-stage-card__bar">
+            <div class="qr-dl-stage-card__bar-fill" style="width: <%= score %>%; background: <%= score_color %>;"></div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- ── 발문 역량 보고서 본문 (기존 파셜 활용) ── -->
+  <%= render "diagnostic_teacher/questioning_sessions/report_content",
+             report: @report,
+             level: level,
+             session: @questioning_session,
+             questions_by_stage: @questions_by_stage %>
+
+</div><!-- end qr-report-printable -->
+
+<!-- ── 하단 다운로드 바 (인쇄 시 숨김) ── -->
+<div class="qr-dl-bottom-bar no-print">
+  <%= link_to download_report_md_diagnostic_teacher_questioning_session_path(@questioning_session), class: "qr-dl-bottom-btn qr-dl-bottom-btn--md", data: { turbo: false } do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    MD 파일 다운로드
+  <% end %>
+  <button onclick="downloadQuestioningPdf()" class="qr-dl-bottom-btn qr-dl-bottom-btn--pdf" id="pdf-download-btn-bottom">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    PDF 파일 다운로드
+  </button>
+</div>
+
+<!-- ── PDF 다운로드 스크립트 ── -->
+<script>
+function downloadQuestioningPdf() {
+  var element = document.getElementById('qr-report-printable');
+  if (!element) return;
+
+  var btns = document.querySelectorAll('#pdf-download-btn, #pdf-download-btn-bottom');
+  btns.forEach(function(btn) {
+    btn.dataset.originalHtml = btn.innerHTML;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:qr-spin 0.6s linear infinite"><circle cx="12" cy="12" r="10"/></svg> PDF 생성 중...';
+    btn.disabled = true;
+  });
+
+  var opt = {
+    margin: [12, 10, 12, 10],
+    filename: '<%= j @student.name %>_발문역량보고서_<%= Date.current.strftime("%Y%m%d") %>.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  html2pdf().set(opt).from(element).save().then(function() {
+    btns.forEach(function(btn) { btn.innerHTML = btn.dataset.originalHtml; btn.disabled = false; });
+  }).catch(function() {
+    btns.forEach(function(btn) { btn.innerHTML = btn.dataset.originalHtml; btn.disabled = false; });
+  });
+}
+</script>
+
+<!-- ── 스타일 ── -->
+<style>
+  @keyframes qr-spin { to { transform: rotate(360deg); } }
+
+  /* ── Top bar ── */
+  .qr-dl-top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .qr-dl-nav-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 500; color: #64748b;
+    text-decoration: none; padding: 7px 14px; border-radius: 8px;
+    border: 1px solid #e2e8f0; background: white;
+    transition: all 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .qr-dl-nav-btn:hover { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+
+  .qr-dl-top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .qr-dl-action-btn {
+    display: inline-flex; align-items: center; gap: 5px; padding: 7px 16px;
+    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.15s; text-decoration: none; white-space: nowrap;
+  }
+  .qr-dl-action-btn--md { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+  .qr-dl-action-btn--md:hover { background: #dcfce7; color: #15803d; }
+  .qr-dl-action-btn--pdf { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+  .qr-dl-action-btn--pdf:hover { background: #fee2e2; color: #b91c1c; }
+  .qr-dl-action-btn--pdf:disabled { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+  .qr-dl-action-btn--print { background: white; color: #475569; border-color: #e2e8f0; }
+  .qr-dl-action-btn--print:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+  /* ── Profile header ── */
+  .qr-dl-profile {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; border-radius: 12px; padding: 24px; margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.25);
+  }
+  .qr-dl-profile__left { display: flex; align-items: center; gap: 16px; }
+  .qr-dl-profile__avatar {
+    width: 52px; height: 52px; background: rgba(255,255,255,0.2);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; flex-shrink: 0;
+  }
+  .qr-dl-profile__name { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
+  .qr-dl-profile__meta { font-size: 13px; opacity: 0.85; margin: 0; }
+
+  .qr-dl-badge { display: inline-flex; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .qr-dl-badge--green { background: rgba(255,255,255,0.2); color: #bbf7d0; }
+  .qr-dl-badge--blue { background: rgba(255,255,255,0.2); color: #bfdbfe; }
+
+  /* ── Stats ── */
+  .qr-dl-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .qr-dl-stat {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .qr-dl-stat__label { font-size: 11px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .qr-dl-stat__value { font-size: 22px; font-weight: 700; color: #0f172a; }
+  .qr-dl-stat__value--blue { color: #2563eb; }
+  .qr-dl-stat__value--green { color: #16a34a; }
+  .qr-dl-stat__value--purple { color: #7c3aed; }
+
+  /* ── Stage scores ── */
+  .qr-dl-stage-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .qr-dl-stage-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .qr-dl-stage-card__num {
+    width: 28px; height: 28px; border-radius: 8px; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; margin-bottom: 8px;
+  }
+  .qr-dl-stage-card__info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .qr-dl-stage-card__name { font-size: 13px; font-weight: 600; color: #334155; }
+  .qr-dl-stage-card__score { font-size: 18px; font-weight: 700; }
+  .qr-dl-stage-card__bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .qr-dl-stage-card__bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* ── Bottom download bar ── */
+  .qr-dl-bottom-bar {
+    display: flex; justify-content: center; gap: 16px; padding: 32px 0 16px; margin-top: 8px;
+  }
+  .qr-dl-bottom-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px;
+    border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.2s; text-decoration: none;
+  }
+  .qr-dl-bottom-btn--md { background: #16a34a; color: white; }
+  .qr-dl-bottom-btn--md:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.3); color: white; }
+  .qr-dl-bottom-btn--pdf { background: #dc2626; color: white; }
+  .qr-dl-bottom-btn--pdf:hover { background: #b91c1c; box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+  .qr-dl-bottom-btn--pdf:disabled { background: #9ca3af; cursor: not-allowed; box-shadow: none; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .qr-dl-stats { grid-template-columns: repeat(2, 1fr); }
+    .qr-dl-stage-scores { grid-template-columns: 1fr; }
+    .qr-dl-top-bar { flex-direction: column; align-items: flex-start; }
+    .qr-dl-bottom-bar { flex-direction: column; align-items: center; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    .no-print, .qr-dl-top-bar, .qr-dl-bottom-bar { display: none !important; }
+    .rp-header, .rp-sidebar { display: none !important; }
+    .rp-layout, .rp-layout__body { display: block !important; }
+    .rp-main { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .rp-main__container { padding: 0 !important; max-width: 100% !important; }
+    body { background: white !important; }
+    .qr-dl-profile { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .qr-dl-stat, .qr-dl-stage-card { break-inside: avoid; }
+  }
+</style>
