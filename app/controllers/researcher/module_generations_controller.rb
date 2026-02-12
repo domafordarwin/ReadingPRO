@@ -5,7 +5,7 @@ class Researcher::ModuleGenerationsController < ApplicationController
   before_action :require_login
   before_action -> { require_role("researcher") }
   before_action :set_role
-  before_action :set_module_generation, only: %i[show approve reject regenerate]
+  before_action :set_module_generation, only: %i[show approve reject regenerate destroy]
 
   def index
     @current_page = "module_gen"
@@ -144,6 +144,14 @@ class Researcher::ModuleGenerationsController < ApplicationController
     orchestrator = ModuleGenerationOrchestrator.new(@generation)
     orchestrator.regenerate!
     redirect_to researcher_module_generation_path(@generation), notice: "재생성이 시작되었습니다."
+  end
+
+  def destroy
+    title = @generation.passage_title.presence || @generation.passage_topic.presence || "##{@generation.id}"
+    @generation.destroy!
+    redirect_to researcher_module_generations_path, notice: "모듈 생성 이력 '#{title}'이(가) 삭제되었습니다.", status: :see_other
+  rescue ActiveRecord::InvalidForeignKey
+    redirect_to researcher_module_generations_path, alert: "이 생성 이력을 참조하는 데이터가 있어 삭제할 수 없습니다.", status: :see_other
   end
 
   private

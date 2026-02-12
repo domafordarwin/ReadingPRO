@@ -338,7 +338,7 @@ Rails.application.routes.draw do
     end
 
     # Module generation (진단 모듈 자동 생성)
-    resources :module_generations, only: %i[index new create show] do
+    resources :module_generations, only: %i[index new create show destroy] do
       member do
         patch :approve
         patch :reject
