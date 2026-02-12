@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_12_213254) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_13_100001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -399,6 +399,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_12_213254) do
     t.index ["stimulus_id"], name: "index_items_on_stimulus_id"
     t.index ["sub_indicator_id", "status"], name: "idx_items_sub_indicator_status"
     t.index ["sub_indicator_id"], name: "index_items_on_sub_indicator_id"
+  end
+
+  create_table "module_generations", force: :cascade do |t|
+    t.string "batch_id"
+    t.integer "batch_index"
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id"
+    t.datetime "generated_at"
+    t.jsonb "generated_items_data", default: {}
+    t.bigint "generated_stimulus_id"
+    t.string "generation_mode", default: "text", null: false
+    t.text "passage_text"
+    t.string "passage_title"
+    t.string "passage_topic"
+    t.datetime "reviewed_at"
+    t.text "reviewer_notes"
+    t.string "status", default: "pending", null: false
+    t.jsonb "template_snapshot", default: {}
+    t.bigint "template_stimulus_id", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "validated_at"
+    t.jsonb "validation_result", default: {}
+    t.decimal "validation_score", precision: 5, scale: 2
+    t.index ["batch_id"], name: "index_module_generations_on_batch_id"
+    t.index ["created_by_id"], name: "index_module_generations_on_created_by_id"
+    t.index ["generated_stimulus_id"], name: "index_module_generations_on_generated_stimulus_id"
+    t.index ["status"], name: "index_module_generations_on_status"
+    t.index ["template_stimulus_id"], name: "index_module_generations_on_template_stimulus_id"
   end
 
   create_table "notices", force: :cascade do |t|
@@ -1039,6 +1067,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_12_213254) do
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.integer "failed_login_attempts", default: 0, null: false
+    t.datetime "locked_until"
     t.boolean "must_change_password", default: false, null: false
     t.string "password_digest", null: false
     t.string "role", default: "student", null: false
@@ -1092,6 +1122,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_12_213254) do
   add_foreign_key "items", "reading_stimuli", column: "stimulus_id"
   add_foreign_key "items", "sub_indicators"
   add_foreign_key "items", "teachers", column: "created_by_id"
+  add_foreign_key "module_generations", "reading_stimuli", column: "generated_stimulus_id"
+  add_foreign_key "module_generations", "reading_stimuli", column: "template_stimulus_id"
+  add_foreign_key "module_generations", "users", column: "created_by_id"
   add_foreign_key "notices", "users", column: "created_by_id"
   add_foreign_key "parent_forum_comments", "parent_forums"
   add_foreign_key "parent_forum_comments", "users", column: "created_by_id"

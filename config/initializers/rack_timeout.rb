@@ -7,8 +7,10 @@
 # - wait_timeout: Max seconds a request can wait in queue before timing out (default: 5s)
 # - service_past_wait: Allow requests to proceed even if they've waited longer than wait_timeout
 
-if defined?(Rack::Timeout)
-  Rack::Timeout.service_timeout = ENV.fetch("RACK_TIMEOUT", 30).to_i
-  Rack::Timeout.wait_timeout = ENV.fetch("RACK_WAIT_TIMEOUT", 5).to_i
-  Rack::Timeout.service_past_wait = true
-end
+# Rack::Timeout 0.7.0+는 인스턴스 기반 설정 사용
+# 미들웨어는 config/application.rb 또는 config/environments/*.rb에서 추가
+# 로컬 개발 환경에서는 불필요하므로 비활성화
+#
+# Production에서는 Dockerfile 또는 config/environments/production.rb에서 설정:
+#   config.middleware.insert_before Rack::Runtime, Rack::Timeout,
+#     service_timeout: 30
