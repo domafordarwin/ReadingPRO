@@ -141,11 +141,13 @@
                                     aria_label: "편집" %>
                         <a href="#" class="rp-icon-link rp-icon-link--view" title="미리보기" aria-label="미리보기"
                            onclick="openItemPreview(event, <%= item.id %>); return false;"></a>
-                        <%= link_to "", researcher_item_path(item),
-                                    data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까?" },
+                        <%= button_to researcher_item_path(item),
+                                    method: :delete,
+                                    form: { data: { turbo: false }, class: "rp-inline-form" },
+                                    data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                                     class: "rp-icon-link rp-icon-link--delete",
                                     title: "삭제",
-                                    aria_label: "삭제" %>
+                                    aria: { label: "삭제" } %>
                       </div>
                     </td>
                   </tr>
@@ -629,6 +631,11 @@
     display: flex;
     gap: 8px;
     align-items: center;
+  }
+  .rp-inline-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
   }
 
   .rp-icon-link {
