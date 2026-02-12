@@ -133,8 +133,39 @@
   </div>
 <% end %>
 
+<!-- 생성 중 폴링 UI -->
+<% if @report&.job_status == "processing" %>
+  <div class="cr-gen-action cr-gen-action--processing"
+       data-controller="job-status"
+       data-job-status-url-value="<%= diagnostic_teacher_comprehensive_report_job_status_path(@student.id, @attempt.id) %>"
+       data-job-status-redirect-value="<%= diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id) %>"
+       data-job-status-interval-value="3000">
+    <div class="cr-gen-action__icon">
+      <div class="cr-gen-spinner cr-gen-spinner--large"></div>
+    </div>
+    <p class="cr-gen-action__desc">
+      <strong data-job-status-target="indicator">AI가 종합 보고서를 생성하고 있습니다...</strong><br>
+      완료되면 자동으로 보고서 페이지로 이동합니다.
+    </p>
+    <div class="cr-gen-action__hint">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      약 30초~1분 소요
+    </div>
+  </div>
+<% elsif @report&.job_status == "failed" %>
+  <div class="cr-gen-alert" style="margin-bottom: 20px;">
+    <div class="cr-gen-alert__icon" style="color: #dc2626;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <div class="cr-gen-alert__content">
+      <strong class="cr-gen-alert__title" style="color: #991b1b;">보고서 생성 실패</strong>
+      <p class="cr-gen-alert__body" style="color: #b91c1c;"><%= @report.job_error %></p>
+    </div>
+  </div>
+<% end %>
+
 <!-- 생성 액션 -->
-<div class="cr-gen-action">
+<div class="cr-gen-action" <% if @report&.job_status == "processing" %>style="display:none"<% end %>>
   <div class="cr-gen-action__icon">
     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5">
       <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
@@ -146,7 +177,7 @@
   </p>
   <div class="cr-gen-action__hint">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    약 30초~1분 소요
+    약 30초~1분 소요 (백그라운드에서 자동 처리)
   </div>
   <div class="cr-gen-action__buttons">
     <% if @report&.comprehensive_report_generated? %>
@@ -157,7 +188,7 @@
     <% end %>
     <%= form_tag(diagnostic_teacher_comprehensive_report_create_path(@student.id, @attempt.id), method: :post, data: { turbo: false }, style: "display:inline") do %>
       <button type="submit" id="generate-btn" class="cr-gen-btn cr-gen-btn--primary"
-              onclick="this.disabled=true; this.innerHTML='<span class=\'cr-gen-spinner\'></span> 보고서 생성 중...'; this.form.submit();">
+              onclick="this.disabled=true; this.innerHTML='<span class=\'cr-gen-spinner\'></span> 요청 중...'; this.form.submit();">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         <%= @report&.comprehensive_report_generated? ? "보고서 재생성" : "종합 보고서 생성" %>
       </button>
@@ -288,6 +319,8 @@
 
   /* ── 스피너 ── */
   .cr-gen-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: cr-gen-spin 0.6s linear infinite; }
+  .cr-gen-spinner--large { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #6366f1; }
+  .cr-gen-action--processing { border-color: #c7d2fe; background: #eef2ff; }
   @keyframes cr-gen-spin { to { transform: rotate(360deg); } }
 
   /* ── 반응형 ── */

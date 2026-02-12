@@ -1,25 +1,17 @@
 # frozen_string_literal: true
 
-# Phase 3.4.4: Query analysis for development and testing
-# Automatically tracks database queries to detect performance issues
+# Slow query detection for all environments
+# - Development/Test: 100ms threshold
+# - Production: 200ms threshold
+# Logs SQL queries exceeding the threshold as warnings
 
-if Rails.env.development? || Rails.env.test?
-  # Subscribe to query notifications
-  ActiveSupport::Notifications.subscribe("sql.active_record") do |_name, _start, _finish, _id, payload|
-    # Log slow queries (>100ms)
-    duration_ms = ((_finish - _start) * 1000).round(2)
+threshold_ms = Rails.env.production? ? 200 : 100
 
-    if duration_ms > 100
-      Rails.logger.warn "[SLOW QUERY] #{duration_ms}ms - #{payload[:name]}"
-      Rails.logger.debug "  SQL: #{payload[:sql]}"
-    end
+ActiveSupport::Notifications.subscribe("sql.active_record") do |_name, start, finish, _id, payload|
+  next if payload[:name] == "SCHEMA" || payload[:cached]
 
-    # Log in-app cache hits/misses (if using Solid_cache)
-    if payload[:cached]
-      Rails.logger.debug "[CACHE HIT] #{payload[:name]}"
-    end
+  duration_ms = ((finish - start) * 1000).round(2)
+  if duration_ms > threshold_ms
+    Rails.logger.warn("[SLOW QUERY] #{duration_ms}ms - #{payload[:name]} - #{payload[:sql]&.truncate(500)}")
   end
-
-  # Additional N+1 detection can be added via custom service
-  # Uses QueryAnalyzer service in app/services/query_analyzer.rb
 end

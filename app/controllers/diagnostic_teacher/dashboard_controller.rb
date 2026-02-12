@@ -25,7 +25,7 @@ class DiagnosticTeacher::DashboardController < ApplicationController
 
     # 학생별 진단 현황 (최근 진단 기준)
     @student_statuses = @students_with_attempts.map do |student|
-      latest_attempt = student.student_attempts.order(created_at: :desc).first
+      latest_attempt = student.student_attempts.max_by(&:created_at)
       if latest_attempt
         {
           student: student,

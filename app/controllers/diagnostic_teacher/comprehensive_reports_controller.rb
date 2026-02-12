@@ -80,15 +80,18 @@ module DiagnosticTeacher
     def create_report
       load_student_and_attempt
 
-      service = ComprehensiveReportService.new(@attempt)
-      @report = service.generate_full_report(generated_by: current_user)
+      # Pre-create report record for job status tracking
+      report = @attempt.attempt_report || @attempt.create_attempt_report!(report_status: "none")
+      report.update!(job_status: "processing", job_error: nil)
 
-      redirect_to diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id),
-                  notice: "종합 보고서가 성공적으로 생성되었습니다."
+      ComprehensiveReportJob.perform_later(@attempt.id, current_user.id)
+
+      redirect_to diagnostic_teacher_comprehensive_report_generate_path(@student.id, @attempt.id),
+                  notice: "보고서 생성이 시작되었습니다. 잠시 후 자동으로 완료됩니다."
     rescue StandardError => e
       Rails.logger.error("[ComprehensiveReports#create_report] #{e.class}: #{e.message}")
       redirect_to diagnostic_teacher_comprehensive_report_generate_path(@student.id, @attempt.id),
-                  alert: "보고서 생성 중 오류가 발생했습니다: #{e.message}"
+                  alert: "보고서 생성 요청 중 오류가 발생했습니다: #{e.message}"
     end
 
     # PATCH /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/update_section
@@ -161,28 +164,25 @@ module DiagnosticTeacher
         return render json: { success: false, error: "한 번에 최대 5명까지 생성 가능합니다" }, status: :bad_request
       end
 
-      results = { succeeded: 0, failed: 0, skipped: 0, errors: [] }
+      enqueued = 0
+      skipped = 0
       attempt_ids.each do |aid|
         attempt = StudentAttempt.includes(:attempt_report).find_by(id: aid)
-        unless attempt
-          results[:failed] += 1
-          next
-        end
+        next unless attempt
 
         if attempt.attempt_report&.comprehensive_report_generated?
-          results[:skipped] += 1
+          skipped += 1
           next
         end
 
-        service = ComprehensiveReportService.new(attempt)
-        service.generate_full_report(generated_by: current_user)
-        results[:succeeded] += 1
-      rescue => e
-        results[:failed] += 1
-        results[:errors] << "Attempt #{aid}: #{e.message}"
+        report = attempt.attempt_report || attempt.create_attempt_report!(report_status: "none")
+        report.update!(job_status: "processing", job_error: nil)
+        ComprehensiveReportJob.perform_later(attempt.id, current_user.id)
+        enqueued += 1
       end
 
-      render json: { success: results[:failed] == 0, **results, total: attempt_ids.size }
+      render json: { success: true, enqueued: enqueued, skipped: skipped, total: attempt_ids.size,
+                     message: "#{enqueued}건의 보고서 생성이 시작되었습니다." }
     end
 
     # POST /diagnostic_teacher/comprehensive_reports/batch_publish
@@ -214,6 +214,18 @@ module DiagnosticTeacher
       end
 
       render json: { success: results[:failed] == 0, **results, total: attempt_ids.size }
+    end
+
+    # GET /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/job_status
+    def job_status
+      load_student_and_attempt
+      report = @attempt.attempt_report
+
+      render json: {
+        status: report&.job_status || "none",
+        error: report&.job_error,
+        report_ready: report&.comprehensive_report_generated? || false
+      }
     end
 
     private

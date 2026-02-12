@@ -64,6 +64,12 @@ gem "roo"
 # OpenAI API (GPT models)
 gem "ruby-openai"
 
+# Structured logging for production (JSON one-line logs)
+gem "lograge"
+
+# Request timeout protection (prevents long-running requests from blocking workers)
+gem "rack-timeout", require: "rack/timeout/base"
+
 # Anthropic Claude API (optional - keep for fallback if needed)
 # gem "anthropic"
 

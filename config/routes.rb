@@ -182,6 +182,7 @@ Rails.application.routes.draw do
     get  "student_responses/template/:diagnostic_form_id", to: "student_responses#download_template", as: "student_response_template"
     post "student_responses/upload", to: "student_responses#upload", as: "student_response_upload"
     post "student_responses/:diagnostic_form_id/generate_feedback", to: "student_responses#generate_feedback", as: "student_response_generate_feedback"
+    get "student_responses/:diagnostic_form_id/feedback_job_status", to: "student_responses#feedback_job_status", as: "student_response_feedback_job_status"
 
     # 진단 시도 삭제
     delete "attempts/:id", to: "dashboard#destroy_attempt", as: "destroy_attempt"
@@ -226,6 +227,7 @@ Rails.application.routes.draw do
     post "comprehensive_reports/:student_id/:attempt_id/regenerate_section", to: "comprehensive_reports#regenerate_section", as: "comprehensive_report_regenerate_section"
     post "comprehensive_reports/:student_id/:attempt_id/publish", to: "comprehensive_reports#publish", as: "comprehensive_report_publish"
     post "comprehensive_reports/:student_id/:attempt_id/unpublish", to: "comprehensive_reports#unpublish", as: "comprehensive_report_unpublish"
+    get "comprehensive_reports/:student_id/:attempt_id/job_status", to: "comprehensive_reports#job_status", as: "comprehensive_report_job_status"
 
     # 공지사항 CRUD
     resources :notices, only: [:index, :new, :create, :edit, :update, :destroy]
@@ -275,6 +277,7 @@ Rails.application.routes.draw do
         patch :update_essay_feedback
         get :report
         get :download_report_md
+        get :report_job_status
       end
     end
 

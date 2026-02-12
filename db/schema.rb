@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_12_213254) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
     t.datetime "created_at", null: false
     t.datetime "generated_at"
     t.bigint "generated_by_id"
+    t.text "job_error"
+    t.string "job_status"
     t.decimal "max_score", precision: 10, scale: 2
     t.string "performance_level"
     t.datetime "published_at"
@@ -88,6 +90,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
     t.decimal "total_score", precision: 10, scale: 2
     t.datetime "updated_at", null: false
     t.jsonb "weaknesses", default: {}, null: false
+    t.index ["generated_by_id"], name: "index_attempt_reports_on_generated_by_id"
     t.index ["performance_level"], name: "index_attempt_reports_on_performance_level"
     t.index ["published_at"], name: "index_attempt_reports_on_published_at"
     t.index ["report_status"], name: "index_attempt_reports_on_report_status"
@@ -221,6 +224,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
     t.bigint "created_by_id"
     t.text "description"
     t.jsonb "difficulty_distribution", default: {}, null: false
+    t.text "feedback_job_error"
+    t.string "feedback_job_status"
     t.integer "item_count", default: 0, null: false
     t.string "name", null: false
     t.string "status", default: "draft", null: false
@@ -550,6 +555,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
   create_table "questioning_reports", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "generated_by_id"
+    t.text "job_error"
+    t.string "job_status"
     t.jsonb "learning_recommendations", default: {}
     t.string "literacy_level"
     t.text "overall_summary"
@@ -946,6 +953,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_11_000002) do
     t.index ["status"], name: "index_student_attempts_on_status"
     t.index ["student_id", "diagnostic_form_id"], name: "index_student_attempts_on_student_id_and_diagnostic_form_id"
     t.index ["student_id"], name: "index_student_attempts_on_student_id"
+    t.index ["submitted_at"], name: "index_student_attempts_on_submitted_at"
   end
 
   create_table "student_portfolios", force: :cascade do |t|

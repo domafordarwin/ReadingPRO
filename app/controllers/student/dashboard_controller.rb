@@ -310,7 +310,7 @@ class Student::DashboardController < ApplicationController
 
   def calculate_literacy_achievements(attempt)
     # Group responses by evaluation_indicator and calculate accuracy rates
-    responses = attempt.responses.includes(:item, :selected_choice)
+    responses = attempt.responses.includes(item: [:evaluation_indicator], selected_choice: [])
     grouped = responses.group_by { |r| r.item.evaluation_indicator }
 
     grouped.map do |indicator, responses|

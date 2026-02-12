@@ -69,98 +69,24 @@ class DiagnosticTeacher::StudentResponsesController < ApplicationController
   def generate_feedback
     form = DiagnosticForm.find(params[:diagnostic_form_id])
 
-    # 이 진단지에 대한 모든 StudentAttempt의 피드백 일괄 생성
-    attempts = form.student_attempts.includes(
-      responses: [:response_feedbacks, :selected_choice, :response_rubric_scores,
-                  item: [:item_choices, { rubric: { rubric_criteria: :rubric_levels } }]]
-    )
-
-    results = { mcq_feedback_count: 0, constructed_feedback_count: 0, errors: [], student_count: 0 }
-
-    attempts.each do |attempt|
-      results[:student_count] += 1
-      mcq_responses = attempt.responses.select { |r| r.item&.mcq? }
-      constructed_responses = attempt.responses.select { |r| r.item&.constructed? }
-
-      # MCQ 오답 피드백
-      wrong_answers = mcq_responses.select { |r| r.selected_choice && !r.selected_choice.is_correct? }
-      if wrong_answers.any?
-        begin
-          feedbacks = FeedbackAiService.generate_mcq_item_feedbacks(wrong_answers)
-          feedbacks.each do |response_id, feedback_text|
-            response = wrong_answers.find { |r| r.id == response_id.to_i }
-            next unless response
-
-            existing = response.response_feedbacks.find { |f| f.source == "ai" }
-            if existing
-              existing.update!(feedback: feedback_text, feedback_type: "item")
-            else
-              response.response_feedbacks.create!(feedback: feedback_text, source: "ai", feedback_type: "item")
-            end
-            results[:mcq_feedback_count] += 1
-          end
-        rescue => e
-          results[:errors] << "학생 #{attempt.student_id} MCQ 피드백 오류: #{e.message}"
-        end
-      end
-
-      # 서술형 피드백 + 채점
-      if constructed_responses.any?
-        begin
-          ai_results = FeedbackAiService.generate_constructed_item_feedbacks(constructed_responses)
-          ai_results.each do |response_id, result_data|
-            response = constructed_responses.find { |r| r.id == response_id.to_i }
-            next unless response
-
-            if result_data.is_a?(Hash)
-              feedback_text = result_data["feedback"]
-              scores_data = result_data["scores"]
-
-              if scores_data.is_a?(Hash)
-                scores_data.each do |criterion_id, level_score|
-                  existing_score = response.response_rubric_scores.find { |s| s.rubric_criterion_id == criterion_id.to_i }
-                  if existing_score
-                    existing_score.update!(level_score: level_score.to_i)
-                  else
-                    ResponseRubricScore.create!(
-                      response_id: response.id,
-                      rubric_criterion_id: criterion_id.to_i,
-                      level_score: level_score.to_i
-                    )
-                  end
-                end
-                # 서술형 auto_score 재계산
-                ScoreResponseService.call(response.id)
-              end
-            else
-              feedback_text = result_data.to_s
-            end
-
-            if feedback_text.present?
-              existing = response.response_feedbacks.find { |f| f.source == "ai" }
-              if existing
-                existing.update!(feedback: feedback_text, feedback_type: "item")
-              else
-                response.response_feedbacks.create!(feedback: feedback_text, source: "ai", feedback_type: "item")
-              end
-              results[:constructed_feedback_count] += 1
-            end
-          end
-        rescue => e
-          results[:errors] << "학생 #{attempt.student_id} 서술형 피드백 오류: #{e.message}"
-        end
-      end
-    end
+    form.update!(feedback_job_status: "processing", feedback_job_error: nil)
+    FeedbackBatchJob.perform_later(form.id, current_user.id)
 
     render json: {
-      success: results[:errors].empty?,
-      student_count: results[:student_count],
-      mcq_feedback_count: results[:mcq_feedback_count],
-      constructed_feedback_count: results[:constructed_feedback_count],
-      errors: results[:errors]
+      success: true,
+      message: "피드백 일괄 생성이 시작되었습니다. 잠시 후 자동으로 완료됩니다."
     }
   rescue => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+
+  def feedback_job_status
+    form = DiagnosticForm.find(params[:diagnostic_form_id])
+
+    render json: {
+      status: form.feedback_job_status || "none",
+      error: form.feedback_job_error
+    }
   end
 
   private

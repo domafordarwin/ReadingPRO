@@ -88,17 +88,30 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
   def generate_report
     @current_page = "questioning_modules"
 
-    begin
-      service = QuestioningReportService.new(@questioning_session, generated_by: current_user)
-      report = service.generate!
+    # Pre-create report record for job status tracking
+    report = @questioning_session.questioning_report
+    report ||= @questioning_session.create_questioning_report!(report_status: "none")
+    report.update!(job_status: "processing", job_error: nil)
 
-      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
-                  notice: "발문 역량 종합 보고서가 생성되었습니다. (#{report.literacy_level_label})"
-    rescue StandardError => e
-      Rails.logger.error("Report generation failed: #{e.message}")
-      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
-                  alert: "보고서 생성 중 오류가 발생했습니다."
-    end
+    QuestioningReportJob.perform_later(@questioning_session.id, current_user.id)
+
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                notice: "보고서 생성이 시작되었습니다. 잠시 후 자동으로 완료됩니다."
+  rescue StandardError => e
+    Rails.logger.error("Report generation failed: #{e.message}")
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                alert: "보고서 생성 요청 중 오류가 발생했습니다."
+  end
+
+  # GET /diagnostic_teacher/questioning_sessions/:id/report_job_status
+  def report_job_status
+    report = @questioning_session.questioning_report
+
+    render json: {
+      status: report&.job_status || "none",
+      error: report&.job_error,
+      report_ready: report&.report_status.in?(%w[draft published])
+    }
   end
 
   # PATCH /diagnostic_teacher/questioning_sessions/:id/publish_report
