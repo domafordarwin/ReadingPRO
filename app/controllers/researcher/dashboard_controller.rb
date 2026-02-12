@@ -11,11 +11,19 @@ class Researcher::DashboardController < ApplicationController
   def index
     @current_page = "dashboard"
 
-    # 통계 데이터 로드
-    @total_items = Item.count
-    @complete_items = Item.where.not(stimulus_id: nil).count
-    @total_stimuli = ReadingStimulus.count
-    @active_items = Item.where(status: "active").count
+    # 통계 데이터 로드 (Solid Cache: 30분 TTL)
+    stats = Rails.cache.fetch("researcher/dashboard_stats", expires_in: 30.minutes) do
+      {
+        total_items: Item.count,
+        complete_items: Item.where.not(stimulus_id: nil).count,
+        total_stimuli: ReadingStimulus.count,
+        active_items: Item.where(status: "active").count
+      }
+    end
+    @total_items = stats[:total_items]
+    @complete_items = stats[:complete_items]
+    @total_stimuli = stats[:total_stimuli]
+    @active_items = stats[:active_items]
 
     # 최근 생성된 문항
     @recent_items = Item.includes(:stimulus).order(created_at: :desc).limit(5)
@@ -30,11 +38,20 @@ class Researcher::DashboardController < ApplicationController
     # Load evaluation indicators with sub-indicators and item counts
     @indicators = EvaluationIndicator.includes(:sub_indicators, :items).order(:code)
 
-    # Calculate statistics
-    @total_indicators = @indicators.count
-    @active_indicators = @indicators.count { |ind| ind.items.any? }
-    @review_indicators = @indicators.count { |ind| ind.items.any? && ind.items.all? { |item| item.status != "active" } }
-    @average_items = @indicators.sum { |ind| ind.items.count } / [ @indicators.count, 1 ].max
+    # Calculate statistics (Solid Cache: 1시간 TTL)
+    eval_stats = Rails.cache.fetch("researcher/evaluation_stats", expires_in: 1.hour) do
+      indicators = EvaluationIndicator.includes(:sub_indicators, :items).order(:code).to_a
+      {
+        total: indicators.count,
+        active: indicators.count { |ind| ind.items.any? },
+        review: indicators.count { |ind| ind.items.any? && ind.items.all? { |item| item.status != "active" } },
+        average: indicators.sum { |ind| ind.items.count } / [ indicators.count, 1 ].max
+      }
+    end
+    @total_indicators = eval_stats[:total]
+    @active_indicators = eval_stats[:active]
+    @review_indicators = eval_stats[:review]
+    @average_items = eval_stats[:average]
     @last_updated = Item.maximum(:updated_at) || Time.current
   end
 
@@ -91,9 +108,13 @@ class Researcher::DashboardController < ApplicationController
 
   def item_create
     @current_page = "item_mgmt"
-    # Load options for item creation form
-    @evaluation_indicators = EvaluationIndicator.order(:code)
-    @sub_indicators = SubIndicator.includes(:evaluation_indicator).order(:code)
+    # Load options for item creation form (Solid Cache: 1시간 TTL)
+    @evaluation_indicators = Rails.cache.fetch("researcher/evaluation_indicators_list", expires_in: 1.hour) do
+      EvaluationIndicator.order(:code).to_a
+    end
+    @sub_indicators = Rails.cache.fetch("researcher/sub_indicators_list", expires_in: 1.hour) do
+      SubIndicator.includes(:evaluation_indicator).order(:code).to_a
+    end
     @reading_stimuli = ReadingStimulus.all.order(:title)
   end
 

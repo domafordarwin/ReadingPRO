@@ -67,10 +67,19 @@ class CacheWarmerService
     Rails.cache.delete("item_types")
     Rails.cache.delete("item_statuses")
     Rails.cache.delete("item_difficulties")
+    invalidate_dashboard_caches
   end
 
   def self.invalidate_stimulus_caches
     Rails.cache.delete("stimuli_total_count")
     Rails.cache.delete("stimuli_by_status")
+    invalidate_dashboard_caches
+  end
+
+  def self.invalidate_dashboard_caches
+    Rails.cache.delete("researcher/dashboard_stats")
+    Rails.cache.delete("researcher/evaluation_stats")
+    Rails.cache.delete("researcher/evaluation_indicators_list")
+    Rails.cache.delete("researcher/sub_indicators_list")
   end
 end

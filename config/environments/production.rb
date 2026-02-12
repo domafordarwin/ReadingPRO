@@ -51,8 +51,8 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Use memory store for cache (no external dependency)
-  config.cache_store = :memory_store
+  # Use Solid Cache (database-backed cache store, no Redis needed)
+  config.cache_store = :solid_cache_store
 
   # Use async adapter for Active Job (in-process, no external tables needed)
   config.active_job.queue_adapter = :async

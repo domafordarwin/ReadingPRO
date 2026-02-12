@@ -1,10 +1,11 @@
 #!/bin/bash -e
 
-# If running the rails server then migrate the database
+# If running the rails server then prepare the database
+# db:prepare handles both migrations (primary) and schema loading (cache/queue/cable)
 if [[ "$*" == *"rails server"* ]] || [[ "$*" == *"rails s"* ]]; then
-  echo "Running database migrations..."
-  RAILS_LOG_LEVEL=warn ./bin/rails db:migrate 2>&1 | grep -v "^D," || true
-  echo "Migrations complete."
+  echo "Preparing database (migrate + cache schema)..."
+  RAILS_LOG_LEVEL=warn ./bin/rails db:prepare 2>&1 | grep -v "^D," || true
+  echo "Database preparation complete."
 fi
 
 exec "${@}"
