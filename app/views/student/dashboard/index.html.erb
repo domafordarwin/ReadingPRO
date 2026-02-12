@@ -110,7 +110,7 @@
             var svg = document.getElementById("dashboard-radar-svg");
             if (!svg) return;
             svg.innerHTML = '';
-            var data = <%= raw @radar_data.to_json %>;
+            var data = <%= json_escape(@radar_data.to_json) %>;
             if (!data || data.length === 0) return;
 
             var ns = 'http://www.w3.org/2000/svg';

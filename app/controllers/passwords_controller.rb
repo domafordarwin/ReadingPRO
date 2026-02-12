@@ -17,8 +17,9 @@ class PasswordsController < ApplicationController
       return
     end
 
-    if params[:new_password].blank? || params[:new_password].length < 8
-      flash.now[:alert] = "새 비밀번호는 8자 이상이어야 합니다."
+    complexity_errors = User.password_complexity_errors(params[:new_password].to_s)
+    if complexity_errors.any?
+      flash.now[:alert] = "비밀번호 요구사항: #{complexity_errors.join(', ')}"
       render :edit, status: :unprocessable_entity
       return
     end

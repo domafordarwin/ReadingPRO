@@ -556,8 +556,8 @@
 </style>
 
 <script>
-  const INDICATOR_TAXONOMY = <%= raw @all_indicators.map { |ei| { id: ei.id, name: ei.name, code: ei.code, sub_indicators: ei.sub_indicators.map { |si| { id: si.id, name: si.name } } } }.to_json %>;
-  const MODULE_INDICATOR_MAP = <%= raw @module_indicator_map.to_json %>;
+  const INDICATOR_TAXONOMY = <%= json_escape(@all_indicators.map { |ei| { id: ei.id, name: ei.name, code: ei.code, sub_indicators: ei.sub_indicators.map { |si| { id: si.id, name: si.name } } } }.to_json) %>;
+  const MODULE_INDICATOR_MAP = <%= json_escape(@module_indicator_map.to_json) %>;
 </script>
 
 <script>

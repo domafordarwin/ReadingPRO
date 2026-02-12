@@ -18,8 +18,7 @@ Rails.application.configure do
     policy.form_action :self
   end
 
-  # Start in report-only mode to avoid breaking existing inline scripts/styles.
-  # After verifying no violations in production logs, switch to enforcing mode
-  # by removing/commenting this line.
-  config.content_security_policy_report_only = true
+  # CSP enforcing mode enabled (2026-02-13 security audit)
+  # Note: unsafe_inline is required for existing inline scripts/styles.
+  # config.content_security_policy_report_only = true
 end

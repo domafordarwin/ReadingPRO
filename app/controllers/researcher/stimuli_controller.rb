@@ -162,6 +162,11 @@ class Researcher::StimuliController < ApplicationController
       return
     end
 
+    if uploaded_file.size > 300.megabytes
+      redirect_to researcher_passage_path(@stimulus), alert: "파일 크기는 300MB를 초과할 수 없습니다."
+      return
+    end
+
     begin
       # Save uploaded file to temp location
       temp_path = Rails.root.join("tmp", "answer_key_#{Time.now.to_i}_#{uploaded_file.original_filename}")
@@ -253,6 +258,12 @@ class Researcher::StimuliController < ApplicationController
     end
 
     uploaded_file = params[:answer_template]
+
+    if uploaded_file.size > 300.megabytes
+      redirect_to researcher_passage_path(@stimulus), alert: "파일 크기는 300MB를 초과할 수 없습니다."
+      return
+    end
+
     filename = uploaded_file.original_filename.downcase
 
     # Detect file type

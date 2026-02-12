@@ -38,3 +38,10 @@ application.register("module-assessment", ModuleAssessmentController)
 // Researcher: Delete loading indicator
 import DeleteLoadingController from "controllers/delete_loading_controller"
 application.register("delete-loading", DeleteLoadingController)
+
+// Global XSS protection utility
+window.escapeHtml = function(text) {
+  const div = document.createElement('div');
+  div.textContent = String(text);
+  return div.innerHTML;
+}

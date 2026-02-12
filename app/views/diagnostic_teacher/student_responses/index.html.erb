@@ -362,20 +362,21 @@
 
       const data = await response.json();
 
+      var esc = window.escapeHtml || function(t){ var d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
       if (data.success) {
         resultDiv.innerHTML = '<strong>피드백 생성 완료!</strong><br>' +
-          '학생 ' + data.student_count + '명 처리<br>' +
-          '객관식 피드백: ' + data.mcq_feedback_count + '개<br>' +
-          '서술형 피드백: ' + data.constructed_feedback_count + '개';
+          '학생 ' + esc(data.student_count) + '명 처리<br>' +
+          '객관식 피드백: ' + esc(data.mcq_feedback_count) + '개<br>' +
+          '서술형 피드백: ' + esc(data.constructed_feedback_count) + '개';
         resultDiv.style.background = '#f0fdf4';
         resultDiv.style.borderColor = '#bbf7d0';
       } else {
-        resultDiv.innerHTML = '<strong>오류 발생</strong><br>' + (data.error || data.errors?.join('<br>') || '알 수 없는 오류');
+        resultDiv.innerHTML = '<strong>오류 발생</strong><br>' + esc(data.error || (data.errors ? data.errors.join(', ') : '알 수 없는 오류'));
         resultDiv.style.background = '#fef2f2';
         resultDiv.style.borderColor = '#fecaca';
       }
     } catch (err) {
-      resultDiv.innerHTML = '<strong>네트워크 오류</strong><br>' + err.message;
+      resultDiv.innerHTML = '<strong>네트워크 오류</strong><br>' + esc(err.message);
       resultDiv.style.background = '#fef2f2';
       resultDiv.style.borderColor = '#fecaca';
     } finally {

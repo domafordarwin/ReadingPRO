@@ -183,7 +183,7 @@
                 <div class="sa-rpt-radar-legend" id="radar-legend-sa"></div>
                 <script>
                   document.addEventListener('turbo:load', function() {
-                    const radarData = <%= raw radar_data.to_json %>;
+                    const radarData = <%= json_escape(radar_data.to_json) %>;
                     if (radarData.length > 0) drawRadarChart('radar-svg-sa', 'radar-legend-sa', radarData);
                   });
                 </script>

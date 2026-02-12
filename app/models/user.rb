@@ -17,6 +17,34 @@ class User < ApplicationRecord
   validates :password_digest, presence: true
   validates :role, presence: true
 
+  # Account lockout: 5 failed attempts → 30 min lock
+  LOCKOUT_THRESHOLD = 5
+  LOCKOUT_DURATION = 30.minutes
+
+  def locked?
+    locked_until.present? && locked_until > Time.current
+  end
+
+  def record_failed_login!
+    increment!(:failed_login_attempts)
+    update!(locked_until: Time.current + LOCKOUT_DURATION) if failed_login_attempts >= LOCKOUT_THRESHOLD
+  end
+
+  def reset_failed_login!
+    update!(failed_login_attempts: 0, locked_until: nil) if failed_login_attempts > 0 || locked_until.present?
+  end
+
+  # Password complexity: 8+ chars, uppercase, lowercase, digit, special char
+  def self.password_complexity_errors(password)
+    errors = []
+    errors << "8자 이상이어야 합니다" if password.length < 8
+    errors << "대문자를 포함해야 합니다" unless password.match?(/[A-Z]/)
+    errors << "소문자를 포함해야 합니다" unless password.match?(/[a-z]/)
+    errors << "숫자를 포함해야 합니다" unless password.match?(/\d/)
+    errors << "특수문자를 포함해야 합니다" unless password.match?(/[^A-Za-z0-9]/)
+    errors
+  end
+
   # 진단담당교사 여부 (현재는 teacher 역할과 동일하게 처리)
   # 향후 Teacher 모델에 diagnostic_assigned 플래그 추가 시 수정 필요
   def diagnostic_teacher?

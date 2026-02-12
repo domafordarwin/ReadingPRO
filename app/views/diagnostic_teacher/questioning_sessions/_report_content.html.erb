@@ -364,7 +364,7 @@
 <!-- ══ Radar Chart Script ══ -->
 <script>
 (function() {
-  var radarData = <%= raw radar_data.to_json %>;
+  var radarData = <%= json_escape(radar_data.to_json) %>;
   function draw() {
     var svg = document.getElementById('qrc-radar-svg');
     var legend = document.getElementById('qrc-radar-legend');

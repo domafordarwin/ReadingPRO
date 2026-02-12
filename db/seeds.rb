@@ -2,7 +2,7 @@
 
 puts "Seeding ReadingPRO database..."
 
-DEFAULT_PASSWORD = "ReadingPro$12#"
+DEFAULT_PASSWORD = ENV.fetch("SEED_DEFAULT_PASSWORD", "ReadingPro$12#")
 
 # =============================================================================
 # Phase 1: Domain Migration (old domains → @ReadingPro.com)
@@ -141,7 +141,8 @@ puts "  + School: #{school2.name} (domain: #{school2.email_domain})"
 # School Admin 2 (신림중)
 shinlim_admin_user = User.find_or_initialize_by(email: "Shinlim_admin@shinlim.ms.kr")
 if shinlim_admin_user.new_record?
-  shinlim_admin_user.assign_attributes(role: "school_admin", password: "shinlim_$12#", password_confirmation: "shinlim_$12#")
+  shinlim_password = ENV.fetch("SEED_SHINLIM_PASSWORD", "shinlim_$12#")
+  shinlim_admin_user.assign_attributes(role: "school_admin", password: shinlim_password, password_confirmation: shinlim_password)
   shinlim_admin_user.save!
   puts "  + Created school_admin: Shinlim_admin@shinlim.ms.kr"
 end

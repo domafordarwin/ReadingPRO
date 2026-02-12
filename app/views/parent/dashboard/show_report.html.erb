@@ -175,7 +175,7 @@
                 <div class="pr-rpt-radar-legend" id="radar-legend-parent"></div>
                 <script>
                   document.addEventListener('turbo:load', function() {
-                    const radarData = <%= raw radar_data.to_json %>;
+                    const radarData = <%= json_escape(radar_data.to_json) %>;
                     if (radarData.length > 0) drawRadarChart('radar-svg-parent', 'radar-legend-parent', radarData);
                   });
                 </script>

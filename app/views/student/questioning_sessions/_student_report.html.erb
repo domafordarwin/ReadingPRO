@@ -423,7 +423,7 @@
      ════════════════════════════════════════════ -->
 <script>
 (function() {
-  var radarData = <%= raw radar_data.to_json %>;
+  var radarData = <%= json_escape(radar_data.to_json) %>;
 
   function draw() {
     var svg = document.getElementById('sr-radar-svg');

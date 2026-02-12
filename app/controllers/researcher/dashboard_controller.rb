@@ -175,6 +175,20 @@ class Researcher::DashboardController < ApplicationController
       uploaded_file = params[:pdf_file]
       grade_level = params[:grade_level]
 
+      # File size limit: 300MB
+      if uploaded_file.size > 300.megabytes
+        respond_to do |format|
+          format.html do
+            flash[:alert] = "파일 크기는 300MB를 초과할 수 없습니다."
+            redirect_to researcher_item_bank_path
+          end
+          format.json do
+            render json: { success: false, message: "파일 크기는 300MB를 초과할 수 없습니다." }, status: :bad_request
+          end
+        end
+        return
+      end
+
       # Validate grade_level
       valid_levels = %w[elementary_low elementary_high middle_low middle_high]
       unless valid_levels.include?(grade_level)

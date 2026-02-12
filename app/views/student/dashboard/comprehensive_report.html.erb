@@ -197,7 +197,7 @@
                 <div class="cr-radar-legend" id="radar-legend-student"></div>
                 <script>
                   document.addEventListener('turbo:load', function() {
-                    const radarData = <%= raw radar_data.to_json %>;
+                    const radarData = <%= json_escape(radar_data.to_json) %>;
                     if (radarData.length > 0) drawRadarChart('radar-svg-student', 'radar-legend-student', radarData);
                   });
                 </script>

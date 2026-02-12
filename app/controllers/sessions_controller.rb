@@ -54,7 +54,19 @@ class SessionsController < ApplicationController
 
     # Try database authentication first (email-based)
     user = User.find_by(email: login_id)
+
+    # Account lockout check
+    if user&.locked?
+      remaining = ((user.locked_until - Time.current) / 60).ceil
+      flash.now[:alert] = "계정이 잠겼습니다. #{remaining}분 후 다시 시도해주세요."
+      render :new, status: :unprocessable_entity
+      return
+    end
+
     if user&.authenticate(password)
+      # Reset failed attempts on successful login
+      user.reset_failed_login!
+
       # 이전 세션 완전 초기화 (다른 계정 잔여 데이터 방지)
       reset_session
 
@@ -62,16 +74,15 @@ class SessionsController < ApplicationController
       session[:role] = user.role
       session[:username] = user.email
       Rails.logger.info "✅ User logged in: #{user.email} (#{user.role})"
-      Rails.logger.info "🔍 Session set: user_id=#{session[:user_id]}, role=#{session[:role]}"
 
       redirect_path = role_redirect_path(user.role)
-      Rails.logger.info "🔍 Redirecting to: #{redirect_path}"
       # Use 303 See Other to prevent Turbo from converting redirect to TURBO_STREAM
       redirect_to redirect_path, status: :see_other
       return
     end
 
-    # Authentication failed
+    # Authentication failed - record failed attempt
+    user&.record_failed_login!
     Rails.logger.warn "❌ Failed login attempt: #{login_id}"
 
     # Generic error message to prevent user enumeration attacks
