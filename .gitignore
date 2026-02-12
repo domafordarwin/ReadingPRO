@@ -48,3 +48,6 @@ db/seed_assessment_data.rb
 
 # Presentation files (로컬 시연 자료)
 presentation/
+
+# Docs (로컬 문서, 매뉴얼, 보고서 — 코드 저장소에 불필요)
+docs/
