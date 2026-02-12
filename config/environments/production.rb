@@ -54,8 +54,8 @@ Rails.application.configure do
   # Use Solid Cache (database-backed cache store, no Redis needed)
   config.cache_store = :solid_cache_store
 
-  # Use async adapter for Active Job (in-process, no external tables needed)
-  config.active_job.queue_adapter = :async
+  # Use Solid Queue (database-backed job queue, no Redis needed)
+  config.active_job.queue_adapter = :solid_queue
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
