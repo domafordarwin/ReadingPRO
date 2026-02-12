@@ -29,7 +29,8 @@
       <% if @generation.review? %>
         <%= button_to "승인", approve_researcher_module_generation_path(@generation),
             method: :patch,
-            data: { turbo: false, confirm: "이 모듈을 승인하고 DB에 저장하시겠습니까?" },
+            form: { data: { turbo: false } },
+            data: { turbo_confirm: "이 모듈을 승인하고 DB에 저장하시겠습니까?" },
             style: "padding:10px 20px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;" %>
         <button type="button" onclick="document.getElementById('reject-form').style.display='block'"
                 style="padding:10px 20px; background:#ef4444; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
@@ -39,7 +40,7 @@
       <% if @generation.failed? || @generation.rejected? %>
         <%= button_to "재생성", regenerate_researcher_module_generation_path(@generation),
             method: :post,
-            data: { turbo: false },
+            form: { data: { turbo: false } },
             style: "padding:10px 20px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;" %>
       <% end %>
     </div>

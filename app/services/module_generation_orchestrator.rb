@@ -90,13 +90,19 @@ class ModuleGenerationOrchestrator
 
     ActiveRecord::Base.transaction do
       # 1. ReadingStimulus 생성
+      # created_by_id는 teachers 테이블 FK이므로 teacher 레코드가 있는 경우만 설정
+      teacher_id = resolve_teacher_id(reviewer)
+      grade_level = sanitize_grade_level(
+        @mg.template_snapshot.dig("stimulus_info", "grade_level") ||
+        @mg.template_snapshot.dig(:stimulus_info, :grade_level)
+      )
+
       stimulus = ReadingStimulus.create!(
         title: generated[:passage_title] || @mg.passage_title,
         body: generated[:passage_text] || @mg.passage_text,
         bundle_status: "draft",
-        grade_level: @mg.template_snapshot.dig("stimulus_info", "grade_level") ||
-                     @mg.template_snapshot.dig(:stimulus_info, :grade_level),
-        created_by_id: reviewer&.id || @mg.created_by_id
+        grade_level: grade_level,
+        created_by_id: teacher_id
       )
 
       # 2. Items + Choices + Rubrics 생성
@@ -291,5 +297,27 @@ class ModuleGenerationOrchestrator
     min_count = (original_count * 0.8).to_i
     max_count = (original_count * 1.2).to_i
     "#{min_count}-#{max_count}"
+  end
+
+  # created_by_id는 teachers 테이블 FK → teacher 레코드 ID만 허용
+  def resolve_teacher_id(reviewer)
+    return nil unless reviewer
+
+    teacher = Teacher.find_by(user_id: reviewer.id)
+    return teacher.id if teacher
+
+    # 생성자도 teacher인지 확인
+    if @mg.created_by_id
+      creator_teacher = Teacher.find_by(user_id: @mg.created_by_id)
+      return creator_teacher.id if creator_teacher
+    end
+
+    nil
+  end
+
+  # grade_level 값이 허용 목록에 있는지 확인
+  def sanitize_grade_level(value)
+    valid_levels = %w[elementary_low elementary_high middle_low middle_high]
+    valid_levels.include?(value) ? value : nil
   end
 end

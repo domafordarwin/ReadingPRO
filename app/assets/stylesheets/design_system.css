@@ -2636,18 +2636,32 @@
 
 /* Toast variants */
 .rp-toast--success {
+  background: #065f46;
+  color: #ffffff;
   border-left: 4px solid var(--rp-success);
 }
 
+.rp-toast--alert {
+  background: #991b1b;
+  color: #ffffff;
+  border-left: 4px solid var(--rp-danger);
+}
+
 .rp-toast--warning {
+  background: #92400e;
+  color: #ffffff;
   border-left: 4px solid var(--rp-warning);
 }
 
 .rp-toast--danger {
+  background: #991b1b;
+  color: #ffffff;
   border-left: 4px solid var(--rp-danger);
 }
 
 .rp-toast--info {
+  background: #1e40af;
+  color: #ffffff;
   border-left: 4px solid var(--rp-info);
 }
 
