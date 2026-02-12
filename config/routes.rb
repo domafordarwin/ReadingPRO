@@ -337,6 +337,18 @@ Rails.application.routes.draw do
       end
     end
 
+    # Module generation (진단 모듈 자동 생성)
+    resources :module_generations, only: %i[index new create show] do
+      member do
+        patch :approve
+        patch :reject
+        post  :regenerate
+      end
+      collection do
+        post :batch_create
+      end
+    end
+
     # Passage management with AI analysis
     resources :passages, only: %i[show edit update destroy], controller: "stimuli" do
       member do

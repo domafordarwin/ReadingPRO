@@ -1,0 +1,60 @@
+<% content_for :title, "모듈 자동 생성" %>
+
+<div class="rp-page-container">
+  <div class="rp-page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:1.5rem; font-weight:700; color:var(--rp-text-primary, #1e293b);">모듈 자동 생성</h1>
+      <p style="color:var(--rp-text-muted, #64748b); margin-top:4px;">
+        기존 모듈을 템플릿으로 사용하여 새 지문에 맞는 진단 모듈을 AI로 자동 생성합니다.
+      </p>
+    </div>
+    <%= link_to new_researcher_module_generation_path, class: "rp-btn rp-btn--primary", style: "display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      새 모듈 생성
+    <% end %>
+  </div>
+
+  <%# 상태 필터 탭 %>
+  <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+    <% statuses = [
+      ["전체", nil, @status_counts.values.sum],
+      ["대기", "pending", @status_counts["pending"] || 0],
+      ["생성 중", "generating", @status_counts["generating"] || 0],
+      ["검증 중", "validating", @status_counts["validating"] || 0],
+      ["리뷰 대기", "review", @status_counts["review"] || 0],
+      ["승인", "approved", @status_counts["approved"] || 0],
+      ["반려", "rejected", @status_counts["rejected"] || 0],
+      ["실패", "failed", @status_counts["failed"] || 0]
+    ] %>
+    <% statuses.each do |label, status_val, count| %>
+      <% active = (@status_filter == status_val) || (@status_filter.blank? && status_val.nil?) %>
+      <%= link_to researcher_module_generations_path(status: status_val),
+          style: "padding:6px 14px; border-radius:20px; font-size:0.85rem; text-decoration:none; font-weight:#{active ? '600' : '400'}; background:#{active ? '#667eea' : '#f1f5f9'}; color:#{active ? '#fff' : '#475569'}; transition:all 0.2s;" do %>
+        <%= label %> <span style="opacity:0.8;">(<%= count %>)</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# 생성 목록 %>
+  <% if @generations.any? %>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <% @generations.each do |gen| %>
+        <%= render "generation_card", generation: gen %>
+      <% end %>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+      <%= paginate @generations %>
+    </div>
+  <% else %>
+    <div style="text-align:center; padding:60px 20px; background:#f8fafc; border-radius:12px; border:2px dashed #e2e8f0;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin:0 auto 12px;">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <p style="color:#64748b; font-size:1rem;">아직 생성된 모듈이 없습니다.</p>
+      <%= link_to "첫 모듈 생성하기", new_researcher_module_generation_path,
+          style: "display:inline-block; margin-top:12px; padding:10px 24px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;" %>
+    </div>
+  <% end %>
+</div>
