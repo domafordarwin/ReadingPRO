@@ -3,8 +3,10 @@
 module Api
   module V1
     class RubricsController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[name created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher admin teacher diagnostic_teacher]) }
       before_action :set_rubric, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[researcher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/rubrics
       def index
@@ -20,8 +22,8 @@ module Api
           rubrics = rubrics.where("name ILIKE ?", "%#{params[:search]}%")
         end
 
-        # Apply sorting
-        rubrics = rubrics.order(params[:sort] || "created_at desc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        rubrics = rubrics.order(safe_order("created_at desc"))
 
         # Eager load associations
         rubrics = rubrics.includes(:rubric_criteria)

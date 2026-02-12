@@ -7,8 +7,9 @@ module Api
       include ApiErrorHandling
       include ApiPagination
 
-      # Disable CSRF for API endpoints (use JSON for requests)
-      skip_forgery_protection
+      # Use null_session for API: resets session instead of raising exception on CSRF mismatch.
+      # This prevents CSRF attacks while allowing JSON API calls with session auth.
+      protect_from_forgery with: :null_session
 
       # Default response format
       before_action :set_json_format
@@ -49,6 +50,21 @@ module Api
           errors: error_array.map { |e| format_error(e) }
         }
         render json: response, status: status
+      end
+
+      # Sanitize sort parameter to prevent SQL injection.
+      # Subclasses define ALLOWED_SORT_COLUMNS; defaults to ["created_at"].
+      def safe_order(default = "created_at desc")
+        return default if params[:sort].blank?
+
+        parts = params[:sort].to_s.strip.split(/\s+/, 2)
+        column = parts[0].to_s.downcase
+        direction = parts[1].to_s.downcase == "asc" ? "asc" : "desc"
+
+        allowed = self.class::ALLOWED_SORT_COLUMNS rescue %w[created_at]
+        return "#{column} #{direction}" if allowed.include?(column)
+
+        default
       end
 
       private

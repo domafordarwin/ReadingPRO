@@ -3,8 +3,10 @@
 module Api
   module V1
     class StudentAttemptsController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[created_at updated_at status started_at].freeze
+
+      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }
       before_action :set_student_attempt, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/student_attempts
       def index
@@ -17,8 +19,8 @@ module Api
           attempts = attempts.where(status: params[:filter][:status]) if params[:filter][:status].present?
         end
 
-        # Apply sorting
-        attempts = attempts.order(params[:sort] || "created_at desc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        attempts = attempts.order(safe_order("created_at desc"))
 
         # Eager load associations
         attempts = attempts.includes(:student, :diagnostic_form, :responses)

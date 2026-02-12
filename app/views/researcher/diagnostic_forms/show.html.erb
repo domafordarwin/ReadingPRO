@@ -95,7 +95,7 @@
           <% ei_count = @coverage[:indicator_counts][ei.id].to_i %>
           <div class="coverage-indicator <%= ei_count > 0 ? 'coverage-indicator--covered' : 'coverage-indicator--missing' %>">
             <div class="coverage-indicator-header">
-              <span class="coverage-indicator-status"><%= ei_count > 0 ? raw('&#10003;') : raw('&#10007;') %></span>
+              <span class="coverage-indicator-status"><%= ei_count > 0 ? "\u2713" : "\u2717" %></span>
               <span class="coverage-indicator-name"><%= ei.name %></span>
               <span class="coverage-indicator-count"><%= ei_count %>개 문항</span>
             </div>

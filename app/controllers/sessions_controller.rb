@@ -1,6 +1,4 @@
 class SessionsController < ApplicationController
-  # Temporarily skip CSRF protection for create action to debug
-  skip_forgery_protection only: :create
 
   def new
     # 권한 에러로 인해 로그인 페이지에 온 경우 세션 초기화
@@ -31,10 +29,7 @@ class SessionsController < ApplicationController
     login_id = params[:username].to_s.strip
     password = params[:password].to_s
 
-    # Debug logging to identify password issues
-    Rails.logger.debug "🔍 Login attempt - Email: #{login_id}"
-    Rails.logger.debug "🔍 Password length: #{password.length} chars"
-    Rails.logger.debug "🔍 Password bytes: #{password.bytes.inspect}"
+    Rails.logger.debug "🔍 Login attempt for: #{login_id}"
 
     # Validate input
     if login_id.blank? || password.blank?
@@ -79,12 +74,8 @@ class SessionsController < ApplicationController
     # Authentication failed
     Rails.logger.warn "❌ Failed login attempt: #{login_id}"
 
-    # Provide specific error messages based on the issue
-    if user && !user.authenticate(password)
-      flash.now[:alert] = "비밀번호가 올바르지 않습니다."
-    else
-      flash.now[:alert] = "등록되지 않은 이메일입니다. 입력하신 이메일을 확인해주세요."
-    end
+    # Generic error message to prevent user enumeration attacks
+    flash.now[:alert] = "이메일 또는 비밀번호가 올바르지 않습니다."
 
     render :new, status: :unprocessable_entity
   end

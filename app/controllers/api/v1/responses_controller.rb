@@ -3,8 +3,10 @@
 module Api
   module V1
     class ResponsesController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[created_at updated_at item_id student_attempt_id].freeze
+
+      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }
       before_action :set_response, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[student teacher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/responses
       def index
@@ -16,8 +18,8 @@ module Api
           responses = responses.where(item_id: params[:filter][:item_id]) if params[:filter][:item_id].present?
         end
 
-        # Apply sorting
-        responses = responses.order(params[:sort] || "created_at desc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        responses = responses.order(safe_order("created_at desc"))
 
         # Eager load associations
         responses = responses.includes(:item, :selected_choice, :student_attempt)

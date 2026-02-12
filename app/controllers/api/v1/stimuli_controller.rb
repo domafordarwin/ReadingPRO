@@ -3,8 +3,10 @@
 module Api
   module V1
     class StimuliController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[title reading_level created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher admin teacher diagnostic_teacher]) }
       before_action :set_stimulus, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[researcher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/stimuli
       def index
@@ -20,8 +22,8 @@ module Api
           stimuli = stimuli.where("title ILIKE ? OR body ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")
         end
 
-        # Apply sorting
-        stimuli = stimuli.order(params[:sort] || "created_at desc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        stimuli = stimuli.order(safe_order("created_at desc"))
 
         # Eager load associations
         stimuli = stimuli.includes(:items)

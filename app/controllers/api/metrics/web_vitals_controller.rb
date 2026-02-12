@@ -27,6 +27,9 @@ module Api
     class WebVitalsController < ApplicationController
       skip_before_action :verify_authenticity_token, only: [ :create ]
 
+      # Simple rate limiting: max 60 metrics per IP per minute
+      before_action :rate_limit_check, only: [ :create ]
+
       def create
         # Extract and validate parameters
         metric_name = params[:metric_name]&.downcase
@@ -58,6 +61,21 @@ module Api
           "[WebVitalsController] Error processing metric: #{e.class} - #{e.message}"
         )
         head :unprocessable_entity
+      end
+
+      private
+
+      def rate_limit_check
+        cache_key = "web_vitals_rate:#{request.remote_ip}"
+        count = Rails.cache.read(cache_key).to_i
+
+        if count >= 60
+          head :too_many_requests
+          return
+        end
+
+        Rails.cache.write(cache_key, count + 1, expires_in: 1.minute) if count == 0
+        Rails.cache.increment(cache_key) if count > 0
       end
     end
   end

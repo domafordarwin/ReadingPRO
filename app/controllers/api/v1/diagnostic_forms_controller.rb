@@ -3,8 +3,10 @@
 module Api
   module V1
     class DiagnosticFormsController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[name status created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher admin diagnostic_teacher teacher]) }
       before_action :set_diagnostic_form, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[researcher admin diagnostic_teacher]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/diagnostic_forms
       def index
@@ -21,8 +23,8 @@ module Api
           forms = forms.where("name ILIKE ?", "%#{params[:search]}%")
         end
 
-        # Apply sorting
-        forms = forms.order(params[:sort] || "created_at desc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        forms = forms.order(safe_order("created_at desc"))
 
         # Eager load associations
         forms = forms.includes(:diagnostic_form_items, :teacher)

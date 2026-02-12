@@ -63,7 +63,7 @@
                  when "completed", "submitted" then '<span class="rp-badge rp-badge--success">완료</span>'
                  else '<span class="rp-badge">' + h(attempt.status.to_s) + '</span>'
                  end %>
-              <%= raw(status_badge) %>
+              <%= sanitize(status_badge, tags: %w[span], attributes: %w[class]) %>
             </td>
             <td><%= attempt.responses.count %></td>
             <td>

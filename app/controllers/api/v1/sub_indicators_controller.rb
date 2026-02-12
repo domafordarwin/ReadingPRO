@@ -3,9 +3,11 @@
 module Api
   module V1
     class SubIndicatorsController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[code name created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher teacher admin diagnostic_teacher]) }
       before_action :set_evaluation_indicator, only: [ :index ]
       before_action :set_sub_indicator, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/evaluation_indicators/:evaluation_indicator_id/sub_indicators
       # GET /api/v1/sub_indicators
@@ -28,8 +30,8 @@ module Api
           sub_indicators = sub_indicators.by_indicator(params[:filter][:evaluation_indicator_id]) if params[:filter][:evaluation_indicator_id].present?
         end
 
-        # Apply sorting
-        sub_indicators = sub_indicators.order(params[:sort] || "code asc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        sub_indicators = sub_indicators.order(safe_order("code asc"))
 
         # Paginate
         paginated, meta = paginate_collection(sub_indicators)

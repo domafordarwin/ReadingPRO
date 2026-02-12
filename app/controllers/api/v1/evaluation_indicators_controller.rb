@@ -3,7 +3,9 @@
 module Api
   module V1
     class EvaluationIndicatorsController < BaseController
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
+      ALLOWED_SORT_COLUMNS = %w[code name level created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher teacher admin diagnostic_teacher]) }
       before_action :set_evaluation_indicator, only: [ :show, :update, :destroy ]
 
       # GET /api/v1/evaluation_indicators
@@ -20,8 +22,8 @@ module Api
           indicators = indicators.by_level(params[:filter][:level]) if params[:filter][:level].present?
         end
 
-        # Apply sorting
-        indicators = indicators.order(params[:sort] || "code asc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        indicators = indicators.order(safe_order("code asc"))
 
         # Paginate
         paginated, meta = paginate_collection(indicators)

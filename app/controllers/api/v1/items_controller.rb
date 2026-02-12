@@ -3,8 +3,10 @@
 module Api
   module V1
     class ItemsController < BaseController
+      ALLOWED_SORT_COLUMNS = %w[code item_type difficulty status created_at updated_at].freeze
+
+      before_action -> { require_role_any(%w[researcher teacher admin diagnostic_teacher]) }
       before_action :set_item, only: [ :show, :update, :destroy ]
-      before_action -> { require_role_any(%w[researcher teacher admin]) }, only: [ :create, :update, :destroy ]
 
       # GET /api/v1/items
       def index
@@ -24,8 +26,8 @@ module Api
           items = items.where("code ILIKE ? OR prompt ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")
         end
 
-        # Apply sorting
-        items = items.order(params[:sort] || "code asc")
+        # Apply sorting (whitelist-based to prevent SQL injection)
+        items = items.order(safe_order("code asc"))
 
         # Eager load associations
         items = items.includes(:evaluation_indicator, :sub_indicator, :stimulus, :rubric, :item_choices)

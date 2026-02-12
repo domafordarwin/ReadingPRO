@@ -1442,7 +1442,7 @@
           mcqReset.addEventListener('click', () => {
             const textarea = document.getElementById('mcq-prompt-textarea');
             if (textarea) {
-              textarea.value = <%= FeedbackAiService::MCQ_DEFAULT_PROMPT.to_json.html_safe %>;
+              textarea.value = <%= json_escape(FeedbackAiService::MCQ_DEFAULT_PROMPT.to_json) %>;
               this.showToast('기본 프롬프트로 복원되었습니다', 'success');
             }
           });
@@ -1470,7 +1470,7 @@
           crReset.addEventListener('click', () => {
             const textarea = document.getElementById('cr-prompt-textarea');
             if (textarea) {
-              textarea.value = <%= FeedbackAiService::CONSTRUCTED_DEFAULT_PROMPT.to_json.html_safe %>;
+              textarea.value = <%= json_escape(FeedbackAiService::CONSTRUCTED_DEFAULT_PROMPT.to_json) %>;
               this.showToast('기본 프롬프트로 복원되었습니다', 'success');
             }
           });

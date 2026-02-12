@@ -495,7 +495,7 @@
                   <% ei_cnt = cov[:indicator_counts][ei.id].to_i %>
                   <div class="cov-detail-row">
                     <span class="cov-detail-indicator <%= ei_cnt > 0 ? 'cov-detail-indicator--ok' : 'cov-detail-indicator--miss' %>">
-                      <%= ei_cnt > 0 ? raw('&#10003;') : raw('&#10007;') %> <%= ei.name %> (<%= ei_cnt %>)
+                      <%= ei_cnt > 0 ? "\u2713" : "\u2717" %> <%= ei.name %> (<%= ei_cnt %>)
                     </span>
                     <span class="cov-detail-subs">
                       <% ei.sub_indicators.each do |si| %>
