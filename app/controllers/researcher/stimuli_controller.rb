@@ -89,6 +89,9 @@ class Researcher::StimuliController < ApplicationController
     else
       redirect_to researcher_item_bank_path, alert: "모듈 삭제에 실패했습니다.", status: :see_other
     end
+  rescue ActiveRecord::InvalidForeignKey => e
+    Rails.logger.error "[Stimuli#destroy] FK violation: #{e.message}"
+    redirect_to researcher_item_bank_path, alert: "이 모듈을 참조하는 데이터가 있어 삭제할 수 없습니다. 보관처리를 이용해주세요.", status: :see_other
   end
 
   # AI Analysis endpoint

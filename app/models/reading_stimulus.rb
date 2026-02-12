@@ -6,6 +6,10 @@ class ReadingStimulus < ApplicationRecord
   belongs_to :teacher, foreign_key: "created_by_id", optional: true
   has_many :items, foreign_key: "stimulus_id", dependent: :destroy
 
+  # Module generation (AI 유사문항 자동 생성)
+  has_many :template_generations, class_name: "ModuleGeneration", foreign_key: "template_stimulus_id", dependent: :destroy
+  has_many :generated_generations, class_name: "ModuleGeneration", foreign_key: "generated_stimulus_id", dependent: :nullify
+
   # Questioning module
   has_many :questioning_modules, dependent: :destroy
 
