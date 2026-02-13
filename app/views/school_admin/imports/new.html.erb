@@ -13,8 +13,8 @@
 
   <% if @errors.present? %>
     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-      <h4 style="margin: 0 0 8px 0; color: #991b1b; font-size: 14px;">오류가 발생했습니다</h4>
-      <ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: 13px;">
+      <h4 style="margin: 0 0 8px 0; color: #991b1b; font-size: var(--rp-font-size-base);">오류가 발생했습니다</h4>
+      <ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: var(--rp-font-size-sm);">
         <% @errors.each do |error| %>
           <li><%= error %></li>
         <% end %>
@@ -23,7 +23,7 @@
   <% end %>
 
   <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-    <p style="margin: 0; font-size: 13px; color: #1e40af;">
+    <p style="margin: 0; font-size: var(--rp-font-size-sm); color: #1e40af;">
       학생에게는 <strong>학교명_S-0001</strong> 형식의 익명 ID가 자동 부여됩니다.
       학부모 계정은 <strong>학교명_P-0001</strong> 형식으로 학생과 매칭됩니다.
       생성 후 표시되는 ID와 비밀번호를 반드시 저장해주세요.
@@ -33,8 +33,8 @@
   <%= form_with url: school_admin_imports_path, method: :post, local: true, data: { turbo: false } do %>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: 14px;">학년 <span style="color: #dc2626;">*</span></label>
-        <select name="grade" required style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학년 <span style="color: #dc2626;">*</span></label>
+        <select name="grade" required style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
           <option value="">선택</option>
           <option value="1">1학년</option>
           <option value="2">2학년</option>
@@ -43,32 +43,32 @@
       </div>
 
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: 14px;">반 (진단 그룹) <span style="color: #dc2626;">*</span></label>
-        <input type="text" name="class_name" required placeholder="예: A" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">반 (진단 그룹) <span style="color: #dc2626;">*</span></label>
+        <input type="text" name="class_name" required placeholder="예: A" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
       </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: 14px;">생성할 학생 수 <span style="color: #dc2626;">*</span></label>
-        <input type="number" name="count" required min="1" max="100" placeholder="예: 30" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">생성할 학생 수 <span style="color: #dc2626;">*</span></label>
+        <input type="number" name="count" required min="1" max="100" placeholder="예: 30" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
       </div>
 
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: 14px;">이메일 도메인</label>
-        <input type="text" value="<%= @school&.email_domain %>" disabled style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; background: #f1f5f9; color: #64748b;">
+        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일 도메인</label>
+        <input type="text" value="<%= @school&.email_domain %>" disabled style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base); background: #f1f5f9; color: #64748b;">
       </div>
     </div>
 
     <div style="margin-bottom: 20px;">
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: var(--rp-font-size-base); color: #374151;">
         <input type="checkbox" name="include_parents" value="1">
         <span>학부모 계정도 함께 생성 (학교명_P- ID)</span>
       </label>
     </div>
 
     <button type="submit"
-            style="padding: 12px 24px; background: #2f5bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            style="padding: 12px 24px; background: #2f5bff; color: white; border: none; border-radius: 8px; font-size: var(--rp-font-size-md); font-weight: 600; cursor: pointer;">
       학생 계정 생성
     </button>
   <% end %>
@@ -76,7 +76,7 @@
 
 <section class="portal-card">
   <h2 class="portal-card-title">생성 안내</h2>
-  <div style="font-size: 14px; color: #475569; line-height: 1.8;">
+  <div style="font-size: var(--rp-font-size-base); color: #475569; line-height: 1.8;">
     <ul style="margin: 0; padding-left: 20px;">
       <% prefix = @school&.email_domain&.split(".")&.first || "school" %>
       <li>학생 ID: <strong><%= prefix %>_S-0001</strong>, <strong><%= prefix %>_S-0002</strong> ... (자동 순번)</li>

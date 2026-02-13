@@ -115,7 +115,7 @@
     </div>
   <% else %>
     <div class="rp-empty-state">
-      <p style="font-size: 18px; color: #666;">게시글이 없습니다.</p>
+      <p style="font-size: var(--rp-font-size-lg); color: #666;">게시글이 없습니다.</p>
       <%= link_to "첫 글 작성하기", new_parent_forum_path, class: "rp-btn rp-btn--primary rp-mt-4" %>
     </div>
   <% end %>

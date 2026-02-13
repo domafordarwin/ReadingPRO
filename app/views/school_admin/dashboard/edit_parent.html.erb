@@ -22,31 +22,31 @@
 
   <%= form_with model: @parent, url: school_admin_update_parent_path(@parent), method: :patch, local: true, data: { turbo: false } do |f| %>
     <div style="margin-bottom: 16px;">
-      <%= f.label :name, "학부모 ID", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;" %>
-      <%= f.text_field :name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;", readonly: true %>
-      <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">학부모 ID는 변경할 수 없습니다.</p>
+      <%= f.label :name, "학부모 ID", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+      <%= f.text_field :name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);", readonly: true %>
+      <p style="font-size: var(--rp-font-size-xs); color: #94a3b8; margin-top: 4px;">학부모 ID는 변경할 수 없습니다.</p>
     </div>
 
     <div style="margin-bottom: 16px;">
-      <%= f.label :phone, "연락처", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;" %>
-      <%= f.text_field :phone, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;", placeholder: "예: 010-1234-5678" %>
+      <%= f.label :phone, "연락처", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+      <%= f.text_field :phone, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);", placeholder: "예: 010-1234-5678" %>
     </div>
 
     <div style="margin-bottom: 16px;">
-      <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;">이메일</label>
-      <input type="email" value="<%= @parent.user&.email %>" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc;" readonly>
+      <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일</label>
+      <input type="email" value="<%= @parent.user&.email %>" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); background: #f8fafc;" readonly>
     </div>
 
     <div style="margin-bottom: 16px;">
-      <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: 14px;">연결 학생</label>
+      <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);">연결 학생</label>
       <% @parent.students.each do |student| %>
-        <span style="display: inline-block; padding: 4px 12px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: 13px; font-weight: 600; margin-right: 4px;"><%= student.name %></span>
+        <span style="display: inline-block; padding: 4px 12px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: 600; margin-right: 4px;"><%= student.name %></span>
       <% end %>
     </div>
 
     <div style="display: flex; gap: 8px; margin-top: 24px;">
-      <%= f.submit "저장", style: "padding: 10px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer;" %>
-      <%= link_to "취소", school_admin_parents_path, style: "padding: 10px 16px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; text-decoration: none;" %>
+      <%= f.submit "저장", style: "padding: 10px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; cursor: pointer;" %>
+      <%= link_to "취소", school_admin_parents_path, style: "padding: 10px 16px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); text-decoration: none;" %>
     </div>
   <% end %>
 </section>

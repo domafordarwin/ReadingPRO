@@ -34,7 +34,7 @@
   }
 
   .stat-label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #999;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -42,14 +42,14 @@
   }
 
   .stat-number {
-    font-size: 32px;
+    font-size: var(--rp-font-size-4xl);
     font-weight: 700;
     color: #667eea;
     margin-bottom: 4px;
   }
 
   .stat-unit {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #999;
   }
 
@@ -91,7 +91,7 @@
   }
 
   .report-title {
-    font-size: 18px;
+    font-size: var(--rp-font-size-lg);
     font-weight: 600;
     color: #333;
     margin-bottom: 12px;
@@ -102,7 +102,7 @@
     gap: 16px;
     flex-wrap: wrap;
     margin-bottom: 12px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #666;
   }
 
@@ -116,7 +116,7 @@
     display: inline-block;
     padding: 6px 12px;
     border-radius: 16px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 600;
     margin-right: 8px;
   }
@@ -155,13 +155,13 @@
   }
 
   .score-number {
-    font-size: 32px;
+    font-size: var(--rp-font-size-4xl);
     font-weight: 700;
     color: #667eea;
   }
 
   .score-label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #999;
     margin-top: 4px;
   }
@@ -173,7 +173,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     font-weight: 600;
     transition: all 0.3s ease;
     text-decoration: none;
@@ -192,7 +192,7 @@
   }
 
   .empty-state-icon {
-    font-size: 48px;
+    font-size: var(--rp-font-size-4xl);
     margin-bottom: 16px;
   }
 
@@ -284,11 +284,11 @@
           </div>
 
           <div style="display: flex; flex-direction: row; gap: 8px; width: 100%;">
-            <a href="<%= student_show_attempt_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1; text-decoration: none;">
+            <a href="<%= student_show_attempt_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: var(--rp-font-size-xs); flex: 1; text-decoration: none;">
               진단 결과 보기
             </a>
             <% if has_published_report %>
-              <a href="<%= student_comprehensive_report_show_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: 12px; flex: 1; text-decoration: none;">
+              <a href="<%= student_comprehensive_report_show_path(attempt.id) %>" class="report-action-btn" style="text-align: center; padding: 8px 12px; font-size: var(--rp-font-size-xs); flex: 1; text-decoration: none;">
                 종합보고서 보기
               </a>
             <% end %>
@@ -301,7 +301,7 @@
   <div class="empty-state">
     <div class="empty-state-icon">📋</div>
     <p>진행한 진단이 없습니다.</p>
-    <p style="font-size: 12px; margin-top: 8px;">먼저 진단을 완료해주세요.</p>
+    <p style="font-size: var(--rp-font-size-xs); margin-top: 8px;">먼저 진단을 완료해주세요.</p>
   </div>
 <% end %>
 

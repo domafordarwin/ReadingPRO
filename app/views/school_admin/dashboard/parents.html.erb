@@ -10,15 +10,15 @@
 
 <% if flash[:temp_password].present? %>
   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: 16px;">비밀번호가 초기화되었습니다</h3>
-    <p style="margin: 0 0 8px 0; font-size: 14px; color: #166534;">
+    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: var(--rp-font-size-md);">비밀번호가 초기화되었습니다</h3>
+    <p style="margin: 0 0 8px 0; font-size: var(--rp-font-size-base); color: #166534;">
       <strong>학부모:</strong> <%= flash[:reset_parent_name] %>
     </p>
-    <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">
+    <p style="margin: 0 0 12px 0; font-size: var(--rp-font-size-base); color: #166534;">
       <strong>임시 비밀번호:</strong>
-      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-md); font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
     </p>
-    <p style="margin: 0; font-size: 12px; color: #15803d;">이 비밀번호를 학부모에게 전달해주세요. 다음 로그인 시 비밀번호 변경이 필요합니다.</p>
+    <p style="margin: 0; font-size: var(--rp-font-size-xs); color: #15803d;">이 비밀번호를 학부모에게 전달해주세요. 다음 로그인 시 비밀번호 변경이 필요합니다.</p>
   </div>
 <% end %>
 
@@ -28,8 +28,8 @@
     <div style="display: flex; gap: 8px; align-items: center;">
       <%= form_with url: school_admin_parents_path, method: :get, local: true, data: { turbo: false }, style: "display: flex; gap: 8px;" do %>
         <input type="text" name="search" value="<%= @search_query %>" placeholder="학부모 ID로 검색..."
-               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">검색</button>
+               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
+        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); cursor: pointer;">검색</button>
       <% end %>
     </div>
   </div>
@@ -48,7 +48,7 @@
         <% @parents.each do |parent| %>
           <tr>
             <td><strong><%= parent.name %></strong></td>
-            <td style="font-size: 13px; color: #64748b;"><%= parent.user&.email %></td>
+            <td style="font-size: var(--rp-font-size-sm); color: #64748b;"><%= parent.user&.email %></td>
             <td>
               <% parent.students.each do |student| %>
                 <span class="rp-count-badge rp-count-badge--green"><%= student.name %></span>
@@ -106,6 +106,6 @@
   .rp-icon-btn--warning:hover { background: #fde68a; box-shadow: 0 2px 4px rgba(217,119,6,0.2); }
   .rp-icon-btn--danger { background: #fef2f2; color: #dc2626; }
   .rp-icon-btn--danger:hover { background: #fee2e2; box-shadow: 0 2px 4px rgba(220,38,38,0.2); }
-  .rp-count-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .rp-count-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: 600; }
   .rp-count-badge--green { background: #dcfce7; color: #166534; }
 </style>

@@ -60,7 +60,7 @@
               <div style="text-align: center; flex: 1;">
                 <% height_percent = grade_data[:score].zero? ? 5 : (grade_data[:score] / 100.0 * 100) %>
                 <div class="rp-chart-bar" style="height: <%= height_percent %>%; width: 100%;"></div>
-                <div style="margin-top: 8px; font-size: 12px; color: var(--rp-text-muted);"><%= grade_data[:grade] %>학년</div>
+                <div style="margin-top: 8px; font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);"><%= grade_data[:grade] %>학년</div>
                 <div style="font-weight: 600; color: var(--rp-text-title);"><%= grade_data[:score] %>점</div>
               </div>
             <% end %>
@@ -69,7 +69,7 @@
       <% else %>
         <div class="rp-empty-state-sm">
           <p>진단 결과 데이터가 없습니다.</p>
-          <p class="rp-text-muted" style="font-size: 12px;">학생들의 진단이 완료되면 학년별 평균 점수가 표시됩니다.</p>
+          <p class="rp-text-muted" style="font-size: var(--rp-font-size-xs);">학생들의 진단이 완료되면 학년별 평균 점수가 표시됩니다.</p>
         </div>
       <% end %>
     </div>
@@ -95,7 +95,7 @@
                 <tr>
                   <td>
                     <strong><%= attempt.student&.name || '학생' %></strong>
-                    <div class="rp-text-muted" style="font-size: 12px;">
+                    <div class="rp-text-muted" style="font-size: var(--rp-font-size-xs);">
                       <%= attempt.status == 'completed' ? '진단 완료' : '진단 진행중' %>
                     </div>
                   </td>
@@ -171,7 +171,7 @@
     <% else %>
       <div class="rp-empty-state-sm">
         <p>등록된 학급이 없습니다.</p>
-        <p class="rp-text-muted" style="font-size: 12px;">학생을 등록하면 학급별 현황이 표시됩니다.</p>
+        <p class="rp-text-muted" style="font-size: var(--rp-font-size-xs);">학생을 등록하면 학급별 현황이 표시됩니다.</p>
       </div>
     <% end %>
   </div>
@@ -184,7 +184,7 @@
   }
 
   .rp-empty-state-sm p {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #94a3b8;
     margin: 0;
   }

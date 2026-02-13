@@ -162,9 +162,9 @@
         card_border = sc >= 80 ? "#bbf7d0" : sc >= 50 ? "#fde68a" : "#fecaca"
       %>
       <div style="padding: var(--rp-space-3); background: <%= card_bg %>; border: 1px solid <%= card_border %>; border-radius: var(--rp-radius-md); text-align: center;">
-        <div style="font-size: 24px; margin-bottom: 4px;"><%= rd[:emoji] %></div>
+        <div style="font-size: var(--rp-font-size-2xl); margin-bottom: 4px;"><%= rd[:emoji] %></div>
         <div style="font-size: var(--rp-font-size-xs); font-weight: 600; color: var(--rp-text-title); margin-bottom: 6px; line-height: 1.3;"><%= rd[:name] %></div>
-        <div style="font-size: 16px; letter-spacing: 2px;"><% stars.times do %>⭐<% end %></div>
+        <div style="font-size: var(--rp-font-size-md); letter-spacing: 2px;"><% stars.times do %>⭐<% end %></div>
       </div>
     <% end %>
   </div>
@@ -192,7 +192,7 @@
         %>
         <div style="padding: var(--rp-space-4); background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--rp-radius-md);">
           <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-            <span style="font-size: 20px;"><%= rd[:emoji] %></span>
+            <span style="font-size: var(--rp-font-size-xl);"><%= rd[:emoji] %></span>
             <span style="font-size: var(--rp-font-size-sm); font-weight: 600; color: #92400e;"><%= rd[:name] %></span>
             <span style="margin-left: auto; font-size: var(--rp-font-size-sm); letter-spacing: 2px;"><% stars.times do %>⭐<% end %></span>
           </div>
@@ -253,7 +253,7 @@
               <!-- 헤더 -->
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--rp-space-2);">
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 16px;"><%= item[:emoji] %></span>
+                  <span style="font-size: var(--rp-font-size-md);"><%= item[:emoji] %></span>
                   <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= item[:label] %></span>
                 </div>
                 <% if score.present? %>
@@ -324,7 +324,7 @@
         %>
         <div style="padding: var(--rp-space-4); background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--rp-radius-md);">
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: var(--rp-space-2);">
-            <span style="font-size: 16px;"><%= cs[:emoji] %></span>
+            <span style="font-size: var(--rp-font-size-md);"><%= cs[:emoji] %></span>
             <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #334155;"><%= cs[:label] %></span>
             <span style="margin-left: auto; font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); color: <%= score_color %>;"><%= score %></span>
           </div>
@@ -347,7 +347,7 @@
      ════════════════════════════════════════════ -->
 <div style="padding: var(--rp-space-5); background: var(--rp-surface); border: 1px solid var(--rp-border); border-radius: var(--rp-radius-lg); margin-bottom: var(--rp-space-5);">
   <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-4);">
-    <span style="font-size: 20px;"><%= is_l1 ? "🌈" : "📋" %></span>
+    <span style="font-size: var(--rp-font-size-xl);"><%= is_l1 ? "🌈" : "📋" %></span>
     <h3 style="margin: 0; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= is_l1 ? "나는 이런 것을 잘해!" : "종합 의견" %></h3>
   </div>
 
@@ -529,7 +529,7 @@
       ['이해 역량', '사고 역량', '소통·적용 역량'].forEach(function(group) {
         var colors = groupColors[group];
         var item = document.createElement('div');
-        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:16px;color:#475569;font-weight:500;';
+        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size: var(--rp-font-size-md);color:#475569;font-weight:500;';
         item.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:' + colors.stroke + ';flex-shrink:0;"></span><span>' + group + '</span>';
         legend.appendChild(item);
       });

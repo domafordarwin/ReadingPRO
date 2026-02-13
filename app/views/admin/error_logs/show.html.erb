@@ -43,7 +43,7 @@
 
       <div class="info-box">
         <label>User Agent</label>
-        <div style="word-break: break-all; font-size: 0.9em;">
+        <div style="word-break: break-all; font-size: var(--rp-font-size-base);">
           <%= truncate(@error_log.user_agent, length: 100) %>
         </div>
       </div>
@@ -147,7 +147,7 @@
     display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    font-size: 0.9em;
+    font-size: var(--rp-font-size-base);
     font-weight: 500;
   }
 
@@ -171,14 +171,14 @@
     display: block;
     font-weight: 600;
     color: #374151;
-    font-size: 0.9em;
+    font-size: var(--rp-font-size-base);
     margin-bottom: 0.5rem;
   }
 
   .info-box div {
     word-break: break-all;
     font-family: monospace;
-    font-size: 0.9em;
+    font-size: var(--rp-font-size-base);
     color: #666;
   }
 
@@ -190,7 +190,7 @@
     border-radius: 4px;
     overflow-x: auto;
     font-family: 'Courier New', monospace;
-    font-size: 0.85em;
+    font-size: var(--rp-font-size-sm);
     line-height: 1.4;
   }
 

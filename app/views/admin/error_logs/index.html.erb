@@ -21,7 +21,7 @@
 
     <div class="admin-stat">
       <div class="admin-stat-label">Most Common Error</div>
-      <div class="admin-stat-value" style="font-size: 0.85em;">
+      <div class="admin-stat-value" style="font-size: var(--rp-font-size-sm);">
         <%= @error_types.first&.first || 'N/A' %>
       </div>
       <div class="admin-stat-meta">
@@ -31,7 +31,7 @@
 
     <div class="admin-stat">
       <div class="admin-stat-label">Most Affected Page</div>
-      <div class="admin-stat-value" style="font-size: 0.85em;">
+      <div class="admin-stat-value" style="font-size: var(--rp-font-size-sm);">
         <%= @pages_with_errors.first&.first || 'N/A' %>
       </div>
     </div>
@@ -127,7 +127,7 @@
               <strong><%= truncate(error.message, length: 60) %></strong>
             </td>
             <td>
-              <code style="font-size: 0.8em;"><%= error.page_path %></code>
+              <code style="font-size: var(--rp-font-size-sm);"><%= error.page_path %></code>
             </td>
             <td>
               <% if error.resolved %>
@@ -211,7 +211,7 @@
     display: inline-block;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 0.85em;
+    font-size: var(--rp-font-size-sm);
     font-weight: 500;
   }
 
