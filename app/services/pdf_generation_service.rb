@@ -11,8 +11,10 @@ class PdfGenerationService
   class PdfGenerationError < StandardError; end
   class PdfTimeoutError < StandardError; end
 
+  # A4 = 210mm × 297mm = 8.27in × 11.69in
   DEFAULT_OPTIONS = {
-    format: "A4",
+    paper_width: 8.27,
+    paper_height: 11.69,
     landscape: false,
     print_background: true,
     margin_top: 0.6,
@@ -42,7 +44,8 @@ class PdfGenerationService
       sleep(0.5)
 
       pdf_data = page.pdf(
-        format: @options[:format],
+        paperWidth: @options[:paper_width],
+        paperHeight: @options[:paper_height],
         landscape: @options[:landscape],
         printBackground: @options[:print_background],
         marginTop: @options[:margin_top],
