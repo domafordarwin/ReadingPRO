@@ -85,7 +85,7 @@ body.admin-body {
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
 }
 
 .landing-logo-icon {
@@ -99,7 +99,7 @@ body.admin-body {
 }
 
 .landing-logo-subtitle {
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   line-height: 1.2;
   font-weight: 500;
   color: #334155;
@@ -147,7 +147,7 @@ body.admin-body {
   color: var(--landing-muted);
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   cursor: pointer;
 }
 
@@ -160,7 +160,7 @@ body.admin-body {
 .landing-link {
   text-decoration: none;
   color: var(--landing-ink);
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .landing-button {
@@ -170,7 +170,7 @@ body.admin-body {
   gap: 8px;
   border-radius: 999px;
   padding: 12px 22px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   text-decoration: none;
   border: 1px solid transparent;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -200,7 +200,7 @@ body.admin-body {
 
 .landing-button-lg {
   padding: 14px 26px;
-  font-size: 15px;
+  font-size: var(--rp-font-size-md);
 }
 
 .landing-hero {
@@ -222,7 +222,7 @@ body.admin-body {
   color: var(--landing-accent);
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   font-weight: 600;
 }
 
@@ -232,7 +232,7 @@ body.admin-body {
 }
 
 .landing-tagline {
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
   color: var(--landing-accent);
   margin: 0 0 18px;
 }
@@ -255,13 +255,13 @@ body.admin-body {
   gap: 24px;
   flex-wrap: wrap;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .landing-hero-stats strong {
   display: block;
   color: var(--landing-ink);
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
 }
 
 .landing-hero-panel {
@@ -279,7 +279,7 @@ body.admin-body {
 
 .landing-panel-card h3 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
 }
 
 .landing-panel-card p {
@@ -311,7 +311,7 @@ body.admin-body {
 .landing-panel-badges span {
   background: #f1f5f9;
   color: #334155;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   padding: 6px 10px;
   border-radius: 999px;
 }
@@ -350,7 +350,7 @@ body.admin-body {
 }
 
 .landing-section-header h2 {
-  font-size: 28px;
+  font-size: var(--rp-font-size-3xl);
   margin: 0 0 8px;
 }
 
@@ -376,7 +376,7 @@ body.admin-body {
 
 .landing-card h3 {
   margin: 0 0 10px;
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
 }
 
 .landing-card p {
@@ -400,7 +400,7 @@ body.admin-body {
   border: 1px solid var(--landing-border);
   border-radius: 14px;
   padding: 16px 18px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   position: relative;
   padding-left: 44px;
 }
@@ -418,7 +418,7 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .landing-cta {
@@ -440,7 +440,7 @@ body.admin-body {
 
 .landing-cta-inner h2 {
   margin: 0 0 8px;
-  font-size: 26px;
+  font-size: var(--rp-font-size-2xl);
   color: white;
 }
 
@@ -462,7 +462,7 @@ body.admin-body {
   text-align: center;
   padding: 24px 0 40px;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .portal-body {
@@ -494,7 +494,7 @@ body.admin-body {
 }
 
 .portal-logo .landing-logo-main {
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
 }
 
 .portal-logo .landing-logo-icon {
@@ -503,7 +503,7 @@ body.admin-body {
 }
 
 .portal-logo .landing-logo-subtitle {
-  font-size: 11px;
+  font-size: var(--rp-font-size-2xs);
 }
 
 .portal-nav {
@@ -517,7 +517,7 @@ body.admin-body {
   color: var(--landing-ink);
   padding: 10px 12px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -549,14 +549,14 @@ body.admin-body {
 
 .portal-title {
   margin: 0 0 6px;
-  font-size: 28px;
+  font-size: var(--rp-font-size-3xl);
   font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .portal-subtitle {
   margin: 0;
   color: var(--landing-muted);
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .portal-actions {
@@ -573,7 +573,7 @@ body.admin-body {
   padding: 10px 16px;
   border-radius: 999px;
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -587,7 +587,7 @@ body.admin-body {
 
 .portal-button-xs {
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .portal-grid {
@@ -612,14 +612,14 @@ body.admin-body {
 
 .portal-card-title {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
   font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .portal-card-subtitle {
   margin: 0 0 16px;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .portal-stat {
@@ -631,11 +631,11 @@ body.admin-body {
 
 .portal-stat-label {
   color: var(--landing-muted);
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .portal-stat-value {
-  font-size: 22px;
+  font-size: var(--rp-font-size-xl);
   font-weight: 700;
   margin-top: 6px;
 }
@@ -657,7 +657,7 @@ body.admin-body {
   padding: 12px;
   background: var(--rp-bg-subtle);
   border-radius: 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .portal-chip {
@@ -668,14 +668,14 @@ body.admin-body {
   border-radius: 999px;
   background: var(--landing-accent-soft);
   color: var(--landing-accent);
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   font-weight: 600;
 }
 
 .portal-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .portal-table th,
@@ -737,7 +737,7 @@ body.admin-body {
   border: 1px solid var(--landing-border);
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   width: 100%;
 }
 
@@ -751,20 +751,20 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--landing-muted);
 }
 
 .portal-hint {
   margin: 0 0 10px;
   color: var(--landing-muted);
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .portal-level-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   font-weight: 600;
   color: var(--landing-accent);
   background: var(--landing-accent-soft);
@@ -785,7 +785,7 @@ body.admin-body {
   border: 1px solid var(--landing-border);
   border-radius: 8px;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--landing-ink);
 }
 
@@ -798,7 +798,7 @@ body.admin-body {
 .portal-flash {
   border-radius: 12px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   margin-bottom: 16px;
 }
 
@@ -860,7 +860,7 @@ body.admin-body {
   background: #f1f5f9;
   border-radius: 999px;
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: #334155;
 }
 
@@ -884,21 +884,21 @@ body.admin-body {
 
 .login-header h1 {
   margin: 0 0 6px;
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
   font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .login-header p {
   margin: 0 0 18px;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .login-alert,
 .login-notice {
   border-radius: 12px;
   padding: 10px 12px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   margin-bottom: 12px;
 }
 
@@ -918,7 +918,7 @@ body.admin-body {
 }
 
 .login-label {
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: var(--landing-ink);
 }
 
@@ -927,7 +927,7 @@ body.admin-body {
   border: 1px solid var(--landing-border);
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .login-button {
@@ -935,7 +935,7 @@ body.admin-body {
   border: none;
   border-radius: 12px;
   padding: 12px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   font-weight: 600;
   background: #1d4ed8;
   color: white;
@@ -945,7 +945,7 @@ body.admin-body {
 .login-meta {
   margin-top: 16px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--landing-muted);
 }
 
@@ -963,7 +963,7 @@ body.admin-body {
 
 .login-test-title {
   text-align: center;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--landing-muted);
   margin-bottom: 10px;
 }
@@ -986,14 +986,14 @@ body.admin-body {
   background: var(--rp-surface);
   border-radius: 10px;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   cursor: pointer;
 }
 
 .login-test-hint {
   margin-top: 12px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--landing-muted);
 }
 
@@ -1047,7 +1047,7 @@ body.admin-body {
   }
 
   .landing-logo-main {
-    font-size: 18px;
+    font-size: var(--rp-font-size-lg);
   }
 
   .landing-logo-icon {
@@ -1056,7 +1056,7 @@ body.admin-body {
   }
 
   .landing-logo-subtitle {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
   }
 
   .landing-header-actions {
@@ -1094,12 +1094,12 @@ body.admin-body {
 }
 
 .admin-brand-title {
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
   font-weight: 700;
 }
 
 .admin-brand-subtitle {
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: #94a3b8;
   margin-top: 4px;
   text-transform: uppercase;
@@ -1118,7 +1118,7 @@ body.admin-body {
   text-decoration: none;
   padding: 10px 12px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .admin-nav-link.active,
@@ -1151,14 +1151,14 @@ body.admin-body {
 }
 
 .admin-title {
-  font-size: 24px;
+  font-size: var(--rp-font-size-2xl);
   margin: 0;
 }
 
 .admin-subtitle {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .admin-card {
@@ -1188,11 +1188,11 @@ body.admin-body {
 
 .admin-stat-label {
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .admin-stat-value {
-  font-size: 24px;
+  font-size: var(--rp-font-size-2xl);
   font-weight: 700;
   margin-top: 8px;
 }
@@ -1201,7 +1201,7 @@ body.admin-body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .admin-table th,
@@ -1223,7 +1223,7 @@ body.admin-body {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   font-weight: 600;
   background: var(--primary-soft);
   color: var(--primary);
@@ -1258,7 +1258,7 @@ body.admin-body {
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .admin-button.primary {
@@ -1279,7 +1279,7 @@ body.admin-body {
 }
 
 .admin-form label {
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: var(--muted);
 }
 
@@ -1289,7 +1289,7 @@ body.admin-body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   width: 100%;
 }
 
@@ -1374,7 +1374,7 @@ body.admin-body {
 }
 
 .item-admin-header-title {
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
   font-weight: 600;
   text-align: center;
   color: var(--item-ink);
@@ -1417,7 +1417,7 @@ body.admin-body {
   gap: 16px;
   padding-top: 12px;
   color: var(--item-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-admin-subbar-left {
@@ -1490,13 +1490,13 @@ body.admin-body {
 
 .item-frame-header h2 {
   margin: 0 0 6px;
-  font-size: 18px;
+  font-size: var(--rp-font-size-lg);
 }
 
 .item-frame-header p {
   margin: 0;
   color: var(--item-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-frame-badges {
@@ -1528,14 +1528,14 @@ body.admin-body {
 
 .item-card-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--rp-font-size-md);
 }
 
 .item-info-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-info-row {
@@ -1543,12 +1543,12 @@ body.admin-body {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-label {
   display: block;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--item-muted);
   margin-bottom: 4px;
 }
@@ -1560,17 +1560,17 @@ body.admin-body {
   padding: 4px 10px;
   border-radius: 999px;
   background: #f1f5f9;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .item-content-card h4 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .item-question {
   margin: 12px 0;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .item-option-list {
@@ -1590,7 +1590,7 @@ body.admin-body {
   border: 1px solid var(--item-border);
   border-radius: 10px;
   background: var(--rp-bg-subtle);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-option.is-correct {
@@ -1616,7 +1616,7 @@ body.admin-body {
   background: var(--rp-bg-subtle);
   border-radius: 10px;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--item-muted);
 }
 
@@ -1632,7 +1632,7 @@ body.admin-body {
   background: var(--rp-surface);
   display: grid;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-ai-section.is-highlight {
@@ -1677,7 +1677,7 @@ body.admin-body {
 }
 
 .item-panel-note {
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--item-muted);
   margin: 0;
 }
@@ -1686,13 +1686,13 @@ body.admin-body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-checklist {
   display: grid;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   color: var(--item-muted);
 }
 
@@ -1743,7 +1743,7 @@ body.admin-body {
 .item-field {
   display: grid;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-field input,
@@ -1751,7 +1751,7 @@ body.admin-body {
   border: 1px solid var(--item-border);
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   width: 100%;
 }
 
@@ -1759,7 +1759,7 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   color: var(--item-muted);
   margin-bottom: 10px;
 }
@@ -1774,7 +1774,7 @@ body.admin-body {
   color: white;
   padding: 10px 16px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -1808,7 +1808,7 @@ body.admin-body {
 
 .item-button-sm {
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .item-badge {
@@ -1817,7 +1817,7 @@ body.admin-body {
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   border: 1px solid transparent;
 }
 
@@ -1865,7 +1865,7 @@ body.admin-body {
 .item-link {
   color: var(--item-muted);
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-avatar {
@@ -1878,7 +1878,7 @@ body.admin-body {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 @media (max-width: 1200px) {
@@ -1922,7 +1922,7 @@ body.admin-body {
   color: var(--item-muted);
   border-radius: 999px;
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   cursor: pointer;
 }
 
@@ -1946,7 +1946,7 @@ body.admin-body {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-score-row input {
@@ -1954,12 +1954,12 @@ body.admin-body {
   border: 1px solid var(--item-border);
   border-radius: 10px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-muted {
   color: var(--item-muted);
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .item-badge.is-retired {
@@ -1982,13 +1982,13 @@ body.admin-body {
 
 .report-title {
   margin: 8px 0 4px;
-  font-size: 22px;
+  font-size: var(--rp-font-size-xl);
 }
 
 .report-subtitle {
   margin: 0;
   color: var(--landing-muted);
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .report-pill {
@@ -1999,20 +1999,20 @@ body.admin-body {
   border-radius: 999px;
   background: var(--rp-info-soft);
   color: #0369a1;
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
   font-weight: 600;
 }
 
 .report-meta {
   display: grid;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .report-meta-label {
   display: block;
   color: var(--landing-muted);
-  font-size: 12px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .report-grid {
@@ -2042,7 +2042,7 @@ body.admin-body {
   margin: 0;
   display: grid;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
 }
 
 .report-list strong {
@@ -2057,7 +2057,7 @@ body.admin-body {
 
 .report-section h4 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 
 .rp-not-found {
@@ -2089,13 +2089,13 @@ body.admin-body {
   background: #eff6ff;
   color: var(--rp-blue);
   font-weight: 700;
-  font-size: 20px;
+  font-size: var(--rp-font-size-xl);
   margin-bottom: 16px;
 }
 
 .rp-not-found__title {
   margin: 0 0 10px;
-  font-size: 22px;
+  font-size: var(--rp-font-size-xl);
   font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--landing-ink);
 }
@@ -2103,7 +2103,7 @@ body.admin-body {
 .rp-not-found__description {
   margin: 0 0 22px;
   color: var(--landing-muted);
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   line-height: 1.6;
 }
 
@@ -2118,7 +2118,7 @@ body.admin-body {
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 10px 18px;
-  font-size: 13px;
+  font-size: var(--rp-font-size-sm);
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
@@ -2151,7 +2151,7 @@ body.admin-body {
   font-weight: 600;
   color: #475569;
   margin-bottom: 10px;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   letter-spacing: 4px;
 }
 .bogi-box-content {
@@ -2171,7 +2171,7 @@ body.admin-body {
   border-collapse: collapse;
   width: 100%;
   margin: 12px 0;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
 }
 .item-prompt-body th, .item-prompt-body td,
 .item-prompt th, .item-prompt td,

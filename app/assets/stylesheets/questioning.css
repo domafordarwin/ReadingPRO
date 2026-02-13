@@ -158,7 +158,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--rp-font-size-2xs);
   font-weight: var(--rp-font-weight-bold);
   background: var(--rp-bg-subtle);
   color: var(--rp-text-muted);
@@ -405,7 +405,7 @@
 }
 
 .q-type-card__icon {
-  font-size: 24px;
+  font-size: var(--rp-font-size-2xl);
   margin-bottom: var(--rp-space-2);
 }
 
@@ -748,7 +748,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--rp-font-size-base);
   font-weight: var(--rp-font-weight-bold);
 }
 
@@ -1076,7 +1076,7 @@
 }
 
 .q-empty-state__icon {
-  font-size: 48px;
+  font-size: var(--rp-font-size-4xl);
   margin-bottom: var(--rp-space-4);
   opacity: 0.5;
 }
