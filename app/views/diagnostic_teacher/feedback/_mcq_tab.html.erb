@@ -198,7 +198,7 @@
     margin: 0;
   }
   .mcq-header__count {
-    font-size: 20px;
+    font-size: var(--rp-font-size-lg);
     font-weight: 400;
     color: #64748b;
     margin-left: 8px;
@@ -219,13 +219,13 @@
     border-radius: 8px;
     background: #f8fafc;
     color: #475569;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s;
   }
   .mcq-prompt-toggle-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-  .mcq-prompt-toggle-btn__icon { font-size: 20px; }
+  .mcq-prompt-toggle-btn__icon { font-size: var(--rp-font-size-lg); }
   .mcq-prompt-toggle-btn__arrow {
     font-size: var(--rp-font-size-sm);
     color: #94a3b8;
@@ -262,7 +262,7 @@
     padding: 8px 10px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     background: white;
     color: #334155;
   }
@@ -271,7 +271,7 @@
     padding: 10px 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     line-height: 1.5;
     resize: vertical;
     font-family: inherit;
@@ -330,12 +330,12 @@
   }
   .mcq-card__number {
     font-weight: 700;
-    font-size: 20px;
+    font-size: var(--rp-font-size-lg);
     color: #2f5bff;
     white-space: nowrap;
   }
   .mcq-card__prompt {
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     color: #64748b;
     flex: 1;
     white-space: nowrap;
@@ -376,7 +376,7 @@
     letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
-  .mcq-meta-value { font-size: 20px; font-weight: 500; color: #334155; }
+  .mcq-meta-value { font-size: var(--rp-font-size-lg); font-weight: 500; color: #334155; }
   .mcq-indicator-badge {
     display: inline-block;
     background: #eff6ff; color: #1e40af;
@@ -400,7 +400,7 @@
     flex: 1;
     padding: 6px 10px;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     text-align: center;
   }
   .mcq-answer-box--correct {
@@ -430,7 +430,7 @@
     gap: 6px;
     padding: 4px 6px;
     border-radius: 6px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     color: #64748b;
     margin-bottom: 2px;
     line-height: 1.4;
@@ -463,7 +463,7 @@
     text-transform: uppercase; letter-spacing: 0.3px;
     margin-bottom: 4px; display: block;
   }
-  .mcq-proximity__text { font-size: 18px; color: #78350f; line-height: 1.5; margin: 0; }
+  .mcq-proximity__text { font-size: var(--rp-font-size-md); color: #78350f; line-height: 1.5; margin: 0; }
 
   /* 피드백 영역 */
   .mcq-feedback-display {
@@ -473,8 +473,8 @@
     min-height: 60px;
     margin-top: 4px;
   }
-  .mcq-feedback-text { font-size: 18px; color: #334155; line-height: 1.6; margin: 0; }
-  .mcq-feedback-placeholder { font-size: 18px; color: #94a3b8; margin: 0; font-style: italic; }
+  .mcq-feedback-text { font-size: var(--rp-font-size-md); color: #334155; line-height: 1.6; margin: 0; }
+  .mcq-feedback-placeholder { font-size: var(--rp-font-size-md); color: #94a3b8; margin: 0; font-style: italic; }
   .mcq-feedback-meta { font-size: var(--rp-font-size-sm); color: #94a3b8; display: block; margin-top: 6px; }
 
   /* 피드백 편집 */
@@ -485,7 +485,7 @@
     padding: 8px 10px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     line-height: 1.6;
     resize: vertical;
     font-family: inherit;
@@ -498,7 +498,7 @@
   /* 해설 */
   .mcq-explanation { margin-top: 10px; }
   .mcq-explanation__text {
-    font-size: 18px; color: #334155; line-height: 1.6;
+    font-size: var(--rp-font-size-md); color: #334155; line-height: 1.6;
     background: #f0f9ff; padding: 8px 10px; border-radius: 6px;
     border-left: 3px solid #2f5bff; margin: 4px 0 0 0;
   }
@@ -516,7 +516,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 18px;
+    font-size: var(--rp-font-size-md);
     color: #64748b;
   }
   .mcq-feedback-loading__spinner {
