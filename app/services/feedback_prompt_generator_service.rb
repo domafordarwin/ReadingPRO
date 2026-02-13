@@ -74,7 +74,7 @@ class FeedbackPromptGeneratorService
     category_label = CATEGORIES[@category.to_sym] || @category
 
     system_msg = <<~MSG
-      당신은 ReadingPRO 진단 시스템의 피드백 프롬프트 작성 전문가입니다.
+      당신은 Reading PRO 진단 시스템의 피드백 프롬프트 작성 전문가입니다.
       학생의 독서 진단 결과에 대한 정확하고 교육적인 피드백을 생성할 때 사용할 프롬프트를 작성해주세요.
 
       프롬프트는:

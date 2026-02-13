@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-puts "Seeding ReadingPRO database..."
+puts "Seeding Reading PRO database..."
 
 DEFAULT_PASSWORD = ENV.fetch("SEED_DEFAULT_PASSWORD", "ReadingPro$12#")
 

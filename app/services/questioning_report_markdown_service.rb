@@ -307,7 +307,7 @@ class QuestioningReportMarkdownService
       ---
 
       > #{meta.join(" | ")}
-      > ReadingPRO 발문 역량 평가 시스템
+      > Reading PRO 발문 역량 평가 시스템
     MD
   end
 
