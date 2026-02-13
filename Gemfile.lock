@@ -481,6 +481,7 @@ DEPENDENCIES
   roo
   rubocop-rails-omakase
   ruby-openai
+  rubyzip
   selenium-webdriver
   solid_cable
   solid_cache

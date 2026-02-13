@@ -58,6 +58,9 @@ gem "csv"
 # Excel file generation
 gem "caxlsx"
 
+# ZIP file manipulation (HWPX image injection)
+gem "rubyzip"
+
 # Excel file reading
 gem "roo"
 

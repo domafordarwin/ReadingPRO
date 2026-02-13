@@ -246,12 +246,19 @@
 <% end %>
 </div><!-- end report-printable-area -->
 
-<!-- PDF 저장 / 인쇄 액션 바 -->
+<!-- PDF 저장 / HWPx / 인쇄 액션 바 -->
 <div class="cr-show-actions-bar no-print">
   <button onclick="downloadPdf()" class="cr-show-actions-bar__btn cr-show-actions-bar__btn--pdf" id="pdf-download-btn">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     PDF 저장
   </button>
+  <%= link_to diagnostic_teacher_comprehensive_report_download_hwpx_path(@student.id, @attempt.id),
+        class: "cr-show-actions-bar__btn cr-show-actions-bar__btn--hwpx",
+        data: { turbo: false },
+        id: "hwpx-download-btn" do %>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    HWPx 저장
+  <% end %>
   <button onclick="window.print()" class="cr-show-actions-bar__btn cr-show-actions-bar__btn--print">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     인쇄
@@ -710,6 +717,12 @@ function drawRadarChart(svgId, legendId, data) {
   }
   .cr-show-actions-bar__btn--pdf:disabled {
     background: #9ca3af; cursor: not-allowed; box-shadow: none;
+  }
+  .cr-show-actions-bar__btn--hwpx {
+    background: #2563eb; color: white; text-decoration: none;
+  }
+  .cr-show-actions-bar__btn--hwpx:hover {
+    background: #1d4ed8; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3);
   }
   .cr-show-actions-bar__btn--print {
     background: white; color: #475569; border-color: #e2e8f0;

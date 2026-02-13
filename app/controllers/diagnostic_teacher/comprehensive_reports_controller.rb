@@ -216,6 +216,42 @@ module DiagnosticTeacher
       render json: { success: results[:failed] == 0, **results, total: attempt_ids.size }
     end
 
+    # GET /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/download_hwpx
+    def download_hwpx
+      load_student_and_attempt
+      @report = @attempt.attempt_report
+
+      unless @report&.comprehensive_report_generated?
+        redirect_to diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id),
+                    alert: "보고서가 아직 생성되지 않았습니다."
+        return
+      end
+
+      markdown = ComprehensiveReportMarkdownService.new(@report).generate
+      hwpx_service = HwpxConversionService.new
+      filename = "#{@student.name}_문해력진단보고서_#{Date.current.strftime('%Y%m%d')}"
+      hwpx_data = hwpx_service.convert_and_download(markdown: markdown, filename: filename)
+
+      # 레이더 차트 이미지 삽입 (가능한 경우)
+      radar_data = @report.section_data("area_analysis")["radar_data"]
+      if radar_data.present?
+        png_data = RadarChartService.new(radar_data).generate_png
+        if png_data
+          hwpx_data = HwpxImageInjector.new(hwpx_data)
+                        .inject_image(png_data, width_px: 460, height_px: 420, position: :after_first_heading)
+        end
+      end
+
+      send_data hwpx_data,
+                filename: "#{filename}.hwpx",
+                type: "application/vnd.hancom.hwpx",
+                disposition: "attachment"
+    rescue HwpxConversionService::HwpxServerError, HwpxConversionService::HwpxTimeoutError => e
+      Rails.logger.error("[ComprehensiveReports#download_hwpx] #{e.class}: #{e.message}")
+      redirect_to diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id),
+                  alert: "HWPx 문서 변환 중 오류가 발생했습니다: #{e.message}"
+    end
+
     # GET /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/job_status
     def job_status
       load_student_and_attempt

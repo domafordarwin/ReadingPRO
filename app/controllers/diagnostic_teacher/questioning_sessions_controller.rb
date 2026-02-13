@@ -174,6 +174,44 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
     @essay = @questioning_session.argumentative_essay
   end
 
+  # GET /diagnostic_teacher/questioning_sessions/:id/download_hwpx
+  def download_hwpx
+    @current_page = "questioning_modules"
+    @module = @questioning_session.questioning_module
+    @student = @questioning_session.student
+    report = @questioning_session.questioning_report
+
+    unless report
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  alert: "보고서가 없습니다. 먼저 보고서를 생성해 주세요."
+      return
+    end
+
+    markdown = QuestioningReportMarkdownService.new(@questioning_session, report).generate_hwpx_markdown
+    hwpx_service = HwpxConversionService.new
+    filename = "#{@student.name}_발문역량보고서_#{Date.current.strftime('%Y%m%d')}"
+    hwpx_data = hwpx_service.convert_and_download(markdown: markdown, filename: filename)
+
+    # 레이더 차트 이미지 삽입 (가능한 경우)
+    radar_data = build_questioning_radar_data(report)
+    if radar_data.present?
+      png_data = RadarChartService.new(radar_data).generate_png
+      if png_data
+        hwpx_data = HwpxImageInjector.new(hwpx_data)
+                      .inject_image(png_data, width_px: 460, height_px: 420, position: :after_first_heading)
+      end
+    end
+
+    send_data hwpx_data,
+              filename: "#{filename}.hwpx",
+              type: "application/vnd.hancom.hwpx",
+              disposition: "attachment"
+  rescue HwpxConversionService::HwpxServerError, HwpxConversionService::HwpxTimeoutError => e
+    Rails.logger.error("[QuestioningSessions#download_hwpx] #{e.class}: #{e.message}")
+    redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                alert: "HWPx 문서 변환 중 오류가 발생했습니다: #{e.message}"
+  end
+
   # GET /diagnostic_teacher/questioning_sessions/:id/download_report_md
   def download_report_md
     @current_page = "questioning_modules"
@@ -231,6 +269,21 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
 
   def set_role
     @current_role = "teacher"
+  end
+
+  # 발문 보고서용 레이더 차트 데이터 생성
+  def build_questioning_radar_data(report)
+    sections = report.report_sections || {}
+    competency_groups = QuestioningReportMarkdownService::COMPETENCY_GROUPS
+    labels = QuestioningReportMarkdownService::SECTION_LABELS
+
+    competency_groups.flat_map do |group_name, keys|
+      keys.map do |key|
+        score = sections.dig(key, "score")
+        next unless score.present?
+        { "name" => labels[key], "group" => group_name, "score" => score.to_f }
+      end
+    end.compact
   end
 
   def set_session
