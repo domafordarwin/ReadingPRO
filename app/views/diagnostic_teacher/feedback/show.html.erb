@@ -1,7 +1,7 @@
 <% content_for :page_title, "학생 피드백" %>
 
 <% if flash[:alert] %>
-  <div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px;">
+  <div style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: var(--rp-font-size-sm);">
     ⚠️ <%= flash[:alert] %>
   </div>
 <% end %>
@@ -79,8 +79,8 @@
     <%= render 'tendency_tab' %>
   <% rescue => e %>
     <div style="padding: 40px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; color: #dc2626;">
-      <p style="margin: 0; font-size: 14px; font-weight: 600;">피드백 데이터 로드 중 오류가 발생했습니다</p>
-      <p style="margin: 8px 0 0 0; font-size: 12px; color: #7f1d1d;"><%= e.message %></p>
+      <p style="margin: 0; font-size: var(--rp-font-size-base); font-weight: 600;">피드백 데이터 로드 중 오류가 발생했습니다</p>
+      <p style="margin: 8px 0 0 0; font-size: var(--rp-font-size-xs); color: #7f1d1d;"><%= e.message %></p>
     </div>
   <% end %>
 </div>
@@ -130,7 +130,7 @@
     align-items: center;
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 600;
     white-space: nowrap;
   }
@@ -147,14 +147,14 @@
 
   .rp-page-header__title {
     margin: 0;
-    font-size: 20px;
+    font-size: var(--rp-font-size-xl);
     font-weight: 700;
     color: #0f172a;
   }
 
   .rp-page-header__subtitle {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #64748b;
   }
 
@@ -174,7 +174,7 @@
     padding: 8px 12px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     min-width: 150px;
   }
 
@@ -182,7 +182,7 @@
     padding: 8px 12px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     min-width: 120px;
     background: white;
     cursor: pointer;
@@ -225,7 +225,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
   }
 
   .rp-tab-button.active {
@@ -245,7 +245,7 @@
     background: #2f5bff;
     color: white;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 700;
   }
 
@@ -314,7 +314,7 @@
 
   .rp-section-header h4 {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     color: #0f172a;
     flex: 1;
@@ -337,7 +337,7 @@
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     line-height: 1.6;
     resize: vertical;
   }
@@ -348,7 +348,7 @@
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     line-height: 1.5;
     resize: vertical;
   }
@@ -366,7 +366,7 @@
   }
 
   .rp-form-group label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-weight: 600;
     color: #0f172a;
   }
@@ -376,7 +376,7 @@
     padding: 8px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-checkbox {
@@ -384,7 +384,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-checkbox input {
@@ -403,7 +403,7 @@
     border: none;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     cursor: pointer;
     transition: all 0.2s ease;
   }
@@ -442,12 +442,12 @@
 
   .rp-btn--sm {
     padding: 6px 10px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
   }
 
   .rp-btn--xs {
     padding: 4px 8px;
-    font-size: 10px;
+    font-size: var(--rp-font-size-2xs);
   }
 
   /* 서술형 레이아웃 */
@@ -503,7 +503,7 @@
     background: white;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     white-space: nowrap;
     transition: all 0.15s;
     border: 1px solid #e2e8f0;
@@ -562,7 +562,7 @@
     background: transparent;
     border-bottom: 2px solid transparent;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     font-weight: 600;
     color: #64748b;
     transition: all 0.15s ease;
@@ -1230,7 +1230,7 @@
             const actionsArea = document.getElementById('comprehensive-feedback-actions');
 
             displayArea.innerHTML = `
-              <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
+              <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: var(--rp-font-size-sm);">
                 ${this.escapeHtml(data.feedback)}
               </div>
             `;
@@ -1621,7 +1621,7 @@
             const displayArea = document.getElementById('comprehensive-feedback-display');
 
             displayArea.innerHTML = `
-              <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: 13px;">
+              <div style="white-space: pre-wrap; line-height: 1.6; color: #1e293b; font-size: var(--rp-font-size-sm);">
                 ${this.escapeHtml(data.feedback)}
               </div>
             `;

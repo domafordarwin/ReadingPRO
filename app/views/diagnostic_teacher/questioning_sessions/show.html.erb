@@ -105,7 +105,7 @@
          style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 0; margin-bottom: var(--rp-space-3);">
       <div style="display: flex; align-items: center; gap: var(--rp-space-3);">
         <div class="q-module-card__stage-dot q-module-card__stage-dot--completed"
-             style="width: 28px; height: 28px; font-size: 12px; flex-shrink: 0;">
+             style="width: 28px; height: 28px; font-size: var(--rp-font-size-xs); flex-shrink: 0;">
           <%= stage_num %>
         </div>
         <div>
@@ -368,7 +368,7 @@
     <!-- Total Score -->
     <div style="text-align: center; padding: var(--rp-space-3); background: var(--rp-bg-subtle); border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-4);">
       <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-bottom: var(--rp-space-1);">총 점수</div>
-      <div style="font-size: 28px; font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);">
+      <div style="font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);">
         <% if @questioning_session.total_score.present? %>
           <%= @questioning_session.total_score.respond_to?(:round) ? @questioning_session.total_score.round(1) : @questioning_session.total_score %>
         <% else %>
@@ -407,7 +407,7 @@
         <div style="display: flex; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3); <%= msg.student? ? 'flex-direction: row-reverse;' : '' %>">
           <div style="padding: var(--rp-space-3) var(--rp-space-4); border-radius: 12px; max-width: 80%; font-size: var(--rp-font-size-sm); line-height: 1.7;
                       <%= msg.student? ? 'background: var(--rp-primary-soft); border-bottom-right-radius: 4px;' : 'background: var(--rp-bg-subtle); border-bottom-left-radius: 4px;' %>">
-            <div style="font-size: 11px; font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); margin-bottom: 4px;">
+            <div style="font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-muted); margin-bottom: 4px;">
               <%= msg.student? ? '학생' : 'AI' %> &middot; 턴 <%= msg.turn_number %>
             </div>
             <%= simple_format(msg.content, {}, wrapper_tag: 'span') %>

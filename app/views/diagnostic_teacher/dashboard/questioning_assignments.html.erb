@@ -29,19 +29,19 @@
 <div class="rp-card" style="margin-bottom: 24px;">
   <%= form_with url: diagnostic_teacher_create_questioning_assignment_path, method: :post, data: { turbo: false }, style: "display: flex; gap: 12px; align-items: center;" do |f| %>
     <h2 class="rp-section-title" style="margin: 0; white-space: nowrap;">새 배정</h2>
-    <select name="questioning_module_id" required style="flex: 2; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; min-width: 0;">
+    <select name="questioning_module_id" required style="flex: 2; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); min-width: 0;">
       <option value="">모듈 선택...</option>
       <% @active_modules.each do |mod| %>
         <option value="<%= mod.id %>"><%= mod.title %> (<%= mod.level_label %>)</option>
       <% end %>
     </select>
-    <select name="school_id" style="flex: 1.5; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; min-width: 0;">
+    <select name="school_id" style="flex: 1.5; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); min-width: 0;">
       <option value="">학교 선택...</option>
       <% @schools.each do |school| %>
         <option value="<%= school.id %>"><%= school.name %> (<%= school.students.size %>명)</option>
       <% end %>
     </select>
-    <input type="date" name="due_date" style="flex-shrink: 0; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; width: 160px;">
+    <input type="date" name="due_date" style="flex-shrink: 0; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); width: 160px;">
     <button type="submit" class="rp-btn rp-btn--primary" style="white-space: nowrap; flex-shrink: 0;">배정하기</button>
   <% end %>
 </div>
@@ -127,7 +127,7 @@
               <tr>
                 <td colspan="8" style="padding: 0;">
                   <details style="padding: 12px 16px; background: #f8fafc;">
-                    <summary style="cursor: pointer; font-size: 13px; color: #2563eb; font-weight: 500;">
+                    <summary style="cursor: pointer; font-size: var(--rp-font-size-sm); color: #2563eb; font-weight: 500;">
                       학생 개별 배정 (<%= assignment.school.students.count %>명)
                     </summary>
                     <div style="margin-top: 12px;">
@@ -140,12 +140,12 @@
                             <% already_assigned = QuestioningModuleAssignment.active.exists?(
                                  student: student, questioning_module_id: assignment.questioning_module_id
                                ) %>
-                            <label style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; cursor: pointer; <%= 'opacity: 0.5;' if already_assigned %>">
+                            <label style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-sm); cursor: pointer; <%= 'opacity: 0.5;' if already_assigned %>">
                               <input type="checkbox" name="student_ids[]" value="<%= student.id %>"
                                      <%= 'checked disabled' if already_assigned %>>
                               <span><%= student.name %></span>
                               <% if already_assigned %>
-                                <span class="rp-badge rp-badge--success" style="font-size: 10px; padding: 2px 6px;">배정됨</span>
+                                <span class="rp-badge rp-badge--success" style="font-size: var(--rp-font-size-2xs); padding: 2px 6px;">배정됨</span>
                               <% end %>
                             </label>
                           <% end %>
@@ -167,7 +167,7 @@
         <% if @assignments.current_page > 1 %>
           <%= link_to "이전", diagnostic_teacher_questioning_assignments_path(page: @assignments.current_page - 1, status: @status_filter.presence), class: "rp-btn rp-btn--secondary rp-btn--sm" %>
         <% end %>
-        <span style="padding: 6px 12px; color: #64748b; font-size: 13px;">
+        <span style="padding: 6px 12px; color: #64748b; font-size: var(--rp-font-size-sm);">
           <%= @assignments.current_page %> / <%= @assignments.total_pages %>
         </span>
         <% if @assignments.current_page < @assignments.total_pages %>
@@ -177,7 +177,7 @@
     <% end %>
   <% else %>
     <div class="rp-empty-state">
-      <p style="font-size: 16px; color: #64748b;">배정된 발문 모듈이 없습니다.</p>
+      <p style="font-size: var(--rp-font-size-md); color: #64748b;">배정된 발문 모듈이 없습니다.</p>
       <p style="color: #94a3b8;">위의 배정 폼에서 모듈을 학교에 배정해보세요.</p>
     </div>
   <% end %>
@@ -185,28 +185,28 @@
 
 <style>
   .rp-page-header { margin-bottom: 24px; }
-  .rp-page-header__title { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
-  .rp-page-header__subtitle { font-size: 14px; color: #94a3b8; margin: 0; }
+  .rp-page-header__title { font-size: var(--rp-font-size-3xl); font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+  .rp-page-header__subtitle { font-size: var(--rp-font-size-base); color: #94a3b8; margin: 0; }
   .rp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .rp-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
-  .rp-stat-label { font-size: 12px; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 8px; }
-  .rp-stat-value { font-size: 28px; font-weight: 700; color: #0f172a; }
+  .rp-stat-label { font-size: var(--rp-font-size-xs); text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 8px; }
+  .rp-stat-value { font-size: var(--rp-font-size-3xl); font-weight: 700; color: #0f172a; }
   .rp-stat-value--info { color: #2563eb; }
   .rp-stat-value--success { color: #10b981; }
   .rp-stat-value--danger { color: #ef4444; }
   .rp-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
   .rp-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .rp-section-title { font-size: 18px; font-weight: 600; color: #0f172a; margin: 0; }
+  .rp-section-title { font-size: var(--rp-font-size-lg); font-weight: 600; color: #0f172a; margin: 0; }
   .rp-table-wrapper { overflow-x: auto; }
-  .rp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rp-table { width: 100%; border-collapse: collapse; font-size: var(--rp-font-size-base); }
   .rp-table th, .rp-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-  .rp-table th { font-weight: 600; color: #94a3b8; background: #f8fafc; font-size: 12px; text-transform: uppercase; }
-  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+  .rp-table th { font-weight: 600; color: #94a3b8; background: #f8fafc; font-size: var(--rp-font-size-xs); text-transform: uppercase; }
+  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
   .rp-btn--primary { background: #2f5bff; color: white; }
   .rp-btn--secondary { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
-  .rp-btn--sm { padding: 6px 12px; font-size: 12px; }
+  .rp-btn--sm { padding: 6px 12px; font-size: var(--rp-font-size-xs); }
   .rp-btn--danger { background: #fee2e2; color: #dc2626; }
-  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: 500; }
   .rp-badge--warning { background: #fef3c7; color: #92400e; }
   .rp-badge--success { background: #d1fae5; color: #065f46; }
   .rp-badge--info { background: #dbeafe; color: #1e3a8a; }
@@ -215,7 +215,7 @@
   .rp-badge--level { background: #ede9fe; color: #5b21b6; }
   .rp-empty-state { text-align: center; padding: 60px 40px; }
   .rp-filter-tabs { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: #f1f5f9; border-radius: 8px; }
-  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
+  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
   .rp-filter-tab:hover { color: #0f172a; background: rgba(255,255,255,0.5); }
   .rp-filter-tab--active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 </style>

@@ -114,7 +114,7 @@
                 <tr>
                   <td>
                     <strong>서술형 피드백</strong>
-                    <div class="rp-text-muted" style="font-size: 12px;"><%= feedback_waiting.count %>건 대기</div>
+                    <div class="rp-text-muted" style="font-size: var(--rp-font-size-xs);"><%= feedback_waiting.count %>건 대기</div>
                   </td>
                   <td class="rp-text-right">
                     <span class="rp-badge rp-badge--warning">대기</span>
@@ -125,7 +125,7 @@
                 <tr>
                   <td>
                     <strong>피드백 완료</strong>
-                    <div class="rp-text-muted" style="font-size: 12px;"><%= @completed_feedback %>건 완료</div>
+                    <div class="rp-text-muted" style="font-size: var(--rp-font-size-xs);"><%= @completed_feedback %>건 완료</div>
                   </td>
                   <td class="rp-text-right">
                     <span class="rp-badge rp-badge--success">완료</span>

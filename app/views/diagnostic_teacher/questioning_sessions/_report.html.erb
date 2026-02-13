@@ -66,11 +66,11 @@
     <div style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: var(--rp-primary); text-transform: uppercase; letter-spacing: 0.05em;">종합 발문 역량 수준</div>
     <div style="display: flex; align-items: center; gap: var(--rp-space-3);">
       <div style="text-align: center;">
-        <div style="font-size: 9px; color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">학년</div>
+        <div style="font-size: var(--rp-font-size-2xs); color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">학년</div>
         <div style="display: inline-flex; align-items: center; padding: var(--rp-space-1) var(--rp-space-3); border-radius: 999px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); <%= level_config[:badge_style] %>"><%= level_label %></div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 9px; color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">성취 수준</div>
+        <div style="font-size: var(--rp-font-size-2xs); color: var(--rp-text-muted); margin-bottom: 2px; letter-spacing: 0.05em;">성취 수준</div>
         <div style="display: inline-flex; align-items: center; gap: var(--rp-space-2); padding: var(--rp-space-1) var(--rp-space-3); background: white; border-radius: 999px; border: 2px solid var(--rp-primary);">
           <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= report.literacy_level_label %></span>
         </div>
@@ -104,11 +104,11 @@
             bar_color = sc >= 80 ? "#16a34a" : sc >= 60 ? "#2563eb" : sc >= 40 ? "#f59e0b" : "#dc2626"
           %>
           <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: 6px;">
-            <span style="font-size: 11px; color: var(--rp-text-muted); width: 70px; flex-shrink: 0; text-align: right;"><%= rd[:name] %></span>
+            <span style="font-size: var(--rp-font-size-2xs); color: var(--rp-text-muted); width: 70px; flex-shrink: 0; text-align: right;"><%= rd[:name] %></span>
             <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
               <div style="width: <%= sc %>%; height: 100%; background: <%= bar_color %>; border-radius: 4px;"></div>
             </div>
-            <span style="font-size: 11px; font-weight: 600; color: <%= bar_color %>; width: 32px; text-align: right;"><%= sc.to_i %></span>
+            <span style="font-size: var(--rp-font-size-2xs); font-weight: 600; color: <%= bar_color %>; width: 32px; text-align: right;"><%= sc.to_i %></span>
           </div>
         <% end %>
       </div>
@@ -183,7 +183,7 @@
           <% if strengths.any? %>
             <div style="margin-top: var(--rp-space-2);">
               <% strengths.first(3).each do |s| %>
-                <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                <div style="font-size: var(--rp-font-size-2xs); color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                   <span style="flex-shrink: 0;">✓</span> <%= s %>
                 </div>
               <% end %>
@@ -194,7 +194,7 @@
           <% if improvements.any? %>
             <div style="margin-top: var(--rp-space-1);">
               <% improvements.first(3).each do |imp| %>
-                <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                <div style="font-size: var(--rp-font-size-2xs); color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                   <span style="flex-shrink: 0;">△</span> <%= imp %>
                 </div>
               <% end %>
@@ -254,7 +254,7 @@
           <% if strengths.any? %>
             <div style="margin-top: var(--rp-space-2);">
               <% strengths.first(3).each do |s| %>
-                <div style="font-size: 11px; color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                <div style="font-size: var(--rp-font-size-2xs); color: #16a34a; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                   <span style="flex-shrink: 0;">✓</span> <%= s %>
                 </div>
               <% end %>
@@ -264,7 +264,7 @@
           <% if improvements.any? %>
             <div style="margin-top: var(--rp-space-1);">
               <% improvements.first(3).each do |imp| %>
-                <div style="font-size: 11px; color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
+                <div style="font-size: var(--rp-font-size-2xs); color: #f59e0b; display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2px;">
                   <span style="flex-shrink: 0;">△</span> <%= imp %>
                 </div>
               <% end %>
@@ -299,8 +299,8 @@
   <!-- 역량 요약 바 -->
   <div style="display: flex; align-items: center; gap: var(--rp-space-4); margin-bottom: var(--rp-space-4); padding: var(--rp-space-3); background: linear-gradient(135deg, #f0f4ff, #f5f3ff); border-radius: var(--rp-radius-md);">
     <div style="text-align: center; padding: 0 var(--rp-space-4); border-right: 1px solid #e0e7ff;">
-      <div style="font-size: 28px; font-weight: 700; color: var(--rp-primary);"><%= avg_score %></div>
-      <div style="font-size: 11px; color: var(--rp-text-muted);">9개 역량 평균</div>
+      <div style="font-size: var(--rp-font-size-3xl); font-weight: 700; color: var(--rp-primary);"><%= avg_score %></div>
+      <div style="font-size: var(--rp-font-size-2xs); color: var(--rp-text-muted);">9개 역량 평균</div>
     </div>
     <div style="flex: 1;">
       <div style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.6;">
@@ -335,7 +335,7 @@
         <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #16a34a; margin: 0 0 var(--rp-space-2) 0;">주요 강점</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <% all_strengths.first(6).each do |s| %>
-            <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #f0fdf4; border-radius: var(--rp-radius-sm);">
               <span style="color: #16a34a; flex-shrink: 0; font-weight: 600;">✓</span>
               <span><strong style="color: #166534;"><%= s[:area] %></strong> &mdash; <%= s[:text] %></span>
             </div>
@@ -349,7 +349,7 @@
         <h4 style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #f59e0b; margin: 0 0 var(--rp-space-2) 0;">보완이 필요한 부분</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <% all_improvements.first(6).each do |imp| %>
-            <div style="font-size: 12px; color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
+            <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); display: flex; align-items: flex-start; gap: 6px; padding: 6px 10px; background: #fffbeb; border-radius: var(--rp-radius-sm);">
               <span style="color: #f59e0b; flex-shrink: 0; font-weight: 600;">△</span>
               <span><strong style="color: #92400e;"><%= imp[:area] %></strong> &mdash; <%= imp[:text] %></span>
             </div>
@@ -394,7 +394,7 @@
             <div style="padding: var(--rp-space-4); background: #fafbff; border: 1px solid #e2e8f0; border-radius: var(--rp-radius-md); border-left: 4px solid <%= ac %>;">
               <!-- 영역 헤더 -->
               <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-3);">
-                <span style="width: 28px; height: 28px; border-radius: 50%; background: <%= ac %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
+                <span style="width: 28px; height: 28px; border-radius: 50%; background: <%= ac %>; color: white; display: flex; align-items: center; justify-content: center; font-size: var(--rp-font-size-sm); font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
                 <span style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= pa["area"] %></span>
               </div>
 
@@ -403,13 +403,13 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-3); margin-bottom: var(--rp-space-3);">
                   <% if pa["current_level"].present? %>
                     <div style="padding: var(--rp-space-3); background: #fef2f2; border-radius: var(--rp-radius-sm);">
-                      <div style="font-size: 11px; font-weight: 600; color: #dc2626; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">현재 수준</div>
+                      <div style="font-size: var(--rp-font-size-2xs); font-weight: 600; color: #dc2626; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">현재 수준</div>
                       <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6;"><%= pa["current_level"] %></div>
                     </div>
                   <% end %>
                   <% if pa["target"].present? %>
                     <div style="padding: var(--rp-space-3); background: #f0fdf4; border-radius: var(--rp-radius-sm);">
-                      <div style="font-size: 11px; font-weight: 600; color: #16a34a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">목표 수준</div>
+                      <div style="font-size: var(--rp-font-size-2xs); font-weight: 600; color: #16a34a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">목표 수준</div>
                       <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.6;"><%= pa["target"] %></div>
                     </div>
                   <% end %>
@@ -420,7 +420,7 @@
               <% activities = pa["activities"] || [] %>
               <% if activities.any? %>
                 <div style="margin-bottom: var(--rp-space-3);">
-                  <div style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 6px;">학교에서 할 수 있는 활동</div>
+                  <div style="font-size: var(--rp-font-size-xs); font-weight: 600; color: #1e40af; margin-bottom: 6px;">학교에서 할 수 있는 활동</div>
                   <ul style="margin: 0; padding-left: 18px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
                     <% activities.each do |act| %>
                       <li><%= act %></li>
@@ -433,7 +433,7 @@
               <% home_acts = pa["home_activities"] || [] %>
               <% if home_acts.any? %>
                 <div style="margin-bottom: var(--rp-space-3);">
-                  <div style="font-size: 12px; font-weight: 600; color: #7c3aed; margin-bottom: 6px;">가정에서 할 수 있는 활동</div>
+                  <div style="font-size: var(--rp-font-size-xs); font-weight: 600; color: #7c3aed; margin-bottom: 6px;">가정에서 할 수 있는 활동</div>
                   <ul style="margin: 0; padding-left: 18px; font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;">
                     <% home_acts.each do |act| %>
                       <li><%= act %></li>
@@ -446,10 +446,10 @@
               <% books = pa["recommended_books"] || [] %>
               <% if books.any? %>
                 <div>
-                  <div style="font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 6px;">추천 도서</div>
+                  <div style="font-size: var(--rp-font-size-xs); font-weight: 600; color: #92400e; margin-bottom: 6px;">추천 도서</div>
                   <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                     <% books.each do |book| %>
-                      <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; font-size: 12px; color: #92400e;">
+                      <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; font-size: var(--rp-font-size-xs); color: #92400e;">
                         📖 <%= book %>
                       </span>
                     <% end %>
@@ -476,7 +476,7 @@
           ].each do |goal| %>
             <% if reco[goal[:key]].present? %>
               <div style="padding: var(--rp-space-4); background: <%= goal[:bg] %>; border: 1px solid <%= goal[:border] %>; border-radius: var(--rp-radius-md);">
-                <div style="font-size: 12px; font-weight: 700; color: <%= goal[:color] %>; margin-bottom: var(--rp-space-2); text-transform: uppercase; letter-spacing: 0.05em;"><%= goal[:label] %></div>
+                <div style="font-size: var(--rp-font-size-xs); font-weight: 700; color: <%= goal[:color] %>; margin-bottom: var(--rp-space-2); text-transform: uppercase; letter-spacing: 0.05em;"><%= goal[:label] %></div>
                 <div style="font-size: var(--rp-font-size-xs); color: var(--rp-text-body); line-height: 1.7;"><%= simple_format(reco[goal[:key]]) %></div>
               </div>
             <% end %>
@@ -510,7 +510,7 @@
         %>
         <div style="padding: var(--rp-space-4); background: <%= gc[:bg] %>; border: 1px solid <%= gc[:border] %>; border-radius: var(--rp-radius-md);">
           <div style="display: flex; align-items: center; gap: var(--rp-space-2); margin-bottom: var(--rp-space-2);">
-            <span style="width: 24px; height: 24px; border-radius: 50%; background: <%= gc[:bar] %>; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: <%= gc[:bar] %>; color: white; display: flex; align-items: center; justify-content: center; font-size: var(--rp-font-size-xs); font-weight: 700; flex-shrink: 0;"><%= idx + 1 %></span>
             <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: <%= gc[:title] %>;"><%= area[:name] %></span>
             <span style="font-size: var(--rp-font-size-xs); color: var(--rp-text-muted); margin-left: auto;"><%= area[:score].to_i %>점 / 100</span>
           </div>
@@ -651,7 +651,7 @@
       ['이해 역량', '사고 역량', '소통·적용 역량'].forEach(function(group) {
         var colors = groupColors[group];
         var item = document.createElement('div');
-        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;font-weight:500;';
+        item.style.cssText = 'display:flex;align-items:center;gap:6px;font-size: var(--rp-font-size-xs);color:#475569;font-weight:500;';
         item.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:' + colors.stroke + ';flex-shrink:0;"></span><span>' + group + '</span>';
         legend.appendChild(item);
       });

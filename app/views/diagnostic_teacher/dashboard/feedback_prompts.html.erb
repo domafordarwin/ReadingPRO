@@ -77,7 +77,7 @@
         </div>
 
         <div class="rp-prompt-content">
-          <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #0f172a;"><%= prompt.name %></h4>
+          <h4 style="margin: 0 0 8px 0; font-size: var(--rp-font-size-md); color: #0f172a;"><%= prompt.name %></h4>
           <p class="rp-prompt-text"><%= truncate(prompt.template, length: 200) %></p>
         </div>
 
@@ -148,7 +148,7 @@
     padding: 10px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-family: inherit;
     background: white;
   }
@@ -166,7 +166,7 @@
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s;
@@ -239,7 +239,7 @@
   .rp-icon-btn--danger:hover { background: #fee2e2; box-shadow: 0 2px 6px rgba(220,38,38,0.2); }
 
   .rp-prompt-date {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #94a3b8;
   }
 
@@ -247,7 +247,7 @@
     display: inline-block;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 500;
   }
 
@@ -274,7 +274,7 @@
   }
 
   .rp-prompt-text {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     line-height: 1.6;
     color: #475569;
     margin: 0;
@@ -284,7 +284,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #94a3b8;
     flex-wrap: wrap;
     gap: 8px;
@@ -313,7 +313,7 @@
   }
 
   .rp-empty-state p {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #94a3b8;
     margin: 0;
   }
@@ -335,7 +335,7 @@
     border: 1px solid #e2e8f0;
     background: white;
     color: #0f172a;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     text-decoration: none;
     transition: all 0.15s;
     cursor: pointer;
@@ -358,14 +358,14 @@
   }
 
   .rp-page-header__title {
-    font-size: 28px;
+    font-size: var(--rp-font-size-3xl);
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 8px 0;
   }
 
   .rp-page-header__subtitle {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #94a3b8;
     margin: 0;
   }
@@ -418,7 +418,7 @@
   }
 
   .rp-modal__title {
-    font-size: 20px;
+    font-size: var(--rp-font-size-xl);
     font-weight: 700;
     color: #0f172a;
     margin: 0;
@@ -427,7 +427,7 @@
   .rp-modal__close {
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: var(--rp-font-size-2xl);
     color: #94a3b8;
     cursor: pointer;
     padding: 0;
@@ -460,7 +460,7 @@
 
   .rp-label {
     display: block;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 500;
     margin-bottom: 8px;
     color: #0f172a;
@@ -472,7 +472,7 @@
     padding: 10px 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-family: inherit;
     background: white;
   }
@@ -490,7 +490,7 @@
   }
 
   .rp-form__help {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #94a3b8;
     margin-top: 6px;
     margin-bottom: 0;
@@ -516,7 +516,7 @@
   .rp-generation-error p {
     color: #dc2626;
     margin: 0;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
   }
 
   .rp-generation-loading {
@@ -543,7 +543,7 @@
 
   .rp-generation-loading p {
     color: #94a3b8;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     margin: 0;
   }
 </style>
@@ -645,7 +645,7 @@
         </div>
         <div class="rp-form-group">
           <label class="rp-label">템플릿 내용 *</label>
-          <textarea name="feedback_prompt[template]" id="edit-prompt-template" class="rp-textarea" required style="min-height: 300px; font-family: monospace; font-size: 13px; line-height: 1.5;"></textarea>
+          <textarea name="feedback_prompt[template]" id="edit-prompt-template" class="rp-textarea" required style="min-height: 300px; font-family: monospace; font-size: var(--rp-font-size-sm); line-height: 1.5;"></textarea>
         </div>
       </div>
       <div class="rp-modal__footer">

@@ -5,20 +5,20 @@
     <h1 class="rp-page-header__title">학교 담당자 관리</h1>
     <p class="rp-page-header__subtitle">학교 담당자(school_admin)의 정보를 관리합니다</p>
   </div>
-  <%= link_to "새 학교 등록", new_diagnostic_teacher_school_path, class: "rp-btn rp-btn--primary", style: "white-space: nowrap; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; background: #2f5bff; color: white; text-decoration: none;" %>
+  <%= link_to "새 학교 등록", new_diagnostic_teacher_school_path, class: "rp-btn rp-btn--primary", style: "white-space: nowrap; padding: 10px 16px; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; background: #2f5bff; color: white; text-decoration: none;" %>
 </div>
 
 <% if flash[:temp_password].present? %>
   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: 16px;">학교 관리자 계정이 생성되었습니다</h3>
-    <p style="margin: 0 0 8px 0; font-size: 14px; color: #166534;">
+    <h3 style="margin: 0 0 12px 0; color: #166534; font-size: var(--rp-font-size-md);">학교 관리자 계정이 생성되었습니다</h3>
+    <p style="margin: 0 0 8px 0; font-size: var(--rp-font-size-base); color: #166534;">
       <strong>이메일:</strong> <%= flash[:admin_email] %>
     </p>
-    <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">
+    <p style="margin: 0 0 12px 0; font-size: var(--rp-font-size-base); color: #166534;">
       <strong>임시 비밀번호:</strong>
-      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-md); font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
     </p>
-    <p style="margin: 0; font-size: 12px; color: #15803d;">이 비밀번호를 학교 관리자에게 전달해주세요. 첫 로그인 시 비밀번호 변경이 필요합니다.</p>
+    <p style="margin: 0; font-size: var(--rp-font-size-xs); color: #15803d;">이 비밀번호를 학교 관리자에게 전달해주세요. 첫 로그인 시 비밀번호 변경이 필요합니다.</p>
   </div>
 <% end %>
 
@@ -181,7 +181,7 @@
   }
 
   .rp-stat-label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     text-transform: uppercase;
     color: #94a3b8;
     font-weight: 600;
@@ -190,7 +190,7 @@
   }
 
   .rp-stat-value {
-    font-size: 28px;
+    font-size: var(--rp-font-size-3xl);
     font-weight: 700;
     color: #0f172a;
     margin-bottom: 4px;
@@ -214,7 +214,7 @@
   }
 
   .rp-section-title {
-    font-size: 18px;
+    font-size: var(--rp-font-size-lg);
     font-weight: 600;
     color: #0f172a;
     margin: 0 0 20px 0;
@@ -234,7 +234,7 @@
   .rp-table th {
     padding: 12px 16px;
     text-align: left;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     font-weight: 600;
     color: #475569;
     text-transform: uppercase;
@@ -244,7 +244,7 @@
   .rp-table td {
     padding: 12px 16px;
     border-bottom: 1px solid #e2e8f0;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #475569;
   }
 
@@ -258,7 +258,7 @@
     background: #e0e7ff;
     color: #3730a3;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-weight: 500;
   }
 
@@ -266,7 +266,7 @@
     display: inline-block;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 500;
   }
 
@@ -295,7 +295,7 @@
   }
 
   .rp-empty-state p {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #94a3b8;
     margin: 0;
   }
@@ -305,14 +305,14 @@
   }
 
   .rp-page-header__title {
-    font-size: 28px;
+    font-size: var(--rp-font-size-3xl);
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 8px 0;
   }
 
   .rp-page-header__subtitle {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     color: #94a3b8;
     margin: 0;
   }
@@ -322,7 +322,7 @@
     background: #f1f5f9;
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-family: 'SF Mono', 'Consolas', monospace;
     color: #475569;
   }
@@ -332,7 +332,7 @@
     display: inline-block;
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     font-weight: 600;
   }
 
