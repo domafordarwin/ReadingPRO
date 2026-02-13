@@ -91,7 +91,46 @@ class FixItem133PromptAndRubric < ActiveRecord::Migration[8.0]
     item = Item.find_by(code: "C6DA322E_ITEM_S009")
     return unless item
 
-    clean_prompt = "아래 자료를 활용하여 위의 토론에 참여한다면, 찬성측 또는 반대측 어느 쪽에서 토론할 수 있는지 쓰고, 어떤 측면에서 그러한지 명확히 근거를 들어 서술하시오.\n\n[자료]\n  지표                          1인 배달 자주 이용 집단   권장/전체 평균\n  나트륨 섭취량 (배수)            1.7배                  1.0배(권장량)\n  포화지방 섭취량 (배수)          1.5배                  1.0배(권장량)\n  고열량·고지방 메뉴 비율 (%)     65%                    -\n  채소·과일 메뉴 비율 (%)         8%                     -\n  BMI ≥ 25 비율 (%)             42%                    29%"
+    clean_prompt = <<~PROMPT.strip
+      아래 자료를 활용하여 위의 토론에 참여한다면, 찬성측 또는 반대측 어느 쪽에서 토론할 수 있는지 쓰고, 어떤 측면에서 그러한지 명확히 근거를 들어 서술하시오.
+
+      <table style="border-collapse:collapse; margin-top:12px;">
+        <thead>
+          <tr>
+            <th style="border:1px solid #cbd5e1; padding:8px 12px; background:#f1f5f9; text-align:left;">지표</th>
+            <th style="border:1px solid #cbd5e1; padding:8px 12px; background:#f1f5f9; text-align:center;">1인 배달 자주 이용 집단</th>
+            <th style="border:1px solid #cbd5e1; padding:8px 12px; background:#f1f5f9; text-align:center;">권장/전체 평균</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px;">나트륨 섭취량 (배수)</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">1.7배</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">1.0배(권장량)</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px;">포화지방 섭취량 (배수)</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">1.5배</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">1.0배(권장량)</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px;">고열량·고지방 메뉴 비율 (%)</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">65%</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">-</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px;">채소·과일 메뉴 비율 (%)</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">8%</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">-</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px;">BMI ≥ 25 비율 (%)</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">42%</td>
+            <td style="border:1px solid #cbd5e1; padding:8px 12px; text-align:center;">29%</td>
+          </tr>
+        </tbody>
+      </table>
+    PROMPT
 
     item.update_column(:prompt, clean_prompt)
 
