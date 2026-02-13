@@ -46,7 +46,7 @@
         <% cache(cache_key_for_item(item), expires_in: 1.hour) do %>
           <tr id="<%= dom_id_for_item(item) %>" onclick="location.href='<%= edit_researcher_item_path(item) %>'">
             <td><strong><%= item.code %></strong></td>
-            <td style="font-size: 12px; color: #666;">
+            <td style="font-size: var(--rp-font-size-xs); color: #666;">
               <%= truncate(strip_tags(item.prompt), length: 100) %>
             </td>
             <td>

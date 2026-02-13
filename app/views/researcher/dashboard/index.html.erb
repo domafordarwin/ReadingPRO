@@ -59,21 +59,21 @@
   }
 
   .stat-card__label {
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #666;
     margin-bottom: 12px;
     font-weight: 600;
   }
 
   .stat-card__value {
-    font-size: 36px;
+    font-size: var(--rp-font-size-3xl);
     font-weight: 700;
     color: #333;
     margin-bottom: 8px;
   }
 
   .stat-card__link {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #667eea;
     text-decoration: none;
     font-weight: 600;
@@ -114,14 +114,14 @@
   }
 
   .action-card__title {
-    font-size: 15px;
+    font-size: var(--rp-font-size-md);
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
   }
 
   .action-card__subtitle {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #999;
   }
 
@@ -148,14 +148,14 @@
   }
 
   .recent-card__title {
-    font-size: 16px;
+    font-size: var(--rp-font-size-md);
     font-weight: 700;
     color: #333;
     margin: 0;
   }
 
   .recent-card__link {
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #667eea;
     text-decoration: none;
     font-weight: 600;
@@ -190,14 +190,14 @@
   }
 
   .recent-item__title {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
   }
 
   .recent-item__meta {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #666;
   }
 
@@ -207,7 +207,7 @@
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-weight: 600;
     text-decoration: none;
   }
@@ -244,7 +244,7 @@
 <div class="portal-card">
   <!-- 헤더 -->
   <div class="dashboard-header">
-    <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #333;">문항 개발 대시보드</h2>
+    <h2 style="margin: 0; font-size: var(--rp-font-size-xl); font-weight: 700; color: #333;">문항 개발 대시보드</h2>
     <div class="dashboard-actions">
       <%= link_to researcher_item_create_path, class: "btn-new-item" do %>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -281,7 +281,7 @@
   </div>
 
   <!-- 빠른 액션 -->
-  <h3 style="font-size: 16px; font-weight: 700; color: #333; margin-bottom: 16px;">빠른 액션</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: 700; color: #333; margin-bottom: 16px;">빠른 액션</h3>
   <div class="quick-actions">
     <%= link_to new_researcher_stimulus_path, class: "action-card" do %>
       <svg class="action-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -319,7 +319,7 @@
   </div>
 
   <!-- 최근 활동 -->
-  <h3 style="font-size: 16px; font-weight: 700; color: #333; margin: 32px 0 16px 0;">최근 활동</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: 700; color: #333; margin: 32px 0 16px 0;">최근 활동</h3>
   <div class="recent-section">
     <!-- 최근 문항 -->
     <div class="recent-card">

@@ -6,8 +6,8 @@
 
   <% if diagnostic.errors.any? %>
     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-      <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: 14px;"><%= diagnostic.errors.count %>개의 오류가 있습니다:</h4>
-      <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: 13px;">
+      <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: var(--rp-font-size-base);"><%= diagnostic.errors.count %>개의 오류가 있습니다:</h4>
+      <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: var(--rp-font-size-sm);">
         <% diagnostic.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
         <% end %>

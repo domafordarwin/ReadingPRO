@@ -40,11 +40,11 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 16px;
-    font-size: 28px;
+    font-size: var(--rp-font-size-3xl);
   }
 
   .evaluation-card__title {
-    font-size: 16px;
+    font-size: var(--rp-font-size-md);
     font-weight: 600;
     color: #333;
     margin-bottom: 12px;
@@ -54,7 +54,7 @@
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #666;
   }
 
@@ -66,7 +66,7 @@
 
   .evaluation-card__meta-label {
     color: #999;
-    font-size: 11px;
+    font-size: var(--rp-font-size-2xs);
     text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -75,7 +75,7 @@
   .evaluation-card__meta-value {
     color: #333;
     font-weight: 600;
-    font-size: 18px;
+    font-size: var(--rp-font-size-lg);
   }
 
   .evaluation-card__progress {
@@ -83,7 +83,7 @@
   }
 
   .evaluation-card__progress-label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #666;
     margin-bottom: 8px;
     display: flex;
@@ -116,7 +116,7 @@
     display: inline-block;
     padding: 4px 12px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-weight: 600;
   }
 
@@ -132,7 +132,7 @@
 
   .evaluation-card__action {
     color: #667eea;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
@@ -161,13 +161,13 @@
   }
 
   .evaluation-summary__title {
-    font-size: 16px;
+    font-size: var(--rp-font-size-md);
     font-weight: 600;
     color: #333;
   }
 
   .evaluation-summary__total {
-    font-size: 24px;
+    font-size: var(--rp-font-size-2xl);
     font-weight: 700;
     color: #667eea;
   }
@@ -186,14 +186,14 @@
   }
 
   .evaluation-stat__label {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #666;
     margin-bottom: 8px;
     font-weight: 600;
   }
 
   .evaluation-stat__value {
-    font-size: 28px;
+    font-size: var(--rp-font-size-3xl);
     font-weight: 700;
     color: #333;
   }
@@ -224,7 +224,7 @@
   <div class="evaluation-summary__header">
     <h2 class="evaluation-summary__title">평가 영역 현황</h2>
     <div class="evaluation-summary__total">
-      <%= @total_indicators %><span style="font-size: 14px; color: #666; margin-left: 4px;">개</span>
+      <%= @total_indicators %><span style="font-size: var(--rp-font-size-base); color: #666; margin-left: 4px;">개</span>
     </div>
   </div>
 
@@ -243,7 +243,7 @@
     </div>
     <div class="evaluation-stat">
       <div class="evaluation-stat__label">마지막 업데이트</div>
-      <div class="evaluation-stat__value" style="font-size: 14px;"><%= @last_updated.strftime("%m/%d") %></div>
+      <div class="evaluation-stat__value" style="font-size: var(--rp-font-size-base);"><%= @last_updated.strftime("%m/%d") %></div>
     </div>
   </div>
 </div>
@@ -314,13 +314,13 @@
         <% next if indicator.sub_indicators.empty? %>
         <% grid_column = (indicator.sub_indicators.count > 5 || index == @indicators.count - 1) ? "grid-column: 1 / -1;" : "" %>
         <div style="<%= grid_column %>">
-          <h4 style="font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px;">
+          <h4 style="font-size: var(--rp-font-size-base); font-weight: 600; color: #333; margin-bottom: 12px;">
             📚 <%= indicator.name %>
           </h4>
           <ul style="list-style: none; padding: 0; margin: 0; display: <%= indicator.sub_indicators.count > 3 ? 'grid' : 'flex' %>; <%= indicator.sub_indicators.count > 3 ? 'grid-template-columns: repeat(3, 1fr);' : 'flex-direction: column;' %> gap: 8px;">
             <% indicator.sub_indicators.each do |sub_indicator| %>
               <% sub_item_count = sub_indicator.items.count %>
-              <li style="font-size: 13px; color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
+              <li style="font-size: var(--rp-font-size-sm); color: #666; padding: 8px 12px; background: #f8f9fa; border-radius: 4px;">
                 ✓ <%= sub_indicator.name %>
                 <span style="<%= indicator.sub_indicators.count > 3 ? 'display: block; margin-top: 4px;' : 'float: right;' %> font-weight: 600; color: #667eea;"><%= sub_item_count %>문항</span>
               </li>

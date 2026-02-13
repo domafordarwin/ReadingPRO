@@ -160,14 +160,14 @@
   }
 
   .form-section-title {
-    font-size: 1.125rem;
+    font-size: var(--rp-font-size-lg);
     font-weight: 600;
     color: #111827;
     margin-bottom: 0.5rem;
   }
 
   .form-section-description {
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
     color: #6b7280;
     margin-bottom: 1rem;
   }
@@ -184,7 +184,7 @@
 
   .form-label {
     display: block;
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     color: #374151;
     margin-bottom: 0.5rem;
@@ -197,7 +197,7 @@
     padding: 0.625rem 0.875rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
     transition: all 0.2s;
   }
 
@@ -265,7 +265,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.125rem 0.5rem;
-    font-size: 0.6875rem;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 700;
     color: white;
     border-radius: 4px;
@@ -274,7 +274,7 @@
   }
 
   .module-title {
-    font-size: 0.9375rem;
+    font-size: var(--rp-font-size-md);
     font-weight: 600;
     color: #111827;
     margin: 0;
@@ -284,7 +284,7 @@
   }
 
   .module-code {
-    font-size: 0.75rem;
+    font-size: var(--rp-font-size-xs);
     color: #6b7280;
     font-family: monospace;
   }
@@ -299,7 +299,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.8125rem;
+    font-size: var(--rp-font-size-sm);
     color: #6b7280;
   }
 
@@ -315,7 +315,7 @@
 
   .empty-state-hint {
     margin-top: 0.5rem;
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
   }
 
   .form-actions {
@@ -331,7 +331,7 @@
   .btn-secondary {
     padding: 0.625rem 1.5rem;
     border-radius: 6px;
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s;
@@ -376,7 +376,7 @@
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 24px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
   }
 
   .alert svg {
@@ -453,7 +453,7 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 50%;
-    font-size: 0.8125rem;
+    font-size: var(--rp-font-size-sm);
     font-weight: 700;
     flex-shrink: 0;
   }
@@ -474,7 +474,7 @@
   }
 
   .selected-module-title {
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     color: #111827;
     margin: 0;
@@ -484,7 +484,7 @@
   }
 
   .selected-module-meta {
-    font-size: 0.75rem;
+    font-size: var(--rp-font-size-xs);
     color: #6b7280;
     margin-top: 0.25rem;
   }
@@ -494,7 +494,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.125rem 0.375rem;
-    font-size: 0.625rem;
+    font-size: var(--rp-font-size-2xs);
     font-weight: 700;
     color: white;
     border-radius: 3px;
@@ -525,7 +525,7 @@
     text-align: center;
     padding: 1.5rem;
     color: #9ca3af;
-    font-size: 0.875rem;
+    font-size: var(--rp-font-size-base);
   }
 
   /* 커버리지 패널 */
@@ -534,8 +534,8 @@
   .coverage-summary-item.cov-complete { background: #f0fdf4; border-color: #86efac; }
   .coverage-summary-item.cov-incomplete { background: #fef3c7; border-color: #fde68a; }
   .coverage-summary-item.cov-warning { background: #fef2f2; border-color: #fecaca; }
-  .coverage-summary-label { display: block; font-size: 0.6875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
-  .coverage-summary-value { font-size: 1.25rem; font-weight: 700; color: #111827; }
+  .coverage-summary-label { display: block; font-size: var(--rp-font-size-2xs); font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+  .coverage-summary-value { font-size: var(--rp-font-size-xl); font-weight: 700; color: #111827; }
   .cov-complete .coverage-summary-value { color: #166534; }
   .cov-incomplete .coverage-summary-value { color: #92400e; }
   .cov-warning .coverage-summary-value { color: #991b1b; }
@@ -544,13 +544,13 @@
   .coverage-indicator--covered { background: #f8fafc; border-color: #e2e8f0; }
   .coverage-indicator--missing { background: #fef2f2; border-color: #fecaca; }
   .coverage-indicator-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-  .coverage-indicator-status { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 0.75rem; flex-shrink: 0; }
+  .coverage-indicator-status { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: var(--rp-font-size-xs); flex-shrink: 0; }
   .coverage-indicator--covered .coverage-indicator-status { background: #dcfce7; color: #166534; }
   .coverage-indicator--missing .coverage-indicator-status { background: #fecaca; color: #991b1b; }
-  .coverage-indicator-name { font-size: 0.9375rem; font-weight: 600; color: #111827; flex: 1; }
-  .coverage-indicator-count { font-size: 0.8125rem; font-weight: 600; color: #6b7280; }
+  .coverage-indicator-name { font-size: var(--rp-font-size-md); font-weight: 600; color: #111827; flex: 1; }
+  .coverage-indicator-count { font-size: var(--rp-font-size-sm); font-weight: 600; color: #6b7280; }
   .coverage-sub-list { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-left: 1.75rem; }
-  .coverage-sub-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+  .coverage-sub-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem; border-radius: 12px; font-size: var(--rp-font-size-xs); font-weight: 500; }
   .coverage-sub-badge--covered { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
   .coverage-sub-badge--missing { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 </style>

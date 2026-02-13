@@ -36,33 +36,33 @@
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
       <%= link_to "문항 편집", edit_items_researcher_reading_proficiency_diagnostic_path(@diagnostic),
-                  class: "btn btn-primary", style: "font-size: 13px;" %>
+                  class: "btn btn-primary", style: "font-size: var(--rp-font-size-sm);" %>
       <%= link_to "엑셀 다운로드", download_template_researcher_reading_proficiency_diagnostic_path(@diagnostic),
-                  class: "btn btn-outline-primary", style: "font-size: 13px;" %>
+                  class: "btn btn-outline-primary", style: "font-size: var(--rp-font-size-sm);" %>
       <%= link_to "정보 편집", edit_researcher_reading_proficiency_diagnostic_path(@diagnostic),
-                  class: "btn btn-outline-secondary", style: "font-size: 13px;" %>
+                  class: "btn btn-outline-secondary", style: "font-size: var(--rp-font-size-sm);" %>
       <%= link_to "목록", researcher_reading_proficiency_diagnostics_path,
-                  class: "btn btn-secondary", style: "font-size: 13px;" %>
+                  class: "btn btn-secondary", style: "font-size: var(--rp-font-size-sm);" %>
     </div>
   </div>
 
   <div style="padding: 20px 0;">
     <% if @diagnostic.description.present? %>
       <div style="margin-bottom: 24px;">
-        <p style="color: #666; font-size: 14px; margin: 0;"><%= @diagnostic.description %></p>
+        <p style="color: #666; font-size: var(--rp-font-size-base); margin: 0;"><%= @diagnostic.description %></p>
       </div>
     <% end %>
 
     <!-- Statistics -->
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px;">
       <div class="rp-card" style="text-align: center; padding: 16px;">
-        <div style="font-size: 28px; font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @diagnostic.item_count %></div>
-        <div style="font-size: 13px; color: #666; margin-top: 4px;">총 문항</div>
+        <div style="font-size: var(--rp-font-size-3xl); font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @diagnostic.item_count %></div>
+        <div style="font-size: var(--rp-font-size-sm); color: #666; margin-top: 4px;">총 문항</div>
       </div>
       <% ReadingProficiencyItem::FACTOR_LABELS.each do |key, label| %>
         <div class="rp-card" style="text-align: center; padding: 16px;">
-          <div style="font-size: 28px; font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @factor_counts[key] || 0 %></div>
-          <div style="font-size: 13px; color: #666; margin-top: 4px;"><%= label %></div>
+          <div style="font-size: var(--rp-font-size-3xl); font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @factor_counts[key] || 0 %></div>
+          <div style="font-size: var(--rp-font-size-sm); color: #666; margin-top: 4px;"><%= label %></div>
         </div>
       <% end %>
     </div>

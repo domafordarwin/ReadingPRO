@@ -24,7 +24,7 @@
   }
 
   .page-header h1 {
-    font-size: 24px;
+    font-size: var(--rp-font-size-2xl);
     font-weight: 700;
     color: #333;
     margin: 0;
@@ -63,11 +63,11 @@
     justify-content: center;
     color: white;
     font-weight: 700;
-    font-size: 16px;
+    font-size: var(--rp-font-size-md);
   }
 
   .card-header-title {
-    font-size: 18px;
+    font-size: var(--rp-font-size-lg);
     font-weight: 700;
     color: #333;
     margin: 0;
@@ -94,7 +94,7 @@
   }
 
   .form-field label {
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     color: #333;
     margin-bottom: 8px;
@@ -106,7 +106,7 @@
   .required-badge {
     background: #e74c3c;
     color: white;
-    font-size: 10px;
+    font-size: var(--rp-font-size-2xs);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: 700;
@@ -118,7 +118,7 @@
     padding: 12px 16px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-family: inherit;
     transition: all 0.2s;
   }
@@ -138,7 +138,7 @@
   }
 
   .form-field .help-text {
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #999;
     margin-top: 6px;
     display: flex;
@@ -171,7 +171,7 @@
     padding: 14px 28px;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -219,7 +219,7 @@
 
   .info-box p {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     color: #1976d2;
     line-height: 1.6;
   }
@@ -269,7 +269,7 @@
     border-radius: 4px;
     padding: 2px 8px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     line-height: 1.4;
     color: #334155;
     min-width: 28px;
@@ -283,7 +283,7 @@
     padding: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 0 0 6px 6px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     line-height: 1.8;
     outline: none;
     overflow-y: auto;
@@ -466,7 +466,7 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
           </div>
           <div contenteditable="true"
                id="prompt-editor"
@@ -540,7 +540,7 @@
 
     <!-- 액션 바 -->
     <div class="action-bar">
-      <div style="font-size: 14px; color: #666;">
+      <div style="font-size: var(--rp-font-size-base); color: #666;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>

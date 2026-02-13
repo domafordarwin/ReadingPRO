@@ -3,7 +3,7 @@
 <div class="rp-page-container">
   <div class="rp-page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
     <div>
-      <h1 style="font-size:1.5rem; font-weight:700; color:var(--rp-text-primary, #1e293b);">모듈 자동 생성</h1>
+      <h1 style="font-size: var(--rp-font-size-2xl); font-weight:700; color:var(--rp-text-primary, #1e293b);">모듈 자동 생성</h1>
       <p style="color:var(--rp-text-muted, #64748b); margin-top:4px;">
         기존 모듈을 템플릿으로 사용하여 새 지문에 맞는 진단 모듈을 AI로 자동 생성합니다.
       </p>
@@ -29,7 +29,7 @@
     <% statuses.each do |label, status_val, count| %>
       <% active = (@status_filter == status_val) || (@status_filter.blank? && status_val.nil?) %>
       <%= link_to researcher_module_generations_path(status: status_val),
-          style: "padding:6px 14px; border-radius:20px; font-size:0.85rem; text-decoration:none; font-weight:#{active ? '600' : '400'}; background:#{active ? '#667eea' : '#f1f5f9'}; color:#{active ? '#fff' : '#475569'}; transition:all 0.2s;" do %>
+          style: "padding:6px 14px; border-radius:20px; font-size: var(--rp-font-size-sm); text-decoration:none; font-weight:#{active ? '600' : '400'}; background:#{active ? '#667eea' : '#f1f5f9'}; color:#{active ? '#fff' : '#475569'}; transition:all 0.2s;" do %>
         <%= label %> <span style="opacity:0.8;">(<%= count %>)</span>
       <% end %>
     <% end %>
@@ -52,7 +52,7 @@
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
         <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
       </svg>
-      <p style="color:#64748b; font-size:1rem;">아직 생성된 모듈이 없습니다.</p>
+      <p style="color:#64748b; font-size: var(--rp-font-size-base);">아직 생성된 모듈이 없습니다.</p>
       <%= link_to "첫 모듈 생성하기", new_researcher_module_generation_path,
           style: "display:inline-block; margin-top:12px; padding:10px 24px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;" %>
     </div>

@@ -3,21 +3,21 @@
 <div class="rp-page-container">
   <div style="margin-bottom:24px;">
     <%= link_to "← 목록으로", researcher_module_generations_path,
-        style: "color:#667eea; text-decoration:none; font-size:0.9rem;" %>
+        style: "color:#667eea; text-decoration:none; font-size: var(--rp-font-size-base);" %>
   </div>
 
   <%# 헤더: 상태 + 기본 정보 %>
   <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
     <div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-        <h1 style="font-size:1.4rem; font-weight:700; color:#1e293b;">
+        <h1 style="font-size: var(--rp-font-size-2xl); font-weight:700; color:#1e293b;">
           <%= @generation.passage_title.presence || @generation.passage_topic.presence || "모듈 생성 ##{@generation.id}" %>
         </h1>
-        <span style="padding:4px 12px; border-radius:16px; font-size:0.8rem; font-weight:600; background:<%= @generation.status_color %>20; color:<%= @generation.status_color %>;">
+        <span style="padding:4px 12px; border-radius:16px; font-size: var(--rp-font-size-sm); font-weight:600; background:<%= @generation.status_color %>20; color:<%= @generation.status_color %>;">
           <%= @generation.status_label %>
         </span>
       </div>
-      <p style="color:#64748b; font-size:0.9rem;">
+      <p style="color:#64748b; font-size: var(--rp-font-size-base);">
         템플릿: <strong><%= @template.title || @template.code %></strong>
         | 생성: <%= @generation.created_at.strftime("%Y-%m-%d %H:%M") %>
         | 모드: <%= @generation.generation_mode == "ai" ? "AI 지문 생성" : "직접 입력" %>
@@ -69,8 +69,8 @@
   <% if @generation.pending? || @generation.generating? || @generation.validating? %>
     <div style="text-align:center; padding:40px; background:#f0f4ff; border-radius:12px; border:1px solid #c7d2fe; margin-bottom:24px;">
       <div style="width:48px; height:48px; border:4px solid #667eea; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px;"></div>
-      <p style="font-size:1.1rem; font-weight:600; color:#4338ca;"><%= @generation.status_label %>...</p>
-      <p style="color:#6366f1; font-size:0.9rem; margin-top:8px;">페이지를 새로고침하면 최신 상태를 확인할 수 있습니다.</p>
+      <p style="font-size: var(--rp-font-size-lg); font-weight:600; color:#4338ca;"><%= @generation.status_label %>...</p>
+      <p style="color:#6366f1; font-size: var(--rp-font-size-base); margin-top:8px;">페이지를 새로고침하면 최신 상태를 확인할 수 있습니다.</p>
     </div>
   <% end %>
 
@@ -80,8 +80,8 @@
       <%# 지문 프리뷰 %>
       <% if @generation.passage_text.present? %>
         <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:20px; margin-bottom:20px;">
-          <h2 style="font-size:1rem; font-weight:600; color:#1e293b; margin-bottom:12px;">생성된 지문</h2>
-          <div style="background:#f8fafc; border-radius:8px; padding:16px; font-size:0.95rem; color:#374151; line-height:1.7; white-space:pre-wrap; max-height:300px; overflow-y:auto;">
+          <h2 style="font-size: var(--rp-font-size-base); font-weight:600; color:#1e293b; margin-bottom:12px;">생성된 지문</h2>
+          <div style="background:#f8fafc; border-radius:8px; padding:16px; font-size: var(--rp-font-size-base); color:#374151; line-height:1.7; white-space:pre-wrap; max-height:300px; overflow-y:auto;">
             <%= @generation.passage_text %>
           </div>
         </div>
@@ -91,31 +91,31 @@
       <% items = @items_data[:items] || [] %>
       <% if items.any? %>
         <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:20px;">
-          <h2 style="font-size:1rem; font-weight:600; color:#1e293b; margin-bottom:16px;">
+          <h2 style="font-size: var(--rp-font-size-base); font-weight:600; color:#1e293b; margin-bottom:16px;">
             생성된 문항 (<%= items.size %>개)
           </h2>
 
           <% items.each_with_index do |item, idx| %>
             <div style="background:#f8fafc; border-radius:10px; padding:16px; margin-bottom:12px; border:1px solid #e2e8f0;">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <span style="font-weight:700; color:#1e293b; font-size:0.95rem;">문항 <%= idx + 1 %></span>
-                <span style="padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600;
+                <span style="font-weight:700; color:#1e293b; font-size: var(--rp-font-size-base);">문항 <%= idx + 1 %></span>
+                <span style="padding:2px 8px; border-radius:4px; font-size: var(--rp-font-size-xs); font-weight:600;
                        background:<%= item[:item_type] == 'mcq' ? '#eff6ff' : '#faf5ff' %>;
                        color:<%= item[:item_type] == 'mcq' ? '#3b82f6' : '#8b5cf6' %>;">
                   <%= item[:item_type] == "mcq" ? "객관식" : "서술형" %>
                 </span>
-                <span style="padding:2px 8px; border-radius:4px; font-size:0.75rem; background:#f1f5f9; color:#475569;">
+                <span style="padding:2px 8px; border-radius:4px; font-size: var(--rp-font-size-xs); background:#f1f5f9; color:#475569;">
                   <%= item[:difficulty] || "medium" %>
                 </span>
                 <% if item[:prompt_pattern] %>
-                  <span style="padding:2px 8px; border-radius:4px; font-size:0.75rem; background:#fef3c7; color:#92400e;">
+                  <span style="padding:2px 8px; border-radius:4px; font-size: var(--rp-font-size-xs); background:#fef3c7; color:#92400e;">
                     <%= item[:prompt_pattern] %>
                   </span>
                 <% end %>
               </div>
 
               <%# 문항 내용 %>
-              <p style="color:#1e293b; font-size:0.95rem; line-height:1.6; margin-bottom:10px;">
+              <p style="color:#1e293b; font-size: var(--rp-font-size-base); line-height:1.6; margin-bottom:10px;">
                 <%= item[:prompt] %>
               </p>
 
@@ -123,7 +123,7 @@
               <% if item[:item_type] == "mcq" && item[:choices] %>
                 <div style="margin-left:12px;">
                   <% item[:choices]&.each do |choice| %>
-                    <div style="padding:4px 0; font-size:0.9rem; color:<%= choice[:is_correct] ? '#16a34a' : '#475569' %>; font-weight:<%= choice[:is_correct] ? '600' : '400' %>;">
+                    <div style="padding:4px 0; font-size: var(--rp-font-size-base); color:<%= choice[:is_correct] ? '#16a34a' : '#475569' %>; font-weight:<%= choice[:is_correct] ? '600' : '400' %>;">
                       <%= choice[:choice_no] %>. <%= choice[:content] %>
                       <% if choice[:is_correct] %> <span style="color:#16a34a;">✓</span><% end %>
                     </div>
@@ -134,12 +134,12 @@
               <%# 서술형 루브릭 %>
               <% if item[:item_type] == "constructed" && item[:rubric] %>
                 <details style="margin-top:10px;">
-                  <summary style="cursor:pointer; font-size:0.85rem; color:#667eea; font-weight:500;">루브릭 보기</summary>
+                  <summary style="cursor:pointer; font-size: var(--rp-font-size-sm); color:#667eea; font-weight:500;">루브릭 보기</summary>
                   <div style="margin-top:8px; padding:12px; background:#fff; border-radius:6px; border:1px solid #e2e8f0;">
                     <% item[:rubric][:criteria]&.each do |criterion| %>
-                      <p style="font-weight:600; color:#374151; font-size:0.85rem; margin-bottom:6px;"><%= criterion[:criterion_name] %></p>
+                      <p style="font-weight:600; color:#374151; font-size: var(--rp-font-size-sm); margin-bottom:6px;"><%= criterion[:criterion_name] %></p>
                       <% criterion[:levels]&.each do |level| %>
-                        <div style="font-size:0.8rem; color:#64748b; padding:2px 0;">
+                        <div style="font-size: var(--rp-font-size-sm); color:#64748b; padding:2px 0;">
                           <strong>수준 <%= level[:level] %>:</strong> <%= level[:description] %>
                         </div>
                       <% end %>
@@ -151,8 +151,8 @@
               <%# 해설 %>
               <% if item[:explanation].present? %>
                 <details style="margin-top:8px;">
-                  <summary style="cursor:pointer; font-size:0.85rem; color:#94a3b8;">해설 보기</summary>
-                  <p style="margin-top:6px; font-size:0.85rem; color:#64748b; padding:8px; background:#fff; border-radius:6px;">
+                  <summary style="cursor:pointer; font-size: var(--rp-font-size-sm); color:#94a3b8;">해설 보기</summary>
+                  <p style="margin-top:6px; font-size: var(--rp-font-size-sm); color:#64748b; padding:8px; background:#fff; border-radius:6px;">
                     <%= item[:explanation] %>
                   </p>
                 </details>
@@ -168,16 +168,16 @@
       <% dimensions = @validation[:dimensions] || [] %>
       <% if dimensions.any? %>
         <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:20px; position:sticky; top:20px;">
-          <h2 style="font-size:1rem; font-weight:600; color:#1e293b; margin-bottom:16px;">타당도 검증 결과</h2>
+          <h2 style="font-size: var(--rp-font-size-base); font-weight:600; color:#1e293b; margin-bottom:16px;">타당도 검증 결과</h2>
 
           <%# 종합 점수 %>
           <% score = (@generation.validation_score || 0).to_f %>
           <% score_color = score >= 80 ? "#22c55e" : score >= 70 ? "#f59e0b" : "#ef4444" %>
           <div style="text-align:center; margin-bottom:20px;">
             <div style="width:80px; height:80px; border-radius:50%; border:4px solid <%= score_color %>; display:flex; align-items:center; justify-content:center; margin:0 auto;">
-              <span style="font-size:1.5rem; font-weight:800; color:<%= score_color %>;"><%= score.round(0) %></span>
+              <span style="font-size: var(--rp-font-size-2xl); font-weight:800; color:<%= score_color %>;"><%= score.round(0) %></span>
             </div>
-            <p style="font-size:0.85rem; color:#64748b; margin-top:8px;">
+            <p style="font-size: var(--rp-font-size-sm); color:#64748b; margin-top:8px;">
               종합 타당도 점수
               <% if score >= 70 %>
                 <span style="color:#22c55e;">(통과)</span>
@@ -193,14 +193,14 @@
             <% dim_color = dim_score >= 80 ? "#22c55e" : dim_score >= 70 ? "#f59e0b" : "#ef4444" %>
             <div style="margin-bottom:16px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:0.85rem; font-weight:500; color:#374151;"><%= dim[:label] || dim[:name] %></span>
-                <span style="font-size:0.85rem; font-weight:700; color:<%= dim_color %>;"><%= dim_score.round(0) %></span>
+                <span style="font-size: var(--rp-font-size-sm); font-weight:500; color:#374151;"><%= dim[:label] || dim[:name] %></span>
+                <span style="font-size: var(--rp-font-size-sm); font-weight:700; color:<%= dim_color %>;"><%= dim_score.round(0) %></span>
               </div>
               <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
                 <div style="width:<%= dim_score %>%; height:100%; background:<%= dim_color %>; border-radius:4px; transition:width 0.5s;"></div>
               </div>
               <% if dim[:feedback].present? %>
-                <p style="font-size:0.78rem; color:#94a3b8; margin-top:4px; line-height:1.4;"><%= dim[:feedback] %></p>
+                <p style="font-size:var(--rp-font-size-xs); color:#94a3b8; margin-top:4px; line-height:1.4;"><%= dim[:feedback] %></p>
               <% end %>
             </div>
           <% end %>
@@ -209,10 +209,10 @@
           <% suggestions = @validation[:suggestions] || [] %>
           <% if suggestions.any? %>
             <div style="margin-top:20px; padding-top:16px; border-top:1px solid #f1f5f9;">
-              <h3 style="font-size:0.9rem; font-weight:600; color:#1e293b; margin-bottom:10px;">수정 제안</h3>
+              <h3 style="font-size: var(--rp-font-size-base); font-weight:600; color:#1e293b; margin-bottom:10px;">수정 제안</h3>
               <% suggestions.each do |sug| %>
                 <div style="padding:8px 10px; background:#fffbeb; border-radius:6px; margin-bottom:8px; border-left:3px solid #f59e0b;">
-                  <p style="font-size:0.8rem; color:#92400e;">
+                  <p style="font-size: var(--rp-font-size-sm); color:#92400e;">
                     <% if sug[:item_index] %><strong>문항 <%= sug[:item_index] %>:</strong> <% end %>
                     <%= sug[:feedback] %>
                   </p>
@@ -224,7 +224,7 @@
           <%# 전체 피드백 %>
           <% if @validation[:overall_feedback].present? %>
             <div style="margin-top:16px; padding:12px; background:#f0fdf4; border-radius:8px;">
-              <p style="font-size:0.85rem; color:#166534; line-height:1.5;"><%= @validation[:overall_feedback] %></p>
+              <p style="font-size: var(--rp-font-size-sm); color:#166534; line-height:1.5;"><%= @validation[:overall_feedback] %></p>
             </div>
           <% end %>
         </div>
@@ -233,8 +233,8 @@
       <%# 리뷰어 노트 (반려된 경우) %>
       <% if @generation.reviewer_notes.present? %>
         <div style="background:#fef2f2; border-radius:12px; border:1px solid #fca5a5; padding:16px; margin-top:16px;">
-          <h3 style="font-size:0.9rem; font-weight:600; color:#991b1b; margin-bottom:6px;">반려 사유</h3>
-          <p style="font-size:0.85rem; color:#7f1d1d; line-height:1.5;"><%= @generation.reviewer_notes %></p>
+          <h3 style="font-size: var(--rp-font-size-base); font-weight:600; color:#991b1b; margin-bottom:6px;">반려 사유</h3>
+          <p style="font-size: var(--rp-font-size-sm); color:#7f1d1d; line-height:1.5;"><%= @generation.reviewer_notes %></p>
         </div>
       <% end %>
     </div>

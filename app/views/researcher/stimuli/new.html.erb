@@ -40,12 +40,12 @@
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
         <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('strikeThrough')" title="취소선"><s>S</s></button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: 11px;">✕</button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
       </div>
       <div contenteditable="true"
            id="body-editor"
            class="form-control"
-           style="min-height: 300px; line-height: 1.8; font-size: 14px; border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
+           style="min-height: 300px; line-height: 1.8; font-size: var(--rp-font-size-base); border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
            oninput="syncBody()"
            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
            onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"
@@ -104,13 +104,13 @@
     font-weight: 600;
     color: #333;
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
   }
 
   .form-text {
     display: block;
     margin-top: 6px;
-    font-size: 12px;
+    font-size: var(--rp-font-size-xs);
     color: #666;
   }
 
@@ -123,7 +123,7 @@
     padding: 10px 12px;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-family: inherit;
   }
 
@@ -191,7 +191,7 @@
 
   .alert h4 {
     margin: 0 0 12px 0;
-    font-size: 14px;
+    font-size: var(--rp-font-size-base);
     font-weight: 600;
   }
 
@@ -201,7 +201,7 @@
   }
 
   .alert li {
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     margin-bottom: 4px;
   }
 
@@ -211,7 +211,7 @@
     border-radius: 4px;
     padding: 2px 8px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--rp-font-size-sm);
     line-height: 1.4;
     color: #334155;
     min-width: 28px;

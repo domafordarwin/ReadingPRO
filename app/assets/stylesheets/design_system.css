@@ -76,15 +76,16 @@
 
   /* Typography - Font Family & Sizes */
   --rp-font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --rp-font-size-xs: 16px;       /* 12px × 1.3 - Small text, badges */
-  --rp-font-size-sm: 17px;       /* 13px × 1.3 - Body text, labels */
-  --rp-font-size-base: 18px;     /* 14px × 1.3 - Default body */
-  --rp-font-size-md: 20px;       /* 15px × 1.3 - Emphasized text */
-  --rp-font-size-lg: 23px;       /* 18px × 1.3 - Subheadings */
-  --rp-font-size-xl: 26px;       /* 20px × 1.3 - Headings */
-  --rp-font-size-2xl: 31px;      /* 24px × 1.3 - Large headings */
-  --rp-font-size-3xl: 36px;      /* 28px × 1.3 - Section titles */
-  --rp-font-size-4xl: 42px;      /* 32px × 1.3 - Hero text */
+  --rp-font-size-2xs: 12px;      /* 10px × 1.15 - Tiny text, labels */
+  --rp-font-size-xs: 14px;       /* 12px × 1.15 - Small text, badges */
+  --rp-font-size-sm: 15px;       /* 13px × 1.15 - Body text, labels */
+  --rp-font-size-base: 16px;     /* 14px × 1.15 - Default body */
+  --rp-font-size-md: 17px;       /* 15px × 1.15 - Emphasized text */
+  --rp-font-size-lg: 21px;       /* 18px × 1.15 - Subheadings */
+  --rp-font-size-xl: 23px;       /* 20px × 1.15 - Headings */
+  --rp-font-size-2xl: 28px;      /* 24px × 1.15 - Large headings */
+  --rp-font-size-3xl: 32px;      /* 28px × 1.15 - Section titles */
+  --rp-font-size-4xl: 37px;      /* 32px × 1.15 - Hero text */
 
   /* Typography - Font Weights */
   --rp-font-weight-normal: 400;  /* Normal text */
@@ -1314,6 +1315,18 @@
 .rp-text-success { color: var(--rp-success); }
 .rp-text-warning { color: var(--rp-warning); }
 .rp-text-danger { color: var(--rp-danger); }
+
+/* Font Size Utilities */
+.rp-text-2xs  { font-size: var(--rp-font-size-2xs) !important; }
+.rp-text-xs   { font-size: var(--rp-font-size-xs) !important; }
+.rp-text-sm   { font-size: var(--rp-font-size-sm) !important; }
+.rp-text-base { font-size: var(--rp-font-size-base) !important; }
+.rp-text-md   { font-size: var(--rp-font-size-md) !important; }
+.rp-text-lg   { font-size: var(--rp-font-size-lg) !important; }
+.rp-text-xl   { font-size: var(--rp-font-size-xl) !important; }
+.rp-text-2xl  { font-size: var(--rp-font-size-2xl) !important; }
+.rp-text-3xl  { font-size: var(--rp-font-size-3xl) !important; }
+.rp-text-4xl  { font-size: var(--rp-font-size-4xl) !important; }
 
 .rp-mt-2 { margin-top: var(--rp-space-2); }
 .rp-mt-4 { margin-top: var(--rp-space-4); }
