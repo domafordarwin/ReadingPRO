@@ -476,7 +476,7 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-header__actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
   .cr-show-nav-btn {
-    display: inline-flex; align-items: center; gap: 4px; font-size: 20px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px; font-size: var(--rp-font-size-lg); font-weight: 500;
     color: #64748b; text-decoration: none; padding: 7px 14px; border-radius: 8px;
     border: 1px solid #e2e8f0; background: white; transition: all 0.15s;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
@@ -485,7 +485,7 @@ function drawRadarChart(svgId, legendId, data) {
 
   .cr-show-action-btn {
     display: inline-flex; align-items: center; gap: 5px; padding: 7px 16px; border-radius: 8px;
-    font-size: 20px; font-weight: 500; cursor: pointer; border: 1px solid transparent;
+    font-size: var(--rp-font-size-lg); font-weight: 500; cursor: pointer; border: 1px solid transparent;
     transition: all 0.15s; text-decoration: none; white-space: nowrap;
   }
   .cr-show-action-btn--ghost { background: white; color: #475569; border-color: #e2e8f0; }
@@ -506,13 +506,13 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-profile__avatar {
     width: 48px; height: 48px; background: rgba(255,255,255,0.2);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-xl); font-weight: 700; flex-shrink: 0;
   }
   .cr-show-profile__title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
-  .cr-show-profile__name { font-size: 30px; font-weight: 700; margin: 0; }
-  .cr-show-profile__meta { font-size: 20px; opacity: 0.85; margin: 0; }
+  .cr-show-profile__name { font-size: var(--rp-font-size-xl); font-weight: 700; margin: 0; }
+  .cr-show-profile__meta { font-size: var(--rp-font-size-lg); opacity: 0.85; margin: 0; }
 
-  .cr-show-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 18px; font-weight: 500; }
+  .cr-show-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: var(--rp-font-size-md); font-weight: 500; }
   .cr-show-badge--green { background: rgba(255,255,255,0.2); color: #bbf7d0; }
   .cr-show-badge--blue { background: rgba(255,255,255,0.2); color: #bfdbfe; }
 
@@ -532,7 +532,7 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-stat__icon--green { background: #f0fdf4; color: #16a34a; }
   .cr-show-stat__icon--purple { background: #faf5ff; color: #8b5cf6; }
   .cr-show-stat__label { font-size: var(--rp-font-size-sm); color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
-  .cr-show-stat__value { font-size: 30px; font-weight: 700; color: #0f172a; }
+  .cr-show-stat__value { font-size: var(--rp-font-size-xl); font-weight: 700; color: #0f172a; }
   .cr-show-stat__value--blue { color: #2563eb; }
   .cr-show-stat__value--green { color: #16a34a; }
   .cr-show-stat__value--yellow { color: #d97706; }
@@ -554,7 +554,7 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-section__number {
     width: 26px; height: 26px; color: white; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-md); font-weight: 700; flex-shrink: 0;
   }
   .cr-show-section__icon { flex-shrink: 0; }
   .cr-show-section__title { font-size: var(--rp-font-size-xl); font-weight: 600; color: #0f172a; margin: 0; }
@@ -566,7 +566,7 @@ function drawRadarChart(svgId, legendId, data) {
   /* 재생성 버튼 */
   .cr-show-regen-btn {
     padding: 4px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
-    font-size: 18px; color: #64748b; cursor: pointer; display: inline-flex; align-items: center;
+    font-size: var(--rp-font-size-md); color: #64748b; cursor: pointer; display: inline-flex; align-items: center;
     gap: 4px; transition: all 0.15s;
   }
   .cr-show-regen-btn:hover { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
@@ -583,7 +583,7 @@ function drawRadarChart(svgId, legendId, data) {
     text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     display: flex; flex-direction: column; justify-content: center;
   }
-  .cr-show-area-right__title { font-size: 20px; font-weight: 600; color: #475569; margin: 0 0 12px 0; }
+  .cr-show-area-right__title { font-size: var(--rp-font-size-lg); font-weight: 600; color: #475569; margin: 0 0 12px 0; }
 
   /* 영역 카드 */
   .cr-show-area-card {
@@ -599,7 +599,7 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-area-card__name { font-size: var(--rp-font-size-lg); font-weight: 600; }
   .cr-show-area-card__meta { font-size: var(--rp-font-size-sm); color: #94a3b8; margin-top: 1px; }
   .cr-show-area-card__score { text-align: right; flex-shrink: 0; }
-  .cr-show-area-card__pct { font-size: 30px; font-weight: 700; display: block; line-height: 1.2; }
+  .cr-show-area-card__pct { font-size: var(--rp-font-size-xl); font-weight: 700; display: block; line-height: 1.2; }
   .cr-show-area-card__level {
     display: inline-block; font-size: var(--rp-font-size-sm); font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 2px;
   }
@@ -616,17 +616,17 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-show-area-card__subs { display: flex; flex-direction: column; gap: 4px; }
   .cr-show-area-card__sub {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 8px; background: #f8fafc; border-radius: 6px; font-size: 18px;
+    padding: 4px 8px; background: #f8fafc; border-radius: 6px; font-size: var(--rp-font-size-md);
   }
   .cr-show-area-card__sub-name { color: #64748b; }
   .cr-show-area-card__sub-score { font-weight: 600; }
 
   /* ── 프롬프트 패널 ── */
   .cr-show-prompt { margin-bottom: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
-  .cr-show-prompt__label { font-size: 18px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block; }
+  .cr-show-prompt__label { font-size: var(--rp-font-size-md); font-weight: 600; color: #475569; margin-bottom: 6px; display: block; }
   .cr-show-prompt__input {
     width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;
-    font-size: 20px; resize: vertical; box-sizing: border-box; background: white;
+    font-size: var(--rp-font-size-lg); resize: vertical; box-sizing: border-box; background: white;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .cr-show-prompt__input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
@@ -644,10 +644,10 @@ function drawRadarChart(svgId, legendId, data) {
   /* ── 버튼 ── */
   .cr-show-btn {
     display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 8px;
-    font-size: 20px; font-weight: 500; cursor: pointer; border: 1px solid transparent;
+    font-size: var(--rp-font-size-lg); font-weight: 500; cursor: pointer; border: 1px solid transparent;
     transition: all 0.15s; text-decoration: none; white-space: nowrap;
   }
-  .cr-show-btn--sm { padding: 6px 12px; font-size: 18px; }
+  .cr-show-btn--sm { padding: 6px 12px; font-size: var(--rp-font-size-md); }
   .cr-show-btn--primary { background: #2563eb; color: white; border: none; }
   .cr-show-btn--primary:hover { background: #1d4ed8; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
   .cr-show-btn--ghost { background: white; color: #475569; border-color: #e2e8f0; }
@@ -672,7 +672,7 @@ function drawRadarChart(svgId, legendId, data) {
   .cr-radar-chart { display: flex; justify-content: center; }
   .cr-radar-chart svg { max-width: 460px; width: 100%; height: auto; }
   .cr-radar-legend { display: flex; justify-content: center; gap: 20px; margin-top: 12px; flex-wrap: wrap; }
-  .cr-radar-legend__item { display: flex; align-items: center; gap: 6px; font-size: 18px; color: #475569; font-weight: 500; }
+  .cr-radar-legend__item { display: flex; align-items: center; gap: 6px; font-size: var(--rp-font-size-md); color: #475569; font-weight: 500; }
   .cr-radar-legend__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
   /* ── PDF/Print 액션 바 ── */
