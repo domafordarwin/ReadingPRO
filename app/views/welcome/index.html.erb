@@ -7,10 +7,10 @@
         <%= image_tag 'readingpro_logo.png', alt: 'ReadingPRO', style: 'height: 48px; width: auto;' %>
       </a>
       <nav class="lp-header__nav" id="lp-nav">
-        <a href="#time-savings" class="lp-header__link">AI 자동화</a>
         <a href="#competencies" class="lp-header__link">역량 분석</a>
         <a href="#features" class="lp-header__link">주요 기능</a>
         <a href="#audience" class="lp-header__link">대상별 안내</a>
+        <a href="#time-savings" class="lp-header__link">AI 자동화</a>
         <a href="#process" class="lp-header__link">도입 절차</a>
       </nav>
       <div class="lp-header__right">
@@ -89,122 +89,8 @@
     </div>
   </section>
 
-  <!-- ════════ TIME SAVINGS ════════ -->
-  <section class="lp-section lp-section--gray lp-anim" id="time-savings">
-    <div class="lp-container">
-      <div class="lp-section__header">
-        <span class="lp-section__eyebrow">AI 자동화 시스템</span>
-        <h2 class="lp-section__title">교사 업무 부담을 <strong>70% 이상 절감</strong></h2>
-        <p class="lp-section__desc">학생 30명 평가: 28.5시간 → 3.5시간. AI가 채점부터 보고서까지 자동화합니다</p>
-      </div>
-
-      <div class="lp-ts-grid">
-        <!-- Comparison Table -->
-        <div class="lp-ts-table-wrap">
-          <table class="lp-ts-table">
-            <thead>
-              <tr>
-                <th>업무 항목</th>
-                <th class="lp-ts-table__before">Before</th>
-                <th></th>
-                <th class="lp-ts-table__after">After</th>
-                <th>절감율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>객관식 채점</td>
-                <td class="lp-ts-table__before">1시간</td>
-                <td class="lp-ts-table__arrow">→</td>
-                <td class="lp-ts-table__after"><strong>0시간</strong></td>
-                <td><span class="lp-ts-badge lp-ts-badge--100">100%</span></td>
-              </tr>
-              <tr>
-                <td>서술형 채점</td>
-                <td class="lp-ts-table__before">5시간</td>
-                <td class="lp-ts-table__arrow">→</td>
-                <td class="lp-ts-table__after"><strong>30분</strong></td>
-                <td><span class="lp-ts-badge lp-ts-badge--90">90%</span></td>
-              </tr>
-              <tr>
-                <td>피드백 작성</td>
-                <td class="lp-ts-table__before">7.5시간</td>
-                <td class="lp-ts-table__arrow">→</td>
-                <td class="lp-ts-table__after"><strong>1시간</strong></td>
-                <td><span class="lp-ts-badge lp-ts-badge--87">87%</span></td>
-              </tr>
-              <tr>
-                <td>보고서 작성</td>
-                <td class="lp-ts-table__before">15시간</td>
-                <td class="lp-ts-table__arrow">→</td>
-                <td class="lp-ts-table__after"><strong>2시간</strong></td>
-                <td><span class="lp-ts-badge lp-ts-badge--87">87%</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Bar Chart -->
-        <div class="lp-ts-chart-wrap">
-          <div class="lp-ts-chart">
-            <div class="lp-ts-chart__group">
-              <div class="lp-ts-chart__label">Before</div>
-              <div class="lp-ts-chart__bars">
-                <div class="lp-ts-chart__col"><span>1H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:7%"></div><span>객관식</span></div>
-                <div class="lp-ts-chart__col"><span>5H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:33%"></div><span>서술형</span></div>
-                <div class="lp-ts-chart__col"><span>7.5H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:50%"></div><span>피드백</span></div>
-                <div class="lp-ts-chart__col"><span>15H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:100%"></div><span>보고서</span></div>
-              </div>
-              <div class="lp-ts-chart__total">Total <strong>28.5</strong>H</div>
-            </div>
-            <div class="lp-ts-chart__group">
-              <div class="lp-ts-chart__label">After</div>
-              <div class="lp-ts-chart__bars">
-                <div class="lp-ts-chart__col"><span>0H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:2%"></div><span>객관식</span></div>
-                <div class="lp-ts-chart__col"><span>30M</span><div class="lp-ts-bar lp-ts-bar--after" style="height:5%"></div><span>서술형</span></div>
-                <div class="lp-ts-chart__col"><span>1H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:7%"></div><span>피드백</span></div>
-                <div class="lp-ts-chart__col"><span>2H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:13%"></div><span>보고서</span></div>
-              </div>
-              <div class="lp-ts-chart__total">Total <strong>3.5</strong>H</div>
-            </div>
-          </div>
-          <div class="lp-ts-highlight">
-            <span>주당</span><strong>25시간</strong><span>절감</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- AI Process Cards -->
-      <div class="lp-auto-cards">
-        <div class="lp-auto-card">
-          <div class="lp-auto-card__icon" style="background:#ede9fe;color:#7c3aed;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          </div>
-          <h4>Auto Grading</h4>
-          <p>수작업 300건 → AI 즉시 채점<br>서술형 루브릭 기반 자동 처리</p>
-        </div>
-        <div class="lp-auto-card__arrow">→</div>
-        <div class="lp-auto-card">
-          <div class="lp-auto-card__icon" style="background:#dbeafe;color:#2563eb;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <h4>AI Feedback</h4>
-          <p>학생별 맞춤 피드백 자동 생성<br>교사 검토 후 배포</p>
-        </div>
-        <div class="lp-auto-card__arrow">→</div>
-        <div class="lp-auto-card">
-          <div class="lp-auto-card__icon" style="background:#dcfce7;color:#16a34a;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <h4>Report Generation</h4>
-          <p>7개 섹션 종합 보고서 자동 생성<br>학부모 상담 PDF 즉시 다운로드</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ════════ 7 CORE COMPETENCIES ════════ -->
-  <section class="lp-section lp-anim" id="competencies">
+  <section class="lp-section lp-section--gray lp-anim" id="competencies">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">7개 핵심 역량 분석</span>
@@ -225,7 +111,7 @@
   </section>
 
   <!-- ════════ FEATURES ════════ -->
-  <section class="lp-section lp-section--gray lp-anim" id="features">
+  <section class="lp-section lp-anim" id="features">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">핵심 기능</span>
@@ -320,7 +206,7 @@
   </section>
 
   <!-- ════════ GROWTH TRACKING ════════ -->
-  <section class="lp-section lp-anim" id="growth">
+  <section class="lp-section lp-section--gray lp-anim" id="growth">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">성장 추적</span>
@@ -485,8 +371,122 @@
     </div>
   </section>
 
+  <!-- ════════ TIME SAVINGS ════════ -->
+  <section class="lp-section lp-section--gray lp-anim" id="time-savings">
+    <div class="lp-container">
+      <div class="lp-section__header">
+        <span class="lp-section__eyebrow">AI 자동화 시스템</span>
+        <h2 class="lp-section__title">교사 업무 부담을 <strong>70% 이상 절감</strong></h2>
+        <p class="lp-section__desc">학생 30명 평가: 28.5시간 → 3.5시간. AI가 채점부터 보고서까지 자동화합니다</p>
+      </div>
+
+      <div class="lp-ts-grid">
+        <!-- Comparison Table -->
+        <div class="lp-ts-table-wrap">
+          <table class="lp-ts-table">
+            <thead>
+              <tr>
+                <th>업무 항목</th>
+                <th class="lp-ts-table__before">Before</th>
+                <th></th>
+                <th class="lp-ts-table__after">After</th>
+                <th>절감율</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>객관식 채점</td>
+                <td class="lp-ts-table__before">1시간</td>
+                <td class="lp-ts-table__arrow">→</td>
+                <td class="lp-ts-table__after"><strong>0시간</strong></td>
+                <td><span class="lp-ts-badge lp-ts-badge--100">100%</span></td>
+              </tr>
+              <tr>
+                <td>서술형 채점</td>
+                <td class="lp-ts-table__before">5시간</td>
+                <td class="lp-ts-table__arrow">→</td>
+                <td class="lp-ts-table__after"><strong>30분</strong></td>
+                <td><span class="lp-ts-badge lp-ts-badge--90">90%</span></td>
+              </tr>
+              <tr>
+                <td>피드백 작성</td>
+                <td class="lp-ts-table__before">7.5시간</td>
+                <td class="lp-ts-table__arrow">→</td>
+                <td class="lp-ts-table__after"><strong>1시간</strong></td>
+                <td><span class="lp-ts-badge lp-ts-badge--87">87%</span></td>
+              </tr>
+              <tr>
+                <td>보고서 작성</td>
+                <td class="lp-ts-table__before">15시간</td>
+                <td class="lp-ts-table__arrow">→</td>
+                <td class="lp-ts-table__after"><strong>2시간</strong></td>
+                <td><span class="lp-ts-badge lp-ts-badge--87">87%</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="lp-ts-chart-wrap">
+          <div class="lp-ts-chart">
+            <div class="lp-ts-chart__group">
+              <div class="lp-ts-chart__label">Before</div>
+              <div class="lp-ts-chart__bars">
+                <div class="lp-ts-chart__col"><span>1H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:7%"></div><span>객관식</span></div>
+                <div class="lp-ts-chart__col"><span>5H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:33%"></div><span>서술형</span></div>
+                <div class="lp-ts-chart__col"><span>7.5H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:50%"></div><span>피드백</span></div>
+                <div class="lp-ts-chart__col"><span>15H</span><div class="lp-ts-bar lp-ts-bar--before" style="height:100%"></div><span>보고서</span></div>
+              </div>
+              <div class="lp-ts-chart__total">Total <strong>28.5</strong>H</div>
+            </div>
+            <div class="lp-ts-chart__group">
+              <div class="lp-ts-chart__label">After</div>
+              <div class="lp-ts-chart__bars">
+                <div class="lp-ts-chart__col"><span>0H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:2%"></div><span>객관식</span></div>
+                <div class="lp-ts-chart__col"><span>30M</span><div class="lp-ts-bar lp-ts-bar--after" style="height:5%"></div><span>서술형</span></div>
+                <div class="lp-ts-chart__col"><span>1H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:7%"></div><span>피드백</span></div>
+                <div class="lp-ts-chart__col"><span>2H</span><div class="lp-ts-bar lp-ts-bar--after" style="height:13%"></div><span>보고서</span></div>
+              </div>
+              <div class="lp-ts-chart__total">Total <strong>3.5</strong>H</div>
+            </div>
+          </div>
+          <div class="lp-ts-highlight">
+            <span>주당</span><strong>25시간</strong><span>절감</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Process Cards -->
+      <div class="lp-auto-cards">
+        <div class="lp-auto-card">
+          <div class="lp-auto-card__icon" style="background:#ede9fe;color:#7c3aed;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <h4>Auto Grading</h4>
+          <p>수작업 300건 → AI 즉시 채점<br>서술형 루브릭 기반 자동 처리</p>
+        </div>
+        <div class="lp-auto-card__arrow">→</div>
+        <div class="lp-auto-card">
+          <div class="lp-auto-card__icon" style="background:#dbeafe;color:#2563eb;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h4>AI Feedback</h4>
+          <p>학생별 맞춤 피드백 자동 생성<br>교사 검토 후 배포</p>
+        </div>
+        <div class="lp-auto-card__arrow">→</div>
+        <div class="lp-auto-card">
+          <div class="lp-auto-card__icon" style="background:#dcfce7;color:#16a34a;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <h4>Report Generation</h4>
+          <p>7개 섹션 종합 보고서 자동 생성<br>학부모 상담 PDF 즉시 다운로드</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ════════ ADOPTION PROCESS ════════ -->
-  <section class="lp-section lp-section--gray lp-anim" id="process">
+  <section class="lp-section lp-anim" id="process">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">도입 절차</span>
@@ -506,7 +506,7 @@
   </section>
 
   <!-- ════════ TRUST / SECURITY ════════ -->
-  <section class="lp-section lp-anim" id="trust">
+  <section class="lp-section lp-section--gray lp-anim" id="trust">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">안심 설계</span>
@@ -539,7 +539,7 @@
         <p>AI와 함께하는 읽기 교육의 새로운 기준</p>
       </div>
       <div class="lp-footer__links">
-        <div><h5>제품</h5><a href="#time-savings">AI 자동화</a><a href="#competencies">역량 분석</a><a href="#features">주요 기능</a></div>
+        <div><h5>제품</h5><a href="#competencies">역량 분석</a><a href="#features">주요 기능</a><a href="#time-savings">AI 자동화</a></div>
         <div><h5>지원</h5><a href="<%= login_path %>">로그인</a><a href="#process">도입 절차</a><a href="#audience">대상별 안내</a></div>
       </div>
     </div>
