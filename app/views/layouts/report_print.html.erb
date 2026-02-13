@@ -8,7 +8,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.6;
       color: #1e293b;
       background: white;
@@ -16,14 +16,18 @@
       print-color-adjust: exact;
     }
     :root {
-      --rp-font-size-2xs: 9px;
-      --rp-font-size-xs: 10px;
-      --rp-font-size-sm: 11px;
-      --rp-font-size-base: 12px;
-      --rp-font-size-md: 13px;
-      --rp-font-size-lg: 14px;
-      --rp-font-size-xl: 15px;
-      --rp-font-size-2xl: 17px;
+      /* 인쇄용 6단계 축소 체계 */
+      --rp-font-size-xs:  10px;
+      --rp-font-size-sm:  11px;
+      --rp-font-size-md:  12px;
+      --rp-font-size-lg:  14px;
+      --rp-font-size-xl:  17px;
+      --rp-font-size-2xl: 20px;
+      /* Deprecated aliases (인쇄용) */
+      --rp-font-size-2xs:  var(--rp-font-size-xs);
+      --rp-font-size-base: var(--rp-font-size-sm);
+      --rp-font-size-3xl:  var(--rp-font-size-2xl);
+      --rp-font-size-4xl:  var(--rp-font-size-2xl);
       --rp-primary: #667eea;
     }
     @page { size: A4; margin: 12mm 10mm; }

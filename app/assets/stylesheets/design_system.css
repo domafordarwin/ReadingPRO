@@ -74,18 +74,20 @@
   --rp-space-16: 64px;     /* 64px - Large page margins */
   --rp-space-20: 80px;     /* 80px - Maximum spacing */
 
-  /* Typography - Font Family & Sizes */
+  /* Typography - Font Family & Sizes (6-step scale, 14px–36px) */
   --rp-font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --rp-font-size-2xs: 12px;      /* 10px × 1.15 - Tiny text, labels */
-  --rp-font-size-xs: 14px;       /* 12px × 1.15 - Small text, badges */
-  --rp-font-size-sm: 15px;       /* 13px × 1.15 - Body text, labels */
-  --rp-font-size-base: 16px;     /* 14px × 1.15 - Default body */
-  --rp-font-size-md: 17px;       /* 15px × 1.15 - Emphasized text */
-  --rp-font-size-lg: 21px;       /* 18px × 1.15 - Subheadings */
-  --rp-font-size-xl: 23px;       /* 20px × 1.15 - Headings */
-  --rp-font-size-2xl: 28px;      /* 24px × 1.15 - Large headings */
-  --rp-font-size-3xl: 32px;      /* 28px × 1.15 - Section titles */
-  --rp-font-size-4xl: 37px;      /* 32px × 1.15 - Hero text */
+  --rp-font-size-xs:  14px;      /* 배지, 캡션, 메타 정보 */
+  --rp-font-size-sm:  16px;      /* 기본 본문, 입력 필드 */
+  --rp-font-size-md:  18px;      /* 강조 텍스트, 카드 제목 */
+  --rp-font-size-lg:  22px;      /* 섹션 제목, 서브헤딩 */
+  --rp-font-size-xl:  28px;      /* 페이지 제목 */
+  --rp-font-size-2xl: 36px;      /* 히어로, 대제목 */
+
+  /* Deprecated aliases — 기존 코드 호환용, Phase 5에서 참조 교체 후 삭제 예정 */
+  --rp-font-size-2xs:  var(--rp-font-size-xs);   /* 12px → 14px */
+  --rp-font-size-base: var(--rp-font-size-sm);    /* 16px → 16px */
+  --rp-font-size-3xl:  var(--rp-font-size-2xl);   /* 32px → 36px */
+  --rp-font-size-4xl:  var(--rp-font-size-2xl);   /* 37px → 36px */
 
   /* Typography - Font Weights */
   --rp-font-weight-normal: 400;  /* Normal text */
@@ -420,7 +422,7 @@
   margin-left: auto;
   background: var(--rp-danger);
   color: white;
-  font-size: 13px;
+  font-size: var(--rp-font-size-xs);
   font-weight: var(--rp-font-weight-semibold);
   padding: 2px var(--rp-space-2);
   border-radius: var(--rp-radius-full);
@@ -776,7 +778,7 @@
 
 .rp-btn--xs {
   padding: 2px var(--rp-space-2);
-  font-size: 14px;
+  font-size: var(--rp-font-size-xs);
 }
 
 .rp-btn--full {
@@ -1093,8 +1095,8 @@
   gap: 10px;
   padding: 14px 20px;
   border-radius: 10px;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: var(--rp-font-size-md);
+  font-weight: var(--rp-font-weight-medium);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
   animation: rp-toast-in 0.35s ease-out;
   transition: opacity 0.4s, transform 0.4s;
@@ -1316,17 +1318,18 @@
 .rp-text-warning { color: var(--rp-warning); }
 .rp-text-danger { color: var(--rp-danger); }
 
-/* Font Size Utilities */
-.rp-text-2xs  { font-size: var(--rp-font-size-2xs) !important; }
+/* Font Size Utilities (6-step) */
 .rp-text-xs   { font-size: var(--rp-font-size-xs) !important; }
 .rp-text-sm   { font-size: var(--rp-font-size-sm) !important; }
-.rp-text-base { font-size: var(--rp-font-size-base) !important; }
 .rp-text-md   { font-size: var(--rp-font-size-md) !important; }
 .rp-text-lg   { font-size: var(--rp-font-size-lg) !important; }
 .rp-text-xl   { font-size: var(--rp-font-size-xl) !important; }
 .rp-text-2xl  { font-size: var(--rp-font-size-2xl) !important; }
-.rp-text-3xl  { font-size: var(--rp-font-size-3xl) !important; }
-.rp-text-4xl  { font-size: var(--rp-font-size-4xl) !important; }
+/* Deprecated aliases */
+.rp-text-2xs  { font-size: var(--rp-font-size-xs) !important; }
+.rp-text-base { font-size: var(--rp-font-size-sm) !important; }
+.rp-text-3xl  { font-size: var(--rp-font-size-2xl) !important; }
+.rp-text-4xl  { font-size: var(--rp-font-size-2xl) !important; }
 
 .rp-mt-2 { margin-top: var(--rp-space-2); }
 .rp-mt-4 { margin-top: var(--rp-space-4); }
@@ -2998,7 +3001,7 @@ html {
   .rp-input,
   .rp-select,
   .rp-textarea {
-    font-size: 16px;  /* Prevents zoom on iOS */
+    font-size: var(--rp-font-size-sm);  /* 16px — Prevents zoom on iOS */
     padding: var(--rp-space-3);
   }
 
@@ -3016,6 +3019,6 @@ html {
   /* Badge sizing */
   .rp-badge {
     padding: var(--rp-space-1) var(--rp-space-2);
-    font-size: 14px;
+    font-size: var(--rp-font-size-xs);
   }
 }
