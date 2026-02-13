@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   문항 관리
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -94,7 +94,7 @@
   }
 
   .form-field label {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     color: #333;
     margin-bottom: 8px;
@@ -106,7 +106,7 @@
   .required-badge {
     background: #e74c3c;
     color: white;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: var(--rp-font-weight-bold);
@@ -118,7 +118,7 @@
     padding: 12px 16px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-family: inherit;
     transition: all 0.2s;
   }
@@ -171,7 +171,7 @@
     padding: 14px 28px;
     border: none;
     border-radius: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s;
@@ -283,7 +283,7 @@
     padding: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 0 0 6px 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     line-height: 1.8;
     outline: none;
     overflow-y: auto;
@@ -466,7 +466,7 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <span style="border-left: 1px solid #e0e0e0; margin: 0 4px;"></span>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
           </div>
           <div contenteditable="true"
                id="prompt-editor"
@@ -540,7 +540,7 @@
 
     <!-- 액션 바 -->
     <div class="action-bar">
-      <div style="font-size: var(--rp-font-size-base); color: #666;">
+      <div style="font-size: var(--rp-font-size-sm); color: #666;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>

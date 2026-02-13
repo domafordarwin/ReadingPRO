@@ -1,4 +1,4 @@
-<div class="rp-form-container">
+﻿<div class="rp-form-container">
   <%= form_with model: post, url: url, class: "rp-form", local: true do |f| %>
     <% if post.errors.any? %>
       <div class="rp-alert rp-alert--danger">
@@ -97,7 +97,7 @@
 
   .rp-label {
     display: block;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
     color: #0f172a;
     margin-bottom: 8px;
@@ -111,7 +111,7 @@
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     font-family: inherit;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #475569;
     background: #ffffff;
     transition: border-color 0.15s;
@@ -161,7 +161,7 @@
   }
 
   .rp-radio__label strong {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
     color: #0f172a;
   }
@@ -175,7 +175,7 @@
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 16px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-alert--info {
@@ -186,7 +186,7 @@
 
   .rp-alert h4 {
     margin: 0 0 8px 0;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
   }
 
@@ -212,7 +212,7 @@
     gap: 8px;
     padding: 10px 16px;
     border-radius: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
     text-decoration: none;
     cursor: pointer;

@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   학생 정보 수정
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -22,30 +22,30 @@
 
   <%= form_with model: @student, url: school_admin_update_student_path(@student), method: :patch, local: true, data: { turbo: false } do |f| %>
     <div style="margin-bottom: 16px;">
-      <%= f.label :name, "학생 ID", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
-      <%= f.text_field :name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);", readonly: true %>
+      <%= f.label :name, "학생 ID", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-sm);" %>
+      <%= f.text_field :name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-sm);", readonly: true %>
       <p style="font-size: var(--rp-font-size-xs); color: #94a3b8; margin-top: 4px;">학생 ID는 변경할 수 없습니다.</p>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div>
-        <%= f.label :grade, "학년", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
-        <%= f.number_field :grade, min: 1, max: 6, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);" %>
+        <%= f.label :grade, "학년", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-sm);" %>
+        <%= f.number_field :grade, min: 1, max: 6, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-sm);" %>
       </div>
       <div>
-        <%= f.label :class_name, "반", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
-        <%= f.text_field :class_name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);", placeholder: "예: 1반" %>
+        <%= f.label :class_name, "반", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-sm);" %>
+        <%= f.text_field :class_name, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-sm);", placeholder: "예: 1반" %>
       </div>
     </div>
 
     <div style="margin-bottom: 16px;">
-      <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일</label>
-      <input type="email" value="<%= @student.user&.email %>" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); background: #f8fafc;" readonly>
+      <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-sm);">이메일</label>
+      <input type="email" value="<%= @student.user&.email %>" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-sm); background: #f8fafc;" readonly>
     </div>
 
     <div style="display: flex; gap: 8px; margin-top: 24px;">
-      <%= f.submit "저장", style: "padding: 10px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
-      <%= link_to "취소", school_admin_students_path, style: "padding: 10px 16px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); text-decoration: none;" %>
+      <%= f.submit "저장", style: "padding: 10px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
+      <%= link_to "취소", school_admin_students_path, style: "padding: 10px 16px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-sm); text-decoration: none;" %>
     </div>
   <% end %>
 </section>

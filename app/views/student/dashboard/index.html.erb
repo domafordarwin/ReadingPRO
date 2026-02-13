@@ -246,7 +246,7 @@
                 <strong style="font-size: var(--rp-font-size-sm);"><%= fb.response&.item&.prompt&.truncate(22) || "문항" %></strong>
                 <div class="rp-text-muted" style="font-size: var(--rp-font-size-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= fb.feedback&.truncate(36) %></div>
               </div>
-              <span class="rp-badge rp-badge--default" style="flex-shrink: 0; margin-left: 8px; font-size: var(--rp-font-size-2xs);"><%= time_ago_in_words(fb.created_at) %> 전</span>
+              <span class="rp-badge rp-badge--default" style="flex-shrink: 0; margin-left: 8px; font-size: var(--rp-font-size-xs);"><%= time_ago_in_words(fb.created_at) %> 전</span>
             </div>
           <% end %>
         </div>

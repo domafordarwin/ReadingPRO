@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, notice], class: "rp-form" do |f| %>
+﻿<%= form_with model: [:admin, notice], class: "rp-form" do |f| %>
   <% if notice.errors.any? %>
     <div class="rp-alert rp-alert--error">
       <strong><%= pluralize(notice.errors.count, "개의 오류") %>가 발생했습니다:</strong>
@@ -85,7 +85,7 @@
     margin-bottom: 8px;
     font-weight: var(--rp-font-weight-semibold);
     color: #374151;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-form-input,
@@ -95,7 +95,7 @@
     padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     transition: all 0.2s;
   }
 
@@ -134,7 +134,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #374151;
   }
 

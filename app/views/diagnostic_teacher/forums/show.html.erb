@@ -1,11 +1,11 @@
-<% content_for :page_title do %>글 상세<% end %>
+﻿<% content_for :page_title do %>글 상세<% end %>
 
 <!-- Forum Header -->
 <div class="rp-card rp-mb-6">
   <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
     <div style="flex: 1;">
       <h1 class="rp-page-header__title" style="margin: 0 0 8px 0;"><%= @forum.title %></h1>
-      <div style="display: flex; gap: 12px; align-items: center; color: #666; font-size: var(--rp-font-size-base);">
+      <div style="display: flex; gap: 12px; align-items: center; color: #666; font-size: var(--rp-font-size-sm);">
         <span><strong><%= @forum.created_by.email.split("@").first %></strong></span>
         <span>·</span>
         <span><%= @forum.created_at.strftime("%Y년 %m월 %d일 %H:%M") %></span>

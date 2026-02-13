@@ -229,7 +229,7 @@
   }
   @keyframes batchBarSlideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
   .batch-action-bar__left { display: flex; align-items: center; gap: 12px; }
-  .batch-action-bar__count { font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-semibold); white-space: nowrap; }
+  .batch-action-bar__count { font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); white-space: nowrap; }
   .batch-action-bar__clear { background: rgba(255,255,255,0.12); color: #94a3b8; border: none; padding: 4px 10px; border-radius: 6px; font-size: var(--rp-font-size-xs); cursor: pointer; transition: all 0.15s; }
   .batch-action-bar__clear:hover { background: rgba(255,255,255,0.2); color: white; }
   .batch-action-bar__right { display: flex; gap: 8px; }
@@ -246,7 +246,7 @@
   /* ── 토스트 ── */
   .batch-toast {
     position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
-    padding: 12px 24px; border-radius: 10px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium);
+    padding: 12px 24px; border-radius: 10px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
     z-index: 2000; animation: batchToastIn 0.3s ease-out;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   }
@@ -276,7 +276,7 @@
   }
 
   .rp-stat-card__value {
-    font-size: var(--rp-font-size-3xl);
+    font-size: var(--rp-font-size-2xl);
     font-weight: var(--rp-font-weight-bold);
     color: #0f172a;
   }
@@ -290,14 +290,14 @@
   }
 
   .rp-page-header__title {
-    font-size: var(--rp-font-size-3xl);
+    font-size: var(--rp-font-size-2xl);
     font-weight: var(--rp-font-weight-bold);
     color: #0f172a;
     margin: 0 0 8px 0;
   }
 
   .rp-page-header__subtitle {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #94a3b8;
     margin: 0;
   }
@@ -336,7 +336,7 @@
   .rp-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-table th,
@@ -442,7 +442,7 @@
   }
 
   .rp-empty-state p {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #94a3b8;
     margin: 0;
   }

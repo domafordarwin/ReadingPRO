@@ -158,7 +158,7 @@ body.admin-body {
 .landing-link {
   text-decoration: none;
   color: var(--landing-ink);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .landing-button {
@@ -168,7 +168,7 @@ body.admin-body {
   gap: 8px;
   border-radius: 999px;
   padding: 12px 22px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   text-decoration: none;
   border: 1px solid transparent;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -348,7 +348,7 @@ body.admin-body {
 }
 
 .landing-section-header h2 {
-  font-size: var(--rp-font-size-3xl);
+  font-size: var(--rp-font-size-2xl);
   margin: 0 0 8px;
 }
 
@@ -398,7 +398,7 @@ body.admin-body {
   border: 1px solid var(--landing-border);
   border-radius: 14px;
   padding: 16px 18px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   position: relative;
   padding-left: 44px;
 }
@@ -501,7 +501,7 @@ body.admin-body {
 }
 
 .portal-logo .landing-logo-subtitle {
-  font-size: var(--rp-font-size-2xs);
+  font-size: var(--rp-font-size-xs);
 }
 
 .portal-nav {
@@ -515,7 +515,7 @@ body.admin-body {
   color: var(--landing-ink);
   padding: 10px 12px;
   border-radius: 12px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -547,14 +547,14 @@ body.admin-body {
 
 .portal-title {
   margin: 0 0 6px;
-  font-size: var(--rp-font-size-3xl);
+  font-size: var(--rp-font-size-2xl);
   font-family: var(--rp-font-family);
 }
 
 .portal-subtitle {
   margin: 0;
   color: var(--landing-muted);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .portal-actions {
@@ -933,7 +933,7 @@ body.admin-body {
   border: none;
   border-radius: 12px;
   padding: 12px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   font-weight: var(--rp-font-weight-semibold);
   background: #1d4ed8;
   color: white;
@@ -1116,7 +1116,7 @@ body.admin-body {
   text-decoration: none;
   padding: 10px 12px;
   border-radius: 8px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .admin-nav-link.active,
@@ -1156,7 +1156,7 @@ body.admin-body {
 .admin-subtitle {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .admin-card {
@@ -1199,7 +1199,7 @@ body.admin-body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .admin-table th,
@@ -1287,7 +1287,7 @@ body.admin-body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   width: 100%;
 }
 
@@ -1563,12 +1563,12 @@ body.admin-body {
 
 .item-content-card h4 {
   margin: 0 0 8px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-question {
   margin: 12px 0;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .item-option-list {
@@ -2055,7 +2055,7 @@ body.admin-body {
 
 .report-section h4 {
   margin: 0 0 8px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .rp-not-found {
@@ -2101,7 +2101,7 @@ body.admin-body {
 .rp-not-found__description {
   margin: 0 0 22px;
   color: var(--landing-muted);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.6;
 }
 
@@ -2149,7 +2149,7 @@ body.admin-body {
   font-weight: var(--rp-font-weight-semibold);
   color: #475569;
   margin-bottom: 10px;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   letter-spacing: 4px;
 }
 .bogi-box-content {
@@ -2169,7 +2169,7 @@ body.admin-body {
   border-collapse: collapse;
   width: 100%;
   margin: 12px 0;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 .item-prompt-body th, .item-prompt-body td,
 .item-prompt th, .item-prompt td,

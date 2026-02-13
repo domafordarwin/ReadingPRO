@@ -1,4 +1,4 @@
-<% content_for :page_title do %>발문 학습 세션<% end %>
+﻿<% content_for :page_title do %>발문 학습 세션<% end %>
 
 <%
   session = @questioning_session
@@ -618,7 +618,7 @@
             선생님 총평
           </h3>
         </div>
-        <div style="font-size: var(--rp-font-size-base); color: #15803d; line-height: 1.8;">
+        <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.8;">
           <%= simple_format(session.teacher_comment) %>
         </div>
       </div>

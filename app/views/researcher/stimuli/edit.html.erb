@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   지문 수정
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -37,9 +37,9 @@
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('strikeThrough')" title="취소선"><s>S</s></button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('subscript')" title="아래첨자" style="font-size: var(--rp-font-size-2xs);">X<sub>2</sub></button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('superscript')" title="위첨자" style="font-size: var(--rp-font-size-2xs);">X<sup>2</sup></button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('subscript')" title="아래첨자" style="font-size: var(--rp-font-size-xs);">X<sub>2</sub></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('superscript')" title="위첨자" style="font-size: var(--rp-font-size-xs);">X<sup>2</sup></button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
         <span class="rp-toolbar-sep"></span>
         <!-- 정렬 -->
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('justifyLeft')" title="왼쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h10M0 8h14M0 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
@@ -54,14 +54,14 @@
         <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('indent')" title="들여쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M0 5l4 2-4 2z" fill="currentColor"/></svg></button>
         <span class="rp-toolbar-sep"></span>
         <!-- 삽입 -->
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('insertHorizontalRule')" title="수평선 삽입" style="font-size: var(--rp-font-size-2xs);">──</button>
-        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showTableDialog('body-editor')" title="표 삽입" style="font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-semibold);">표</button>
-        <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertStimulusBogiBox()" title="보기 박스 삽입" style="font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-semibold); color:#4f46e5; border-color:#a5b4fc; padding:2px 10px;">보기</button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="fmtCmd('insertHorizontalRule')" title="수평선 삽입" style="font-size: var(--rp-font-size-xs);">──</button>
+        <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showTableDialog('body-editor')" title="표 삽입" style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold);">표</button>
+        <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertStimulusBogiBox()" title="보기 박스 삽입" style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color:#4f46e5; border-color:#a5b4fc; padding:2px 10px;">보기</button>
       </div>
       <div contenteditable="true"
            id="body-editor"
            class="form-control"
-           style="min-height: 300px; line-height: 1.8; font-size: var(--rp-font-size-base); border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
+           style="min-height: 300px; line-height: 1.8; font-size: var(--rp-font-size-sm); border-radius: 0 0 6px 6px; border-top: none; outline: none; overflow-y: auto;"
            oninput="syncBody()"
            onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
            onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'"><%= sanitize_rich_text(@stimulus.body) %></div>
@@ -166,7 +166,7 @@
     font-weight: var(--rp-font-weight-semibold);
     color: #333;
     margin-bottom: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .form-text {
@@ -185,7 +185,7 @@
     padding: 10px 12px;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-family: inherit;
   }
 
@@ -263,7 +263,7 @@
 
   .alert h4 {
     margin: 0 0 12px 0;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
   }
 
@@ -301,7 +301,7 @@
   .connected-item__prompt {
     flex: 1;
     color: #333;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .connected-item__action {

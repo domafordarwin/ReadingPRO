@@ -1,4 +1,4 @@
-<%= form_with model: diagnostic,
+﻿<%= form_with model: diagnostic,
               url: diagnostic.persisted? ? researcher_reading_proficiency_diagnostic_path(diagnostic) : researcher_reading_proficiency_diagnostics_path,
               method: diagnostic.persisted? ? :patch : :post,
               local: true,
@@ -6,7 +6,7 @@
 
   <% if diagnostic.errors.any? %>
     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-      <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: var(--rp-font-size-base);"><%= diagnostic.errors.count %>개의 오류가 있습니다:</h4>
+      <h4 style="color: #dc2626; margin: 0 0 8px 0; font-size: var(--rp-font-size-sm);"><%= diagnostic.errors.count %>개의 오류가 있습니다:</h4>
       <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: var(--rp-font-size-sm);">
         <% diagnostic.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>

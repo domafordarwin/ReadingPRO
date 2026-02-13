@@ -30,7 +30,7 @@
             <td><%= assignment.assigned_at.strftime("%Y-%m-%d") %></td>
             <td><%= assignment.due_date&.strftime("%Y-%m-%d") || "-" %></td>
             <td>
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-medium); background: #dbeafe; color: #1e40af;">
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-medium); background: #dbeafe; color: #1e40af;">
                 배정됨
               </span>
             </td>
@@ -112,7 +112,7 @@
                          when "cancelled" then "background: #f1f5f9; color: #64748b;"
                          else "background: #f1f5f9; color: #64748b;"
                          end %>
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-medium); <%= status_style %>">
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-medium); <%= status_style %>">
                 <%= { "assigned" => "배정됨", "in_progress" => "진행중", "completed" => "완료", "cancelled" => "회수됨" }[assignment.status] || assignment.status %>
               </span>
             </td>

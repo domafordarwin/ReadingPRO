@@ -158,7 +158,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--rp-font-size-2xs);
+  font-size: var(--rp-font-size-xs);
   font-weight: var(--rp-font-weight-bold);
   background: var(--rp-bg-subtle);
   color: var(--rp-text-muted);
@@ -228,7 +228,7 @@
   padding: 0 var(--rp-space-4) var(--rp-space-4);
   max-height: 400px;
   overflow-y: auto;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.8;
   color: var(--rp-text-body);
 }
@@ -277,7 +277,7 @@
 }
 
 .q-template-card__prompt {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   line-height: 1.7;
   padding: var(--rp-space-3);
@@ -308,7 +308,7 @@
   border: 1px solid var(--rp-border);
   border-radius: var(--rp-radius-md);
   font-family: var(--rp-font-family);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.6;
   color: var(--rp-text-body);
   resize: vertical;
@@ -464,7 +464,7 @@
   background: var(--rp-bg-subtle);
   border-radius: var(--rp-radius-md);
   line-height: 2;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   cursor: text;
   user-select: text;
@@ -539,7 +539,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rp-space-2);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   line-height: 2.5;
 }
@@ -748,7 +748,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   font-weight: var(--rp-font-weight-bold);
 }
 
@@ -1076,7 +1076,7 @@
 }
 
 .q-empty-state__icon {
-  font-size: var(--rp-font-size-4xl);
+  font-size: var(--rp-font-size-2xl);
   margin-bottom: var(--rp-space-4);
   opacity: 0.5;
 }
@@ -1233,7 +1233,7 @@
 }
 
 .q-show-passage__body {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.9;
   color: var(--rp-text-body);
 }

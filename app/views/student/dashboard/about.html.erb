@@ -1,8 +1,8 @@
-<% content_for :page_title, "공지사항" %>
+﻿<% content_for :page_title, "공지사항" %>
 
 <div style="margin-bottom: 24px;">
   <h1 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; margin: 0 0 4px 0;">공지사항</h1>
-  <p style="font-size: var(--rp-font-size-base); color: #94a3b8; margin: 0;">Reading PRO 관련 공지사항 및 안내를 확인하세요.</p>
+  <p style="font-size: var(--rp-font-size-sm); color: #94a3b8; margin: 0;">Reading PRO 관련 공지사항 및 안내를 확인하세요.</p>
 </div>
 
 <% if @notices.any? %>
@@ -20,7 +20,7 @@
             </div>
           </div>
         </div>
-        <div style="font-size: var(--rp-font-size-base); color: #475569; line-height: 1.7; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; white-space: pre-wrap;">
+        <div style="font-size: var(--rp-font-size-sm); color: #475569; line-height: 1.7; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; white-space: pre-wrap;">
           <%= notice.content %>
         </div>
       </div>

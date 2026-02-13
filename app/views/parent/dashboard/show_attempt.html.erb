@@ -151,7 +151,7 @@
     color: #155724;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
   }
 
@@ -161,7 +161,7 @@
     color: #721c24;
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
   }
 
@@ -242,7 +242,7 @@
     margin-bottom: 16px;
     color: #667eea;
     text-decoration: none;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .back-link:hover {
@@ -265,7 +265,7 @@
   }
 
   .stat-number {
-    font-size: var(--rp-font-size-3xl);
+    font-size: var(--rp-font-size-2xl);
     font-weight: var(--rp-font-weight-bold);
     color: #667eea;
     margin-bottom: 4px;
@@ -278,7 +278,7 @@
 
   @media (max-width: 768px) {
     .result-table {
-      font-size: var(--rp-font-size-2xs);
+      font-size: var(--rp-font-size-xs);
     }
 
     .result-table th,
@@ -372,7 +372,7 @@
             <% else %>
               <span class="incorrect-badge">✗ 오답</span>
               <br>
-              <span style="color: #999; font-size: var(--rp-font-size-2xs);">
+              <span style="color: #999; font-size: var(--rp-font-size-xs);">
                 선택: <%= response.selected_choice&.choice_letter %>
               </span>
             <% end %>
@@ -489,7 +489,7 @@
 
 <% if @responses.empty? %>
   <div style="text-align: center; padding: 48px 16px; color: #999;">
-    <p style="font-size: var(--rp-font-size-4xl); margin-bottom: 16px;">📝</p>
+    <p style="font-size: var(--rp-font-size-2xl); margin-bottom: 16px;">📝</p>
     <p>답변 데이터가 없습니다.</p>
   </div>
 <% end %>

@@ -1,4 +1,4 @@
-<% content_for :portal_nav do %>
+﻿<% content_for :portal_nav do %>
   <%= render "researcher/shared/nav", current: :items %>
 <% end %>
 
@@ -144,9 +144,9 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('subscript')" title="아래첨자" style="font-size: var(--rp-font-size-2xs);">X<sub>2</sub></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('superscript')" title="위첨자" style="font-size: var(--rp-font-size-2xs);">X<sup>2</sup></button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('subscript')" title="아래첨자" style="font-size: var(--rp-font-size-xs);">X<sub>2</sub></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('superscript')" title="위첨자" style="font-size: var(--rp-font-size-xs);">X<sup>2</sup></button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
             <span class="rp-toolbar-sep"></span>
             <!-- 정렬 -->
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('justifyLeft')" title="왼쪽 정렬"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M0 4.5h10M0 8h14M0 11.5h8" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></button>
@@ -160,8 +160,8 @@
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('indent')" title="들여쓰기"><svg width="16" height="14" viewBox="0 0 16 14"><path d="M0 1h16M6 5h10M6 9h10M0 13h16" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M0 5l4 2-4 2z" fill="currentColor"/></svg></button>
             <span class="rp-toolbar-sep"></span>
             <!-- 삽입 -->
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertHorizontalRule')" title="수평선" style="font-size: var(--rp-font-size-2xs);">──</button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showPromptTableDialog()" title="표 삽입" style="font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-semibold);">표</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertHorizontalRule')" title="수평선" style="font-size: var(--rp-font-size-xs);">──</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showPromptTableDialog()" title="표 삽입" style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold);">표</button>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스">보기</button>
             <span class="rp-toolbar-sep"></span>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
@@ -200,7 +200,7 @@
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('italic')" title="기울임 (Ctrl+I)"><em>I</em></button>
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
               <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('strikeThrough')" title="취소선"><s>S</s></button>
-              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+              <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="choiceFmt('removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
               <span style="width:1px; height:18px; background:#d1d5db; margin:0 4px; align-self:center;"></span>
               <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
             </div>
@@ -1601,7 +1601,7 @@
     border: 1px solid #d1d5db;
     border-radius: 8px;
     color: #374151;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
     text-decoration: none;
     transition: all 0.2s;
@@ -1639,7 +1639,7 @@
     align-items: center;
     padding: 6px 16px;
     border-radius: 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
   }
 
@@ -1766,7 +1766,7 @@
 
   .rp-btn--xs {
     padding: 3px 8px;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     border-radius: 4px;
     cursor: pointer;
     border: none;
@@ -1803,7 +1803,7 @@
     border-radius: 8px;
     background: #f9fafb;
     color: #6b7280;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
     transition: all 0.2s;
@@ -1965,7 +1965,7 @@
     border: 2px solid #d1d5db;
     border-radius: 50%;
     font-weight: var(--rp-font-weight-bold);
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #374151;
   }
 
@@ -1977,7 +1977,7 @@
 
   .choice-preview-text {
     flex: 1;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     line-height: 1.5;
     color: #374151;
     min-height: 20px;
@@ -2150,7 +2150,7 @@
     }
 
     .item-prompt-body {
-      font-size: var(--rp-font-size-base);
+      font-size: var(--rp-font-size-sm);
     }
 
     .item-choices-preview {
@@ -2167,7 +2167,7 @@
 
     .stimulus-body-section {
       padding: 16px;
-      font-size: var(--rp-font-size-base);
+      font-size: var(--rp-font-size-sm);
       max-height: 300px;
     }
   }
@@ -2278,7 +2278,7 @@
 
   .rp-label {
     display: block;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     color: #374151;
     margin-bottom: 8px;
@@ -2289,7 +2289,7 @@
     padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     transition: border-color 0.2s;
   }
 
@@ -2304,7 +2304,7 @@
     padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-family: inherit;
     resize: vertical;
     transition: border-color 0.2s;
@@ -2356,7 +2356,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #6b7280;
     cursor: pointer;
     margin-bottom: 12px;
@@ -2436,7 +2436,7 @@
   }
 
   .rp-ai-suggestion__title {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     color: #6b21a8;
     margin: 0 0 8px 0;
@@ -2503,7 +2503,7 @@
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s;
@@ -2554,7 +2554,7 @@
 
   /* Instruction and Info Elements */
   .rp-instruction-text {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #6b7280;
     margin-bottom: 16px;
     line-height: 1.6;
@@ -2646,7 +2646,7 @@
   .prompt-format-toolbar .rp-fmt-btn:hover { background: #e2e8f0; }
 
   .rp-fmt-btn--save {
-    font-size: var(--rp-font-size-2xs) !important;
+    font-size: var(--rp-font-size-xs) !important;
     font-weight: var(--rp-font-weight-semibold);
     color: #fff !important;
     background: #2563eb !important;
@@ -2660,7 +2660,7 @@
   }
 
   .rp-fmt-btn--bogi {
-    font-size: var(--rp-font-size-2xs) !important;
+    font-size: var(--rp-font-size-xs) !important;
     font-weight: var(--rp-font-weight-semibold);
     color: #4f46e5 !important;
     border-color: #a5b4fc !important;
@@ -2806,7 +2806,7 @@
 
   .rp-choice-text {
     flex: 1;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #1f2937;
     line-height: 1.6;
   }
@@ -2815,7 +2815,7 @@
     flex: 1;
     min-height: 24px;
     padding: 4px 8px;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #1f2937;
     line-height: 1.6;
     border: 1px solid transparent;
@@ -2861,7 +2861,7 @@
   }
 
   .rp-info-value {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-semibold);
     color: #111827;
   }
@@ -2937,7 +2937,7 @@
   }
 
   .rp-choice-text-display {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #374151;
     line-height: 1.6;
     margin-bottom: 12px;
@@ -3044,7 +3044,7 @@
   }
 
   .rp-reason-text {
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     color: #6b7280;
     font-style: italic;
   }
@@ -3055,7 +3055,7 @@
   }
 
   .rp-score-preview-row strong {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #111827;
   }
 

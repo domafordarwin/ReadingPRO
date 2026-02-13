@@ -1,4 +1,4 @@
-<% content_for :page_title do %>진단 현황<% end %>
+﻿<% content_for :page_title do %>진단 현황<% end %>
 <% content_for :portal_nav do %>
   <%= render "student/shared/nav", current: :diagnostics %>
 <% end %>
@@ -27,7 +27,7 @@
           </div>
           <%= form_with url: student_assessments_path, method: :post, local: true, data: { turbo: false } do |f| %>
             <%= f.hidden_field :form_id, value: form.id %>
-            <%= f.submit "시작하기", style: "padding: 8px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
+            <%= f.submit "시작하기", style: "padding: 8px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
           <% end %>
         </div>
       </div>
@@ -49,12 +49,12 @@
             <p style="font-size: var(--rp-font-size-sm); color: #64748b; margin: 0;">시작: <%= attempt.started_at&.strftime("%m월 %d일 %H:%M") %></p>
           </div>
           <%= link_to "이어하기", student_assessment_path(attempt.id),
-                style: "padding: 8px 16px; background: #f59e0b; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
+                style: "padding: 8px 16px; background: #f59e0b; color: white; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
         </div>
       </div>
     <% end %>
   <% else %>
-    <p style="color: #94a3b8; font-size: var(--rp-font-size-base);">진행 중인 진단이 없습니다.</p>
+    <p style="color: #94a3b8; font-size: var(--rp-font-size-sm);">진행 중인 진단이 없습니다.</p>
   <% end %>
 
   <!-- 완료된 진단 -->
@@ -68,11 +68,11 @@
             <p style="font-size: var(--rp-font-size-sm); color: #64748b; margin: 0;">완료: <%= attempt.submitted_at&.strftime("%m월 %d일 %H:%M") %></p>
           </div>
           <%= link_to "결과보기", student_show_attempt_path(attempt.id),
-                style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
+                style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
         </div>
       </div>
     <% end %>
   <% else %>
-    <p style="color: #94a3b8; font-size: var(--rp-font-size-base);">완료된 진단이 없습니다.</p>
+    <p style="color: #94a3b8; font-size: var(--rp-font-size-sm);">완료된 진단이 없습니다.</p>
   <% end %>
 </div>

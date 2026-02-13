@@ -1,4 +1,4 @@
-<%# 모듈 생성 카드 파셜 %>
+﻿<%# 모듈 생성 카드 파셜 %>
 <% gen = generation %>
 <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:20px; transition:box-shadow 0.2s; hover:box-shadow:0 4px 12px rgba(0,0,0,0.08);">
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
@@ -38,7 +38,7 @@
         <% score = gen.validation_score.to_f %>
         <% score_color = score >= 80 ? "#22c55e" : score >= 70 ? "#f59e0b" : "#ef4444" %>
         <div style="width:56px; height:56px; border-radius:50%; border:3px solid <%= score_color %>; display:flex; align-items:center; justify-content:center; margin:0 auto;">
-          <span style="font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-bold); color:<%= score_color %>;"><%= score.round(0) %></span>
+          <span style="font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-bold); color:<%= score_color %>;"><%= score.round(0) %></span>
         </div>
         <span style="font-size: var(--rp-font-size-xs); color:#94a3b8; display:block; margin-top:4px;">타당도</span>
       <% elsif gen.generating? || gen.validating? || gen.pending? %>

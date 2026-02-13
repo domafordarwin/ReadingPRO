@@ -26,7 +26,7 @@
     border-radius: 8px;
   }
   .sa-info-label {
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
@@ -56,7 +56,7 @@
   }
   .sa-stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .sa-stat-number {
-    font-size: var(--rp-font-size-3xl);
+    font-size: var(--rp-font-size-2xl);
     font-weight: var(--rp-font-weight-bold);
     color: #2f5bff;
     margin-bottom: 2px;
@@ -109,7 +109,7 @@
   }
   .sa-card-number {
     font-weight: var(--rp-font-weight-bold);
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     color: #2f5bff;
   }
   .sa-card-prompt {
@@ -181,7 +181,7 @@
   .sa-meta-group { margin-bottom: 12px; }
   .sa-meta-label {
     display: block;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
@@ -243,7 +243,7 @@
   .sa-answer-box--student .sa-answer-box__value { color: #991b1b; font-weight: var(--rp-font-weight-semibold); }
   .sa-answer-box--student.is-correct .sa-answer-box__value { color: #166534; font-weight: var(--rp-font-weight-semibold); }
   .sa-answer-box__label {
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -281,7 +281,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     font-weight: var(--rp-font-weight-semibold);
     color: #64748b;
   }
@@ -295,7 +295,7 @@
   }
   .sa-choice-marker {
     flex-shrink: 0;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     margin-left: auto;
     white-space: nowrap;
   }
@@ -368,7 +368,7 @@
     border: none;
     padding: 4px 10px;
     border-radius: 6px;
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     cursor: pointer;
     margin-left: 8px;
     transition: background 0.15s;
@@ -436,7 +436,7 @@
     font-weight: var(--rp-font-weight-semibold);
   }
   .sa-score-label {
-    font-size: var(--rp-font-size-2xs);
+    font-size: var(--rp-font-size-xs);
     color: #94a3b8;
   }
 
@@ -493,7 +493,7 @@
     margin-bottom: 16px;
     color: #2f5bff;
     text-decoration: none;
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     font-weight: var(--rp-font-weight-medium);
   }
   .sa-back-link:hover { text-decoration: underline; }
@@ -850,7 +850,7 @@
   <% if @responses.empty? %>
     <div class="sa-empty">
       <p style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #64748b; margin-bottom: 8px;">답변 데이터가 없습니다</p>
-      <p style="font-size: var(--rp-font-size-base);">아직 응답이 기록되지 않았습니다.</p>
+      <p style="font-size: var(--rp-font-size-sm);">아직 응답이 기록되지 않았습니다.</p>
     </div>
   <% end %>
 </div>

@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   학생 생성 결과
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -9,7 +9,7 @@
 <% end %>
 
 <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-  <p style="margin: 0; font-size: var(--rp-font-size-base); color: #92400e; font-weight: var(--rp-font-weight-semibold);">
+  <p style="margin: 0; font-size: var(--rp-font-size-sm); color: #92400e; font-weight: var(--rp-font-weight-semibold);">
     아래 정보를 반드시 저장하세요! 이 페이지를 벗어나면 비밀번호를 다시 확인할 수 없습니다.
   </p>
 </div>
@@ -17,7 +17,7 @@
 <section class="portal-card" style="margin-bottom: 24px;" id="results-table">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
     <h2 class="portal-card-title" style="margin: 0;">생성된 계정 (<%= @results.count %>명)</h2>
-    <button onclick="printResults()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); cursor: pointer;">
+    <button onclick="printResults()" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); cursor: pointer;">
       인쇄하기
     </button>
   </div>
@@ -54,9 +54,9 @@
 
 <div style="display: flex; gap: 8px;">
   <%= link_to "학생 목록으로", school_admin_students_path,
-        style: "padding: 10px 20px; background: #2f5bff; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
+        style: "padding: 10px 20px; background: #2f5bff; color: white; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
   <%= link_to "추가 생성", new_school_admin_import_path,
-        style: "padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
+        style: "padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
 </div>
 
 <script>

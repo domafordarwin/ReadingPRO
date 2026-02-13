@@ -83,12 +83,6 @@
   --rp-font-size-xl:  28px;      /* 페이지 제목 */
   --rp-font-size-2xl: 36px;      /* 히어로, 대제목 */
 
-  /* Deprecated aliases — 기존 코드 호환용, Phase 5에서 참조 교체 후 삭제 예정 */
-  --rp-font-size-2xs:  var(--rp-font-size-xs);   /* 12px → 14px */
-  --rp-font-size-base: var(--rp-font-size-sm);    /* 16px → 16px */
-  --rp-font-size-3xl:  var(--rp-font-size-2xl);   /* 32px → 36px */
-  --rp-font-size-4xl:  var(--rp-font-size-2xl);   /* 37px → 36px */
-
   /* Typography - Font Weights */
   --rp-font-weight-normal: 400;  /* Normal text */
   --rp-font-weight-medium: 500;  /* Medium emphasis */
@@ -126,7 +120,7 @@
 .rp-body {
   margin: 0;
   font-family: var(--rp-font-family);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.6;
   color: var(--rp-text-body);
   background: var(--rp-bg-subtle);
@@ -528,7 +522,7 @@
 }
 
 .rp-page-header__title {
-  font-size: var(--rp-font-size-3xl);
+  font-size: var(--rp-font-size-2xl);
   font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-2);
@@ -1326,12 +1320,6 @@
 .rp-text-lg   { font-size: var(--rp-font-size-lg) !important; }
 .rp-text-xl   { font-size: var(--rp-font-size-xl) !important; }
 .rp-text-2xl  { font-size: var(--rp-font-size-2xl) !important; }
-/* Deprecated aliases */
-.rp-text-2xs  { font-size: var(--rp-font-size-xs) !important; }
-.rp-text-base { font-size: var(--rp-font-size-sm) !important; }
-.rp-text-3xl  { font-size: var(--rp-font-size-2xl) !important; }
-.rp-text-4xl  { font-size: var(--rp-font-size-2xl) !important; }
-
 .rp-mt-2 { margin-top: var(--rp-space-2); }
 .rp-mt-4 { margin-top: var(--rp-space-4); }
 .rp-mt-6 { margin-top: var(--rp-space-6); }
@@ -1399,7 +1387,7 @@
   border-bottom: 3px solid transparent;
   color: var(--rp-text-muted);
   font-weight: var(--rp-font-weight-medium);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -1496,13 +1484,13 @@
   color: var(--rp-primary);
   border-radius: 50%;
   font-weight: var(--rp-font-weight-bold);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   flex-shrink: 0;
 }
 
 .rp-choice-text {
   flex: 1;
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   line-height: 1.5;
 }
@@ -1529,7 +1517,7 @@
 .rp-input--score {
   text-align: right;
   font-weight: var(--rp-font-weight-semibold);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .rp-score-unit {
@@ -1569,7 +1557,7 @@
 .rp-criterion-name {
   flex: 1;
   font-weight: var(--rp-font-weight-semibold) !important;
-  font-size: var(--rp-font-size-base) !important;
+  font-size: var(--rp-font-size-sm) !important;
   line-height: 1.5;
 }
 
@@ -1620,7 +1608,7 @@
   display: flex;
   align-items: center;
   gap: var(--rp-space-3);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1702,7 +1690,7 @@
 
 .rp-stimulus-text,
 .rp-prompt-text {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   line-height: 1.7;
   color: var(--rp-text-body);
   white-space: pre-wrap;
@@ -1738,7 +1726,7 @@
 }
 
 .rp-ai-suggestion__title {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-3) 0;
@@ -1849,7 +1837,7 @@
 }
 
 .rp-summary-item .rp-value {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
 }
@@ -1903,7 +1891,7 @@
 }
 
 .rp-modal__card p {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-body);
   margin: 0 0 var(--rp-space-7) 0;
   line-height: 1.6;
@@ -1985,14 +1973,14 @@
 }
 
 .admin-title {
-  font-size: var(--rp-font-size-3xl);
+  font-size: var(--rp-font-size-2xl);
   font-weight: var(--rp-font-weight-bold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-2);
 }
 
 .admin-subtitle {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   color: var(--rp-text-muted);
   margin: 0;
 }
@@ -2152,7 +2140,7 @@
 }
 
 .admin-trend-card h3 {
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
   font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
   margin: 0 0 var(--rp-space-3);
@@ -2715,7 +2703,7 @@
 .rp-toast__title {
   font-weight: var(--rp-font-weight-semibold);
   color: var(--rp-text-title);
-  font-size: var(--rp-font-size-base);
+  font-size: var(--rp-font-size-sm);
 }
 
 .rp-toast__message {
@@ -2878,7 +2866,7 @@ html {
 @media (max-width: 640px) {
   /* Assessment Timer - Larger font for mobile */
   .timer {
-    font-size: var(--rp-font-size-3xl) !important;
+    font-size: var(--rp-font-size-2xl) !important;
     font-weight: var(--rp-font-weight-bold);
     min-width: 90px;
   }
@@ -2953,7 +2941,7 @@ html {
   .rp-btn {
     width: 100%;
     padding: var(--rp-space-3) var(--rp-space-4);
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
     min-height: 44px;
   }
 
@@ -2996,7 +2984,7 @@ html {
   }
 
   .rp-label {
-    font-size: var(--rp-font-size-base);
+    font-size: var(--rp-font-size-sm);
   }
 
   .rp-input,

@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   학부모 관리
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -11,10 +11,10 @@
 <% if flash[:temp_password].present? %>
   <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
     <h3 style="margin: 0 0 12px 0; color: #166534; font-size: var(--rp-font-size-md);">비밀번호가 초기화되었습니다</h3>
-    <p style="margin: 0 0 8px 0; font-size: var(--rp-font-size-base); color: #166534;">
+    <p style="margin: 0 0 8px 0; font-size: var(--rp-font-size-sm); color: #166534;">
       <strong>학부모:</strong> <%= flash[:reset_parent_name] %>
     </p>
-    <p style="margin: 0 0 12px 0; font-size: var(--rp-font-size-base); color: #166534;">
+    <p style="margin: 0 0 12px 0; font-size: var(--rp-font-size-sm); color: #166534;">
       <strong>임시 비밀번호:</strong>
       <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: #dc2626;"><%= flash[:temp_password] %></code>
     </p>
@@ -28,8 +28,8 @@
     <div style="display: flex; gap: 8px; align-items: center;">
       <%= form_with url: school_admin_parents_path, method: :get, local: true, data: { turbo: false }, style: "display: flex; gap: 8px;" do %>
         <input type="text" name="search" value="<%= @search_query %>" placeholder="학부모 ID로 검색..."
-               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
-        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); cursor: pointer;">검색</button>
+               style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-sm);">
+        <button type="submit" style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); cursor: pointer;">검색</button>
       <% end %>
     </div>
   </div>

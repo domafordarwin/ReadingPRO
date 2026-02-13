@@ -1,4 +1,4 @@
-<% content_for :portal_title do %>
+﻿<% content_for :portal_title do %>
   문항 편집
 <% end %>
 <% content_for :portal_subtitle do %>
@@ -79,12 +79,12 @@
                 <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'underline')" title="밑줄 (Ctrl+U)"><u>U</u></button>
                 <span style="border-left: 1px solid #e2e8f0; margin: 0 4px;"></span>
                 <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'strikeThrough')" title="취소선"><s>S</s></button>
-                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+                <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
               </div>
               <div contenteditable="true"
                    class="rp-editor-area"
                    data-item-id="<%= item.id %>"
-                   style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: var(--rp-font-size-base); line-height: 1.6; outline: none; background: #fff;"
+                   style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: var(--rp-font-size-sm); line-height: 1.6; outline: none; background: #fff;"
                    oninput="syncToTextarea(this)"
                    onfocus="this.style.borderColor='#4f46e5'"
                    onblur="this.style.borderColor='#e2e8f0'"><%= raw item.prompt %></div>
@@ -222,7 +222,7 @@
     div.innerHTML = `
       <div class="rp-card__body" style="padding: 16px 20px;">
         <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
-          <span style="font-weight: var(--rp-font-weight-bold); font-size: var(--rp-font-size-base); color: #16a34a; min-width: 60px;">
+          <span style="font-weight: var(--rp-font-weight-bold); font-size: var(--rp-font-size-sm); color: #16a34a; min-width: 60px;">
             신규 #<input type="number" name="new_items[${idx}][position]" value="${nextPosition}"
                    class="rp-input" style="width: 50px; text-align: center; font-size: var(--rp-font-size-sm); display: inline-block;" min="1" required>
           </span>
@@ -250,12 +250,12 @@
             <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'underline')" title="밑줄"><u>U</u></button>
             <span style="border-left: 1px solid #e2e8f0; margin: 0 4px;"></span>
             <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'strikeThrough')" title="취소선"><s>S</s></button>
-            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-2xs);">✕</button>
+            <button type="button" class="rp-fmt-btn" onclick="formatText(this, 'removeFormat')" title="서식 제거" style="font-size: var(--rp-font-size-xs);">✕</button>
           </div>
           <div contenteditable="true"
                class="rp-new-editor-area"
                data-item-id="new_${idx}"
-               style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: var(--rp-font-size-base); line-height: 1.6; outline: none; background: #fff;"
+               style="border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 10px 12px; min-height: 60px; font-size: var(--rp-font-size-sm); line-height: 1.6; outline: none; background: #fff;"
                oninput="syncNewToTextarea(this, ${idx})"
                onfocus="this.style.borderColor='#4f46e5'"
                onblur="this.style.borderColor='#e2e8f0'"
