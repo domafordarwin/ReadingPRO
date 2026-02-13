@@ -6,14 +6,19 @@
       <a href="/" class="lp-header__logo">
         <%= image_tag 'readingpro_logo.png', alt: 'ReadingPRO', style: 'height: 48px; width: auto;' %>
       </a>
-      <nav class="lp-header__nav">
+      <nav class="lp-header__nav" id="lp-nav">
         <a href="#time-savings" class="lp-header__link">AI 자동화</a>
         <a href="#competencies" class="lp-header__link">역량 분석</a>
         <a href="#features" class="lp-header__link">주요 기능</a>
         <a href="#audience" class="lp-header__link">대상별 안내</a>
         <a href="#process" class="lp-header__link">도입 절차</a>
       </nav>
-      <a href="<%= login_path %>" class="lp-btn lp-btn--primary lp-btn--sm">로그인</a>
+      <div class="lp-header__right">
+        <a href="<%= login_path %>" class="lp-btn lp-btn--primary lp-btn--sm">로그인</a>
+        <button class="lp-hamburger" id="lp-hamburger" aria-label="메뉴 열기" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -53,12 +58,12 @@
         </div>
         <div class="lp-hero__stats">
           <div class="lp-hero__stat">
-            <span class="lp-hero__stat-num">7개</span>
+            <span class="lp-hero__stat-num" data-count="7" data-suffix="개">0개</span>
             <span class="lp-hero__stat-label">핵심 역량 분석</span>
           </div>
           <div class="lp-hero__stat-divider"></div>
           <div class="lp-hero__stat">
-            <span class="lp-hero__stat-num">70%</span>
+            <span class="lp-hero__stat-num" data-count="70" data-suffix="%">0%</span>
             <span class="lp-hero__stat-label">교사 업무 절감</span>
           </div>
           <div class="lp-hero__stat-divider"></div>
@@ -85,7 +90,7 @@
   </section>
 
   <!-- ════════ TIME SAVINGS ════════ -->
-  <section class="lp-section lp-section--gray" id="time-savings">
+  <section class="lp-section lp-section--gray lp-anim" id="time-savings">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">AI 자동화 시스템</span>
@@ -199,7 +204,7 @@
   </section>
 
   <!-- ════════ 7 CORE COMPETENCIES ════════ -->
-  <section class="lp-section" id="competencies">
+  <section class="lp-section lp-anim" id="competencies">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">7개 핵심 역량 분석</span>
@@ -207,20 +212,20 @@
         <p class="lp-section__desc">7개 영역 종합 분석으로 읽기 능력을 정확하게 파악합니다</p>
       </div>
       <div class="lp-comp-grid">
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📖</span><h4>이해력</h4><div class="lp-comp-score">82%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="width:82%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">🔍</span><h4>추론 능력</h4><div class="lp-comp-score">75%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="width:75%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🧠</span><h4>비판적 사고</h4><div class="lp-comp-score">68%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="width:68%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🎨</span><h4>심미적 감수성</h4><div class="lp-comp-score">65%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="width:65%"></div></div><span class="lp-comp-label lp-comp-label--med">보완 필요</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">💬</span><h4>의사소통</h4><div class="lp-comp-score">72%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="width:72%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">💡</span><h4>창의적 문제해결</h4><div class="lp-comp-score">70%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="width:70%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📚</span><h4>자기주도 학습</h4><div class="lp-comp-score">78%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="width:78%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📖</span><h4>이해력</h4><div class="lp-comp-score" data-target="82">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:82%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">🔍</span><h4>추론 능력</h4><div class="lp-comp-score" data-target="75">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:75%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🧠</span><h4>비판적 사고</h4><div class="lp-comp-score" data-target="68">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:68%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🎨</span><h4>심미적 감수성</h4><div class="lp-comp-score" data-target="65">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:65%"></div></div><span class="lp-comp-label lp-comp-label--med">보완 필요</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">💬</span><h4>의사소통</h4><div class="lp-comp-score" data-target="72">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:72%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">💡</span><h4>창의적 문제해결</h4><div class="lp-comp-score" data-target="70">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:70%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📚</span><h4>자기주도 학습</h4><div class="lp-comp-score" data-target="78">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:78%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
       </div>
       <p class="lp-comp-note">🔬 전문 연구진이 개발한 과학적 진단 평가 시스템으로 정밀 측정합니다</p>
     </div>
   </section>
 
   <!-- ════════ FEATURES ════════ -->
-  <section class="lp-section lp-section--gray" id="features">
+  <section class="lp-section lp-section--gray lp-anim" id="features">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">핵심 기능</span>
@@ -242,7 +247,7 @@
             <li>깃발 표시 / 진행률 실시간 표시</li>
           </ul>
         </div>
-        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_diagnosis.png', alt: '학생 진단 평가 화면' %></div>
+        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_diagnosis.png', alt: '학생 진단 평가 화면', loading: 'lazy' %></div>
       </div>
 
       <!-- Feature 2: AI 보고서 -->
@@ -263,7 +268,7 @@
             <li><strong>교사/학부모 안내</strong> &middot; 지도 팁</li>
           </ol>
         </div>
-        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_report.png', alt: '종합 보고서 화면' %></div>
+        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_report.png', alt: '종합 보고서 화면', loading: 'lazy' %></div>
       </div>
 
       <!-- Feature 3: 발문 학습 -->
@@ -285,7 +290,7 @@
             <span class="lp-stages__badge">자동 승급 시스템</span>
           </div>
         </div>
-        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_questioning2.png', alt: '발문 학습 모듈' %></div>
+        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_questioning2.png', alt: '발문 학습 모듈', loading: 'lazy' %></div>
       </div>
 
       <!-- Feature 4: 피드백 관리 -->
@@ -309,13 +314,13 @@
             <li>학부모 상담 자료 PDF 즉시 활용</li>
           </ul>
         </div>
-        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_teacher_dashboard.png', alt: '교사 피드백 대시보드' %></div>
+        <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_teacher_dashboard.png', alt: '교사 피드백 대시보드', loading: 'lazy' %></div>
       </div>
     </div>
   </section>
 
   <!-- ════════ GROWTH TRACKING ════════ -->
-  <section class="lp-section" id="growth">
+  <section class="lp-section lp-anim" id="growth">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">성장 추적</span>
@@ -353,7 +358,7 @@
   </section>
 
   <!-- ════════ AUDIENCE TABS ════════ -->
-  <section class="lp-section lp-section--dark" id="audience">
+  <section class="lp-section lp-section--dark lp-anim" id="audience">
     <div class="lp-container">
       <div class="lp-section__header lp-section__header--light">
         <span class="lp-section__eyebrow" style="color:#c4b5fd;">대상별 안내</span>
@@ -390,7 +395,7 @@
               </ul>
             </div>
             <div class="lp-tab-content__img">
-              <%= image_tag 'promotional/screenshot_teacher_dashboard.png', alt: '학교 관리 대시보드' %>
+              <%= image_tag 'promotional/screenshot_teacher_dashboard.png', alt: '학교 관리 대시보드', loading: 'lazy' %>
             </div>
           </div>
         </div>
@@ -417,7 +422,7 @@
               </ul>
             </div>
             <div class="lp-tab-content__img">
-              <%= image_tag 'promotional/screenshot_report.png', alt: '교사 보고서 관리' %>
+              <%= image_tag 'promotional/screenshot_report.png', alt: '교사 보고서 관리', loading: 'lazy' %>
             </div>
           </div>
         </div>
@@ -431,7 +436,7 @@
               <div class="lp-tab-metrics">
                 <div class="lp-tab-metric"><span class="lp-tab-metric__num">실시간</span><span class="lp-tab-metric__label">성장 추이</span></div>
                 <div class="lp-tab-metric"><span class="lp-tab-metric__num">7개 섹션</span><span class="lp-tab-metric__label">종합 보고서</span></div>
-                <div class="lp-tab-metric"><span class="lp-tab-metric__num">즉각</span><span class="lp-tab-metric__label">AI 피드백</span></div>
+                <div class="lp-tab-metric"><span class="lp-tab-metric__num">즉시</span><span class="lp-tab-metric__label">AI 피드백</span></div>
                 <div class="lp-tab-metric"><span class="lp-tab-metric__num">PDF</span><span class="lp-tab-metric__label">보고서 다운로드</span></div>
               </div>
               <ul class="lp-tab-checks">
@@ -444,7 +449,7 @@
               </ul>
             </div>
             <div class="lp-tab-content__img">
-              <%= image_tag 'promotional/screenshot_student_dashboard.png', alt: '학부모 대시보드' %>
+              <%= image_tag 'promotional/screenshot_student_dashboard.png', alt: '학부모 대시보드', loading: 'lazy' %>
             </div>
           </div>
         </div>
@@ -453,7 +458,7 @@
   </section>
 
   <!-- ════════ EXPECTED OUTCOMES ════════ -->
-  <section class="lp-section" id="outcomes">
+  <section class="lp-section lp-anim" id="outcomes">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">도입 효과</span>
@@ -481,7 +486,7 @@
   </section>
 
   <!-- ════════ ADOPTION PROCESS ════════ -->
-  <section class="lp-section lp-section--gray" id="process">
+  <section class="lp-section lp-section--gray lp-anim" id="process">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">도입 절차</span>
@@ -501,7 +506,7 @@
   </section>
 
   <!-- ════════ TRUST / SECURITY ════════ -->
-  <section class="lp-section" id="trust">
+  <section class="lp-section lp-anim" id="trust">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">안심 설계</span>
@@ -540,6 +545,11 @@
     </div>
     <div class="lp-footer__bottom"><div class="lp-container">&copy; 2026 ReadingPRO &mdash; (사)전국독서새물결모임. All rights reserved.</div></div>
   </footer>
+
+  <!-- Back to Top -->
+  <button class="lp-back-top" id="lp-back-top" aria-label="맨 위로 이동">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+  </button>
 </div>
 
 <style>
@@ -553,9 +563,29 @@
 .lp-header__inner { display:flex; align-items:center; justify-content:space-between; height:72px; }
 .lp-header__logo { display:flex; align-items:center; text-decoration:none; }
 .lp-header__nav { display:flex; gap:28px; }
-.lp-header__link { color:var(--lp-muted); text-decoration:none; font-size:15px; font-weight:500; transition:color var(--lp-tr); }
+.lp-header__link { color:var(--lp-muted); text-decoration:none; font-size:15px; font-weight:500; transition:color var(--lp-tr); position:relative; }
 .lp-header__link:hover { color:var(--lp-primary); }
-@media(max-width:768px){.lp-header__nav{display:none;}}
+.lp-header__link.is-active { color:var(--lp-primary); font-weight:600; }
+.lp-header__link.is-active::after { content:''; position:absolute; bottom:-4px; left:0; right:0; height:2px; background:var(--lp-grad); border-radius:1px; }
+.lp-header__right { display:flex; align-items:center; gap:12px; }
+
+/* Hamburger */
+.lp-hamburger { display:none; width:36px; height:36px; border:none; background:none; cursor:pointer; padding:6px; flex-direction:column; justify-content:center; gap:5px; }
+.lp-hamburger span { display:block; width:100%; height:2px; background:var(--lp-dark); border-radius:2px; transition:all .3s ease; }
+.lp-hamburger.is-open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.lp-hamburger.is-open span:nth-child(2) { opacity:0; }
+.lp-hamburger.is-open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+@media(max-width:768px){
+  .lp-hamburger { display:flex; }
+  .lp-header__nav { display:none; position:absolute; top:72px; left:0; right:0; background:#fff; flex-direction:column; gap:0; padding:8px 0; border-bottom:1px solid var(--lp-border); box-shadow:0 8px 24px rgba(0,0,0,.1); z-index:99; }
+  .lp-header__nav.is-open { display:flex; animation:lpSlideDown .3s ease; }
+  .lp-header__link { padding:14px 24px; font-size:16px; border-bottom:1px solid #f1f5f9; }
+  .lp-header__link:last-child { border-bottom:none; }
+  .lp-header__link.is-active::after { display:none; }
+  .lp-header__link.is-active { background:#f8fafc; }
+}
+@keyframes lpSlideDown { from{opacity:0;transform:translateY(-8px);} to{opacity:1;transform:translateY(0);} }
 
 /* Buttons */
 .lp-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 24px; border-radius:8px; font-size:15px; font-weight:600; text-decoration:none; border:none; cursor:pointer; transition:all var(--lp-tr); white-space:nowrap; }
@@ -800,11 +830,35 @@
 .lp-footer__links a:hover { color:#fff; }
 .lp-footer__bottom { padding:20px 0; font-size:13px; text-align:center; }
 @media(max-width:768px){ .lp-footer__inner{flex-direction:column;} .lp-footer__links{gap:40px;} }
+
+/* Scroll Animations */
+.lp-anim { opacity:0; transform:translateY(32px); transition:opacity .7s ease,transform .7s ease; }
+.lp-anim.is-visible { opacity:1; transform:translateY(0); }
+
+/* Competency bar animation */
+.lp-comp-fill { width:0 !important; transition:width 1s ease .2s; }
+.is-visible .lp-comp-fill { width:var(--target-width) !important; }
+
+/* Growth chart bar animation */
+.lp-growth-chart__bar { transform:scaleY(0); transform-origin:bottom; transition:transform .8s ease; }
+.is-visible .lp-growth-chart__bar { transform:scaleY(1); }
+
+/* Time savings bar animation */
+.lp-ts-bar { transform:scaleY(0); transform-origin:bottom; transition:transform .6s ease; }
+.is-visible .lp-ts-bar { transform:scaleY(1); }
+
+/* Back to Top */
+.lp-back-top { position:fixed; bottom:32px; right:32px; width:44px; height:44px; border-radius:50%; background:var(--lp-grad); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(102,126,234,.4); opacity:0; visibility:hidden; transform:translateY(12px); transition:all .3s ease; z-index:90; }
+.lp-back-top.is-visible { opacity:1; visibility:visible; transform:translateY(0); }
+.lp-back-top:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(102,126,234,.5); }
+
+/* Prefers reduced motion */
+@media(prefers-reduced-motion:reduce){ .lp-anim,.lp-comp-fill,.lp-growth-chart__bar,.lp-ts-bar { transition:none !important; } .lp-anim { opacity:1; transform:none; } }
 </style>
 
 <script>
 (function() {
-  // Tab switching
+  /* ── Tab switching ── */
   var tabBtns = document.querySelectorAll('.lp-tabs__btn');
   var tabPanels = document.querySelectorAll('.lp-tabs__panel');
   tabBtns.forEach(function(btn) {
@@ -818,20 +872,137 @@
     });
   });
 
-  // Smooth scroll
+  /* ── Smooth scroll ── */
   document.querySelectorAll('.lp a[href^="#"]').forEach(function(a) {
     a.addEventListener('click', function(e) {
       var target = document.querySelector(a.getAttribute('href'));
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      if (target) {
+        e.preventDefault();
+        var headerH = document.querySelector('.lp-header').offsetHeight || 72;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - headerH;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+      // Close mobile menu after clicking
+      var nav = document.getElementById('lp-nav');
+      var ham = document.getElementById('lp-hamburger');
+      if (nav && ham) { nav.classList.remove('is-open'); ham.classList.remove('is-open'); ham.setAttribute('aria-expanded','false'); }
     });
   });
 
-  // Header shadow
+  /* ── Header shadow ── */
   var header = document.querySelector('.lp-header');
-  if (header) {
-    window.addEventListener('scroll', function() {
-      header.style.boxShadow = window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
-    }, { passive: true });
+
+  /* ── Mobile hamburger ── */
+  var hamburger = document.getElementById('lp-hamburger');
+  var nav = document.getElementById('lp-nav');
+  if (hamburger && nav) {
+    hamburger.addEventListener('click', function() {
+      var open = nav.classList.toggle('is-open');
+      hamburger.classList.toggle('is-open');
+      hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      hamburger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+    });
+  }
+
+  /* ── Scroll-based animations (Intersection Observer) ── */
+  var animEls = document.querySelectorAll('.lp-anim');
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    animEls.forEach(function(el) { observer.observe(el); });
+  } else {
+    animEls.forEach(function(el) { el.classList.add('is-visible'); });
+  }
+
+  /* ── Hero stat counter animation ── */
+  function animateCounters() {
+    document.querySelectorAll('.lp-hero__stat-num[data-count]').forEach(function(el) {
+      var target = parseInt(el.dataset.count, 10);
+      var suffix = el.dataset.suffix || '';
+      var duration = 1200;
+      var start = performance.now();
+      function step(now) {
+        var progress = Math.min((now - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        var current = Math.round(target * ease);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  // Start counters after short delay for page load
+  setTimeout(animateCounters, 400);
+
+  /* ── Competency score counter animation ── */
+  var compSection = document.getElementById('competencies');
+  if (compSection && 'IntersectionObserver' in window) {
+    var compObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.lp-comp-score[data-target]').forEach(function(el) {
+            var target = parseInt(el.dataset.target, 10);
+            var duration = 1000;
+            var start = performance.now();
+            function step(now) {
+              var progress = Math.min((now - start) / duration, 1);
+              var ease = 1 - Math.pow(1 - progress, 3);
+              el.textContent = Math.round(target * ease) + '%';
+              if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+          });
+          compObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    compObserver.observe(compSection);
+  }
+
+  /* ── Active nav link highlight on scroll ── */
+  var sections = document.querySelectorAll('.lp-section[id]');
+  var navLinks = document.querySelectorAll('.lp-header__link');
+  var backTopBtn = document.getElementById('lp-back-top');
+
+  function onScroll() {
+    var scrollY = window.pageYOffset;
+    var headerH = header ? header.offsetHeight : 72;
+
+    // Header shadow
+    if (header) header.style.boxShadow = scrollY > 10 ? '0 2px 20px rgba(0,0,0,.08)' : 'none';
+
+    // Back to top button
+    if (backTopBtn) {
+      if (scrollY > 600) backTopBtn.classList.add('is-visible');
+      else backTopBtn.classList.remove('is-visible');
+    }
+
+    // Active nav link
+    var current = '';
+    sections.forEach(function(section) {
+      var top = section.offsetTop - headerH - 100;
+      if (scrollY >= top) current = section.getAttribute('id');
+    });
+    navLinks.forEach(function(link) {
+      link.classList.remove('is-active');
+      if (link.getAttribute('href') === '#' + current) link.classList.add('is-active');
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ── Back to top ── */
+  if (backTopBtn) {
+    backTopBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 })();
 </script>
