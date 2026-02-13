@@ -7,8 +7,8 @@
         <%= image_tag 'readingpro_logo.png', alt: 'ReadingPRO', style: 'height: 48px; width: auto;' %>
       </a>
       <nav class="lp-header__nav" id="lp-nav">
-        <a href="#competencies" class="lp-header__link">역량 분석</a>
         <a href="#features" class="lp-header__link">주요 기능</a>
+        <a href="#competencies" class="lp-header__link">역량 분석</a>
         <a href="#audience" class="lp-header__link">대상별 안내</a>
         <a href="#time-savings" class="lp-header__link">AI 자동화</a>
         <a href="#process" class="lp-header__link">도입 절차</a>
@@ -89,29 +89,8 @@
     </div>
   </section>
 
-  <!-- ════════ 7 CORE COMPETENCIES ════════ -->
-  <section class="lp-section lp-section--gray lp-anim" id="competencies">
-    <div class="lp-container">
-      <div class="lp-section__header">
-        <span class="lp-section__eyebrow">7개 핵심 역량 분석</span>
-        <h2 class="lp-section__title">어떤 글을 잘 읽고, 어떤 부분이 부족한지 한눈에</h2>
-        <p class="lp-section__desc">7개 영역 종합 분석으로 읽기 능력을 정확하게 파악합니다</p>
-      </div>
-      <div class="lp-comp-grid">
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📖</span><h4>이해력</h4><div class="lp-comp-score" data-target="82">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:82%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">🔍</span><h4>추론 능력</h4><div class="lp-comp-score" data-target="75">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:75%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🧠</span><h4>비판적 사고</h4><div class="lp-comp-score" data-target="68">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:68%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🎨</span><h4>심미적 감수성</h4><div class="lp-comp-score" data-target="65">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:65%"></div></div><span class="lp-comp-label lp-comp-label--med">보완 필요</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">💬</span><h4>의사소통</h4><div class="lp-comp-score" data-target="72">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:72%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
-        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">💡</span><h4>창의적 문제해결</h4><div class="lp-comp-score" data-target="70">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:70%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
-        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📚</span><h4>자기주도 학습</h4><div class="lp-comp-score" data-target="78">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:78%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
-      </div>
-      <p class="lp-comp-note">🔬 전문 연구진이 개발한 과학적 진단 평가 시스템으로 정밀 측정합니다</p>
-    </div>
-  </section>
-
   <!-- ════════ FEATURES ════════ -->
-  <section class="lp-section lp-anim" id="features">
+  <section class="lp-section lp-section--gray lp-anim" id="features">
     <div class="lp-container">
       <div class="lp-section__header">
         <span class="lp-section__eyebrow">핵심 기능</span>
@@ -202,6 +181,27 @@
         </div>
         <div class="lp-feat__img"><%= image_tag 'promotional/screenshot_teacher_dashboard.png', alt: '교사 피드백 대시보드', loading: 'lazy' %></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ════════ 7 CORE COMPETENCIES ════════ -->
+  <section class="lp-section lp-anim" id="competencies">
+    <div class="lp-container">
+      <div class="lp-section__header">
+        <span class="lp-section__eyebrow">7개 핵심 역량 분석</span>
+        <h2 class="lp-section__title">어떤 글을 잘 읽고, 어떤 부분이 부족한지 한눈에</h2>
+        <p class="lp-section__desc">7개 영역 종합 분석으로 읽기 능력을 정확하게 파악합니다</p>
+      </div>
+      <div class="lp-comp-grid">
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📖</span><h4>이해력</h4><div class="lp-comp-score" data-target="82">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:82%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">🔍</span><h4>추론 능력</h4><div class="lp-comp-score" data-target="75">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:75%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🧠</span><h4>비판적 사고</h4><div class="lp-comp-score" data-target="68">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:68%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">🎨</span><h4>심미적 감수성</h4><div class="lp-comp-score" data-target="65">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:65%"></div></div><span class="lp-comp-label lp-comp-label--med">보완 필요</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">💬</span><h4>의사소통</h4><div class="lp-comp-score" data-target="72">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:72%"></div></div><span class="lp-comp-label lp-comp-label--high">양호</span></div>
+        <div class="lp-comp-card lp-comp-card--med"><span class="lp-comp-icon">💡</span><h4>창의적 문제해결</h4><div class="lp-comp-score" data-target="70">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--med" style="--target-width:70%"></div></div><span class="lp-comp-label lp-comp-label--med">성장 중</span></div>
+        <div class="lp-comp-card lp-comp-card--high"><span class="lp-comp-icon">📚</span><h4>자기주도 학습</h4><div class="lp-comp-score" data-target="78">0%</div><div class="lp-comp-bar"><div class="lp-comp-fill lp-comp-fill--high" style="--target-width:78%"></div></div><span class="lp-comp-label lp-comp-label--high">우수</span></div>
+      </div>
+      <p class="lp-comp-note">🔬 전문 연구진이 개발한 과학적 진단 평가 시스템으로 정밀 측정합니다</p>
     </div>
   </section>
 
@@ -539,7 +539,7 @@
         <p>AI와 함께하는 읽기 교육의 새로운 기준</p>
       </div>
       <div class="lp-footer__links">
-        <div><h5>제품</h5><a href="#competencies">역량 분석</a><a href="#features">주요 기능</a><a href="#time-savings">AI 자동화</a></div>
+        <div><h5>제품</h5><a href="#features">주요 기능</a><a href="#competencies">역량 분석</a><a href="#time-savings">AI 자동화</a></div>
         <div><h5>지원</h5><a href="<%= login_path %>">로그인</a><a href="#process">도입 절차</a><a href="#audience">대상별 안내</a></div>
       </div>
     </div>
