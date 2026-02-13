@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= yield :title %></title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Noto Sans CJK KR", "Noto Sans KR", "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #1e293b;
+      background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    :root {
+      --rp-font-size-2xs: 9px;
+      --rp-font-size-xs: 10px;
+      --rp-font-size-sm: 11px;
+      --rp-font-size-base: 12px;
+      --rp-font-size-md: 13px;
+      --rp-font-size-lg: 14px;
+      --rp-font-size-xl: 15px;
+      --rp-font-size-2xl: 17px;
+      --rp-primary: #667eea;
+    }
+    @page { size: A4; margin: 12mm 10mm; }
+    p { margin: 0 0 0.5em; }
+  </style>
+  <%= yield :print_styles %>
+</head>
+<body>
+  <%= yield %>
+</body>
+</html>

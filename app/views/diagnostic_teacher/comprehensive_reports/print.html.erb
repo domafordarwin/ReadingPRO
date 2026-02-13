@@ -1,0 +1,246 @@
+<% content_for :title do %><%= @student.name %>_문해력진단보고서<% end %>
+
+<% content_for :print_styles do %>
+<style>
+  .cr-print-profile {
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; border-radius: 10px; padding: 18px 20px; margin-bottom: 16px;
+  }
+  .cr-print-profile__avatar {
+    width: 42px; height: 42px; background: rgba(255,255,255,0.2);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; flex-shrink: 0;
+  }
+  .cr-print-profile__name { font-size: 18px; font-weight: 700; margin: 0 0 3px; }
+  .cr-print-profile__meta { font-size: 11px; opacity: 0.85; margin: 0; }
+
+  .cr-print-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .cr-print-stat {
+    display: flex; align-items: center; gap: 10px; background: white;
+    border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px;
+  }
+  .cr-print-stat__icon {
+    width: 32px; height: 32px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cr-print-stat__icon--slate { background: #f1f5f9; color: #475569; }
+  .cr-print-stat__icon--blue { background: #eff6ff; color: #3b82f6; }
+  .cr-print-stat__icon--green { background: #f0fdf4; color: #16a34a; }
+  .cr-print-stat__icon--purple { background: #faf5ff; color: #8b5cf6; }
+  .cr-print-stat__label { font-size: 9px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
+  .cr-print-stat__value { font-size: 17px; font-weight: 700; color: #0f172a; }
+  .cr-print-stat__value--blue { color: #2563eb; }
+  .cr-print-stat__value--green { color: #16a34a; }
+  .cr-print-stat__value--yellow { color: #d97706; }
+  .cr-print-stat__value--red { color: #dc2626; }
+
+  .cr-print-section {
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    margin-bottom: 14px; overflow: hidden; page-break-inside: avoid;
+  }
+  .cr-print-section__header {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    background: #fafbfc; border-bottom: 1px solid #f1f5f9;
+  }
+  .cr-print-section__number {
+    width: 22px; height: 22px; color: white; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .cr-print-section__title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0; }
+  .cr-print-section__body {
+    padding: 14px 16px; font-size: 12px; line-height: 1.8; color: #334155;
+    white-space: pre-wrap; word-wrap: break-word;
+  }
+
+  /* 영역별 분석 */
+  .cr-print-area-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 14px 16px; }
+  .cr-print-area-left { display: flex; flex-direction: column; gap: 10px; }
+  .cr-print-area-right { text-align: center; }
+  .cr-print-area-right__title { font-size: 12px; font-weight: 600; color: #475569; margin: 0 0 8px; }
+
+  .cr-print-area-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;
+  }
+  .cr-print-area-card__top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cr-print-area-card__icon {
+    width: 28px; height: 28px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cr-print-area-card__info { flex: 1; }
+  .cr-print-area-card__name { font-size: 12px; font-weight: 600; }
+  .cr-print-area-card__meta { font-size: 10px; color: #94a3b8; }
+  .cr-print-area-card__score { text-align: right; }
+  .cr-print-area-card__pct { font-size: 17px; font-weight: 700; display: block; }
+  .cr-print-area-card__level {
+    display: inline-block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; margin-top: 1px;
+  }
+  .cr-print-area-card__level--green { background: #dcfce7; color: #166534; }
+  .cr-print-area-card__level--blue { background: #dbeafe; color: #1e40af; }
+  .cr-print-area-card__level--yellow { background: #fef3c7; color: #92400e; }
+  .cr-print-area-card__level--red { background: #fee2e2; color: #991b1b; }
+  .cr-print-area-card__bar { height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .cr-print-area-card__bar-fill { height: 100%; border-radius: 3px; }
+  .cr-print-area-card__subs { display: flex; flex-direction: column; gap: 3px; }
+  .cr-print-area-card__sub {
+    display: flex; justify-content: space-between; padding: 3px 6px;
+    background: #f8fafc; border-radius: 4px; font-size: 10px;
+  }
+  .cr-print-area-card__sub-name { color: #64748b; }
+  .cr-print-area-card__sub-score { font-weight: 600; }
+
+  .cr-print-radar svg { max-width: 360px; width: 100%; height: auto; }
+
+  .cr-print-footer {
+    font-size: 9px; color: #94a3b8; text-align: center;
+    padding-top: 12px; margin-top: 16px; border-top: 1px solid #e2e8f0;
+  }
+</style>
+<% end %>
+
+<%
+  section_colors = {
+    "overall_summary" => "#667eea", "area_analysis" => "#3b82f6",
+    "mcq_analysis" => "#8b5cf6", "constructed_analysis" => "#16a34a",
+    "reader_tendency" => "#d97706", "comprehensive_opinion" => "#dc2626",
+    "learning_recommendations" => "#0891b2"
+  }
+  summary_data = @report.section_data("overall_summary")
+  level = summary_data["performance_level"] || @report.performance_level
+  level_labels = { "advanced" => "우수", "proficient" => "양호", "developing" => "보통", "beginning" => "기초" }
+  level_value_classes = { "advanced" => "cr-print-stat__value--green", "proficient" => "cr-print-stat__value--blue", "developing" => "cr-print-stat__value--yellow", "beginning" => "cr-print-stat__value--red" }
+%>
+
+<!-- 프로필 헤더 -->
+<div class="cr-print-profile">
+  <div class="cr-print-profile__avatar"><%= @student.name&.first || "?" %></div>
+  <div>
+    <h1 class="cr-print-profile__name"><%= @student.name %>의 문해력 진단 종합 보고서</h1>
+    <p class="cr-print-profile__meta">
+      <%= @attempt.diagnostic_form&.name %> · <%= @attempt.submitted_at&.strftime("%Y-%m-%d") %>
+      · 총점: <%= @report.total_score&.to_i %>/<%= @report.max_score&.to_i %> (<%= @report.score_percentage&.to_f&.round(1) %>%)
+    </p>
+  </div>
+</div>
+
+<!-- 성과 요약 카드 -->
+<% if summary_data.any? %>
+<div class="cr-print-stats">
+  <div class="cr-print-stat">
+    <div class="cr-print-stat__icon cr-print-stat__icon--slate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <div>
+      <div class="cr-print-stat__label">총점</div>
+      <div class="cr-print-stat__value"><%= summary_data["score_percentage"] || "-" %>%</div>
+    </div>
+  </div>
+  <div class="cr-print-stat">
+    <div class="cr-print-stat__icon cr-print-stat__icon--blue">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </div>
+    <div>
+      <div class="cr-print-stat__label">객관식</div>
+      <div class="cr-print-stat__value cr-print-stat__value--blue"><%= summary_data["mcq_correct"] || 0 %>/<%= summary_data["mcq_count"] || 0 %></div>
+    </div>
+  </div>
+  <div class="cr-print-stat">
+    <div class="cr-print-stat__icon cr-print-stat__icon--green">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    </div>
+    <div>
+      <div class="cr-print-stat__label">서술형</div>
+      <div class="cr-print-stat__value cr-print-stat__value--green"><%= summary_data["constructed_earned"] || 0 %>/<%= summary_data["constructed_max"] || 0 %></div>
+    </div>
+  </div>
+  <div class="cr-print-stat">
+    <div class="cr-print-stat__icon cr-print-stat__icon--purple">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+    <div>
+      <div class="cr-print-stat__label">수행수준</div>
+      <div class="cr-print-stat__value <%= level_value_classes[level] %>"><%= level_labels[level] || "-" %></div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- 7개 섹션 -->
+<% AttemptReport::SECTION_KEYS.each_with_index do |key, idx| %>
+  <% section = @report.section(key) %>
+  <% color = section_colors[key] || "#64748b" %>
+
+  <div class="cr-print-section">
+    <div class="cr-print-section__header">
+      <span class="cr-print-section__number" style="background: <%= color %>;"><%= idx + 1 %></span>
+      <h3 class="cr-print-section__title"><%= AttemptReport::SECTION_TITLES[key] %></h3>
+    </div>
+
+    <% if key == "area_analysis" && section.dig("data", "indicators").present? %>
+      <%
+        radar_data = section.dig("data", "radar_data")
+        indicator_colors = {
+          "이해력" => { bg: "#eff6ff", border: "#bfdbfe", text: "#1e40af", bar: "#3b82f6", icon_bg: "#dbeafe" },
+          "심미적 감수성" => { bg: "#faf5ff", border: "#e9d5ff", text: "#6b21a8", bar: "#8b5cf6", icon_bg: "#f3e8ff" },
+          "의사소통 능력" => { bg: "#f0fdf4", border: "#bbf7d0", text: "#166534", bar: "#16a34a", icon_bg: "#dcfce7" }
+        }
+      %>
+      <div class="cr-print-area-split">
+        <div class="cr-print-area-left">
+          <% section.dig("data", "indicators")&.each do |ind| %>
+            <%
+              colors = indicator_colors[ind["name"]] || { bg: "#f8fafc", border: "#e2e8f0", text: "#334155", bar: "#64748b", icon_bg: "#f1f5f9" }
+              accuracy = ind["mcq_accuracy"].to_f
+              level_text = accuracy >= 80 ? "우수" : (accuracy >= 60 ? "양호" : (accuracy >= 40 ? "보통" : "기초"))
+              level_class = accuracy >= 80 ? "green" : (accuracy >= 60 ? "blue" : (accuracy >= 40 ? "yellow" : "red"))
+            %>
+            <div class="cr-print-area-card" style="border-left: 3px solid <%= colors[:bar] %>;">
+              <div class="cr-print-area-card__top">
+                <div class="cr-print-area-card__icon" style="background: <%= colors[:icon_bg] %>;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="<%= colors[:bar] %>" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                </div>
+                <div class="cr-print-area-card__info">
+                  <div class="cr-print-area-card__name" style="color: <%= colors[:text] %>;"><%= ind["name"] %></div>
+                  <div class="cr-print-area-card__meta">문항 <%= ind["total_items"] %>개</div>
+                </div>
+                <div class="cr-print-area-card__score">
+                  <span class="cr-print-area-card__pct" style="color: <%= colors[:bar] %>;"><%= accuracy.round(1) %>%</span>
+                  <span class="cr-print-area-card__level cr-print-area-card__level--<%= level_class %>"><%= level_text %></span>
+                </div>
+              </div>
+              <div class="cr-print-area-card__bar">
+                <div class="cr-print-area-card__bar-fill" style="width: <%= accuracy %>%; background: <%= colors[:bar] %>;"></div>
+              </div>
+              <% sub_indicators = radar_data&.select { |r| r["group"] == ind["name"] } %>
+              <% if sub_indicators.present? %>
+                <div class="cr-print-area-card__subs">
+                  <% sub_indicators.each do |si| %>
+                    <div class="cr-print-area-card__sub">
+                      <span class="cr-print-area-card__sub-name"><%= si["name"] %></span>
+                      <span class="cr-print-area-card__sub-score" style="color: <%= colors[:bar] %>;"><%= si["score"] %>%</span>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <% if @radar_svg.present? %>
+          <div class="cr-print-area-right">
+            <h4 class="cr-print-area-right__title">세부 지표별 달성률</h4>
+            <div class="cr-print-radar"><%= raw @radar_svg %></div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="cr-print-section__body"><%= section["content"].to_s %></div>
+  </div>
+<% end %>
+
+<!-- 푸터 -->
+<div class="cr-print-footer">
+  Reading PRO 문해력 진단 평가 시스템 · <%= Date.current.strftime("%Y년 %m월 %d일") %> 생성
+</div>

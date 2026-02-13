@@ -1,6 +1,5 @@
 <% content_for :page_title do %>종합 보고서 - <%= @student.name %><% end %>
 <% content_for :head do %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <% end %>
 
 <div id="report-printable-area">
@@ -248,10 +247,13 @@
 
 <!-- PDF 저장 / HWPx / 인쇄 액션 바 -->
 <div class="cr-show-actions-bar no-print">
-  <button onclick="downloadPdf()" class="cr-show-actions-bar__btn cr-show-actions-bar__btn--pdf" id="pdf-download-btn">
+  <%= link_to diagnostic_teacher_comprehensive_report_download_pdf_path(@student.id, @attempt.id),
+        class: "cr-show-actions-bar__btn cr-show-actions-bar__btn--pdf",
+        data: { turbo: false },
+        id: "pdf-download-btn" do %>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     PDF 저장
-  </button>
+  <% end %>
   <%= link_to diagnostic_teacher_comprehensive_report_download_hwpx_path(@student.id, @attempt.id),
         class: "cr-show-actions-bar__btn cr-show-actions-bar__btn--hwpx",
         data: { turbo: false },
@@ -435,33 +437,6 @@ function drawRadarChart(svgId, legendId, data) {
       } else { showToast(data.error || '재생성 실패', 'error'); }
     } catch (e) { showToast('네트워크 오류', 'error'); }
     finally { btn.innerHTML = originalHTML; btn.disabled = false; }
-  }
-
-  function downloadPdf() {
-    const element = document.getElementById('report-printable-area');
-    if (!element) return;
-    const btn = document.getElementById('pdf-download-btn');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cr-show-spinner-svg"><circle cx="12" cy="12" r="10"/></svg> PDF 생성 중...';
-    btn.disabled = true;
-    // PDF 캡처 시 불필요한 요소 숨김
-    const hideEls = element.querySelectorAll('.cr-show-header__top, .cr-show-section__actions, .cr-show-prompt, .cr-show-regen-btn');
-    hideEls.forEach(function(el) { el.dataset.prevDisplay = el.style.display; el.style.display = 'none'; });
-    var opt = {
-      margin: [10, 10, 10, 10],
-      filename: '<%= j @student.name %>_종합보고서.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-    html2pdf().set(opt).from(element).save().then(function() {
-      hideEls.forEach(function(el) { el.style.display = el.dataset.prevDisplay || ''; });
-      btn.innerHTML = originalHTML; btn.disabled = false;
-    }).catch(function() {
-      hideEls.forEach(function(el) { el.style.display = el.dataset.prevDisplay || ''; });
-      btn.innerHTML = originalHTML; btn.disabled = false;
-    });
   }
 
   async function togglePublish() {

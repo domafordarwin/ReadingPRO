@@ -1,6 +1,5 @@
 <% content_for :page_title do %>발문 역량 보고서 - <%= @student.name %><% end %>
 <% content_for :head do %>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <% end %>
 
 <%
@@ -19,10 +18,13 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       MD 다운로드
     <% end %>
-    <button onclick="downloadQuestioningPdf()" class="qr-dl-action-btn qr-dl-action-btn--pdf" id="pdf-download-btn">
+    <%= link_to download_report_pdf_diagnostic_teacher_questioning_session_path(@questioning_session),
+          class: "qr-dl-action-btn qr-dl-action-btn--pdf",
+          data: { turbo: false },
+          id: "pdf-download-btn" do %>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       PDF 다운로드
-    </button>
+    <% end %>
     <%= link_to download_hwpx_diagnostic_teacher_questioning_session_path(@questioning_session),
           class: "qr-dl-action-btn qr-dl-action-btn--hwpx",
           data: { turbo: false } do %>
@@ -132,41 +134,14 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
     MD 파일 다운로드
   <% end %>
-  <button onclick="downloadQuestioningPdf()" class="qr-dl-bottom-btn qr-dl-bottom-btn--pdf" id="pdf-download-btn-bottom">
+  <%= link_to download_report_pdf_diagnostic_teacher_questioning_session_path(@questioning_session),
+        class: "qr-dl-bottom-btn qr-dl-bottom-btn--pdf",
+        data: { turbo: false },
+        id: "pdf-download-btn-bottom" do %>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     PDF 파일 다운로드
-  </button>
+  <% end %>
 </div>
-
-<!-- ── PDF 다운로드 스크립트 ── -->
-<script>
-function downloadQuestioningPdf() {
-  var element = document.getElementById('qr-report-printable');
-  if (!element) return;
-
-  var btns = document.querySelectorAll('#pdf-download-btn, #pdf-download-btn-bottom');
-  btns.forEach(function(btn) {
-    btn.dataset.originalHtml = btn.innerHTML;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:qr-spin 0.6s linear infinite"><circle cx="12" cy="12" r="10"/></svg> PDF 생성 중...';
-    btn.disabled = true;
-  });
-
-  var opt = {
-    margin: [12, 10, 12, 10],
-    filename: '<%= j(@student.name) %>_발문역량보고서_<%= Date.current.strftime("%Y%m%d") %>.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  html2pdf().set(opt).from(element).save().then(function() {
-    btns.forEach(function(btn) { btn.innerHTML = btn.dataset.originalHtml; btn.disabled = false; });
-  }).catch(function() {
-    btns.forEach(function(btn) { btn.innerHTML = btn.dataset.originalHtml; btn.disabled = false; });
-  });
-}
-</script>
 
 <!-- ── 스타일 ── -->
 <style>

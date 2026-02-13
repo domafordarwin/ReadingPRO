@@ -153,6 +153,12 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.2)
       net-http (~> 0.5)
+    ferrum (0.17.1)
+      addressable (~> 2.5)
+      base64 (~> 0.2)
+      concurrent-ruby (~> 1.1)
+      webrick (~> 1.7)
+      websocket-driver (~> 0.7)
     ffi (1.17.3)
     ffi (1.17.3-x64-mingw-ucrt)
     ffi (1.17.3-x86_64-linux-gnu)
@@ -227,7 +233,6 @@ GEM
     mini_magick (5.3.1)
       logger
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (6.0.1)
       prism (~> 1.5)
     msgpack (1.8.0)
@@ -249,9 +254,6 @@ GEM
       net-protocol
     net-ssh (7.3.0)
     nio4r (2.7.5)
-    nokogiri (1.19.0)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.19.0-x64-mingw-ucrt)
       racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-gnu)
@@ -440,6 +442,7 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
+    webrick (1.9.2)
     websocket (1.2.11)
     websocket-driver (0.8.0)
       base64
@@ -450,7 +453,6 @@ GEM
     zeitwerk (2.7.4)
 
 PLATFORMS
-  ruby
   x64-mingw-ucrt
   x86_64-linux
 
@@ -465,6 +467,7 @@ DEPENDENCIES
   csv
   debug
   dotenv-rails
+  ferrum
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

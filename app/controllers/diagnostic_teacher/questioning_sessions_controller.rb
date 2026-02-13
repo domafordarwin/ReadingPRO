@@ -212,6 +212,50 @@ class DiagnosticTeacher::QuestioningSessionsController < ApplicationController
                 alert: "HWPx 문서 변환 중 오류가 발생했습니다: #{e.message}"
   end
 
+  # GET /diagnostic_teacher/questioning_sessions/:id/download_report_pdf
+  def download_report_pdf
+    @current_page = "questioning_modules"
+    @module = @questioning_session.questioning_module
+    @stimulus = @module.reading_stimulus
+    @student = @questioning_session.student
+    @report = @questioning_session.questioning_report
+
+    unless @report
+      redirect_to diagnostic_teacher_questioning_session_path(@questioning_session),
+                  alert: "보고서가 없습니다. 먼저 보고서를 생성해 주세요."
+      return
+    end
+
+    @questions_by_stage = {
+      1 => @questioning_session.questions_for_stage(1),
+      2 => @questioning_session.questions_for_stage(2),
+      3 => @questioning_session.questions_for_stage(3)
+    }
+
+    # 레이더 차트 SVG 서버사이드 생성
+    radar_data = build_questioning_radar_data(@report)
+    @radar_svg = radar_data.present? ? RadarChartService.new(radar_data).generate_svg : nil
+
+    # 인쇄 전용 HTML 렌더링
+    html = render_to_string(
+      template: "diagnostic_teacher/questioning_sessions/print_report",
+      layout: "report_print"
+    )
+
+    # Chromium으로 PDF 생성
+    pdf_data = PdfGenerationService.generate(html)
+    filename = "#{@student.name}_발문역량보고서_#{Date.current.strftime('%Y%m%d')}.pdf"
+
+    send_data pdf_data,
+              filename: filename,
+              type: "application/pdf",
+              disposition: "attachment"
+  rescue PdfGenerationService::PdfGenerationError, PdfGenerationService::PdfTimeoutError => e
+    Rails.logger.error("[QuestioningSessions#download_report_pdf] #{e.class}: #{e.message}")
+    redirect_to report_diagnostic_teacher_questioning_session_path(@questioning_session),
+                alert: "PDF 생성 중 오류가 발생했습니다: #{e.message}"
+  end
+
   # GET /diagnostic_teacher/questioning_sessions/:id/download_report_md
   def download_report_md
     @current_page = "questioning_modules"

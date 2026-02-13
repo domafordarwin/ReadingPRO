@@ -252,6 +252,41 @@ module DiagnosticTeacher
                   alert: "HWPx 문서 변환 중 오류가 발생했습니다: #{e.message}"
     end
 
+    # GET /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/download_pdf
+    def download_pdf
+      load_student_and_attempt
+      @report = @attempt.attempt_report
+
+      unless @report&.comprehensive_report_generated?
+        redirect_to diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id),
+                    alert: "보고서가 아직 생성되지 않았습니다."
+        return
+      end
+
+      # 레이더 차트 SVG 서버사이드 생성
+      radar_data = @report.section_data("area_analysis")["radar_data"]
+      @radar_svg = radar_data.present? ? RadarChartService.new(radar_data).generate_svg : nil
+
+      # 인쇄 전용 HTML 렌더링
+      html = render_to_string(
+        template: "diagnostic_teacher/comprehensive_reports/print",
+        layout: "report_print"
+      )
+
+      # Chromium으로 PDF 생성
+      pdf_data = PdfGenerationService.generate(html)
+      filename = "#{@student.name}_문해력진단보고서_#{Date.current.strftime('%Y%m%d')}.pdf"
+
+      send_data pdf_data,
+                filename: filename,
+                type: "application/pdf",
+                disposition: "attachment"
+    rescue PdfGenerationService::PdfGenerationError, PdfGenerationService::PdfTimeoutError => e
+      Rails.logger.error("[ComprehensiveReports#download_pdf] #{e.class}: #{e.message}")
+      redirect_to diagnostic_teacher_comprehensive_report_path(@student.id, @attempt.id),
+                  alert: "PDF 생성 중 오류가 발생했습니다: #{e.message}"
+    end
+
     # GET /diagnostic_teacher/comprehensive_reports/:student_id/:attempt_id/job_status
     def job_status
       load_student_and_attempt

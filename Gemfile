@@ -61,6 +61,9 @@ gem "caxlsx"
 # ZIP file manipulation (HWPX image injection)
 gem "rubyzip"
 
+# Server-side PDF generation via headless Chromium (Chrome DevTools Protocol)
+gem "ferrum"
+
 # Excel file reading
 gem "roo"
 

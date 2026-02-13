@@ -14,9 +14,10 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages (chromium + Korean fonts for server-side PDF generation)
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client \
+    chromium fonts-noto-cjk && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
@@ -25,7 +26,8 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+    LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
+    CHROMIUM_PATH="/usr/bin/chromium"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build

@@ -229,6 +229,7 @@ Rails.application.routes.draw do
     post "comprehensive_reports/:student_id/:attempt_id/unpublish", to: "comprehensive_reports#unpublish", as: "comprehensive_report_unpublish"
     get "comprehensive_reports/:student_id/:attempt_id/job_status", to: "comprehensive_reports#job_status", as: "comprehensive_report_job_status"
     get "comprehensive_reports/:student_id/:attempt_id/download_hwpx", to: "comprehensive_reports#download_hwpx", as: "comprehensive_report_download_hwpx"
+    get "comprehensive_reports/:student_id/:attempt_id/download_pdf", to: "comprehensive_reports#download_pdf", as: "comprehensive_report_download_pdf"
 
     # 공지사항 CRUD
     resources :notices, only: [:index, :new, :create, :edit, :update, :destroy]
@@ -279,6 +280,7 @@ Rails.application.routes.draw do
         get :report
         get :download_report_md
         get :download_hwpx
+        get :download_report_pdf
         get :report_job_status
       end
     end
