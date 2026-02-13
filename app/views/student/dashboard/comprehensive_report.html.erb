@@ -192,15 +192,10 @@
               <div class="cr-stu-area-right">
                 <h4 class="cr-stu-area-right__title">세부 지표별 달성률</h4>
                 <div class="cr-radar-chart" id="radar-chart-student">
-                  <svg id="radar-svg-student" viewBox="0 0 460 420" width="100%"></svg>
+                  <svg id="radar-svg-student" viewBox="0 0 460 420" width="100%"
+                       data-radar-data="<%= radar_data.to_json %>"></svg>
                 </div>
                 <div class="cr-radar-legend" id="radar-legend-student"></div>
-                <script>
-                  document.addEventListener('turbo:load', function() {
-                    const radarData = <%= json_escape(radar_data.to_json) %>;
-                    if (radarData.length > 0) drawRadarChart('radar-svg-student', 'radar-legend-student', radarData);
-                  });
-                </script>
               </div>
             <% end %>
           </div>
@@ -355,6 +350,15 @@ function drawRadarChart(svgId, legendId, data) {
     });
   }
 }
+
+// 레이더 차트 자동 초기화 (data 속성에서 읽어 즉시 실행)
+document.querySelectorAll('svg[data-radar-data]').forEach(function(svg) {
+  try {
+    var data = JSON.parse(svg.dataset.radarData);
+    var legendId = svg.id.replace('svg', 'legend');
+    if (data && data.length > 0) drawRadarChart(svg.id, legendId, data);
+  } catch(e) { console.error('Radar chart init error:', e); }
+});
 
 function downloadPdf() {
   var element = document.getElementById('report-printable-area');
