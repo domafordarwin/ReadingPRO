@@ -16,7 +16,7 @@
     </p>
     <p style="margin: 0 0 12px 0; font-size: var(--rp-font-size-base); color: #166534;">
       <strong>임시 비밀번호:</strong>
-      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-md); font-weight: 700; color: #dc2626;"><%= flash[:temp_password] %></code>
+      <code style="background: white; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: #dc2626;"><%= flash[:temp_password] %></code>
     </p>
     <p style="margin: 0; font-size: var(--rp-font-size-xs); color: #15803d;">이 비밀번호를 학생에게 전달해주세요. 다음 로그인 시 비밀번호 변경이 필요합니다.</p>
   </div>
@@ -27,7 +27,7 @@
     <h2 class="portal-card-title" style="margin: 0;">학생 목록 (<%= @students.total_count %>명)</h2>
     <div style="display: flex; gap: 8px; align-items: center;">
       <%= link_to "학생 일괄 생성", new_school_admin_import_path,
-            style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; text-decoration: none; white-space: nowrap;" %>
+            style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none; white-space: nowrap;" %>
       <%= form_with url: school_admin_students_path, method: :get, local: true, data: { turbo: false }, style: "display: flex; gap: 8px;" do %>
         <input type="text" name="search" value="<%= @search_query %>" placeholder="학생 ID로 검색..."
                style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
@@ -106,6 +106,6 @@
   .rp-icon-btn--warning:hover { background: #fde68a; box-shadow: 0 2px 4px rgba(217,119,6,0.2); }
   .rp-icon-btn--danger { background: #fef2f2; color: #dc2626; }
   .rp-icon-btn--danger:hover { background: #fee2e2; box-shadow: 0 2px 4px rgba(220,38,38,0.2); }
-  .rp-count-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: 600; }
+  .rp-count-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); }
   .rp-count-badge--blue { background: #dbeafe; color: #1e40af; }
 </style>

@@ -30,19 +30,19 @@
             <td><%= assignment.assigned_at.strftime("%Y-%m-%d") %></td>
             <td><%= assignment.due_date&.strftime("%Y-%m-%d") || "-" %></td>
             <td>
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: 500; background: #dbeafe; color: #1e40af;">
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-medium); background: #dbeafe; color: #1e40af;">
                 배정됨
               </span>
             </td>
             <td>
               <details style="cursor: pointer;">
-                <summary style="color: #2f5bff; font-size: var(--rp-font-size-sm); font-weight: 500;">학생에게 배정</summary>
+                <summary style="color: #2f5bff; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);">학생에게 배정</summary>
                 <div style="margin-top: 12px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                   <%= form_with url: school_admin_bulk_assign_to_students_path, method: :post, local: true, data: { turbo: false } do %>
                     <input type="hidden" name="diagnostic_form_id" value="<%= assignment.diagnostic_form_id %>">
 
                     <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-weight: 500; font-size: var(--rp-font-size-sm); color: #374151; margin-bottom: 6px;">마감일 (선택)</label>
+                      <label style="display: block; font-weight: var(--rp-font-weight-medium); font-size: var(--rp-font-size-sm); color: #374151; margin-bottom: 6px;">마감일 (선택)</label>
                       <input type="date" name="due_date" value="<%= assignment.due_date&.strftime('%Y-%m-%d') %>"
                              style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: var(--rp-font-size-sm);">
                     </div>
@@ -61,7 +61,7 @@
 
                     <div style="display: flex; gap: 8px;">
                       <button type="submit"
-                              style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: 500; cursor: pointer;">
+                              style="padding: 8px 16px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); cursor: pointer;">
                         선택 학생 배정
                       </button>
                     </div>
@@ -112,7 +112,7 @@
                          when "cancelled" then "background: #f1f5f9; color: #64748b;"
                          else "background: #f1f5f9; color: #64748b;"
                          end %>
-              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: 500; <%= status_style %>">
+              <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-medium); <%= status_style %>">
                 <%= { "assigned" => "배정됨", "in_progress" => "진행중", "completed" => "완료", "cancelled" => "회수됨" }[assignment.status] || assignment.status %>
               </span>
             </td>
@@ -122,13 +122,13 @@
                     school_admin_revoke_assignment_path(assignment),
                     method: :delete,
                     data: { turbo_confirm: "#{assignment.student&.name}의 '#{assignment.diagnostic_form.name}' 배정을 회수하시겠습니까?" },
-                    style: "padding: 4px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: 500; cursor: pointer;" %>
+                    style: "padding: 4px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
               <% elsif assignment.status == "in_progress" %>
                 <%= button_to "회수",
                     school_admin_revoke_assignment_path(assignment),
                     method: :delete,
                     data: { turbo_confirm: "#{assignment.student&.name}이(가) 진단을 진행 중입니다. 회수하면 진행 중인 응시가 삭제됩니다. 계속하시겠습니까?" },
-                    style: "padding: 4px 10px; background: #fef3c7; color: #92400e; border: none; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: 500; cursor: pointer;" %>
+                    style: "padding: 4px 10px; background: #fef3c7; color: #92400e; border: none; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
               <% else %>
                 <span style="color: #94a3b8; font-size: var(--rp-font-size-xs);">-</span>
               <% end %>

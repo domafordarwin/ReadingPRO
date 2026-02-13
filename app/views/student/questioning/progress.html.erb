@@ -118,7 +118,7 @@
                     step_color = step_active ? "white" : "var(--rp-text-muted)"
                     step_border = step_active ? "var(--rp-primary)" : "var(--rp-border)"
                   %>
-                  <div style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--rp-font-size-2xs); font-weight: 700; background: <%= step_bg %>; color: <%= step_color %>; border: 1px solid <%= step_border %>;">
+                  <div style="width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-bold); background: <%= step_bg %>; color: <%= step_color %>; border: 1px solid <%= step_border %>;">
                     <%= i + 1 %>
                   </div>
                 <% end %>

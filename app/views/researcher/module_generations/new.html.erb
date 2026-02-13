@@ -6,15 +6,15 @@
         style: "color:#667eea; text-decoration:none; font-size: var(--rp-font-size-base);" %>
   </div>
 
-  <h1 style="font-size: var(--rp-font-size-2xl); font-weight:700; color:#1e293b; margin-bottom:8px;">진단 모듈 자동 생성</h1>
+  <h1 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color:#1e293b; margin-bottom:8px;">진단 모듈 자동 생성</h1>
   <p style="color:#64748b; margin-bottom:32px;">
     기존 모듈의 구조(평가 영역, 난이도, 루브릭)를 템플릿으로 사용하여 새 지문에 맞는 문항을 AI가 자동 생성합니다.
   </p>
 
   <%# Step 1: 템플릿 선택 %>
   <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:24px; margin-bottom:24px;">
-    <h2 style="font-size: var(--rp-font-size-lg); font-weight:600; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-      <span style="width:28px; height:28px; border-radius:50%; background:#667eea; color:#fff; display:flex; align-items:center; justify-content:center; font-size: var(--rp-font-size-sm); font-weight:700;">1</span>
+    <h2 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+      <span style="width:28px; height:28px; border-radius:50%; background:#667eea; color:#fff; display:flex; align-items:center; justify-content:center; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-bold);">1</span>
       템플릿 모듈 선택
     </h2>
 
@@ -26,7 +26,7 @@
                  data-mcq="<%= tmpl.mcq_count %>" data-constructed="<%= tmpl.constructed_count %>"
                  data-title="<%= tmpl.title %>">
           <div class="template-card" style="border:2px solid #e2e8f0; border-radius:10px; padding:14px; transition:all 0.2s;">
-            <div style="font-weight:600; color:#1e293b; font-size: var(--rp-font-size-base); margin-bottom:4px;">
+            <div style="font-weight: var(--rp-font-weight-semibold); color:#1e293b; font-size: var(--rp-font-size-base); margin-bottom:4px;">
               <%= tmpl.title || tmpl.code %>
             </div>
             <div style="font-size: var(--rp-font-size-sm); color:#64748b;">
@@ -44,23 +44,23 @@
 
   <%# Step 2: 지문 입력 방식 %>
   <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:24px; margin-bottom:24px;">
-    <h2 style="font-size: var(--rp-font-size-lg); font-weight:600; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-      <span style="width:28px; height:28px; border-radius:50%; background:#667eea; color:#fff; display:flex; align-items:center; justify-content:center; font-size: var(--rp-font-size-sm); font-weight:700;">2</span>
+    <h2 style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+      <span style="width:28px; height:28px; border-radius:50%; background:#667eea; color:#fff; display:flex; align-items:center; justify-content:center; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-bold);">2</span>
       지문 입력
     </h2>
 
     <%# 모드 선택 탭 %>
     <div style="display:flex; gap:8px; margin-bottom:20px;">
       <button type="button" id="mode-text-btn" onclick="switchMode('text')"
-              style="padding:8px 20px; border-radius:8px; border:2px solid #667eea; background:#667eea; color:#fff; font-weight:600; cursor:pointer; transition:all 0.2s;">
+              style="padding:8px 20px; border-radius:8px; border:2px solid #667eea; background:#667eea; color:#fff; font-weight: var(--rp-font-weight-semibold); cursor:pointer; transition:all 0.2s;">
         직접 입력
       </button>
       <button type="button" id="mode-ai-btn" onclick="switchMode('ai')"
-              style="padding:8px 20px; border-radius:8px; border:2px solid #e2e8f0; background:#fff; color:#475569; font-weight:500; cursor:pointer; transition:all 0.2s;">
+              style="padding:8px 20px; border-radius:8px; border:2px solid #e2e8f0; background:#fff; color:#475569; font-weight: var(--rp-font-weight-medium); cursor:pointer; transition:all 0.2s;">
         AI 자동 생성
       </button>
       <button type="button" id="mode-batch-btn" onclick="switchMode('batch')"
-              style="padding:8px 20px; border-radius:8px; border:2px solid #e2e8f0; background:#fff; color:#475569; font-weight:500; cursor:pointer; transition:all 0.2s;">
+              style="padding:8px 20px; border-radius:8px; border:2px solid #e2e8f0; background:#fff; color:#475569; font-weight: var(--rp-font-weight-medium); cursor:pointer; transition:all 0.2s;">
         일괄 생성
       </button>
     </div>
@@ -72,19 +72,19 @@
         <input type="hidden" name="template_stimulus_id" id="text-template-id">
 
         <div style="margin-bottom:16px;">
-          <label style="display:block; font-weight:500; color:#374151; margin-bottom:6px;">지문 제목</label>
+          <label style="display:block; font-weight: var(--rp-font-weight-medium); color:#374151; margin-bottom:6px;">지문 제목</label>
           <input type="text" name="passage_title" required
                  style="width:100%; padding:10px 14px; border:1px solid #d1d5db; border-radius:8px; font-size: var(--rp-font-size-base);"
                  placeholder="예: 인공지능과 일상생활">
         </div>
         <div style="margin-bottom:20px;">
-          <label style="display:block; font-weight:500; color:#374151; margin-bottom:6px;">지문 본문</label>
+          <label style="display:block; font-weight: var(--rp-font-weight-medium); color:#374151; margin-bottom:6px;">지문 본문</label>
           <textarea name="passage_text" rows="10" required
                     style="width:100%; padding:10px 14px; border:1px solid #d1d5db; border-radius:8px; font-size: var(--rp-font-size-base); resize:vertical;"
                     placeholder="읽기 지문을 입력하세요... (최소 100자 이상 권장)"></textarea>
         </div>
         <button type="submit"
-                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight:600; font-size: var(--rp-font-size-base); cursor:pointer; transition:background 0.2s;">
+                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight: var(--rp-font-weight-semibold); font-size: var(--rp-font-size-base); cursor:pointer; transition:background 0.2s;">
           모듈 생성 시작
         </button>
       <% end %>
@@ -97,7 +97,7 @@
         <input type="hidden" name="template_stimulus_id" id="ai-template-id">
 
         <div style="margin-bottom:16px;">
-          <label style="display:block; font-weight:500; color:#374151; margin-bottom:6px;">주제 / 키워드</label>
+          <label style="display:block; font-weight: var(--rp-font-weight-medium); color:#374151; margin-bottom:6px;">주제 / 키워드</label>
           <input type="text" name="passage_topic" required
                  style="width:100%; padding:10px 14px; border:1px solid #d1d5db; border-radius:8px; font-size: var(--rp-font-size-base);"
                  placeholder="예: 기후변화와 재생에너지, 생태계 보전">
@@ -108,7 +108,7 @@
           </p>
         </div>
         <button type="submit"
-                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight:600; font-size: var(--rp-font-size-base); cursor:pointer;">
+                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight: var(--rp-font-weight-semibold); font-size: var(--rp-font-size-base); cursor:pointer;">
           AI 모듈 생성 시작
         </button>
       <% end %>
@@ -123,7 +123,7 @@
         <div id="batch-passages">
           <div class="batch-passage-entry" style="background:#f8fafc; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #e2e8f0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-weight:600; color:#374151;">지문 1</span>
+              <span style="font-weight: var(--rp-font-weight-semibold); color:#374151;">지문 1</span>
             </div>
             <input type="text" name="passages[][title]" placeholder="지문 제목"
                    style="width:100%; padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; margin-bottom:8px; font-size: var(--rp-font-size-base);">
@@ -138,7 +138,7 @@
         </button>
 
         <button type="submit"
-                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight:600; font-size: var(--rp-font-size-base); cursor:pointer;">
+                style="padding:12px 28px; background:#667eea; color:#fff; border:none; border-radius:8px; font-weight: var(--rp-font-weight-semibold); font-size: var(--rp-font-size-base); cursor:pointer;">
           일괄 생성 시작
         </button>
       <% end %>
@@ -196,7 +196,7 @@
     entry.style = 'background:#f8fafc; border-radius:8px; padding:16px; margin-bottom:12px; border:1px solid #e2e8f0;';
     entry.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-weight:600; color:#374151;">지문 ${batchCount}</span>
+        <span style="font-weight: var(--rp-font-weight-semibold); color:#374151;">지문 ${batchCount}</span>
         <button type="button" onclick="this.closest('.batch-passage-entry').remove()"
                 style="color:#ef4444; background:none; border:none; cursor:pointer; font-size: var(--rp-font-size-sm);">삭제</button>
       </div>

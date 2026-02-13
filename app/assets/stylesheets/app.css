@@ -82,7 +82,7 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   font-size: var(--rp-font-size-xl);
 }
 
@@ -99,7 +99,7 @@ body.admin-body {
 .landing-logo-subtitle {
   font-size: var(--rp-font-size-sm);
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: var(--rp-font-weight-medium);
   color: #334155;
   letter-spacing: -0.02em;
   text-align: center;
@@ -152,7 +152,7 @@ body.admin-body {
 .landing-toggle-button.is-active {
   background: var(--landing-accent);
   color: white;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .landing-link {
@@ -221,7 +221,7 @@ body.admin-body {
   padding: 6px 14px;
   border-radius: 999px;
   font-size: var(--rp-font-size-sm);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .landing-hero-copy h1 {
@@ -529,7 +529,7 @@ body.admin-body {
 .portal-nav-link.is-active {
   background: var(--landing-accent);
   color: white;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .portal-main {
@@ -634,7 +634,7 @@ body.admin-body {
 
 .portal-stat-value {
   font-size: var(--rp-font-size-xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   margin-top: 6px;
 }
 
@@ -667,7 +667,7 @@ body.admin-body {
   background: var(--landing-accent-soft);
   color: var(--landing-accent);
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .portal-table {
@@ -685,7 +685,7 @@ body.admin-body {
 
 .portal-table th {
   color: var(--landing-muted);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .portal-radar {
@@ -763,7 +763,7 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--landing-accent);
   background: var(--landing-accent-soft);
   padding: 3px 8px;
@@ -934,7 +934,7 @@ body.admin-body {
   border-radius: 12px;
   padding: 12px;
   font-size: var(--rp-font-size-base);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   background: #1d4ed8;
   color: white;
   cursor: pointer;
@@ -950,7 +950,7 @@ body.admin-body {
 .login-link {
   color: var(--rp-blue);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .login-divider {
@@ -1093,7 +1093,7 @@ body.admin-body {
 
 .admin-brand-title {
   font-size: var(--rp-font-size-xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
 }
 
 .admin-brand-subtitle {
@@ -1191,7 +1191,7 @@ body.admin-body {
 
 .admin-stat-value {
   font-size: var(--rp-font-size-2xl);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   margin-top: 8px;
 }
 
@@ -1211,7 +1211,7 @@ body.admin-body {
 }
 
 .admin-table th {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--muted);
 }
 
@@ -1222,7 +1222,7 @@ body.admin-body {
   padding: 4px 10px;
   border-radius: 999px;
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   background: var(--primary-soft);
   color: var(--primary);
 }
@@ -1373,13 +1373,13 @@ body.admin-body {
 
 .item-admin-header-title {
   font-size: var(--rp-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   text-align: center;
   color: var(--item-ink);
 }
 
 .item-admin-header-logo-text {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--item-ink);
   letter-spacing: -0.01em;
 }
@@ -1435,7 +1435,7 @@ body.admin-body {
 .item-back {
   text-decoration: none;
   color: var(--item-ink);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1601,7 +1601,7 @@ body.admin-body {
 }
 
 .item-option-label {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: var(--item-accent);
 }
 
@@ -1639,7 +1639,7 @@ body.admin-body {
 }
 
 .item-ai-title {
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1875,7 +1875,7 @@ body.admin-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   font-size: var(--rp-font-size-xs);
 }
 
@@ -1998,7 +1998,7 @@ body.admin-body {
   background: var(--rp-info-soft);
   color: #0369a1;
   font-size: var(--rp-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
 }
 
 .report-meta {
@@ -2086,7 +2086,7 @@ body.admin-body {
   border-radius: 50%;
   background: #eff6ff;
   color: var(--rp-blue);
-  font-weight: 700;
+  font-weight: var(--rp-font-weight-bold);
   font-size: var(--rp-font-size-xl);
   margin-bottom: 16px;
 }
@@ -2146,7 +2146,7 @@ body.admin-body {
 }
 .bogi-box-title {
   text-align: center;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: #475569;
   margin-bottom: 10px;
   font-size: var(--rp-font-size-base);
@@ -2187,7 +2187,7 @@ body.admin-body {
 .cr-question__text th,
 .sa-question-text th {
   background: #f1f5f9;
-  font-weight: 600;
+  font-weight: var(--rp-font-weight-semibold);
   color: #334155;
 }
 .item-prompt-body tr:nth-child(even) td,

@@ -9,7 +9,7 @@
 <% end %>
 
 <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-  <p style="margin: 0; font-size: var(--rp-font-size-base); color: #92400e; font-weight: 600;">
+  <p style="margin: 0; font-size: var(--rp-font-size-base); color: #92400e; font-weight: var(--rp-font-weight-semibold);">
     아래 정보를 반드시 저장하세요! 이 페이지를 벗어나면 비밀번호를 다시 확인할 수 없습니다.
   </p>
 </div>
@@ -40,11 +40,11 @@
         <tr>
           <td><strong><%= r[:student_id] %></strong></td>
           <td><%= r[:student_email] %></td>
-          <td style="font-family: monospace; color: #dc2626; font-weight: 600;"><%= r[:student_password] %></td>
+          <td style="font-family: monospace; color: #dc2626; font-weight: var(--rp-font-weight-semibold);"><%= r[:student_password] %></td>
           <% if r[:parent_id] %>
             <td><strong><%= r[:parent_id] %></strong></td>
             <td><%= r[:parent_email] %></td>
-            <td style="font-family: monospace; color: #dc2626; font-weight: 600;"><%= r[:parent_password] %></td>
+            <td style="font-family: monospace; color: #dc2626; font-weight: var(--rp-font-weight-semibold);"><%= r[:parent_password] %></td>
           <% end %>
         </tr>
       <% end %>
@@ -54,9 +54,9 @@
 
 <div style="display: flex; gap: 8px;">
   <%= link_to "학생 목록으로", school_admin_students_path,
-        style: "padding: 10px 20px; background: #2f5bff; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; text-decoration: none;" %>
+        style: "padding: 10px 20px; background: #2f5bff; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
   <%= link_to "추가 생성", new_school_admin_import_path,
-        style: "padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; text-decoration: none;" %>
+        style: "padding: 10px 20px; background: #f1f5f9; color: #475569; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
 </div>
 
 <script>

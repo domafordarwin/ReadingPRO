@@ -13,7 +13,7 @@
       <div class="rp-flex rp-items-center rp-gap-4">
         <div class="rp-avatar" style="width: 48px; height: 48px; font-size: var(--rp-font-size-lg);"><%= @selected_student.name[0..2] %></div>
         <div>
-          <h3 style="margin: 0; font-weight: 600; color: var(--rp-text-title);"><%= @selected_student.name %></h3>
+          <h3 style="margin: 0; font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= @selected_student.name %></h3>
           <p class="rp-text-muted" style="margin: 0; font-size: var(--rp-font-size-sm);"><%= @selected_student.school&.name || "학교" %> <%= @selected_student.grade || "학년" %></p>
         </div>
         <span class="rp-badge rp-badge--success">활동 중</span>
@@ -85,18 +85,18 @@
           <div class="rp-grid rp-grid--3 rp-gap-4" style="margin-bottom: var(--rp-space-4);">
             <div>
               <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">완료한 평가</div>
-              <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-text-title);"><%= data[:attempt_count] %>건</div>
+              <div style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-text-title);"><%= data[:attempt_count] %>건</div>
             </div>
 
             <% if data[:scores].any? %>
               <div>
                 <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">최근 점수</div>
-                <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-primary);"><%= data[:scores].last[:score] %>%</div>
+                <div style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary);"><%= data[:scores].last[:score] %>%</div>
               </div>
 
               <div>
                 <div style="color: var(--rp-text-muted); font-size: var(--rp-font-size-sm); margin-bottom: var(--rp-space-2);">평균 점수</div>
-                <div style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: var(--rp-success);"><%= (data[:scores].sum { |s| s[:score] } / data[:scores].count).round(1) %>%</div>
+                <div style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-success);"><%= (data[:scores].sum { |s| s[:score] } / data[:scores].count).round(1) %>%</div>
               </div>
             <% end %>
           </div>
@@ -145,7 +145,7 @@
                 <% end %>
               </div>
               <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--rp-text-title);">
+                <div style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);">
                   <strong><%= activity[:student].name %></strong> - <%= activity[:title] %>
                 </div>
                 <% if activity[:score] %>

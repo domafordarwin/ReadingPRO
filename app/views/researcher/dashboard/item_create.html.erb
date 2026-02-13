@@ -25,7 +25,7 @@
 
   .page-header h1 {
     font-size: var(--rp-font-size-2xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #333;
     margin: 0;
   }
@@ -62,13 +62,13 @@
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-md);
   }
 
   .card-header-title {
     font-size: var(--rp-font-size-lg);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #333;
     margin: 0;
   }
@@ -95,7 +95,7 @@
 
   .form-field label {
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #333;
     margin-bottom: 8px;
     display: flex;
@@ -109,7 +109,7 @@
     font-size: var(--rp-font-size-2xs);
     padding: 2px 6px;
     border-radius: 4px;
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
   }
 
   .form-field input[type="text"],
@@ -172,7 +172,7 @@
     border: none;
     border-radius: 8px;
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
@@ -301,7 +301,7 @@
   }
 
   .rp-contenteditable u { text-decoration: underline; }
-  .rp-contenteditable b, .rp-contenteditable strong { font-weight: 700; }
+  .rp-contenteditable b, .rp-contenteditable strong { font-weight: var(--rp-font-weight-bold); }
   .rp-contenteditable i, .rp-contenteditable em { font-style: italic; }
   .rp-contenteditable s { text-decoration: line-through; }
 </style>
@@ -545,7 +545,7 @@
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
-        <span style="font-weight: 600;">필수 항목:</span> 문항 코드, 문항 유형, 평가 영역, 문항 내용
+        <span style="font-weight: var(--rp-font-weight-semibold);">필수 항목:</span> 문항 코드, 문항 유형, 평가 영역, 문항 내용
       </div>
       <div class="action-buttons">
         <button type="reset" class="btn btn-secondary">

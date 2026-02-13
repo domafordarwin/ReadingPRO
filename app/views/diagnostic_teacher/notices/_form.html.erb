@@ -11,29 +11,29 @@
 
 <%= form_with model: @notice, url: form_url, method: form_method, local: true, data: { turbo: false } do |f| %>
   <div style="margin-bottom: 16px;">
-    <%= f.label :title, "제목", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+    <%= f.label :title, "제목", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
     <%= f.text_field :title, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);", placeholder: "공지사항 제목을 입력하세요" %>
   </div>
 
   <div style="margin-bottom: 16px;">
-    <%= f.label :content, "내용", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+    <%= f.label :content, "내용", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
     <%= f.text_area :content, rows: 8, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); font-family: inherit; resize: vertical;", placeholder: "공지사항 내용을 입력하세요" %>
   </div>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
     <div>
-      <%= f.label :published_at, "게시 시작일", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+      <%= f.label :published_at, "게시 시작일", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
       <%= f.datetime_local_field :published_at, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);" %>
     </div>
     <div>
-      <%= f.label :expires_at, "만료일 (선택)", style: "display: block; font-weight: 500; color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
+      <%= f.label :expires_at, "만료일 (선택)", style: "display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 6px; font-size: var(--rp-font-size-base);" %>
       <%= f.datetime_local_field :expires_at, style: "width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base);" %>
       <p style="font-size: var(--rp-font-size-xs); color: #94a3b8; margin-top: 4px;">비워두면 무기한으로 게시됩니다.</p>
     </div>
   </div>
 
   <div style="margin-bottom: 16px;">
-    <label style="display: block; font-weight: 500; color: #0f172a; margin-bottom: 8px; font-size: var(--rp-font-size-base);">대상 역할</label>
+    <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #0f172a; margin-bottom: 8px; font-size: var(--rp-font-size-base);">대상 역할</label>
     <div style="display: flex; gap: 16px; flex-wrap: wrap;">
       <% Notice::TARGET_ROLES.each do |role| %>
         <label style="display: flex; align-items: center; gap: 6px; font-size: var(--rp-font-size-base); color: #475569; cursor: pointer;">
@@ -49,12 +49,12 @@
   <div style="margin-bottom: 24px;">
     <label style="display: flex; align-items: center; gap: 8px; font-size: var(--rp-font-size-base); color: #475569; cursor: pointer;">
       <%= f.check_box :important, style: "width: 16px; height: 16px; accent-color: #f59e0b;" %>
-      <span style="font-weight: 500;">중요 공지로 표시</span>
+      <span style="font-weight: var(--rp-font-weight-medium);">중요 공지로 표시</span>
     </label>
   </div>
 
   <div style="display: flex; gap: 8px;">
-    <%= f.submit @notice.persisted? ? "수정" : "등록", style: "padding: 10px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; cursor: pointer;" %>
+    <%= f.submit @notice.persisted? ? "수정" : "등록", style: "padding: 10px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
     <%= link_to "취소", diagnostic_teacher_notices_path, style: "padding: 10px 20px; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; font-size: var(--rp-font-size-base); text-decoration: none;" %>
   </div>
 <% end %>

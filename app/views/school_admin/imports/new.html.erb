@@ -33,7 +33,7 @@
   <%= form_with url: school_admin_imports_path, method: :post, local: true, data: { turbo: false } do %>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학년 <span style="color: #dc2626;">*</span></label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학년 <span style="color: #dc2626;">*</span></label>
         <select name="grade" required style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
           <option value="">선택</option>
           <option value="1">1학년</option>
@@ -43,19 +43,19 @@
       </div>
 
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">반 (진단 그룹) <span style="color: #dc2626;">*</span></label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">반 (진단 그룹) <span style="color: #dc2626;">*</span></label>
         <input type="text" name="class_name" required placeholder="예: A" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
       </div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">생성할 학생 수 <span style="color: #dc2626;">*</span></label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">생성할 학생 수 <span style="color: #dc2626;">*</span></label>
         <input type="number" name="count" required min="1" max="100" placeholder="예: 30" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base);">
       </div>
 
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일 도메인</label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일 도메인</label>
         <input type="text" value="<%= @school&.email_domain %>" disabled style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: var(--rp-font-size-base); background: #f1f5f9; color: #64748b;">
       </div>
     </div>
@@ -68,7 +68,7 @@
     </div>
 
     <button type="submit"
-            style="padding: 12px 24px; background: #2f5bff; color: white; border: none; border-radius: 8px; font-size: var(--rp-font-size-md); font-weight: 600; cursor: pointer;">
+            style="padding: 12px 24px; background: #2f5bff; color: white; border: none; border-radius: 8px; font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); cursor: pointer;">
       학생 계정 생성
     </button>
   <% end %>

@@ -102,7 +102,7 @@
         <div id="dashboard-radar-legend" class="dashboard-radar-legend"></div>
         <style>
           .dashboard-radar-legend { display: flex; justify-content: center; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
-          .dashboard-radar-legend__item { display: flex; align-items: center; gap: 6px; font-size: var(--rp-font-size-xs); color: #475569; font-weight: 500; }
+          .dashboard-radar-legend__item { display: flex; align-items: center; gap: 6px; font-size: var(--rp-font-size-xs); color: #475569; font-weight: var(--rp-font-weight-medium); }
           .dashboard-radar-legend__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         </style>
         <script>
@@ -279,7 +279,7 @@
               <span class="rp-badge rp-badge--default" style="flex-shrink: 0; margin-top: 2px;">안내</span>
             <% end %>
             <div style="flex: 1; min-width: 0;">
-              <div style="font-weight: 600; color: var(--rp-text-title, #1e293b); margin-bottom: 4px;"><%= notice.title %></div>
+              <div style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title, #1e293b); margin-bottom: 4px;"><%= notice.title %></div>
               <div class="rp-text-muted" style="font-size: var(--rp-font-size-sm); line-height: 1.5;"><%= truncate(strip_tags(notice.content), length: 80) %></div>
             </div>
             <div class="rp-text-muted" style="flex-shrink: 0; font-size: var(--rp-font-size-xs); white-space: nowrap;">

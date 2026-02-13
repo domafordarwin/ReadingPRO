@@ -79,7 +79,7 @@
     <%= render 'tendency_tab' %>
   <% rescue => e %>
     <div style="padding: 40px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; color: #dc2626;">
-      <p style="margin: 0; font-size: var(--rp-font-size-lg); font-weight: 600;">피드백 데이터 로드 중 오류가 발생했습니다</p>
+      <p style="margin: 0; font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold);">피드백 데이터 로드 중 오류가 발생했습니다</p>
       <p style="margin: 8px 0 0 0; font-size: var(--rp-font-size-md); color: #7f1d1d;"><%= e.message %></p>
     </div>
   <% end %>
@@ -131,7 +131,7 @@
     padding: 4px 12px;
     border-radius: 20px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     white-space: nowrap;
   }
 
@@ -148,7 +148,7 @@
   .rp-page-header__title {
     margin: 0;
     font-size: var(--rp-font-size-xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #0f172a;
   }
 
@@ -217,7 +217,7 @@
     border: none;
     background: transparent;
     color: #64748b;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease;
@@ -246,7 +246,7 @@
     color: white;
     border-radius: 12px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
   }
 
   .rp-tab-pane {
@@ -315,7 +315,7 @@
   .rp-section-header h4 {
     margin: 0;
     font-size: var(--rp-font-size-lg);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
     flex: 1;
   }
@@ -367,7 +367,7 @@
 
   .rp-form-group label {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
   }
 
@@ -402,7 +402,7 @@
     padding: 8px 12px;
     border: none;
     border-radius: 6px;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     font-size: var(--rp-font-size-md);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -563,7 +563,7 @@
     border-bottom: 2px solid transparent;
     cursor: pointer;
     font-size: var(--rp-font-size-lg);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #64748b;
     transition: all 0.15s ease;
   }

@@ -56,12 +56,12 @@
     <!-- Statistics -->
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px;">
       <div class="rp-card" style="text-align: center; padding: 16px;">
-        <div style="font-size: var(--rp-font-size-3xl); font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @diagnostic.item_count %></div>
+        <div style="font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary, #4f46e5);"><%= @diagnostic.item_count %></div>
         <div style="font-size: var(--rp-font-size-sm); color: #666; margin-top: 4px;">총 문항</div>
       </div>
       <% ReadingProficiencyItem::FACTOR_LABELS.each do |key, label| %>
         <div class="rp-card" style="text-align: center; padding: 16px;">
-          <div style="font-size: var(--rp-font-size-3xl); font-weight: 700; color: var(--rp-primary, #4f46e5);"><%= @factor_counts[key] || 0 %></div>
+          <div style="font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary, #4f46e5);"><%= @factor_counts[key] || 0 %></div>
           <div style="font-size: var(--rp-font-size-sm); color: #666; margin-top: 4px;"><%= label %></div>
         </div>
       <% end %>
@@ -95,7 +95,7 @@
                                     else "#6b7280"
                                     end %>
                   <tr class="rp-table__row">
-                    <td class="rp-table__cell" style="text-align: center; font-weight: 600;"><%= item.position %></td>
+                    <td class="rp-table__cell" style="text-align: center; font-weight: var(--rp-font-weight-semibold);"><%= item.position %></td>
                     <td class="rp-table__cell">
                       <div><%= sanitize_choice_text(item.prompt) %></div>
                       <% if item.image.attached? %>

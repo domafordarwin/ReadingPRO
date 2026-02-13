@@ -3,12 +3,12 @@
 <div class="rp-page-container">
   <div class="rp-page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
     <div>
-      <h1 style="font-size: var(--rp-font-size-2xl); font-weight:700; color:var(--rp-text-primary, #1e293b);">모듈 자동 생성</h1>
+      <h1 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color:var(--rp-text-primary, #1e293b);">모듈 자동 생성</h1>
       <p style="color:var(--rp-text-muted, #64748b); margin-top:4px;">
         기존 모듈을 템플릿으로 사용하여 새 지문에 맞는 진단 모듈을 AI로 자동 생성합니다.
       </p>
     </div>
-    <%= link_to new_researcher_module_generation_path, class: "rp-btn rp-btn--primary", style: "display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;" do %>
+    <%= link_to new_researcher_module_generation_path, class: "rp-btn rp-btn--primary", style: "display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight: var(--rp-font-weight-semibold);" do %>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       새 모듈 생성
     <% end %>
@@ -54,7 +54,7 @@
       </svg>
       <p style="color:#64748b; font-size: var(--rp-font-size-base);">아직 생성된 모듈이 없습니다.</p>
       <%= link_to "첫 모듈 생성하기", new_researcher_module_generation_path,
-          style: "display:inline-block; margin-top:12px; padding:10px 24px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight:600;" %>
+          style: "display:inline-block; margin-top:12px; padding:10px 24px; background:#667eea; color:#fff; border-radius:8px; text-decoration:none; font-weight: var(--rp-font-weight-semibold);" %>
     </div>
   <% end %>
 </div>

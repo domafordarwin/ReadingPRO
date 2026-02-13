@@ -161,7 +161,7 @@
             <span class="rp-toolbar-sep"></span>
             <!-- 삽입 -->
             <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="promptFmt('insertHorizontalRule')" title="수평선" style="font-size: var(--rp-font-size-2xs);">──</button>
-            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showPromptTableDialog()" title="표 삽입" style="font-size: var(--rp-font-size-2xs); font-weight:600;">표</button>
+            <button type="button" class="rp-fmt-btn" onmousedown="event.preventDefault()" onclick="showPromptTableDialog()" title="표 삽입" style="font-size: var(--rp-font-size-2xs); font-weight: var(--rp-font-weight-semibold);">표</button>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--bogi" onmousedown="event.preventDefault()" onclick="insertBogiBox()" title="보기 박스">보기</button>
             <span class="rp-toolbar-sep"></span>
             <button type="button" class="rp-fmt-btn rp-fmt-btn--save" onmousedown="event.preventDefault()" onclick="quickSave()" title="저장 (Ctrl+S)">저장</button>
@@ -1602,7 +1602,7 @@
     border-radius: 8px;
     color: #374151;
     font-size: var(--rp-font-size-base);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     text-decoration: none;
     transition: all 0.2s;
   }
@@ -1640,7 +1640,7 @@
     padding: 6px 16px;
     border-radius: 6px;
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .item-type-badge--mcq {
@@ -1661,7 +1661,7 @@
     padding: 6px 12px;
     border-radius: 6px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .difficulty-badge--easy { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
@@ -1674,7 +1674,7 @@
     padding: 6px 12px;
     border-radius: 6px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     background: white;
     color: #374151;
     border: 1px solid #d1d5db;
@@ -1738,7 +1738,7 @@
     background: #f9fafb;
     color: #6b7280;
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -1770,7 +1770,7 @@
     border-radius: 4px;
     cursor: pointer;
     border: none;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
 
   .rp-btn--xs.rp-btn--primary {
@@ -1804,7 +1804,7 @@
     background: #f9fafb;
     color: #6b7280;
     font-size: var(--rp-font-size-base);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -1875,7 +1875,7 @@
 
   .item-prompt-header h3 {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
     margin: 0;
   }
@@ -1924,7 +1924,7 @@
 
   .item-choices-header h3 {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
     margin: 0;
   }
@@ -1964,7 +1964,7 @@
     background: white;
     border: 2px solid #d1d5db;
     border-radius: 50%;
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-base);
     color: #374151;
   }
@@ -2000,7 +2000,7 @@
   }
 
   .choice-preview-text u { text-decoration: underline; }
-  .choice-preview-text b, .choice-preview-text strong { font-weight: 700; }
+  .choice-preview-text b, .choice-preview-text strong { font-weight: var(--rp-font-weight-bold); }
   .choice-preview-text i, .choice-preview-text em { font-style: italic; }
   .choice-preview-text s { text-decoration: line-through; }
 
@@ -2018,7 +2018,7 @@
     color: white;
     border-radius: 4px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   /* Stimulus Card (Reading Passage) */
@@ -2053,7 +2053,7 @@
 
   .stimulus-card-header h3 {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #1e40af;
     margin: 0;
     flex: 1;
@@ -2067,7 +2067,7 @@
     font-size: var(--rp-font-size-xs);
     font-family: monospace;
     color: #1e40af;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .stimulus-title-section {
@@ -2078,7 +2078,7 @@
 
   .stimulus-title-section h4 {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
     margin: 0;
   }
@@ -2206,7 +2206,7 @@
 
   .rp-card__title {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
     margin: 0;
   }
@@ -2258,7 +2258,7 @@
     padding: 4px 10px;
     border-radius: 12px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .rp-badge--info {
@@ -2279,7 +2279,7 @@
   .rp-label {
     display: block;
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #374151;
     margin-bottom: 8px;
   }
@@ -2343,7 +2343,7 @@
 
   .rp-criterion-name {
     flex: 1;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .rp-criterion-actions {
@@ -2391,7 +2391,7 @@
     padding: 4px 10px;
     border-radius: 4px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     text-align: center;
   }
 
@@ -2437,7 +2437,7 @@
 
   .rp-ai-suggestion__title {
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #6b21a8;
     margin: 0 0 8px 0;
   }
@@ -2479,12 +2479,12 @@
 
   .rp-summary-item .rp-label {
     margin: 0;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     color: #6b7280;
   }
 
   .rp-summary-item .rp-value {
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
   }
 
@@ -2504,7 +2504,7 @@
     border: none;
     border-radius: 6px;
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -2595,7 +2595,7 @@
   }
 
   .rp-note-box strong {
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   /* Choices List for MCQ */
@@ -2614,7 +2614,7 @@
     box-shadow: 0 4px 16px rgba(0,0,0,.12); min-width: 200px;
   }
   .rp-table-dialog.open { display: block; }
-  .rp-table-dialog label { font-size: var(--rp-font-size-xs); font-weight: 600; color: #475569; margin-bottom: 4px; display: block; }
+  .rp-table-dialog label { font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #475569; margin-bottom: 4px; display: block; }
   .rp-table-dialog input[type="number"] { width: 60px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: var(--rp-font-size-sm); text-align: center; }
   .rp-table-dialog .rp-table-dialog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .rp-table-dialog .rp-table-dialog-actions { display: flex; gap: 6px; justify-content: flex-end; }
@@ -2647,7 +2647,7 @@
 
   .rp-fmt-btn--save {
     font-size: var(--rp-font-size-2xs) !important;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #fff !important;
     background: #2563eb !important;
     border-color: #2563eb !important;
@@ -2661,7 +2661,7 @@
 
   .rp-fmt-btn--bogi {
     font-size: var(--rp-font-size-2xs) !important;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #4f46e5 !important;
     border-color: #a5b4fc !important;
     padding: 2px 10px !important;
@@ -2712,7 +2712,7 @@
   }
 
   .item-prompt-editor u { text-decoration: underline; }
-  .item-prompt-editor b, .item-prompt-editor strong { font-weight: 700; }
+  .item-prompt-editor b, .item-prompt-editor strong { font-weight: var(--rp-font-weight-bold); }
   .item-prompt-editor i, .item-prompt-editor em { font-style: italic; }
   .item-prompt-editor s { text-decoration: line-through; }
 
@@ -2731,7 +2731,7 @@
     font-size: var(--rp-font-size-xs);
     color: #64748b;
     margin-right: 4px;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
 
   .rp-choice-format-toolbar .rp-fmt-btn {
@@ -2799,7 +2799,7 @@
     background: #f3f4f6;
     border-radius: 50%;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #374151;
     flex-shrink: 0;
   }
@@ -2837,7 +2837,7 @@
   }
 
   .rp-choice-editor u { text-decoration: underline; }
-  .rp-choice-editor b, .rp-choice-editor strong { font-weight: 700; }
+  .rp-choice-editor b, .rp-choice-editor strong { font-weight: var(--rp-font-weight-bold); }
   .rp-choice-editor i, .rp-choice-editor em { font-style: italic; }
   .rp-choice-editor s { text-decoration: line-through; }
 
@@ -2856,13 +2856,13 @@
 
   .rp-info-label {
     font-size: var(--rp-font-size-sm);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     color: #6b7280;
   }
 
   .rp-info-value {
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #111827;
   }
 
@@ -2933,7 +2933,7 @@
     color: white;
     border-radius: 50%;
     font-size: var(--rp-font-size-md);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
   }
 
   .rp-choice-text-display {
@@ -2995,7 +2995,7 @@
 
   .rp-score-input-label {
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #6b7280;
     white-space: nowrap;
   }
@@ -3004,12 +3004,12 @@
     width: 100px;
     text-align: center;
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .rp-score-unit-large {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #6b7280;
   }
 

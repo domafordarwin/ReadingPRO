@@ -193,13 +193,13 @@
   }
   .mcq-header__title {
     font-size: var(--rp-font-size-xl);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
     margin: 0;
   }
   .mcq-header__count {
     font-size: var(--rp-font-size-lg);
-    font-weight: 400;
+    font-weight: var(--rp-font-weight-normal);
     color: #64748b;
     margin-left: 8px;
   }
@@ -220,7 +220,7 @@
     background: #f8fafc;
     color: #475569;
     font-size: var(--rp-font-size-md);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -251,7 +251,7 @@
   .mcq-prompt-panel__label {
     display: block;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -329,7 +329,7 @@
     gap: 12px;
   }
   .mcq-card__number {
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-lg);
     color: #2f5bff;
     white-space: nowrap;
@@ -350,7 +350,7 @@
     padding: 3px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     white-space: nowrap;
   }
   .mcq-badge--correct { background: #dcfce7; color: #166534; }
@@ -370,24 +370,24 @@
   .mcq-meta-label {
     display: block;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
   }
-  .mcq-meta-value { font-size: var(--rp-font-size-lg); font-weight: 500; color: #334155; }
+  .mcq-meta-value { font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-medium); color: #334155; }
   .mcq-indicator-badge {
     display: inline-block;
     background: #eff6ff; color: #1e40af;
     padding: 2px 8px; border-radius: 6px;
-    font-size: var(--rp-font-size-sm); font-weight: 500;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
   }
   .mcq-sub-badge {
     display: inline-block;
     background: #f0fdf4; color: #166534;
     padding: 2px 8px; border-radius: 6px;
-    font-size: var(--rp-font-size-sm); font-weight: 500;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
   }
 
   /* 답안 비교 */
@@ -407,8 +407,8 @@
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
   }
-  .mcq-answer-box--correct .mcq-answer-box__label { color: #15803d; font-size: var(--rp-font-size-sm); font-weight: 600; }
-  .mcq-answer-box--correct .mcq-answer-box__value { color: #166534; font-weight: 700; font-size: var(--rp-font-size-lg); }
+  .mcq-answer-box--correct .mcq-answer-box__label { color: #15803d; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); }
+  .mcq-answer-box--correct .mcq-answer-box__value { color: #166534; font-weight: var(--rp-font-weight-bold); font-size: var(--rp-font-size-lg); }
   .mcq-answer-box--student {
     background: #fef2f2;
     border: 1px solid #fecaca;
@@ -417,9 +417,9 @@
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
   }
-  .mcq-answer-box--student .mcq-answer-box__label { color: #dc2626; font-size: var(--rp-font-size-sm); font-weight: 600; }
+  .mcq-answer-box--student .mcq-answer-box__label { color: #dc2626; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); }
   .mcq-answer-box--student.is-correct .mcq-answer-box__label { color: #15803d; }
-  .mcq-answer-box--student .mcq-answer-box__value { color: #991b1b; font-weight: 700; font-size: var(--rp-font-size-lg); }
+  .mcq-answer-box--student .mcq-answer-box__value { color: #991b1b; font-weight: var(--rp-font-weight-bold); font-size: var(--rp-font-size-lg); }
   .mcq-answer-box--student.is-correct .mcq-answer-box__value { color: #166534; }
 
   /* 선택지 리스트 */
@@ -435,7 +435,7 @@
     margin-bottom: 2px;
     line-height: 1.4;
   }
-  .mcq-choice-item.is-correct-choice { background: #f0fdf4; color: #166534; font-weight: 500; }
+  .mcq-choice-item.is-correct-choice { background: #f0fdf4; color: #166534; font-weight: var(--rp-font-weight-medium); }
   .mcq-choice-item.is-student-wrong { background: #fef2f2; color: #991b1b; }
   .mcq-choice-no {
     flex-shrink: 0;
@@ -443,7 +443,7 @@
     border-radius: 50%;
     background: #f1f5f9;
     display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-sm); font-weight: 600; color: #64748b;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #64748b;
   }
   .mcq-choice-item.is-correct-choice .mcq-choice-no { background: #dcfce7; color: #166534; }
   .mcq-choice-item.is-student-wrong .mcq-choice-no { background: #fecaca; color: #991b1b; }
@@ -459,7 +459,7 @@
     border-left: 3px solid #f59e0b;
   }
   .mcq-proximity__label {
-    font-size: var(--rp-font-size-sm); font-weight: 600; color: #92400e;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-semibold); color: #92400e;
     text-transform: uppercase; letter-spacing: 0.3px;
     margin-bottom: 4px; display: block;
   }

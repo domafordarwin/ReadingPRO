@@ -414,7 +414,7 @@
             <div style="padding: var(--rp-space-4); background: white; border: 1px solid #c7d2fe; border-radius: var(--rp-radius-md); margin-bottom: var(--rp-space-3);">
               <!-- 학생 발문 -->
               <div style="display: flex; align-items: flex-start; gap: var(--rp-space-2); margin-bottom: var(--rp-space-3);">
-                <span style="font-size: var(--rp-font-size-xs); font-weight: 700; color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full); flex-shrink: 0;">
+                <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-bold); color: var(--rp-primary); background: var(--rp-primary-soft); padding: 2px 8px; border-radius: var(--rp-radius-full); flex-shrink: 0;">
                   Q<%= idx + 1 %>
                 </span>
                 <span style="font-size: var(--rp-font-size-sm); color: var(--rp-text-body); line-height: 1.6;">
@@ -426,10 +426,10 @@
               <% if q.ai_feedback.present? %>
                 <div style="padding: var(--rp-space-3); background: #f5f3ff; border-radius: var(--rp-radius-sm); margin-bottom: var(--rp-space-2);">
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <span style="background: #7c3aed; color: white; font-size: var(--rp-font-size-xs); font-weight: 700; padding: 2px 8px; border-radius: var(--rp-radius-full);">AI</span>
-                    <span style="font-size: var(--rp-font-size-xs); font-weight: 600; color: #6b21a8;">AI 튜터 피드백</span>
+                    <span style="background: #7c3aed; color: white; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-bold); padding: 2px 8px; border-radius: var(--rp-radius-full);">AI</span>
+                    <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #6b21a8;">AI 튜터 피드백</span>
                     <% if q.ai_score.present? %>
-                      <span style="font-size: var(--rp-font-size-xs); font-weight: 700; color: #7c3aed; margin-left: auto;"><%= q.ai_score %>점</span>
+                      <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-bold); color: #7c3aed; margin-left: auto;"><%= q.ai_score %>점</span>
                     <% end %>
                   </div>
                   <div style="font-size: var(--rp-font-size-sm); color: #4c1d95; line-height: 1.6;">
@@ -446,9 +446,9 @@
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    <span style="font-size: var(--rp-font-size-xs); font-weight: 600; color: #166534;">선생님 피드백</span>
+                    <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); color: #166534;">선생님 피드백</span>
                     <% if q.teacher_score.present? %>
-                      <span style="font-size: var(--rp-font-size-xs); font-weight: 700; color: #166534; margin-left: auto;"><%= q.teacher_score %>점</span>
+                      <span style="font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-bold); color: #166534; margin-left: auto;"><%= q.teacher_score %>점</span>
                     <% end %>
                   </div>
                   <div style="font-size: var(--rp-font-size-sm); color: #15803d; line-height: 1.6;">

@@ -61,7 +61,7 @@
                 <% height_percent = grade_data[:score].zero? ? 5 : (grade_data[:score] / 100.0 * 100) %>
                 <div class="rp-chart-bar" style="height: <%= height_percent %>%; width: 100%;"></div>
                 <div style="margin-top: 8px; font-size: var(--rp-font-size-xs); color: var(--rp-text-muted);"><%= grade_data[:grade] %>학년</div>
-                <div style="font-weight: 600; color: var(--rp-text-title);"><%= grade_data[:score] %>점</div>
+                <div style="font-weight: var(--rp-font-weight-semibold); color: var(--rp-text-title);"><%= grade_data[:score] %>점</div>
               </div>
             <% end %>
           </div>

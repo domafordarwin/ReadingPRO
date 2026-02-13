@@ -132,28 +132,28 @@
 
 <style>
   .rp-page-header { margin-bottom: 24px; }
-  .rp-page-header__title { font-size: var(--rp-font-size-3xl); font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+  .rp-page-header__title { font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; margin: 0 0 8px 0; }
   .rp-page-header__subtitle { font-size: var(--rp-font-size-base); color: #94a3b8; margin: 0; }
   .rp-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .rp-stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; }
-  .rp-stat-label { font-size: var(--rp-font-size-xs); text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 8px; }
-  .rp-stat-value { font-size: var(--rp-font-size-3xl); font-weight: 700; color: #0f172a; }
+  .rp-stat-label { font-size: var(--rp-font-size-xs); text-transform: uppercase; color: #94a3b8; font-weight: var(--rp-font-weight-semibold); margin-bottom: 8px; }
+  .rp-stat-value { font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; }
   .rp-stat-value--info { color: #2563eb; }
   .rp-stat-value--success { color: #10b981; }
   .rp-stat-value--danger { color: #ef4444; }
   .rp-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
   .rp-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .rp-section-title { font-size: var(--rp-font-size-lg); font-weight: 600; color: #0f172a; margin: 0; }
+  .rp-section-title { font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0; }
   .rp-table-wrapper { overflow-x: auto; }
   .rp-table { width: 100%; border-collapse: collapse; font-size: var(--rp-font-size-base); }
   .rp-table th, .rp-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-  .rp-table th { font-weight: 600; color: #94a3b8; background: #f8fafc; font-size: var(--rp-font-size-xs); text-transform: uppercase; }
-  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+  .rp-table th { font-weight: var(--rp-font-weight-semibold); color: #94a3b8; background: #f8fafc; font-size: var(--rp-font-size-xs); text-transform: uppercase; }
+  .rp-btn { padding: 10px 16px; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); border: none; cursor: pointer; text-decoration: none; display: inline-block; }
   .rp-btn--primary { background: #2f5bff; color: white; }
   .rp-btn--secondary { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
   .rp-btn--sm { padding: 6px 12px; font-size: var(--rp-font-size-xs); }
   .rp-btn--danger { background: #fee2e2; color: #dc2626; }
-  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: 500; }
+  .rp-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-medium); }
   .rp-badge--warning { background: #fef3c7; color: #92400e; }
   .rp-badge--success { background: #d1fae5; color: #065f46; }
   .rp-badge--info { background: #dbeafe; color: #1e3a8a; }
@@ -162,7 +162,7 @@
   .rp-empty-state { text-align: center; padding: 60px 40px; }
   .rp-empty-state p { font-size: var(--rp-font-size-base); }
   .rp-filter-tabs { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: #f1f5f9; border-radius: 8px; }
-  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: 500; color: #64748b; text-decoration: none; transition: all 0.15s; }
+  .rp-filter-tab { padding: 8px 16px; border-radius: 6px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); color: #64748b; text-decoration: none; transition: all 0.15s; }
   .rp-filter-tab:hover { color: #0f172a; background: rgba(255,255,255,0.5); }
   .rp-filter-tab--active { background: white; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   .rp-btn--reassign { background: #dbeafe; color: #1e40af; }

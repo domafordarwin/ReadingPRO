@@ -12,32 +12,32 @@
   <h2 class="portal-card-title">기본 정보</h2>
   <div style="display: grid; gap: 16px; max-width: 500px;">
     <div>
-      <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학생 ID</label>
-      <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #0f172a; font-weight: 600;">
+      <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학생 ID</label>
+      <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #0f172a; font-weight: var(--rp-font-weight-semibold);">
         <%= @student&.name || "미설정" %>
       </div>
     </div>
     <div>
-      <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일</label>
+      <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">이메일</label>
       <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #64748b;">
         <%= current_user&.email || "미설정" %>
       </div>
     </div>
     <div>
-      <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학교</label>
+      <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학교</label>
       <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #64748b;">
         <%= @student&.school&.name || "미설정" %>
       </div>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학년</label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">학년</label>
         <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #64748b;">
           <%= @student&.grade %>학년
         </div>
       </div>
       <div>
-        <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">반</label>
+        <label style="display: block; font-weight: var(--rp-font-weight-medium); color: #374151; margin-bottom: 6px; font-size: var(--rp-font-size-base);">반</label>
         <div style="padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; font-size: var(--rp-font-size-base); color: #64748b;">
           <%= @student&.class_name %>
         </div>

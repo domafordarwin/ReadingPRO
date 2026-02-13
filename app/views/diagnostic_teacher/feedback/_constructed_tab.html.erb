@@ -195,13 +195,13 @@
   }
   .cr-header__title {
     font-size: var(--rp-font-size-xl);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
     margin: 0;
   }
   .cr-header__count {
     font-size: var(--rp-font-size-lg);
-    font-weight: 400;
+    font-weight: var(--rp-font-weight-normal);
     color: #64748b;
     margin-left: 8px;
   }
@@ -222,7 +222,7 @@
     background: #f8fafc;
     color: #475569;
     font-size: var(--rp-font-size-md);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
     transition: all 0.15s;
   }
@@ -253,7 +253,7 @@
   .cr-prompt-panel__label {
     display: block;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -330,7 +330,7 @@
     gap: 12px;
   }
   .cr-card__number {
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-lg);
     color: #7c3aed;
     white-space: nowrap;
@@ -350,7 +350,7 @@
     padding: 3px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     white-space: nowrap;
   }
   .cr-badge--score { background: #dbeafe; color: #1e40af; }
@@ -369,7 +369,7 @@
   .cr-meta-label {
     display: block;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -380,7 +380,7 @@
     display: inline-block;
     background: #eff6ff; color: #1e40af;
     padding: 2px 8px; border-radius: 6px;
-    font-size: var(--rp-font-size-sm); font-weight: 500;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
   }
 
   /* 루브릭 점수 */
@@ -391,8 +391,8 @@
     align-items: center;
     font-size: var(--rp-font-size-md);
   }
-  .cr-rubric-name { color: #334155; font-weight: 500; flex: 1; }
-  .cr-rubric-score { color: #2f5bff; font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .cr-rubric-name { color: #334155; font-weight: var(--rp-font-weight-medium); flex: 1; }
+  .cr-rubric-score { color: #2f5bff; font-weight: var(--rp-font-weight-semibold); white-space: nowrap; margin-left: 8px; }
   .cr-rubric-score--pending { color: #94a3b8; font-style: italic; }
   .cr-rubric-bar {
     height: 4px;

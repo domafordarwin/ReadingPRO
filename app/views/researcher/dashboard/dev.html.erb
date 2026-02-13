@@ -23,7 +23,7 @@
 
   .dev-section__title {
     font-size: var(--rp-font-size-xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #333;
     margin: 0 0 20px 0;
     padding-bottom: 12px;
@@ -41,7 +41,7 @@
     padding: 12px;
     text-align: left;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #666;
     border: 1px solid #e0e0e0;
   }
@@ -67,7 +67,7 @@
     padding: 4px 8px;
     border-radius: 4px;
     font-size: var(--rp-font-size-2xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     text-transform: uppercase;
   }
 
@@ -104,7 +104,7 @@
 
   .dev-card__title {
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #667eea;
     margin-bottom: 8px;
   }
@@ -155,7 +155,7 @@
 </style>
 
 <div class="portal-card dev-portal">
-  <h1 style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: #333; margin-bottom: 8px;">
+  <h1 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: #333; margin-bottom: 8px;">
     🚀 Researcher 포털 개발 가이드
   </h1>
   <p style="color: #666; margin-bottom: 32px;">
@@ -276,7 +276,7 @@
   <div class="dev-section">
     <h2 class="dev-section__title">🔄 데이터 흐름</h2>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">1️⃣ 문항 생성 흐름</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">1️⃣ 문항 생성 흐름</h3>
     <div class="dev-flow">
 [문항 관리] → [+ 새 문항 추가] 버튼 클릭
     ↓
@@ -292,7 +292,7 @@ POST /researcher/items (items#create)
 (정답/루브릭 입력 단계)
     </div>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">2️⃣ 완성된 문항 vs 미완성 문항</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">2️⃣ 완성된 문항 vs 미완성 문항</h3>
     <div class="dev-flow">
 문항 생성 (stimulus_id = NULL)
     ↓
@@ -304,7 +304,7 @@ POST /researcher/items (items#create)
 + 문항 관리에도 표시 (테이블 뷰)
     </div>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">3️⃣ 지문 삭제 CASCADE</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">3️⃣ 지문 삭제 CASCADE</h3>
     <div class="dev-flow">
 ReadingStimulus 삭제
     ↓ (dependent: :destroy)
@@ -384,27 +384,27 @@ Response, RubricLevel 삭제
   <div class="dev-section">
     <h2 class="dev-section__title">⚡ 성능 최적화</h2>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">1️⃣ Counter Cache</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">1️⃣ Counter Cache</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># reading_stimuli 테이블
 items_count (integer, default: 0)
 
 # Item 모델
 belongs_to :stimulus, counter_cache: :items_count</code></pre>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">2️⃣ Eager Loading</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">2️⃣ Eager Loading</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># items#index
 Item.includes(:stimulus, :item_choices, rubric: { rubric_criteria: :rubric_levels })
 
 # dashboard#index
 Item.includes(:stimulus).order(created_at: :desc).limit(5)</code></pre>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">3️⃣ Keyset Pagination (item_bank)</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">3️⃣ Keyset Pagination (item_bank)</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code>KeysetPaginationService.new(@items_relation, per_page: 25)
   .fetch_page(cursor: @cursor, direction: @direction)
 
 # O(1) 성능 - OFFSET 사용 안 함</code></pre>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">4️⃣ HTTP Caching (item_bank)</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">4️⃣ HTTP Caching (item_bank)</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code>fresh_when(etag: etag, last_modified: Item.maximum(:updated_at))
 
 # 304 Not Modified 응답으로 60-80% 절약</code></pre>
@@ -418,7 +418,7 @@ Item.includes(:stimulus).order(created_at: :desc).limit(5)</code></pre>
       ⚠️ <strong>중요:</strong> Rails 8.1 환경에서 Turbo는 모든 폼과 링크를 AJAX로 자동 변환합니다.
     </div>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">✅ 올바른 사용법</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">✅ 올바른 사용법</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># 삭제 링크
 <%= link_to "삭제", path,
     data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까?" } %>
@@ -430,7 +430,7 @@ Item.includes(:stimulus).order(created_at: :desc).limit(5)</code></pre>
 import DeleteLoadingController from "controllers/delete_loading_controller"
 application.register("delete-loading", DeleteLoadingController)</code></pre>
 
-    <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; margin: 20px 0 12px 0;">❌ 피해야 할 패턴</h3>
+    <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); margin: 20px 0 12px 0;">❌ 피해야 할 패턴</h3>
     <pre style="background: #f8f9fa; padding: 12px; border-radius: 4px; overflow-x: auto;"><code># method: :delete (작동 안 함)
 <%= link_to "삭제", path, method: :delete %>
 

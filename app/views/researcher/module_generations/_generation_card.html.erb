@@ -5,7 +5,7 @@
     <div style="flex:1; min-width:0;">
       <%# 상단: 상태 배지 + 모드 %>
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-        <span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size: var(--rp-font-size-xs); font-weight:600; background:<%= gen.status_color %>20; color:<%= gen.status_color %>;">
+        <span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); background:<%= gen.status_color %>20; color:<%= gen.status_color %>;">
           <%= gen.status_label %>
         </span>
         <span style="font-size: var(--rp-font-size-xs); color:#94a3b8;">
@@ -20,7 +20,7 @@
 
       <%# 제목 %>
       <%= link_to researcher_module_generation_path(gen),
-          style: "font-size:var(--rp-font-size-md); font-weight:600; color:#1e293b; text-decoration:none;" do %>
+          style: "font-size:var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color:#1e293b; text-decoration:none;" do %>
         <%= gen.passage_title.presence || gen.passage_topic.presence || "모듈 생성 ##{gen.id}" %>
       <% end %>
 
@@ -38,7 +38,7 @@
         <% score = gen.validation_score.to_f %>
         <% score_color = score >= 80 ? "#22c55e" : score >= 70 ? "#f59e0b" : "#ef4444" %>
         <div style="width:56px; height:56px; border-radius:50%; border:3px solid <%= score_color %>; display:flex; align-items:center; justify-content:center; margin:0 auto;">
-          <span style="font-size: var(--rp-font-size-base); font-weight:700; color:<%= score_color %>;"><%= score.round(0) %></span>
+          <span style="font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-bold); color:<%= score_color %>;"><%= score.round(0) %></span>
         </div>
         <span style="font-size: var(--rp-font-size-xs); color:#94a3b8; display:block; margin-top:4px;">타당도</span>
       <% elsif gen.generating? || gen.validating? || gen.pending? %>
@@ -58,10 +58,10 @@
     <div style="display:flex; gap:8px; align-items:center;">
       <% if gen.review? %>
         <%= link_to "리뷰하기", researcher_module_generation_path(gen),
-            style: "padding:5px 12px; background:#8b5cf6; color:#fff; border-radius:6px; font-size: var(--rp-font-size-sm); text-decoration:none; font-weight:500;" %>
+            style: "padding:5px 12px; background:#8b5cf6; color:#fff; border-radius:6px; font-size: var(--rp-font-size-sm); text-decoration:none; font-weight: var(--rp-font-weight-medium);" %>
       <% elsif gen.approved? && gen.generated_stimulus_id %>
         <%= link_to "모듈 보기", researcher_passage_path(gen.generated_stimulus_id),
-            style: "padding:5px 12px; background:#22c55e; color:#fff; border-radius:6px; font-size: var(--rp-font-size-sm); text-decoration:none; font-weight:500;" %>
+            style: "padding:5px 12px; background:#22c55e; color:#fff; border-radius:6px; font-size: var(--rp-font-size-sm); text-decoration:none; font-weight: var(--rp-font-weight-medium);" %>
       <% else %>
         <%= link_to "상세", researcher_module_generation_path(gen),
             style: "padding:5px 12px; background:#f1f5f9; color:#475569; border-radius:6px; font-size: var(--rp-font-size-sm); text-decoration:none;" %>

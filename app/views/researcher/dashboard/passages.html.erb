@@ -30,7 +30,7 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .passages-search button:hover {
@@ -51,7 +51,7 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     text-decoration: none;
     display: inline-block;
   }
@@ -77,13 +77,13 @@
   .passages-stat__label {
     font-size: var(--rp-font-size-xs);
     color: #666;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     margin-bottom: 8px;
   }
 
   .passages-stat__value {
     font-size: var(--rp-font-size-2xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #333;
   }
 
@@ -115,14 +115,14 @@
   }
 
   .passages-card__code {
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #333;
     font-size: var(--rp-font-size-base);
   }
 
   .passages-card__title {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #333;
     margin-bottom: 12px;
     word-break: break-word;
@@ -163,7 +163,7 @@
 
   .passages-card__meta-value {
     color: #333;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .passages-card__actions {
@@ -180,7 +180,7 @@
     color: #667eea;
     text-decoration: none;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -265,7 +265,7 @@
 
   .delete-loading__message {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #333;
   }
 
@@ -314,7 +314,7 @@
 <div class="portal-card">
   <!-- 헤더 -->
   <div class="passages-header">
-    <h2 style="margin: 0; font-size: var(--rp-font-size-lg); font-weight: 600; color: #333;">지문 목록</h2>
+    <h2 style="margin: 0; font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #333;">지문 목록</h2>
     <%= link_to "+ 새 지문 추가", new_researcher_stimulus_path, class: "btn-new-stimulus" %>
   </div>
 

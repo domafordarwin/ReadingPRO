@@ -200,14 +200,14 @@
   /* ── 내비게이션 ── */
   .cr-gen-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
   .cr-gen-nav__back {
-    display: inline-flex; align-items: center; gap: 4px; font-size: var(--rp-font-size-sm); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
     color: #64748b; text-decoration: none; padding: 7px 14px; border-radius: 8px;
     border: 1px solid #e2e8f0; background: white; transition: all 0.15s;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
   .cr-gen-nav__back:hover { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
   .cr-gen-nav__link {
-    display: inline-flex; align-items: center; gap: 4px; font-size: var(--rp-font-size-sm); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium);
     color: #2563eb; text-decoration: none; padding: 7px 14px; border-radius: 8px;
     border: 1px solid #bfdbfe; background: #eff6ff; transition: all 0.15s;
   }
@@ -215,7 +215,7 @@
 
   /* ── 헤더 ── */
   .cr-gen-header { margin-bottom: 24px; }
-  .cr-gen-header__title { font-size: var(--rp-font-size-2xl); font-weight: 700; color: #0f172a; margin: 0 0 6px 0; }
+  .cr-gen-header__title { font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; margin: 0 0 6px 0; }
   .cr-gen-header__desc { font-size: var(--rp-font-size-base); color: #64748b; margin: 0; }
 
   /* ── 프로필 카드 ── */
@@ -228,9 +228,9 @@
   .cr-gen-profile__avatar {
     width: 48px; height: 48px; background: rgba(255,255,255,0.2);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-xl); font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); flex-shrink: 0;
   }
-  .cr-gen-profile__name { font-size: var(--rp-font-size-xl); font-weight: 700; margin-bottom: 4px; }
+  .cr-gen-profile__name { font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); margin-bottom: 4px; }
   .cr-gen-profile__meta { font-size: var(--rp-font-size-base); opacity: 0.85; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .cr-gen-profile__sep { opacity: 0.5; }
 
@@ -248,8 +248,8 @@
   .cr-gen-info-card__icon--blue { background: #eff6ff; color: #3b82f6; }
   .cr-gen-info-card__icon--green { background: #f0fdf4; color: #16a34a; }
   .cr-gen-info-card__icon--slate { background: #f1f5f9; color: #64748b; }
-  .cr-gen-info-card__label { font-size: var(--rp-font-size-2xs); color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
-  .cr-gen-info-card__value { font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; }
+  .cr-gen-info-card__label { font-size: var(--rp-font-size-2xs); color: #94a3b8; font-weight: var(--rp-font-weight-medium); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .cr-gen-info-card__value { font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; }
   .cr-gen-info-card__value--green { color: #16a34a; }
 
   /* ── 데이터 요약 ── */
@@ -258,7 +258,7 @@
     margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
   .cr-gen-data__header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-  .cr-gen-data__title { font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 0; }
+  .cr-gen-data__title { font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0; }
   .cr-gen-data__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 
   .cr-gen-data__item {
@@ -267,8 +267,8 @@
   }
   .cr-gen-data__item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
   .cr-gen-data__item svg { margin-bottom: 8px; }
-  .cr-gen-data__item-value { font-size: var(--rp-font-size-3xl); font-weight: 700; margin-bottom: 6px; display: flex; justify-content: center; align-items: center; }
-  .cr-gen-data__item-label { font-size: var(--rp-font-size-xs); font-weight: 600; }
+  .cr-gen-data__item-value { font-size: var(--rp-font-size-3xl); font-weight: var(--rp-font-weight-bold); margin-bottom: 6px; display: flex; justify-content: center; align-items: center; }
+  .cr-gen-data__item-label { font-size: var(--rp-font-size-xs); font-weight: var(--rp-font-weight-semibold); }
 
   .cr-gen-data__item--blue { background: #eff6ff; color: #1d4ed8; }
   .cr-gen-data__item--blue .cr-gen-data__item-label { color: #3b82f6; }
@@ -286,7 +286,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
   .cr-gen-alert__icon { flex-shrink: 0; color: #d97706; margin-top: 2px; }
-  .cr-gen-alert__title { font-size: var(--rp-font-size-base); font-weight: 600; color: #92400e; display: block; margin-bottom: 4px; }
+  .cr-gen-alert__title { font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-semibold); color: #92400e; display: block; margin-bottom: 4px; }
   .cr-gen-alert__body { font-size: var(--rp-font-size-sm); color: #a16207; line-height: 1.6; margin: 0; }
 
   /* ── 생성 액션 ── */
@@ -305,7 +305,7 @@
   /* ── 버튼 ── */
   .cr-gen-btn {
     display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 10px;
-    font-size: var(--rp-font-size-md); font-weight: 600; text-decoration: none; cursor: pointer;
+    font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); text-decoration: none; cursor: pointer;
     border: 1px solid transparent; transition: all 0.2s; white-space: nowrap;
   }
   .cr-gen-btn--primary {

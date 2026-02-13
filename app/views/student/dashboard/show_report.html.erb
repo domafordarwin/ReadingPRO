@@ -58,7 +58,7 @@
 
   .report-header h1 {
     font-size: var(--rp-font-size-4xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     margin-bottom: 15px;
     letter-spacing: -0.5px;
   }
@@ -91,7 +91,7 @@
     padding: 14px 0;
     color: var(--text-light);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     font-size: var(--rp-font-size-base);
     cursor: pointer;
     border-bottom: 3px solid transparent;
@@ -129,12 +129,12 @@
     align-items: center;
     justify-content: center;
     font-size: var(--rp-font-size-3xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
   }
 
   .section-title-group h2 {
     font-size: var(--rp-font-size-2xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: var(--text-dark);
     margin-bottom: 8px;
   }
@@ -168,14 +168,14 @@
     background: var(--primary);
     color: white;
     border-radius: 50%;
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-xl);
     margin-bottom: 12px;
   }
 
   .toc-item-title {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: var(--text-dark);
   }
 
@@ -196,7 +196,7 @@
 
   .overview-box h3 {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: var(--text-dark);
     margin-bottom: 12px;
   }
@@ -219,7 +219,7 @@
 
   .reader-type-name {
     font-size: var(--rp-font-size-4xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     margin-bottom: 16px;
   }
 
@@ -245,7 +245,7 @@
 
   .type-feature h4 {
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     margin-bottom: 8px;
   }
 
@@ -266,7 +266,7 @@
     color: white;
     padding: 14px;
     text-align: left;
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     font-size: var(--rp-font-size-sm);
   }
 
@@ -285,7 +285,7 @@
     padding: 4px 12px;
     border-radius: 16px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   .status-badge.excellent {
@@ -323,7 +323,7 @@
   }
 
   .progress-bar-value {
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     font-size: var(--rp-font-size-xs);
     min-width: 40px;
   }
@@ -346,7 +346,7 @@
 
   .profile-card h3 {
     font-size: var(--rp-font-size-md);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: var(--text-dark);
     margin-bottom: 12px;
   }
@@ -375,7 +375,7 @@
     position: absolute;
     left: 0;
     color: #4CAF50;
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
   }
 
   /* ========== 액션 버튼 ========== */
@@ -395,7 +395,7 @@
     color: var(--primary);
     cursor: pointer;
     font-size: var(--rp-font-size-base);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     transition: all 0.3s;
   }
 
@@ -537,7 +537,7 @@
     </div>
 
     <div style="background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%); border-left: 5px solid var(--primary); border-radius: 8px; padding: 24px; margin-top: 40px;">
-      <h3 style="font-size: var(--rp-font-size-md); font-weight: 700; color: var(--text-dark); margin-bottom: 12px;">📊 이 보고서의 특징</h3>
+      <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-bold); color: var(--text-dark); margin-bottom: 12px;">📊 이 보고서의 특징</h3>
       <p style="font-size: var(--rp-font-size-base); color: var(--text-medium); line-height: 1.8;">
         Reading PRO 진단은 단순한 성적 평가를 넘어 학생의 독서 습관, 읽기 속도, 이해력, 선호도, 학습 스타일 등을
         종합적으로 분석합니다. 이를 통해 학생의 강점을 파악하고 개선이 필요한 영역을 명확히 하여,
@@ -811,19 +811,19 @@
         <h3>📚 추천 학습 방법</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
           <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
-            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">📖 능동적 읽기</p>
+            <p style="font-weight: var(--rp-font-weight-semibold); color: var(--primary); margin-bottom: 8px;">📖 능동적 읽기</p>
             <p style="font-size: var(--rp-font-size-sm); color: var(--text-medium);">밑줄 그으며 읽기, 핵심 단어 표시, 예상 과정 점검</p>
           </div>
           <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
-            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">✍️ 기록하기</p>
+            <p style="font-weight: var(--rp-font-weight-semibold); color: var(--primary); margin-bottom: 8px;">✍️ 기록하기</p>
             <p style="font-size: var(--rp-font-size-sm); color: var(--text-medium);">독서 일지 작성, 느낀점 메모, 중요 구절 기록</p>
           </div>
           <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
-            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">💬 토론하기</p>
+            <p style="font-weight: var(--rp-font-weight-semibold); color: var(--primary); margin-bottom: 8px;">💬 토론하기</p>
             <p style="font-size: var(--rp-font-size-sm); color: var(--text-medium);">가족과 함께 의견 나누기, 독서 모임 참여</p>
           </div>
           <div style="padding: 16px; background: var(--bg-light); border-radius: 8px;">
-            <p style="font-weight: 600; color: var(--primary); margin-bottom: 8px;">🔍 분석하기</p>
+            <p style="font-weight: var(--rp-font-weight-semibold); color: var(--primary); margin-bottom: 8px;">🔍 분석하기</p>
             <p style="font-size: var(--rp-font-size-sm); color: var(--text-medium);">텍스트 구조 파악, 저자 의도 분석</p>
           </div>
         </div>

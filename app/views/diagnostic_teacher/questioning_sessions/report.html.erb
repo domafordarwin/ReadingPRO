@@ -154,7 +154,7 @@
   }
   .qr-dl-nav-btn {
     display: inline-flex; align-items: center; gap: 4px;
-    font-size: var(--rp-font-size-lg); font-weight: 500; color: #64748b;
+    font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-medium); color: #64748b;
     text-decoration: none; padding: 7px 14px; border-radius: 8px;
     border: 1px solid #e2e8f0; background: white;
     transition: all 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.04);
@@ -164,7 +164,7 @@
   .qr-dl-top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .qr-dl-action-btn {
     display: inline-flex; align-items: center; gap: 5px; padding: 7px 16px;
-    border-radius: 8px; font-size: var(--rp-font-size-lg); font-weight: 500; cursor: pointer;
+    border-radius: 8px; font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-medium); cursor: pointer;
     border: 1px solid transparent; transition: all 0.15s; text-decoration: none; white-space: nowrap;
   }
   .qr-dl-action-btn--md { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
@@ -187,12 +187,12 @@
   .qr-dl-profile__avatar {
     width: 52px; height: 52px; background: rgba(255,255,255,0.2);
     border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-xl); font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); flex-shrink: 0;
   }
-  .qr-dl-profile__name { font-size: var(--rp-font-size-xl); font-weight: 700; margin: 0 0 6px 0; }
+  .qr-dl-profile__name { font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); margin: 0 0 6px 0; }
   .qr-dl-profile__meta { font-size: var(--rp-font-size-lg); opacity: 0.85; margin: 0; }
 
-  .qr-dl-badge { display: inline-flex; padding: 2px 8px; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: 500; }
+  .qr-dl-badge { display: inline-flex; padding: 2px 8px; border-radius: 20px; font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-medium); }
   .qr-dl-badge--green { background: rgba(255,255,255,0.2); color: #bbf7d0; }
   .qr-dl-badge--blue { background: rgba(255,255,255,0.2); color: #bfdbfe; }
 
@@ -202,8 +202,8 @@
     background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
-  .qr-dl-stat__label { font-size: var(--rp-font-size-sm); color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
-  .qr-dl-stat__value { font-size: var(--rp-font-size-xl); font-weight: 700; color: #0f172a; }
+  .qr-dl-stat__label { font-size: var(--rp-font-size-sm); color: #94a3b8; font-weight: var(--rp-font-weight-medium); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .qr-dl-stat__value { font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; }
   .qr-dl-stat__value--blue { color: #2563eb; }
   .qr-dl-stat__value--green { color: #16a34a; }
   .qr-dl-stat__value--purple { color: #7c3aed; }
@@ -217,11 +217,11 @@
   .qr-dl-stage-card__num {
     width: 28px; height: 28px; border-radius: 8px; color: white;
     display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-lg); font-weight: 700; margin-bottom: 8px;
+    font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-bold); margin-bottom: 8px;
   }
   .qr-dl-stage-card__info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .qr-dl-stage-card__name { font-size: var(--rp-font-size-lg); font-weight: 600; color: #334155; }
-  .qr-dl-stage-card__score { font-size: var(--rp-font-size-2xl); font-weight: 700; }
+  .qr-dl-stage-card__name { font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #334155; }
+  .qr-dl-stage-card__score { font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); }
   .qr-dl-stage-card__bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
   .qr-dl-stage-card__bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
 
@@ -231,7 +231,7 @@
   }
   .qr-dl-bottom-btn {
     display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px;
-    border-radius: 10px; font-size: var(--rp-font-size-xl); font-weight: 500; cursor: pointer;
+    border-radius: 10px; font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-medium); cursor: pointer;
     border: 1px solid transparent; transition: all 0.2s; text-decoration: none;
   }
   .qr-dl-bottom-btn--md { background: #16a34a; color: white; }

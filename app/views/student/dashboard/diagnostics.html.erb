@@ -4,30 +4,30 @@
 <% end %>
 
 <div style="padding: 20px;">
-  <h2 style="font-size: var(--rp-font-size-xl); font-weight: 700; color: #0f172a; margin-bottom: 20px;">진단 현황</h2>
+  <h2 style="font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; margin-bottom: 20px;">진단 현황</h2>
 
   <!-- 배정된 진단 -->
-  <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin-bottom: 12px;">배정된 진단 (<%= @available_forms.count %>개)</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin-bottom: 12px;">배정된 진단 (<%= @available_forms.count %>개)</h3>
   <% if @available_forms.any? %>
     <% @available_forms.each do |form| %>
       <% assignment = @assignments[form.id] %>
       <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 12px; background: white;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
-            <h4 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 0 0 8px 0;"><%= form.name %></h4>
+            <h4 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0 0 8px 0;"><%= form.name %></h4>
             <p style="font-size: var(--rp-font-size-sm); color: #64748b; margin: 0;">
               문항 수: <%= form.item_count || form.items.count %>개
               <% if form.time_limit_minutes.present? %>
                 | 제한시간: <%= form.time_limit_minutes %>분
               <% end %>
               <% if assignment&.due_date.present? %>
-                | 마감: <span style="color: <%= assignment.due_date < Date.today ? '#dc2626' : '#2563eb' %>; font-weight: 500;"><%= assignment.due_date.strftime("%m/%d") %></span>
+                | 마감: <span style="color: <%= assignment.due_date < Date.today ? '#dc2626' : '#2563eb' %>; font-weight: var(--rp-font-weight-medium);"><%= assignment.due_date.strftime("%m/%d") %></span>
               <% end %>
             </p>
           </div>
           <%= form_with url: student_assessments_path, method: :post, local: true, data: { turbo: false } do |f| %>
             <%= f.hidden_field :form_id, value: form.id %>
-            <%= f.submit "시작하기", style: "padding: 8px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; cursor: pointer;" %>
+            <%= f.submit "시작하기", style: "padding: 8px 20px; background: #2f5bff; color: white; border: none; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); cursor: pointer;" %>
           <% end %>
         </div>
       </div>
@@ -39,17 +39,17 @@
   <% end %>
 
   <!-- 진행 중인 진단 -->
-  <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 20px 0 12px 0;">진행 중인 진단 (<%= @in_progress_attempts.count %>개)</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 20px 0 12px 0;">진행 중인 진단 (<%= @in_progress_attempts.count %>개)</h3>
   <% if @in_progress_attempts.any? %>
     <% @in_progress_attempts.each do |attempt| %>
       <div style="border: 1px solid #fde68a; border-radius: 12px; padding: 20px; margin-bottom: 12px; background: #fffbeb;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h4 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 0 0 8px 0;"><%= attempt.diagnostic_form&.name || "제목 없음" %></h4>
+            <h4 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0 0 8px 0;"><%= attempt.diagnostic_form&.name || "제목 없음" %></h4>
             <p style="font-size: var(--rp-font-size-sm); color: #64748b; margin: 0;">시작: <%= attempt.started_at&.strftime("%m월 %d일 %H:%M") %></p>
           </div>
           <%= link_to "이어하기", student_assessment_path(attempt.id),
-                style: "padding: 8px 16px; background: #f59e0b; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; text-decoration: none;" %>
+                style: "padding: 8px 16px; background: #f59e0b; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
         </div>
       </div>
     <% end %>
@@ -58,17 +58,17 @@
   <% end %>
 
   <!-- 완료된 진단 -->
-  <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 20px 0 12px 0;">완료된 진단 (<%= @completed_attempts.count %>개)</h3>
+  <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 20px 0 12px 0;">완료된 진단 (<%= @completed_attempts.count %>개)</h3>
   <% if @completed_attempts.any? %>
     <% @completed_attempts.each do |attempt| %>
       <div style="border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin-bottom: 12px; background: #f0fdf4;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h4 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 0 0 8px 0;"><%= attempt.diagnostic_form&.name || "제목 없음" %></h4>
+            <h4 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0 0 8px 0;"><%= attempt.diagnostic_form&.name || "제목 없음" %></h4>
             <p style="font-size: var(--rp-font-size-sm); color: #64748b; margin: 0;">완료: <%= attempt.submitted_at&.strftime("%m월 %d일 %H:%M") %></p>
           </div>
           <%= link_to "결과보기", student_show_attempt_path(attempt.id),
-                style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: 500; text-decoration: none;" %>
+                style: "padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; font-size: var(--rp-font-size-base); font-weight: var(--rp-font-weight-medium); text-decoration: none;" %>
         </div>
       </div>
     <% end %>

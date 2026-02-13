@@ -10,9 +10,9 @@
   .cr-print-profile__avatar {
     width: 42px; height: 42px; background: rgba(255,255,255,0.2);
     border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-2xl); font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); flex-shrink: 0;
   }
-  .cr-print-profile__name { font-size: 18px; font-weight: 700; margin: 0 0 3px; }
+  .cr-print-profile__name { font-size: 18px; font-weight: var(--rp-font-weight-bold); margin: 0 0 3px; }
   .cr-print-profile__meta { font-size: var(--rp-font-size-sm); opacity: 0.85; margin: 0; }
 
   .cr-print-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
@@ -28,8 +28,8 @@
   .cr-print-stat__icon--blue { background: #eff6ff; color: #3b82f6; }
   .cr-print-stat__icon--green { background: #f0fdf4; color: #16a34a; }
   .cr-print-stat__icon--purple { background: #faf5ff; color: #8b5cf6; }
-  .cr-print-stat__label { font-size: 9px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
-  .cr-print-stat__value { font-size: var(--rp-font-size-xl); font-weight: 700; color: #0f172a; }
+  .cr-print-stat__label { font-size: 9px; color: #94a3b8; font-weight: var(--rp-font-weight-medium); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
+  .cr-print-stat__value { font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; }
   .cr-print-stat__value--blue { color: #2563eb; }
   .cr-print-stat__value--green { color: #16a34a; }
   .cr-print-stat__value--yellow { color: #d97706; }
@@ -46,9 +46,9 @@
   .cr-print-section__number {
     width: 22px; height: 22px; color: white; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: var(--rp-font-size-sm); font-weight: 700; flex-shrink: 0;
+    font-size: var(--rp-font-size-sm); font-weight: var(--rp-font-weight-bold); flex-shrink: 0;
   }
-  .cr-print-section__title { font-size: var(--rp-font-size-lg); font-weight: 600; color: #0f172a; margin: 0; }
+  .cr-print-section__title { font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0; }
   .cr-print-section__body {
     padding: 14px 16px; font-size: var(--rp-font-size-md); line-height: 1.8; color: #334155;
     white-space: pre-wrap; word-wrap: break-word;
@@ -58,7 +58,7 @@
   .cr-print-area-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 14px 16px; }
   .cr-print-area-left { display: flex; flex-direction: column; gap: 10px; }
   .cr-print-area-right { text-align: center; }
-  .cr-print-area-right__title { font-size: var(--rp-font-size-md); font-weight: 600; color: #475569; margin: 0 0 8px; }
+  .cr-print-area-right__title { font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #475569; margin: 0 0 8px; }
 
   .cr-print-area-card {
     background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;
@@ -69,12 +69,12 @@
     align-items: center; justify-content: center; flex-shrink: 0;
   }
   .cr-print-area-card__info { flex: 1; }
-  .cr-print-area-card__name { font-size: var(--rp-font-size-md); font-weight: 600; }
+  .cr-print-area-card__name { font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); }
   .cr-print-area-card__meta { font-size: var(--rp-font-size-xs); color: #94a3b8; }
   .cr-print-area-card__score { text-align: right; }
-  .cr-print-area-card__pct { font-size: var(--rp-font-size-xl); font-weight: 700; display: block; }
+  .cr-print-area-card__pct { font-size: var(--rp-font-size-xl); font-weight: var(--rp-font-weight-bold); display: block; }
   .cr-print-area-card__level {
-    display: inline-block; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; margin-top: 1px;
+    display: inline-block; font-size: 9px; font-weight: var(--rp-font-weight-semibold); padding: 1px 6px; border-radius: 8px; margin-top: 1px;
   }
   .cr-print-area-card__level--green { background: #dcfce7; color: #166534; }
   .cr-print-area-card__level--blue { background: #dbeafe; color: #1e40af; }
@@ -88,7 +88,7 @@
     background: #f8fafc; border-radius: 4px; font-size: var(--rp-font-size-xs);
   }
   .cr-print-area-card__sub-name { color: #64748b; }
-  .cr-print-area-card__sub-score { font-weight: 600; }
+  .cr-print-area-card__sub-score { font-weight: var(--rp-font-weight-semibold); }
 
   .cr-print-radar svg { max-width: 360px; width: 100%; height: auto; }
 

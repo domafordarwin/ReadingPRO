@@ -1,7 +1,7 @@
 <% content_for :page_title, "공지사항" %>
 
 <div style="margin-bottom: 24px;">
-  <h1 style="font-size: var(--rp-font-size-2xl); font-weight: 700; color: #0f172a; margin: 0 0 4px 0;">공지사항</h1>
+  <h1 style="font-size: var(--rp-font-size-2xl); font-weight: var(--rp-font-weight-bold); color: #0f172a; margin: 0 0 4px 0;">공지사항</h1>
   <p style="font-size: var(--rp-font-size-base); color: #94a3b8; margin: 0;">Reading PRO 관련 공지사항 및 안내를 확인하세요.</p>
 </div>
 
@@ -11,10 +11,10 @@
       <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; <%= 'border-left: 4px solid #f59e0b; background: #fffbf0;' if notice.important %>">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
           <div style="flex: 1;">
-            <h3 style="font-size: var(--rp-font-size-md); font-weight: 600; color: #0f172a; margin: 0 0 6px 0;"><%= notice.title %></h3>
+            <h3 style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-semibold); color: #0f172a; margin: 0 0 6px 0;"><%= notice.title %></h3>
             <div style="display: flex; align-items: center; gap: 8px; font-size: var(--rp-font-size-xs); color: #94a3b8;">
               <% if notice.important %>
-                <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 600;">중요</span>
+                <span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: var(--rp-font-weight-semibold);">중요</span>
               <% end %>
               <span><%= notice.published_at&.strftime("%Y-%m-%d") %></span>
             </div>
@@ -32,7 +32,7 @@
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
       <polyline points="14 2 14 8 20 8"></polyline>
     </svg>
-    <p style="font-size: var(--rp-font-size-md); font-weight: 500; color: #64748b; margin: 0 0 8px 0;">등록된 공지사항이 없습니다</p>
+    <p style="font-size: var(--rp-font-size-md); font-weight: var(--rp-font-weight-medium); color: #64748b; margin: 0 0 8px 0;">등록된 공지사항이 없습니다</p>
     <p style="font-size: var(--rp-font-size-sm); color: #94a3b8; margin: 0;">새로운 공지사항이 등록되면 여기에 표시됩니다.</p>
   </div>
 <% end %>

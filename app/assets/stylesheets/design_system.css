@@ -94,6 +94,7 @@
   --rp-font-weight-medium: 500;  /* Medium emphasis */
   --rp-font-weight-semibold: 600; /* Semibold - headings, buttons */
   --rp-font-weight-bold: 700;    /* Bold - strong emphasis */
+  --rp-font-weight-extrabold: 800; /* Extra bold - hero titles */
 
   /* Border Radius */
   --rp-radius-sm: 6px;

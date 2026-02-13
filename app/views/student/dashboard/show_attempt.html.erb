@@ -11,7 +11,7 @@
   }
   .sa-header__title {
     font-size: var(--rp-font-size-xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #0f172a;
     margin: 0 0 16px 0;
   }
@@ -27,7 +27,7 @@
   }
   .sa-info-label {
     font-size: var(--rp-font-size-2xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -35,7 +35,7 @@
   }
   .sa-info-value {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
   }
 
@@ -57,14 +57,14 @@
   .sa-stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .sa-stat-number {
     font-size: var(--rp-font-size-3xl);
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     color: #2f5bff;
     margin-bottom: 2px;
   }
   .sa-stat-label {
     font-size: var(--rp-font-size-xs);
     color: #94a3b8;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
 
   /* ===== 섹션 헤더 ===== */
@@ -76,7 +76,7 @@
   }
   .sa-section-title {
     font-size: var(--rp-font-size-lg);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #0f172a;
   }
   .sa-section-count {
@@ -86,7 +86,7 @@
     padding: 4px 12px;
     border-radius: 20px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
 
   /* ===== 공통 문항 카드 ===== */
@@ -108,7 +108,7 @@
     border-bottom: 1px solid #e2e8f0;
   }
   .sa-card-number {
-    font-weight: 700;
+    font-weight: var(--rp-font-weight-bold);
     font-size: var(--rp-font-size-base);
     color: #2f5bff;
   }
@@ -130,7 +130,7 @@
     padding: 4px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     background: #dcfce7;
     color: #166534;
   }
@@ -141,7 +141,7 @@
     padding: 4px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     background: #fef2f2;
     color: #991b1b;
   }
@@ -150,7 +150,7 @@
     padding: 4px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     background: #dbeafe;
     color: #1e40af;
   }
@@ -159,7 +159,7 @@
     padding: 4px 10px;
     border-radius: 20px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     background: #fef3c7;
     color: #92400e;
   }
@@ -182,7 +182,7 @@
   .sa-meta-label {
     display: block;
     font-size: var(--rp-font-size-2xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -190,7 +190,7 @@
   }
   .sa-meta-value {
     font-size: var(--rp-font-size-sm);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     color: #334155;
   }
   .sa-indicator-badge {
@@ -200,7 +200,7 @@
     padding: 3px 8px;
     border-radius: 6px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
   .sa-sub-indicator-badge {
     display: inline-block;
@@ -209,7 +209,7 @@
     padding: 3px 8px;
     border-radius: 6px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
 
   /* 답안 비교 */
@@ -229,7 +229,7 @@
     border: 1px solid #bbf7d0;
   }
   .sa-answer-box--correct .sa-answer-box__label { color: #15803d; }
-  .sa-answer-box--correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box--correct .sa-answer-box__value { color: #166534; font-weight: var(--rp-font-weight-semibold); }
   .sa-answer-box--student {
     background: #fef2f2;
     border: 1px solid #fecaca;
@@ -240,11 +240,11 @@
   }
   .sa-answer-box--student .sa-answer-box__label { color: #dc2626; }
   .sa-answer-box--student.is-correct .sa-answer-box__label { color: #15803d; }
-  .sa-answer-box--student .sa-answer-box__value { color: #991b1b; font-weight: 600; }
-  .sa-answer-box--student.is-correct .sa-answer-box__value { color: #166534; font-weight: 600; }
+  .sa-answer-box--student .sa-answer-box__value { color: #991b1b; font-weight: var(--rp-font-weight-semibold); }
+  .sa-answer-box--student.is-correct .sa-answer-box__value { color: #166534; font-weight: var(--rp-font-weight-semibold); }
   .sa-answer-box__label {
     font-size: var(--rp-font-size-2xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.3px;
     margin-bottom: 2px;
@@ -266,7 +266,7 @@
   .sa-choice-item.is-correct-choice {
     background: #f0fdf4;
     color: #166534;
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
   .sa-choice-item.is-student-wrong {
     background: #fef2f2;
@@ -282,7 +282,7 @@
     align-items: center;
     justify-content: center;
     font-size: var(--rp-font-size-2xs);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     color: #64748b;
   }
   .sa-choice-item.is-correct-choice .sa-choice-no {
@@ -403,7 +403,7 @@
     padding: 6px 14px;
     border-radius: 6px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
   }
   .sa-btn-save:hover { background: #254ccb; }
@@ -414,7 +414,7 @@
     padding: 6px 14px;
     border-radius: 6px;
     font-size: var(--rp-font-size-xs);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
     cursor: pointer;
   }
   .sa-btn-cancel:hover { background: #e2e8f0; }
@@ -433,7 +433,7 @@
     padding: 4px 10px;
     border-radius: 6px;
     font-size: var(--rp-font-size-sm);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
   }
   .sa-score-label {
     font-size: var(--rp-font-size-2xs);
@@ -460,7 +460,7 @@
   }
   .sa-modal-header {
     font-size: var(--rp-font-size-md);
-    font-weight: 600;
+    font-weight: var(--rp-font-weight-semibold);
     margin-bottom: 16px;
     color: #0f172a;
   }
@@ -481,7 +481,7 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: var(--rp-font-size-sm);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
   .sa-modal-close:hover { background: #254ccb; }
 
@@ -494,7 +494,7 @@
     color: #2f5bff;
     text-decoration: none;
     font-size: var(--rp-font-size-base);
-    font-weight: 500;
+    font-weight: var(--rp-font-weight-medium);
   }
   .sa-back-link:hover { text-decoration: underline; }
 
@@ -849,7 +849,7 @@
 
   <% if @responses.empty? %>
     <div class="sa-empty">
-      <p style="font-size: var(--rp-font-size-lg); font-weight: 600; color: #64748b; margin-bottom: 8px;">답변 데이터가 없습니다</p>
+      <p style="font-size: var(--rp-font-size-lg); font-weight: var(--rp-font-weight-semibold); color: #64748b; margin-bottom: 8px;">답변 데이터가 없습니다</p>
       <p style="font-size: var(--rp-font-size-base);">아직 응답이 기록되지 않았습니다.</p>
     </div>
   <% end %>
